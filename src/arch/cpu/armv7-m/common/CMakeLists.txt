@@ -1,0 +1,5 @@
+add_subdirectory(boot)
+add_subdirectory(exc)
+add_subdirectory(hwi)
+add_subdirectory(tick)
+add_library(prt_port OBJECT prt_port.c)

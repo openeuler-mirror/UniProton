@@ -1,0 +1,6 @@
+add_subdirectory(irq)
+add_subdirectory(kexc)
+add_subdirectory(sys)
+add_subdirectory(task)
+add_subdirectory(tick)
+add_subdirectory(timer)

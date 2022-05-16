@@ -1,0 +1,17 @@
+config OS_OPTION_CPUP
+	bool "Whether support cpup or not"
+	default n
+
+menu "CPUP features configuration"
+	depends on OS_OPTION_CPUP
+
+choice
+	prompt "Cpup Mode"
+config INTERNAL_OS_CPUP_THREAD
+	bool "CPUP_MODE_THREAD"
+endchoice
+
+config OS_OPTION_CPUP_WARN
+	bool "Whether support cpup warn or not"
+	default n
+endmenu

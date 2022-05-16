@@ -1,0 +1,23 @@
+menu "IRQ Modules Configuration"
+
+config OS_OPTION_HWI_COMBINE
+	bool "Whether support hw interrupt combination feature or not"
+	default y if OS_OPTION_HWI_ATTRIBUTE
+	default n if !OS_OPTION_HWI_ATTRIBUTE
+	
+config OS_OPTION_HWI_PRIORITY
+	bool "Whether support hwi priority set or not"
+	default y
+	
+config OS_OPTION_HWI_ATTRIBUTE
+	bool "Whether support hwi attribute and Param set or not"
+	default y
+	
+config OS_OPTION_HWI_MAX_NUM_CONFIG
+	bool "Whether support interrupt max number config or not"
+	default n
+    help
+      If the number of interrupts needs to be configured, select Y. Otherwise, select N.
+      Select Y for the current M4 platform and N for other platforms.
+
+endmenu

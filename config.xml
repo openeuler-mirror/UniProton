@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <version>1.0.0</version>
+    <UniProton_compile_mode>release</UniProton_compile_mode>
+    <tools>
+        <tool tool_name="cmake">
+            <tool_path>/opt/buildtools/cmake-3.20.5/bin</tool_path>
+        </tool>
+    </tools>
+    <projects>
+        <project cpu_type="m4">
+            <lib_type>SRE</lib_type>
+            <platform plat_name="cortex">
+                <name>cortex</name>
+                <compile_path_x86>/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major/bin</compile_path_x86>
+                <compile_path_arm64>/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major/bin</compile_path_arm64>
+                <kconf_dir>m4</kconf_dir>
+            </platform>
+        </project>
+    </projects>
+</config>

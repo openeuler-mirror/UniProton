@@ -1,0 +1,4 @@
+menu "M4 Sepecfic Configuration"
+depends on INTERNAL_OS_PLATFORM_M4
+
+endmenu

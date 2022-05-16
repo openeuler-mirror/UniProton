@@ -1,0 +1,20 @@
+menu "ARM7-M Sepecfic Configuration"
+
+depends on OS_ARCH_ARMV7_M
+
+config INTERNAL_OS_CORTEX_M4
+	bool
+	select INTERNAL_OS_BYTE_ORDER_LE
+
+choice
+	prompt "Cpu Type"
+
+config INTERNAL_OS_PLATFORM_M4
+	bool "CORTEX_M4"
+	select INTERNAL_OS_CORTEX_M4
+
+endchoice
+
+source arch/cpu/armv7-m/cortex-m4/Kconfig
+
+endmenu
