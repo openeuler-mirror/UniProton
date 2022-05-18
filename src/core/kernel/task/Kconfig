@@ -1,0 +1,46 @@
+menu "Task module Configuration"
+
+config OS_OPTION_TASK
+	bool "Whether support task module or not"
+	default n
+
+menu "TASK features configuration"
+	depends on OS_OPTION_TASK
+
+config OS_OPTION_TASK_DELETE
+	bool "Whether support task delete feature or not"
+	default n
+
+config OS_OPTION_TASK_SUSPEND
+	bool "Whether support suspend task feature or not"
+	default n
+
+config OS_OPTION_TASK_INFO
+	bool "Whether support get task information or not"
+	default n
+
+config OS_OPTION_TASK_YIELD
+	bool "Whether support task yield feature or not"
+	default n
+	help
+	if OS_OPTION_TASK_YIELD=y,when taskdelay(0),can sch task to end list
+
+endmenu
+
+config OS_TSK_PRIORITY_HIGHEST
+	int "The highest priority"
+	default 0
+
+config OS_TSK_PRIORITY_LOWEST
+	int "The lowest priority"
+	default 31
+
+config OS_TSK_NUM_OF_PRIORITIES
+	int "The number of priority"
+	default 32
+
+config OS_TSK_CORE_BYTES_IN_PID
+	int "The number of bytes used to indicate core ID in PID "
+	default 3
+
+endmenu

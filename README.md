@@ -1,37 +1,44 @@
-# UniProton
+## UniProton介绍
 
-#### 介绍
-A lightweight real-time operating system kernel
+UniProton主要目的在于为上层业务软件提供一个统一的操作系统平台，屏蔽底层硬件差异，并提供强大的调试功能。使得业务软件可在不同的硬件平台之间快速移植，方便产品芯片选型，降低硬件采购成本和软件维护成本。
 
-#### 软件架构
-软件架构说明
+一、搭建UniProton开发环境
+----------
+#### 1、下载源码
+```bash
+git clone https://gitee.com/openeuler/UniProton.git
+```
 
+##### 源码目录
+[源码目录介绍](./doc/design/architecture_design.md)
 
-#### 安装教程
+#### 2、创建开发工程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+[hello word示例](https://gitee.com/openeuler/UniProton/doc/getting_started.md)
 
-#### 使用说明
+#### 3、编译
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+[编译步骤](https://gitee.com/openeuler/UniProton/doc/UniProton_build.md)
 
-#### 参与贡献
+二、功能介绍
+----------
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+- [任务](./design/task.md)
+- [中断](./design/hwi.md)
+- [事件](./design/event.md)
+- [队列](./design/queue.md)
+- [信号量](./design/sem.md)
+- [内存管理](./design/mem.md)
+- [软件定时器](./design/timer.md)
+- [异常](./design/exc.md)
+- [错误处理](./design/err.md)
+- [cpu占用率](./design/cpup.md)
 
+三、免责声明
+----------
+1. 当前开源版本仅支持cortex_m4芯片，默认编译脚本的安全编译选项仅支持栈保护，其他选项由用户根据需要自行添加。
+2. 遵循MulanPSL2开源许可协议
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+四、如何贡献
+----------
+我们非常欢迎新贡献者加入到项目中来，也非常高兴能为新加入贡献者提供指导和帮助。在您贡献代码前，需要先签署[CLA](https://openeuler.org/en/cla.html)。

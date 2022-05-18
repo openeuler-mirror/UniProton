@@ -1,0 +1,7 @@
+menu "security Modules Configuration"
+
+config OS_OPTION_RND
+	bool "Whether support user set rnd or not"
+	default n
+      
+endmenu

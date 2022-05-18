@@ -1,0 +1,31 @@
+menu "Arch Modules Configuration"
+
+source "arch/cpu/Kconfig"
+
+menu "Generic Configuration"
+config OS_HARDWARE_PLATFORM
+	string
+	default "OS_CORTEX_M4" if INTERNAL_OS_PLATFORM_M4
+
+config OS_CPU_TYPE
+	string
+	default "OS_STM32F407" if INTERNAL_OS_CORTEX_M4
+
+config OS_MAX_CORE_NUM
+	int "The maxinum number of cores"
+	default 1  if INTERNAL_OS_PLATFORM_M4
+
+config INTERNAL_OS_BYTE_ORDER_LE
+	bool
+	default y
+	help
+	  This indicates little endian if y
+
+config OS_BYTE_ORDER
+	string
+	default "OS_LITTLE_ENDIAN" if INTERNAL_OS_BYTE_ORDER_LE
+	default "OS_BIG_ENDIAN" if !INTERNAL_OS_BYTE_ORDER_LE
+
+endmenu
+
+endmenu

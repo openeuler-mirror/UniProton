@@ -1,0 +1,8 @@
+choice
+	prompt "Platform Setup"
+config OS_ARCH_ARMV7_M
+	bool "ARMV7_M"
+endchoice
+
+source "arch/cpu/armv7-m/Kconfig"
+

@@ -1,0 +1,7 @@
+menu "Event feature configuration"
+
+config OS_OPTION_EVENT
+	bool "Whether support event module or not"
+	default n
+
+endmenu

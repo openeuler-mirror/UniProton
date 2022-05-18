@@ -1,0 +1,8 @@
+menu "OM Modules Configuration"
+
+source "om/cpup/Kconfig"
+source "om/err/Kconfig"
+source "om/hook/Kconfig"
+
+endmenu
+#must ended with empty line
