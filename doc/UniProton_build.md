@@ -85,9 +85,9 @@
 
 - 点击[pip源代码包下载地址](https://gitee.com/link?target=https%3A%2F%2Fpypi.org%2Fproject%2Fpip%2F)，可以参考下面的命令进行安装：
 ```
-sudo tar -xf pip-20.2.4.tar.gz
-cd pip-20.2.4
-sudo python setup.py install
+        sudo tar -xf pip-20.2.4.tar.gz
+        cd pip-20.2.4
+        sudo python setup.py install
 ```
 
 ## 1.6 Linux下编译流程
@@ -98,7 +98,9 @@ sudo python setup.py install
 3. 执行编译
 - 进入到build目录下执行命令即可
 <br>
-	`python build.py m4`
+```
+        python build.py m4
+```
 
 
 # 二、提供镜像，用户自行下载
@@ -111,4 +113,6 @@ sudo python setup.py install
 1. 执行编译
 	- 进入到build目录下执行命令即可
 <br>
-`python build.py m4`
+```
+        python build.py m4
+```
