@@ -14,25 +14,25 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 #### 2、创建开发工程
 
-[hello word示例](https://gitee.com/openeuler/UniProton/doc/getting_started.md)
+[hello word示例](./doc/getting_started.md)
 
 #### 3、编译
 
-[编译步骤](https://gitee.com/openeuler/UniProton/doc/UniProton_build.md)
+[编译步骤](./doc/UniProton_build.md)
 
 二、功能介绍
 ----------
 
-- [任务](./design/task.md)
-- [中断](./design/hwi.md)
-- [事件](./design/event.md)
-- [队列](./design/queue.md)
-- [信号量](./design/sem.md)
-- [内存管理](./design/mem.md)
-- [软件定时器](./design/timer.md)
-- [异常](./design/exc.md)
-- [错误处理](./design/err.md)
-- [cpu占用率](./design/cpup.md)
+- [任务](./doc/design/task.md)
+- [中断](./doc/design/hwi.md)
+- [事件](./doc/design/event.md)
+- [队列](./doc/design/queue.md)
+- [信号量](./doc/design/sem.md)
+- [内存管理](./doc/design/mem.md)
+- [软件定时器](./doc/design/timer.md)
+- [异常](./doc/design/exc.md)
+- [错误处理](./doc/design/err.md)
+- [cpu占用率](./doc/design/cpup.md)
 
 三、免责声明
 ----------
