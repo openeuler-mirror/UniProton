@@ -299,7 +299,7 @@ UniProton欢迎开发者参与到开源社区的贡献中来，本文主要介�
 
 ### 命名规范
 
-如需提交新的文档，在<a href="https://gitee.com/UniProton/UniProton" target="_blank">UniProton代码仓</a>doc目录下创建新的.md文件，命名需遵循 xxx\_xxx.md 格式，根据文档的内容来声明。
+如需提交新的文档，在<a href="https://gitee.com/openeuler/UniProton" target="_blank">UniProton代码仓</a>doc目录下创建新的.md文件，命名需遵循 xxx\_xxx.md 格式，根据文档的内容来声明。
 
 比如介绍写作规范的文档，可以命名为 UniProton\_doc\_write\_standard.md。
 
@@ -329,15 +329,17 @@ UniProton欢迎开发者参与到开源社区的贡献中来，本文主要介�
 3.  **图片**
 
     图片统一存放到文档同级目录下的images文件夹中（英文文档对应images-en），如 UniProton/doc/getting\_started.md 中使用的图片，统一放置到  UniProton/doc/images 目录下，文档中使用相对路径引用图片。图片建议根据内容命名，只用数字序列不利于后续图片的继承。
-
+    <!-- 
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >引用方式：
     >!\[\]\(./images/images-standard.png\)
-
+    -->
+    **说明：**  图  
     如果是自制图片，配色请参考如下，格式不限，png/jpg/gif...均可，如果是截图或者其他地方引用图片，风格不做限制。
-
+    <!-- 
     ![](images/contribute/picture_color_in_document_writing.png)
-
+    -->
+    **说明：**  图  
 4.  **表格**
 
     在md文件中可以按照如下形式插入表格。
@@ -495,12 +497,15 @@ UniProton的代码仓托管在gitee上，因此代码贡献者需要在gitee上�
 ### 方法一：在线修改
 
 在线修改适用于修改量较少的情况，方便快捷，点击页面“编辑”按钮，跳转到对应的编辑页面。
-
+<!-- 
 ![](./images/contribute/gitee_online_edit.png)
-
+-->
+**说明：**  图  
 编辑修改后，点击页面下方“提交”按钮，即提交修改到 UniProton 工程，静候工作人员审核即可。
-
+<!-- 
 ![](./images/contribute/gitee_online_submit.png)
+-->
+**说明：**  图  
 
 ### 方法二：本地提交
 
@@ -557,21 +562,27 @@ $ git config --list
 #### **4 fork UniProton源代码**
 1\) 使用个人gitee账号登陆gitee。
 
-2\) 进入UniProton官方主仓库（master分支）：<a href="https://gitee.com/UniProton/UniProton" target="_blank">UniProton源码仓</a>。
+2\) 进入UniProton官方主仓库（master分支）：<a href="https://gitee.com/openeuler/UniProton" target="_blank">UniProton源码仓</a>。
 
 3\) 点击右上角fork按钮，将UniProton的代码fork到个人账号下，在弹出的窗口中选择要fork到的个人账号，点击确认后，稍等一会就会自动跳转到刚刚fork出来的个人账号下的UniProton仓库。
-
+<!-- 
 ![](./images/contribute/gitee_fork.png)
+**说明：** 图  
+-->
 
 #### **5 同步UniProton仓库代码到fork的仓库**
 开发代码前，首先需要确保当前个人账号下的UniProton代码和UniProton官方仓库是一致的。 因为从fork代码到现在，UniProton官方仓库可能已经更新了内容，所以开发代码前需要先同步UniProton仓库代码到fork的仓库。如果仓库刚刚fork，可以跳过此步。
-
+<!-- 
 ![](./images/contribute/gitee_fork4.png)
-
+**说明：** 图 
+-->
+ 
 点击上图中红框中的按钮从UniProton官方仓库拉取代码到个人账号fork的仓库，此时会弹出一个对话框以确定同步动作，如下图所示：
-
+<!-- 
 ![](./images/contribute/gitee_fork5.png)
-
+**说明：** 图 
+-->
+ 
 点击确定后，gitee就会开始同步代码，用户无需再做其他操作。
 
 #### **6 提交本地修改到fork的仓库**
@@ -598,31 +609,43 @@ git checkout -b master origin/master
 通过上述步骤，修改已经提交到个人远程仓库中，此时就可以向UniProton官方主仓库master分支提交Pull Request，该操作在gitee网页上进行。
 
 1\) 进入个人账号下fork的UniProton仓库首页，点击下图红框中的“+ Pull Request”。
-
+<!-- 
 ![](./images/contribute/gitee_fork6.png)
-
+**说明：** 图
+-->
+  
 2\) 之后gitee会跳转到创建Pull Request的详细页面，并给出对应的源分支和要修改的目标分支，目标分支为UniProton官方主仓库master分支，如下图。
-
+<!--
 ![](./images/contribute/gitee_fork7.png)
-
+**说明：** 图
+-->
+  
 如果代码没有冲突则会显示下图红框中“可自动合并”的提示，否则需要先解决冲突然后再重新创建Pull Request。在线解决代码冲突可以参考<a href="https://gitee.com/help/articles/4305" target="_blank">在线解决代码冲突</a>。
-
+<!-- 
 ![](./images/contribute/gitee_fork8.png)
-
+**说明：** 图
+-->
+  
 填入Pull Request的标题和说明，点击“创建”，就可以提交一个Pull Request。右边的审查人员、测试人员、里程碑、标签、优先级是可选项，不选择也不影响Pull Request的创建。
-
->![](public_sys-resources/icon-note.gif) **说明：** 
-    >-   如果提交的代码是为了解决issue问题，记得将issue和此次代码提交相关联，关联方法请参考<a href="https://gitee.com/help/articles/4141" target="_blank">Commit关联Issue</a>和<a href="https://gitee.com/help/articles/4142" target="_blank">Pull Request关联Issue</a>。
-    >-   如果提交的Pull Request中有新增意见，需要在评论里回复，并@提意见的人说明已经解决。
+<!-- 
+>![](public_sys-resources/icon-note.gif)
+**说明：** 图
+-->
+  
+**说明：** 
+>-   如果提交的代码是为了解决issue问题，记得将issue和此次代码提交相关联，关联方法请参考<a href="https://gitee.com/help/articles/4141" target="_blank">Commit关联Issue</a>和<a href="https://gitee.com/help/articles/4142" target="_blank">Pull Request关联Issue</a>。
+>-   如果提交的Pull Request中有新增意见，需要在评论里回复，并@提意见的人说明已经解决。
 
 
 #### **8 查看Pull Request的状态**
-1\) 进入<a href="https://gitee.com/UniProton/UniProton" target="_blank">UniProton主仓库</a>首页。
+1\) 进入<a href="https://gitee.com/openeuler/UniProton" target="_blank">UniProton主仓库</a>首页。
 
 2\) 点击下图中的“Pull Requests”，可以看到当前UniProton主仓库上所有的Pull Request。
-
+<!-- 
 ![](./images/contribute/gitee_pr.png)
-
+**说明：** 图 
+-->
+ 
 “开启的”表示这个Pull Request的代码还没有合入，“已合并”表示这个Pull Request的代码已经合入，“已关闭”表示这个Pull Request虽然已经关闭但是代码没有被合入。
 
 现在就静候UniProton主仓库管理员review代码吧，验证ok就会合入修改，恭喜您成为Contributor，感谢您为开源社区做出的贡献。
@@ -655,8 +678,11 @@ git checkout -b master origin/master
 当您使用本素材中属于公众领域的元素，或当法律有例外或限制条款允许您的使用，则您不需要遵守本授权条款。
 
 未提供保证。本授权条款未必能完全提供您预期用途所需要的所有许可。例如：形象权、隐私权、著作人格权等其他权利，可能限制您如何使用本素材。
-
->![](public_sys-resources/icon-notice.gif) **须知：** 
+<!-- 
+>![](public_sys-resources/icon-notice.gif) 
+说明：图  
+-->
+**须知：** 
 >为了方便用户理解，这是协议的概述。您可以访问网址http://license.coscl.org.cn/MulanPSL2/index.html 了解完整协议内容。
 
 ### 知识产权政策
@@ -732,12 +758,12 @@ git checkout -b master origin/master
 
 * 技术支持
 
-  欢迎<a href="https://gitee.com/UniProton/UniProton/issues" target="_blank">提交issue</a>对关心的问题发起讨论，欢迎到<a href="https://bbs.huaweicloud.com/" target="_blank">UniProton论坛</a>交流。
+  欢迎<a href="https://gitee.com/openeuler/UniProton/issues" target="_blank">提交issue</a>对关心的问题发起讨论，欢迎到<a href="https://bbs.huaweicloud.com/" target="_blank">UniProton论坛</a>交流。
   您也可以发送问题至邮箱UniProtonSupport@huawei.com。
 
 * 参与贡献
 
-  如您有兴趣参与开源贡献，欢迎提交PR参与特性建设，可至<a href="https://gitee.com/UniProton/UniProton" target="_blank">UniProton gitee源码仓</a>下载开源代码。
+  如您有兴趣参与开源贡献，欢迎提交PR参与特性建设，可至<a href="https://gitee.com/openeuler/UniProton " target="_blank">UniProton gitee源码仓</a>下载开源代码。
 
 * 技术合作
 
