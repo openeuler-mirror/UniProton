@@ -88,9 +88,9 @@ list(APPEND BASE_LIB_SRCS
 
 
 #编译结果
-string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP) #比如把hidspv200转为大写
-string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP) #比如把hidspv200转为大写
-#编译hiavp、hidsp通用的.a库
+string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
+string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
+#编译通用的.a库
 add_library(CortexMXarch  STATIC "${ARCH_SRCS}")
 add_library(CortexMXkernel  STATIC "${KERNEL_SRCS}" "${BASE_LIB_SRCS}")
 add_library(CortexMXmem  STATIC "${MEM_SRCS}")

@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.14.1) #cmake最低版本要求
 
-project(RTOSckV2R8 LANGUAGES C ASM) #项目名字为RTOSck
+project(UniProton LANGUAGES C ASM) #项目名字为UniProton
 
 
 ############################## 外部传入变量 ##############################
 set(CPU_TYPE "$ENV{CPU_TYPE}" )
 set(PLAM_TYPE "$ENV{PLAM_TYPE}" )
-set(LIB_TYPE "$ENV{LIB_TYPE}"  ) #类似SRE
-set(RPROTON_PACKING_PATH "$ENV{RPROTON_PACKING_PATH}" ) #RPROTON_PACKING_PATH
+set(LIB_TYPE "$ENV{LIB_TYPE}"  )
+set(UNIPROTON_PACKING_PATH "$ENV{UNIPROTON_PACKING_PATH}" ) #UNIPROTON_PACKING_PATH
 set(COMPILE_OPTION "$ENV{COMPILE_OPTION}" ) #编译选项 空为默认全编译 还有coverity/fortify
 set(CONFIG_FILE_PATH "$ENV{CONFIG_FILE_PATH}" ) #defconfig及其头文件所在目录
-string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP) #转大写 HIAVPV200
+string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP) #转大写
 set(SYSTEM "$ENV{SYSTEM}" )
 set(CORE "$ENV{CORE}" )
 set(LIB_RUN_TYPE "$ENV{LIB_RUN_TYPE}" )
@@ -20,9 +20,9 @@ set(RPROTON_BINARY_DIR "$ENV{RPROTON_BINARY_DIR}" )
 
 if("${RPROTON_BINARY_DIR}" STREQUAL "")
   # this branch will be taken
-  set(RPROTON_BINARY_DIR ${PROJECT_SOURCE_DIR}/build/output) #类似UniProton
+  set(RPROTON_BINARY_DIR ${PROJECT_SOURCE_DIR}/build/output)
 else()
-  set(RPROTON_BINARY_DIR ${RPROTON_BINARY_DIR}/UniProton/tmp/output) #类似UniProton
+  set(RPROTON_BINARY_DIR ${RPROTON_BINARY_DIR}/UniProton/tmp/output)
 endif()
 
 message("UniProton BINARY_DIR=${RPROTON_BINARY_DIR}")

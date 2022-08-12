@@ -43,7 +43,7 @@ class Compile:
         os.environ["LIB_TYPE"] = self.lib_type
         os.environ["COMPILE_OPTION"] = self.compile_option
         os.environ["HCC_PATH"] = self.hcc_path
-        os.environ["RPROTON_PACKING_PATH"] = self.UniProton_packing_path
+        os.environ["UNIPROTON_PACKING_PATH"] = self.UniProton_packing_path
         os.environ["CONFIG_FILE_PATH"] = self.config_file_path
         os.environ["LIB_RUN_TYPE"] = self.lib_run_type
         os.environ["HOME_PATH"] = self.home_path
@@ -133,17 +133,17 @@ class Compile:
             os.makedirs(self.build_tmp_dir)
             #拼接cmake命令
             if self.compile_option == 'fortify':
-                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/rtosk_tool_chain.cmake ' \
+                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/uniproton_tool_chain.cmake ' \
                       '-DCMAKE_C_COMPILER_LAUNCHER="sourceanalyzer;-b;%sproject" ' \
                       '-DCMAKE_INSTALL_PREFIX=%s &> %s/%s' % (
                 self.cmake_env_path, self.home_path, self.home_path, self.cpu_type,
                 self.UniProton_packing_path, self.log_dir, self.log_file)
             elif self.compile_option == 'hllt':
-                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/rtosk_tool_chain.cmake ' \
+                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/uniproton_tool_chain.cmake ' \
                       '-DCMAKE_C_COMPILER_LAUNCHER="lltwrapper" -DCMAKE_INSTALL_PREFIX=%s &> %s/%s' % (
                 self.cmake_env_path, self.home_path, self.home_path, self.UniProton_packing_path, self.log_dir, self.log_file)
             else:
-                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/rtosk_tool_chain.cmake ' \
+                cmd = '%s/cmake %s -DCMAKE_TOOLCHAIN_FILE=%s/cmake/tool_chain/uniproton_tool_chain.cmake ' \
                       '-DCMAKE_INSTALL_PREFIX=%s &> %s/%s' % (
                 self.cmake_env_path, self.home_path, self.home_path, self.UniProton_packing_path, self.log_dir, self.log_file)
             #执行cmake命令
@@ -214,7 +214,7 @@ class Compile:
         if self.cpu_type == 'clean':
             log_msg('info', 'UniProton clean')
             return self.UniProton_clean()
-        # 根据cpu的编译平台配置相应的编译环境，例如avp和dsp。
+        # 根据cpu的编译平台配置相应的编译环境。
         if self.make_choice == "all":
             for make_choice in globle.cpu_plat[self.cpu_type]:
                 self.prepare_env(self.cpu_type, make_choice)
