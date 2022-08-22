@@ -96,8 +96,7 @@
 - git clone https://gitee.com/openeuler/UniProton.git
 2. 下载libboundscheck, 按照[指导](../platform/README.md)操作
 3. 执行编译
-- 进入到build目录下执行命令即可
-<br>
+- 进入到UniProton根目录下执行命令即可
 ```
         python build.py m4
 ```
@@ -107,12 +106,16 @@
 1. 在虚拟机操作命令：
 
 	`docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v001`
-	- 执行完成之后，创建容器并进入
-1. 下载代码
+	- 执行完成之后，创建容器并进入(默认挂载当前执行命令的目录为容器内的/home/uniproton目录)
+
+	`docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v001`
+2. 下载代码
 	- git clone https://gitee.com/openeuler/UniProton.git
-1. 执行编译
-	- 进入到build目录下执行命令即可
-<br>
+3. 执行编译
+	- 进入到UniProton根目录下执行命令即可
 ```
         python build.py m4
 ```
+
+# 三、 编译结果
+	生成的静态库文件存放在output/UniProton/lib/cortex_m4目录下。
