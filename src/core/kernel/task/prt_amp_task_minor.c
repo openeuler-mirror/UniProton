@@ -90,6 +90,11 @@ OS_SEC_L2_TEXT U32 PRT_TaskResume(TskHandle taskPid)
         return OS_ERRNO_TSK_NOT_CREATED;
     }
 
+    if (((OS_TSK_RUNNING & taskCb->taskStatus) != 0) && (g_uniTaskLock != 0)) {
+	OsIntRestore(intSave);
+	return OS_ERRNO_TSK_ACTIVE_FAILED;
+    }
+
     /* If task is not suspended then return */
     if ((OS_TSK_SUSPEND & taskCb->taskStatus) == 0) {
         OsIntRestore(intSave);

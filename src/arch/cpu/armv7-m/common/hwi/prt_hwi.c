@@ -14,6 +14,7 @@
  */
 #include "prt_hook_external.h"
 #include "prt_lib_external.h"
+#include "prt_task_external.h"
 #include "prt_hwi_internal.h"
 
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
@@ -86,8 +87,13 @@ OS_SEC_TEXT void OsInterrupt(void)
     UNI_FLAG |= OS_FLG_HWI_ACTIVE;
     g_intCount++;
 
-    /* 取外部中断号，中断号减去系统中断号，系统中断号不会调用此函数，不会发生越界 */
+    /* 取外部中断号，中断号减去系统中断号 */
     hwiNum = OsIntNumGet() - OS_MX_SYS_VECTOR_CNT;
+    if (hwiNum > g_hwiMaxNumConfig) {
+        PRT_HwiRestore(intSave);
+	return;
+    }
+    OsTskHighestSet();
 
     (void)PRT_HwiUnLock();
     // ISR执行(这里一处开中断)

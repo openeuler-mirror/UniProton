@@ -88,7 +88,7 @@ typedef void (*TickHandleFunc)(void);
  * @retval  [0,0xFFFFFFFFFFFFFFFF] 当前的tick计数。
  * @par 依赖
  * <ul><li>prt_tick.h：该接口声明所在的头文件。</li></ul>
- * @see PRT_CycleCountGet
+ * @see 无
  */
 extern U64 PRT_TickGetCount(void);
 
