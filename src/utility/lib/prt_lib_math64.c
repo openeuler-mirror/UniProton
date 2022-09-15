@@ -57,16 +57,13 @@ OS_SEC_L4_TEXT void OsSub64(U32 *low, U32 *high, U32 oldLow, U32 oldHigh)
 
 OS_SEC_L4_TEXT U32 OsGetLmb1(U32 value)
 {
-    U32 i;
+    int i;
     U32 max = 0;
 
-    if (value == 0) {
-        return 32U;
-    }
-
-    for (i = 0; i <= 31; i++) {
-        if (((1U << i) & value) != 0) {
-            max = MAX(i, max);
+    for (i = 31; i >= 0; i--) {
+        if (((1U << (U32)i) & value) != 0) {
+            max = (U32)i;
+	    break;
         }
     }
 

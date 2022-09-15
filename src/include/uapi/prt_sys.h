@@ -196,7 +196,7 @@ enum SysRndNumType {
  * @retval 指向OS版本号的字符串指针。
  * @par 依赖
  * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
- * @see PRT_SetAppVersion | PRT_GetAppVersion
+ * @see 无
  */
 extern char *PRT_SysGetOsVersion(void);
 
@@ -258,7 +258,7 @@ extern void PRT_SysReboot(void);
  * @retval 物理核ID。
  * @par 依赖
  * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
- * @see PRT_GetNumberOfCores | PRT_GetPrimaryCore
+ * @see 无
  */
 OS_SEC_ALW_INLINE INLINE U32 PRT_SysGetCoreId(void)
 {

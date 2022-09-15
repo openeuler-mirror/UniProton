@@ -79,6 +79,7 @@ static OS_SEC_L2_TEXT U32 OsTaskYield(TskPrior taskPrio, TskHandle nextTaskId, T
             return OS_OK;
         }
     } else { /* There is only one task or none */
+        OS_REPORT_ERROR(OS_ERRNO_TSK_YIELD_NOT_ENOUGH_TASK);
         return OS_ERRNO_TSK_YIELD_NOT_ENOUGH_TASK;
     }
 

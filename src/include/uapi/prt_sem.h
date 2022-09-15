@@ -250,7 +250,7 @@ struct SemInfo {
  * @retval #其它值，操作失败。
  * @par 依赖
  * <ul><li>prt_sem.h：该接口声明所在的头文件。</li></ul>
- * @see PRT_SemDelete | PRT_SemCCreate
+ * @see PRT_SemDelete
  */
 extern U32 PRT_SemCreate(U32 count, SemHandle *semHandle);
 
@@ -285,7 +285,7 @@ extern U32 PRT_SemDelete(SemHandle semHandle);
  * @retval #其它值，获取失败。
  * @par 依赖
  * <ul><li>prt_sem.h：该接口声明所在的头文件。</li></ul>
- * @see PRT_SemCreate | PRT_SemReset | PRT_SemGetInfo
+ * @see PRT_SemCreate | PRT_SemGetInfo
  */
 extern U32 PRT_SemGetCount(SemHandle semHandle, U32 *semCnt);
 
