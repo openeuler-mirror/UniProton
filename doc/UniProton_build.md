@@ -110,7 +110,10 @@
 
 	`docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v001`
 2. 下载代码
-	- git clone https://gitee.com/openeuler/UniProton.git
+    - 下载UniProton代码
+        `git clone https://gitee.com/openeuler/UniProton.git`
+    - 下载libboundscheck, 按照[指导](../platform/README.md)操作
+
 3. 执行编译
 	- 进入到UniProton根目录下执行命令即可
 ```

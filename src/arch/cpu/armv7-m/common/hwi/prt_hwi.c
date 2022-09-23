@@ -89,10 +89,12 @@ OS_SEC_TEXT void OsInterrupt(void)
 
     /* 取外部中断号，中断号减去系统中断号 */
     hwiNum = OsIntNumGet() - OS_MX_SYS_VECTOR_CNT;
+#ifdef OS_OPTION_HWI_MAX_NUM_CONFIG
     if (hwiNum > g_hwiMaxNumConfig) {
         PRT_HwiRestore(intSave);
 	return;
     }
+#endif
     OsTskHighestSet();
 
     (void)PRT_HwiUnLock();
