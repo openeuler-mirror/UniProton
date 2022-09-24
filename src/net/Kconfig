@@ -1,0 +1,19 @@
+menu "Net Modules Configuration"
+
+config OS_SUPPORT_NET
+	bool "Whether support net module or not"
+	default n
+
+menu "Net features configuration"
+	depends on OS_SUPPORT_NET
+
+config LWIP_DHCP
+	int "Eable LWIP DHCP"
+	default 0
+
+config LWIP_IPV6
+	int "Enable LWIP IPV6"
+	default 1
+
+endmenu
+endmenu

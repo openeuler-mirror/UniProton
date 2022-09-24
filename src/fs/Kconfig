@@ -1,0 +1,23 @@
+menu "Fs Modules Configuration"
+
+config OS_SUPPORT_FS
+	bool "Whether support fs module or not"
+	default n
+
+menu "Fs features configuration"
+	depends on OS_SUPPORT_FS
+
+config OS_SUPPORT_LITTLEFS
+	int "Whether support littlefs module or not"
+	default 1
+
+config OS_LFS_MAX_OPEN_FILES
+	int "Maximum number of file operations supported by the system"
+	default 32
+
+config OS_LFS_MAX_MOUNT_SIZE
+	int
+	default 3
+
+endmenu
+endmenu
