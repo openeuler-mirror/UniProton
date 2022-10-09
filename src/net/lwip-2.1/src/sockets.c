@@ -93,6 +93,10 @@ int connect(int s, const struct sockaddr *name, socklen_t namelen)
 
 int listen(int s, int backlog)
 {
+    if (backlog < 0) {
+        set_errno(EINVAL);
+        return -1;
+    }
     return lwip_listen(s, backlog);
 }
 
