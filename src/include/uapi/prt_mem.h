@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -201,6 +201,31 @@ enum MemAlign {
  * @see PRT_MemFree
  */
 extern void *PRT_MemAlloc(U32 mid, U8 ptNo, U32 size);
+
+/*
+ * @brief 向已创建的指定分区申请指定大小且指定对齐方式的内存块。
+ *
+ * @par 描述
+ * <li>在分区号为ptNo的分区中，申请大小为size的内存，对齐方式为alignPow。</li>
+ * @attention
+ * <ul>
+ * <li>申请内存分区时的分区号，根据实际创建的分区号来使用。</li>
+ * <li>调用函数后，注意判断返回的地址是否为空以避免后续访问空指针。</li>
+ * <li>如果内存申请失败，返回值为NULL，而导致失败的原因将记录在错误处理空间中。</li>
+ * </ul>
+ *
+ * @param mid      [IN]  类型#U32，申请的模块号。
+ * @param ptNo     [IN]  类型#U8，分区号，范围[0,#OS_MEM_MAX_PT_NUM+2)。
+ * @param size     [IN]  类型#U32，申请的大小。
+ * @param alignPow [IN]  类型#enum MemAlign，动态对齐。
+ *
+ * @retval #NULL  0，申请失败。
+ * @retval #!NULL 内存首地址值。
+ * @par 依赖
+ * <ul><li>prt_mem.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_MemFree
+ */
+extern void *PRT_MemAllocAlign(U32 mid, U8 ptNo, U32 size, enum MemAlign alignPow);
 
 /*
  * @brief 释放申请的内存。

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -25,7 +25,6 @@
 /*
  * 模块间函数声明
  */
-extern void *OsFscMemAlloc(U32 mid, U32 size);
 extern U32 OsFscMemFree(void *addr);
 
 #endif /* PRT_FSCMEM_EXTERNAL_H */

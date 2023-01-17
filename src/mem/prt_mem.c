@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -16,13 +16,23 @@
 
 OS_SEC_TEXT void *PRT_MemAlloc(U32 mid, U8 ptNo, U32 size)
 {
-    void *addr = NULL;
+    void *addr;
     uintptr_t intSave;
 
-    (void)ptNo;
+    intSave = PRT_HwiLock();
+    addr = g_memArithAPI.alloc(mid, ptNo, size);
+    PRT_HwiRestore(intSave);
+
+    return addr;
+}
+
+OS_SEC_TEXT void *PRT_MemAllocAlign(U32 mid, U8 ptNo, U32 size, enum MemAlign alignPow)
+{
+    void *addr;
+    uintptr_t intSave;
 
     intSave = PRT_HwiLock();
-    addr = g_memArithAPI.alloc(mid, size);
+    addr = g_memArithAPI.allocAlign(mid, ptNo, size, alignPow);
     PRT_HwiRestore(intSave);
 
     return addr;
