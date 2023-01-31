@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -26,7 +26,10 @@
 #define OS_MEM_ADDR_ALIGN_TYPE_TO_SIZE(size) (0x1UL << (U32)(size))
 
 /* 申请一个内存块 */
-typedef void *(*MemAllocFunc)(U32 mid, U32 size);
+typedef void *(*MemAllocFunc)(enum MoudleId mid, U8 ptNo, U32 size);
+
+/* 申请size字节并返回指向已分配内存的指针，内存地址将按照alignPow动态对齐 */
+typedef void *(*MemAllocAlignFunc)(U32 mid, U8 ptNo, U32 size, enum MemAlign alignPow);
 
 /* 释放一个内存块  */
 typedef U32 (*MemFreeFunc)(void *addr);
@@ -34,6 +37,7 @@ typedef U32 (*MemFreeFunc)(void *addr);
 struct TagMemFuncLib {
     void *addr;        /* 分区起始地址 */
     MemAllocFunc alloc; /* 申请一个内存块 */
+    MemAllocAlignFunc allocAlign; /* 申请size字节并返回指向已分配内存的指针，内存地址将按照alignPow动态对齐 */
     MemFreeFunc free;   /* 释放一个内存块 */
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -63,7 +63,7 @@ OS_SEC_L4_TEXT U32 OsGetLmb1(U32 value)
     for (i = 31; i >= 0; i--) {
         if (((1U << (U32)i) & value) != 0) {
             max = (U32)i;
-	    break;
+            break;
         }
     }
 
