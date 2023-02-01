@@ -1,1 +1,1 @@
-add_library(prt_hw_boot OBJECT prt_hw_boot.c)
+add_library_ex(prt_hw_boot.c)

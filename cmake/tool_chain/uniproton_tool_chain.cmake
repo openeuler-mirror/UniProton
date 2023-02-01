@@ -13,12 +13,18 @@ set(COMPILE_OPTION "$ENV{COMPILE_OPTION}" )
 set(RPROTON_INSTALL_FILE_OPTION "$ENV{RPROTON_INSTALL_FILE_OPTION}" )##RPROTON_INSTALL_FILE_OPTION="SUPER_BUILD";
 
 
+if (${CPU_TYPE} STREQUAL "m4")
 #### 统一告警选项,请审慎增删
 set(STRONG_COMPILE_WARING_FLAG "-Wunused -Wredundant-decls -Wfloat-conversion -Wwrite-strings -Wunused-macros -Wswitch-default -Wshift-overflow=2 -Wnested-externs -Wmissing-include-dirs -Wlogical-op -Wjump-misses-init -Wformat-security -Wvla -Wframe-larger-than=4096 -Wduplicated-cond  -Wdisabled-optimization -Wduplicated-branches -Wignored-qualifiers -Wimplicit-fallthrough=3 -Wpointer-arith -Wshift-negative-value -Wsign-compare -Wtype-limits -Wcast-qual -Wundef -Wbad-function-cast -Wold-style-definition -Wpacked -Wstrict-prototypes -Wstack-usage=2048")
 set(COMPILE_WARING_FLAG " -Wall -Werror  -Wextra -Wformat=2 -Wfloat-equal -Wshadow -Wtrampolines -Wdate-time ")## -Wall -Werror  -Wextra -Wformat=2 -Wfloat-equal 
+include(${HOME_PATH}/cmake/tool_chain/uniproton_tool_chain_gcc.cmake)
+endif()
 
-if (${CPU_TYPE} STREQUAL "m4" )
-    include(${HOME_PATH}/cmake/tool_chain/rtosk_tool_chain_gcc.cmake)
+if (${CPU_TYPE} STREQUAL "raspi4")
+#### 统一告警选项,请审慎增删
+set(STRONG_COMPILE_WARING_FLAG "-Wunused -Wredundant-decls -Wfloat-conversion -Wwrite-strings -Wunused-macros -Wswitch-default -Wshift-overflow=2 -Wnested-externs -Wmissing-include-dirs -Wlogical-op -Wjump-misses-init -Wformat-security -Wvla -Wframe-larger-than=4096 -Wduplicated-cond  -Wdisabled-optimization -Wduplicated-branches -Wignored-qualifiers -Wimplicit-fallthrough=3 -Wpointer-arith -Wshift-negative-value -Wsign-compare -Wtype-limits -Wcast-qual -Wundef -Wbad-function-cast -Wold-style-definition -Wpacked -Wstrict-prototypes -Wstack-usage=2048")
+set(COMPILE_WARING_FLAG " -Wall -Werror  -Wextra -Wformat=2 -Wfloat-equal -Wshadow -Wtrampolines -Wdate-time ")## -Wall -Werror  -Wextra -Wformat=2 -Wfloat-equal 
+include(${HOME_PATH}/cmake/tool_chain/uniproton_tool_chain_gcc_arm64.cmake)
 endif()
 
 

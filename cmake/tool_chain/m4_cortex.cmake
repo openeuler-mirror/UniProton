@@ -1,107 +1,21 @@
 set(BUILD_DIR "$ENV{BUILD_TMP_DIR}" ) #version id
 set(OBJCOPY_PATH "$ENV{OBJCOPY_PATH}" ) #OBJCOPY_PATH
 
-
-
-##最终的链接目标，会生成对应的.a库
-#################################################
-## arch代码
-#################################################
-list(APPEND ARCH_SRCS
-    $<TARGET_OBJECTS:prt_hw_boot>
-    $<TARGET_OBJECTS:prt_port>
-    $<TARGET_OBJECTS:prt_dispatch>
-    $<TARGET_OBJECTS:prt_hwi>
-    $<TARGET_OBJECTS:prt_exc>
-    $<TARGET_OBJECTS:prt_hw_exc>
-    $<TARGET_OBJECTS:prt_vector>
-    $<TARGET_OBJECTS:prt_vi_dispatch>
-    $<TARGET_OBJECTS:prt_hw_tick>
-    $<TARGET_OBJECTS:prt_hw_tick_minor>
-    $<TARGET_OBJECTS:prt_hw>
-    $<TARGET_OBJECTS:prt_div64>
-)
-
-#################################################
-## kernel代码
-#################################################
-list(APPEND KERNEL_SRCS
-    $<TARGET_OBJECTS:prt_sem>
-    $<TARGET_OBJECTS:prt_sem_init>
-    $<TARGET_OBJECTS:prt_sem_minor>
-    $<TARGET_OBJECTS:prt_irq>
-    $<TARGET_OBJECTS:prt_sys>
-    $<TARGET_OBJECTS:prt_sys_init>
-    $<TARGET_OBJECTS:prt_sys_time>
-    $<TARGET_OBJECTS:prt_amp_task>
-    $<TARGET_OBJECTS:prt_amp_task_del>
-    $<TARGET_OBJECTS:prt_amp_task_init>
-    $<TARGET_OBJECTS:prt_amp_task_minor>
-    $<TARGET_OBJECTS:prt_task>
-    $<TARGET_OBJECTS:prt_taskself_id>
-    $<TARGET_OBJECTS:prt_task_attrib>
-    $<TARGET_OBJECTS:prt_task_del>
-    $<TARGET_OBJECTS:prt_task_global>
-    $<TARGET_OBJECTS:prt_task_info>
-    $<TARGET_OBJECTS:prt_task_init>
-    $<TARGET_OBJECTS:prt_task_minor>
-    $<TARGET_OBJECTS:prt_task_priority>
-    $<TARGET_OBJECTS:prt_task_sem>
-    $<TARGET_OBJECTS:prt_tick>
-    $<TARGET_OBJECTS:prt_tick_init>
-    $<TARGET_OBJECTS:prt_timer>
-    $<TARGET_OBJECTS:prt_swtmr>
-    $<TARGET_OBJECTS:prt_swtmr_init>
-    $<TARGET_OBJECTS:prt_swtmr_minor>
-    $<TARGET_OBJECTS:prt_kexc>
-    $<TARGET_OBJECTS:prt_exc>
-    $<TARGET_OBJECTS:prt_timer_minor>
-)
-list(APPEND IPC_SRCS
-    $<TARGET_OBJECTS:prt_event>
-    $<TARGET_OBJECTS:prt_queue>
-    $<TARGET_OBJECTS:prt_queue_del>
-    $<TARGET_OBJECTS:prt_queue_minor>
-    $<TARGET_OBJECTS:prt_queue_init>
-)
-list(APPEND MEM_SRCS
-    $<TARGET_OBJECTS:prt_fscmem>
-    $<TARGET_OBJECTS:prt_mem>
-)
-list(APPEND OM_SRCS
-    $<TARGET_OBJECTS:prt_cpup>
-    $<TARGET_OBJECTS:prt_cpup_minor>
-    $<TARGET_OBJECTS:prt_cpup_thread>
-    $<TARGET_OBJECTS:prt_cpup_thread_64>
-    $<TARGET_OBJECTS:prt_cpup_thread_init>
-    $<TARGET_OBJECTS:prt_cpup_warn>
-    $<TARGET_OBJECTS:prt_err>
-    $<TARGET_OBJECTS:prt_err_init>
-    $<TARGET_OBJECTS:prt_hook_init>
-    $<TARGET_OBJECTS:prt_rnd_set>
-)
-list(APPEND BASE_LIB_SRCS
-    $<TARGET_OBJECTS:prt_lib_math64>
-    $<TARGET_OBJECTS:prt_lib_version>
-)
-
+#将所有对象库添加到列表中
+foreach(FILE_NAME ${ALL_OBJECT_LIBRARYS})
+    list(APPEND CORTEX_M4_SRCS
+        $<TARGET_OBJECTS:${FILE_NAME}>
+    )
+endforeach()
+ 
 
 
 #编译结果
 string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
 string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
-#编译通用的.a库
-add_library(CortexMXarch  STATIC "${ARCH_SRCS}")
-add_library(CortexMXkernel  STATIC "${KERNEL_SRCS}" "${BASE_LIB_SRCS}")
-add_library(CortexMXmem  STATIC "${MEM_SRCS}")
-add_library(CortexMXom  STATIC "${OM_SRCS}")
-add_library(CortexMXipc  STATIC "${IPC_SRCS}")
-
-set_target_properties(CortexMXarch PROPERTIES SUFFIX ".lib")
-set_target_properties(CortexMXkernel PROPERTIES SUFFIX ".lib")
-set_target_properties(CortexMXmem PROPERTIES SUFFIX ".lib")
-set_target_properties(CortexMXom PROPERTIES SUFFIX ".lib")
-set_target_properties(CortexMXipc PROPERTIES SUFFIX ".lib")
+#编译.a库
+add_library(CortexM4  STATIC "${CORTEX_M4_SRCS}")
+set_target_properties(CortexM4 PROPERTIES SUFFIX ".a")
 
 add_custom_target(cleanobj)
 add_custom_command(TARGET cleanobj POST_BUILD
@@ -112,33 +26,9 @@ if (${COMPILE_MODE} STREQUAL "debug")
     message("=============== COMPILE_MODE is ${COMPILE_MODE} ===============")
 else()
     add_custom_command(
-        TARGET CortexMXarch
+        TARGET CortexM4
         POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexMXarch.lib"
-    )
-
-    add_custom_command(
-        TARGET CortexMXkernel
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexMXkernel.lib"
-    )
-
-    add_custom_command(
-        TARGET CortexMXmem
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexMXmem.lib"
-    )
-
-    add_custom_command(
-        TARGET CortexMXom
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexMXom.lib"
-    )
-
-    add_custom_command(
-        TARGET CortexMXipc
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexMXipc.lib"
+        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexM4.a"
     )
 endif()
 ####以下为m4 make install打包脚本#####
@@ -183,11 +73,7 @@ install(FILES
 )
 
 install(TARGETS
-    CortexMXarch
-    CortexMXkernel
-    CortexMXmem
-    CortexMXom
-    CortexMXipc
+    CortexM4
     EXPORT ${m4_cortex_export}
     ARCHIVE DESTINATION ${INSTALL_M4_CORTEX_ARCHIVE_DIR}/
 )

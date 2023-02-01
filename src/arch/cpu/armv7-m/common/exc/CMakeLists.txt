@@ -1,1 +1,1 @@
-add_library(prt_exc OBJECT prt_exc.c)
+add_library_ex(prt_exc.c)

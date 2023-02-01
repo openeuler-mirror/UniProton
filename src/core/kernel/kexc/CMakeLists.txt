@@ -1,1 +1,1 @@
-add_library(prt_kexc OBJECT prt_kexc.c)
+add_library_ex(prt_kexc.c)

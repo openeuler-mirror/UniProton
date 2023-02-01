@@ -1,1 +1,1 @@
-add_library(prt_irq OBJECT prt_irq.c)
+add_library_ex(prt_irq.c)
