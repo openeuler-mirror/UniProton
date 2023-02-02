@@ -26,9 +26,14 @@ OS_SEC_L4_TEXT U8 OsGetCpuType(void)
     return g_cpuType;
 }
 
-OS_SEC_L4_TEXT U32 OsSysTimeHookReg(void)
+OS_SEC_L4_TEXT U32 OsSysTimeHookReg(SysTimeFunc hook)
 {
+#if defined(OS_OPTION_SYS_TIME_USR)
+    return OsSetSysTimeHook(hook);
+#else
+    (void)hook;
     return OsSetSysTimeHook(PRT_ClkGetCycleCount64);
+#endif
 }
 
 OS_SEC_L4_TEXT U32 OsSysRegister(struct SysModInfo *modInfo)
@@ -39,7 +44,7 @@ OS_SEC_L4_TEXT U32 OsSysRegister(struct SysModInfo *modInfo)
         return OS_ERRNO_SYS_CLOCK_INVALID;
     }
 
-    ret = OsSysTimeHookReg();
+    ret = OsSysTimeHookReg(modInfo->sysTimeHook);
     if (ret != OS_OK) {
         return ret;
     }

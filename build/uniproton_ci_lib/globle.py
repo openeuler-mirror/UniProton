@@ -10,10 +10,12 @@ home_path = os.path.dirname(build_dir)
 config_dir = os.path.join(home_path,'config.xml')
 kbuild_path = '%s/cmake/common/build_auxiliary_script' % home_path
 
-cpus_ = {'all': ['clean', 'm4'],
+cpus_ = {'all': ['clean', 'm4', 'raspi4'],
          'clean':['clean'],
-         'm4': ['m4']
+         'm4': ['m4'],
+         'raspi4': ['raspi4'],
          }
 
-cpu_plat = {'m4': ['cortex']
+cpu_plat = {'m4': ['cortex'],
+            'raspi4': ['armv8']
            }

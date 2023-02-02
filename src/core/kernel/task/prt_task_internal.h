@@ -37,6 +37,8 @@ extern struct TagListObject g_tskRecyleList;
 extern void *OsTskMemAlloc(U32 size);
 extern void OsTskIdleBgd(void);
 extern U32 OsTaskDelStatusCheck(struct TagTskCb *taskCb);
+extern void OsTskRecycle(void);
+extern void OsTskStackInit(U32 stackSize, uintptr_t topStack);
 
 OS_SEC_ALW_INLINE INLINE void OsMoveTaskToReady(struct TagTskCb *taskCb)
 {
@@ -57,4 +59,21 @@ OS_SEC_ALW_INLINE INLINE void OsTskResRecycle(struct TagTskCb *taskCb)
         OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)taskCb->topOfStack));
     }
 }
+
+OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateChkAndGetTcb(struct TagTskCb **taskCb)
+{
+    OsTskRecycle();
+
+    if (ListEmpty(&g_tskCbFreeList)) {
+        return OS_ERRNO_TSK_TCB_UNAVAILABLE;
+    }
+
+    // 先获取到该控制块
+    *taskCb = GET_TCB_PEND(OS_LIST_FIRST(&g_tskCbFreeList));
+    // 成功，从空闲列表中移除
+    ListDelete(OS_LIST_FIRST(&g_tskCbFreeList));
+
+    return OS_OK;
+}
+
 #endif /* PRT_TASK_INTERNAL_H */

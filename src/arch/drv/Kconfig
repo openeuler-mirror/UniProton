@@ -1,0 +1,4 @@
+menu "ARMV8 DRV Features Configuration"
+depends on (OS_ARCH_ARMV8)
+source "arch/drv/gic/Kconfig"
+endmenu

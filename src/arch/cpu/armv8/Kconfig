@@ -1,0 +1,16 @@
+menu "ARMV8 Sepecfic Configuration"
+
+depends on (OS_ARCH_ARMV8)
+
+config INTERNAL_OS_PLATFORM_ARMV8_AX
+    bool
+    select INTERNAL_OS_BYTE_ORDER_LE
+
+choice
+    prompt "Cpu Type"
+
+config INTERNAL_OS_RASPI4
+    bool "OS_RASPI4"
+    select INTERNAL_OS_PLATFORM_ARMV8_AX
+
+endchoice

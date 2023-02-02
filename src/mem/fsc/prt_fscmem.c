@@ -260,7 +260,7 @@ OS_SEC_TEXT U32 OsFscMemInit(U32 addr, U32 size)
     currBlk = (struct TagFscMemCtrl *)(uintptr_t)addr;
     currBlk->next = headBlk;
     currBlk->prevSize = 0;
-    currBlk->size = (U16)size;
+    currBlk->size = size;
     currBlk->prev = headBlk;
     headBlk->next = currBlk;
     headBlk->prev = currBlk;

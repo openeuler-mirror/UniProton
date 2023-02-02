@@ -162,6 +162,18 @@ def write_tail(out_file):
 
     return 0
 
+def wirte_buildef_header(out_file):
+    """
+    wirte_buildef_header
+    :param out_file:
+    :return:
+    """
+    with codecs.open(out_file, 'a+') as fd_out:
+        text = "\n/* common macros's definitions */\n"
+        text = '%s#include "prt_buildef_common.h"\n' % (text)
+        fd_out.write(text)
+    return 0
+
 def kconfig2macro(in_file, out_file, flag):
     header_type = headerType(in_file)
     if header_type == HEADER_TYPE_INVALID:
@@ -175,13 +187,14 @@ def kconfig2macro(in_file, out_file, flag):
     if ret != 0:
         return ret
 
-    ret = write_external_macro(out_file)
-    if ret != 0:
-        return ret
-
     ret = write_c_external_tail(out_file)
     if ret != 0:
         return ret
+    
+    if header_type == HEADER_TYPE_BUILD:
+        ret_code = wirte_buildef_header(out_file)
+        if ret_code != 0:
+            return ret_code
 
     ret = write_tail(out_file)
     if ret != 0:

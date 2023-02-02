@@ -109,11 +109,6 @@ OS_SEC_ALW_INLINE INLINE U32 OsGetHwThreadId(void)
     return 0x0U;
 }
 
-OS_SEC_ALW_INLINE INLINE uintptr_t OsMemAddrToUncache(uintptr_t addr)
-{
-    return addr;
-}
-
 extern U32 OsGetSp(void);
 extern U32 OsIntNumGet(void);
 extern void OsTaskSwitch(void);
@@ -137,7 +132,10 @@ OS_SEC_ALW_INLINE INLINE uintptr_t OsTskGetInstrAddr(uintptr_t addr)
     return ((struct TagHwContext *)addr)->pc;
 }
 
-#define OS_SPIN_LOCK_INIT(lockVar)
+OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
+{
+    (void)lockVar;
+}
 
 #if (OS_HARDWARE_PLATFORM == OS_CORTEX_M4)
 #include "../cortex-m4/prt_cpu_m4_external.h"

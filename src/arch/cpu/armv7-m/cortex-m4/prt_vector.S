@@ -149,7 +149,9 @@ OsBoot:
     BL      OsFpuInit
     LDR     R0, =PRT_HardBootInit
     BLX     R0
+#if defined(OS_OPTION_GUARD_STACK)
     InitChkGuardRnd  R9, R10, R11
+#endif
     LDR     R0, =main
     BX      R0
 

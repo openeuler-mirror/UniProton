@@ -32,6 +32,7 @@ struct TagListObject {
         (object)->prev = (object); \
     } while (0)
 
+#define LIST_LAST(object) ((object)->prev)
 #define LIST_FIRST(object) ((object)->next)
 #define OS_LIST_FIRST(object) ((object)->next)
 
@@ -88,6 +89,11 @@ OS_SEC_ALW_INLINE INLINE bool ListEmpty(const struct TagListObject *listObject)
 
 #define LIST_FOR_EACH(posOfList, listObject, typeOfList, field)                                                    \
     for ((posOfList) = LIST_COMPONENT((listObject)->next, typeOfList, field); &(posOfList)->field != (listObject); \
+         (posOfList) = LIST_COMPONENT((posOfList)->field.next, typeOfList, field))
+
+#define LIST_FOR_EACH_SAFE(posOfList, listObject, typeOfList, field)                \
+    for ((posOfList) = LIST_COMPONENT((listObject)->next, typeOfList, field);       \
+         (&(posOfList)->field != (listObject))&&((posOfList)->field.next != NULL);  \
          (posOfList) = LIST_COMPONENT((posOfList)->field.next, typeOfList, field))
 
 #endif /* PRT_LIST_EXTERNAL_H */

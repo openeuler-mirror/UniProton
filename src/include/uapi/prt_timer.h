@@ -197,6 +197,15 @@ enum TimerFlag {
 #define OS_ERRNO_TIMER_NUM_TOO_LARGE OS_ERRNO_BUILD_ERROR(OS_MID_TIMER, 0x12)
 
 /*
+ * 软件定时器错误码:返回指针参数为空。
+ *
+ * 值: 0x02000d13
+ *
+ * 解决方案: 输入有效的指针参数。
+ */
+#define OS_ERRNO_SWTMR_RET_PTR_NULL OS_ERRNO_BUILD_ERROR(OS_MID_TIMER, 0x13)
+
+/*
  * 定时器句柄定义
  */
 typedef U32 TimerHandle;
@@ -287,6 +296,24 @@ struct TimerCreatePara {
     U32 arg3;
     /* 定时器用户参数4 */
     U32 arg4;
+};
+
+/*
+ * 软件定时器信息的结构体类型定义
+ */
+struct SwTmrInfo {
+    /* 定时器状态，三种状态:Free,Created,Running,Expired */
+    U8 state;
+    /* 保留字段 */
+    U8 resved[3];
+    /* 定时器类型，两种类型:周期性、一次性 */
+    enum TmrMode mode;
+    /* 定时器超时间隔 */
+    U32 interval;
+    /* 定时器离超时剩余的ms数 */
+    U32 remainMs;
+    /* 定时器超时处理函数 */
+    TmrProcFunc handler;
 };
 
 /*
@@ -439,6 +466,29 @@ extern U32 PRT_TimerRestart(U32 mid, TimerHandle tmrHandle);
  * @see PRT_TimerCreate
  */
 extern U32 PRT_TimerQuery(U32 mid, TimerHandle tmrHandle, U32 *expireTime);
+
+/*
+ * @brief 获取指定软件定时器的信息。
+ *
+ * @par 描述
+ * 根据指定的定时器ID，获取定时器ID为tmrHandle的定时器的信息info。
+ *
+ * @attention
+ * <ul>
+ * <li>由于OS内部采用Tick作为软件定时器的时钟源，所以剩余时间转化成ms不一定是整数，
+ * 当转化后的毫秒数不为整数时，返回的剩余时间是该毫秒数取整后+1;
+ * 例如转化后毫秒数为4.2，则最终用户得到的剩余时间是5ms。</li>
+ * </ul>
+ *
+ * @param tmrHandle [IN]  类型#TimerHandle，定时器句柄；
+ * @param info      [OUT] 类型#struct SwTmrInfo *，存放定时器信息结构体指针。
+ *
+ * @retval #SRE_OK  0x00000000，获取指定定时器的信息成功。
+ * @retval #其他值  信息获取失败。
+ * <ul><li>prt_timer.h：该接口声明所在的头文件。</li></ul>
+ * @see 无
+ */
+extern U32 PRT_SwTmrInfoGet(TimerHandle tmrHandle, struct SwTmrInfo *info);
 
 #ifdef __cplusplus
 #if __cplusplus

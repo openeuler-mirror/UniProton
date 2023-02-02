@@ -18,6 +18,7 @@
 #include "prt_err.h"
 
 extern void OsErrHandle(const char *fileName, U32 lineNo, U32 errorNo, U32 paraLen, void *para);
+extern void OsErrRecord(U32 errorNo);
 /*
  * 模块间宏定义
  */
@@ -54,6 +55,7 @@ extern void OsErrHandle(const char *fileName, U32 lineNo, U32 errorNo, U32 paraL
 #endif
 
 extern void OsErrRecordInCda(U32 errorNo);
+extern U32 OsFatalErrClr(void);
 
 // 函数返回值void的，都通过此接口记录返回值到cda
 #define OS_ERR_RECORD(errorNo)          \

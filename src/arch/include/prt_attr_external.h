@@ -21,4 +21,8 @@
 #include "../cpu/armv7-m/common/os_attr_armv7_m_external.h"
 #endif
 
+#if defined(OS_ARCH_ARMV8)
+#include "../cpu/armv8/common/os_attr_armv8_external.h"
+#endif
+
 #endif /* PRT_ATTR_EXTERNAL_H */

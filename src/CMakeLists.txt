@@ -14,4 +14,3 @@ if(${CONFIG_OS_SUPPORT_NET})
     add_subdirectory(net)
 endif()
 
-

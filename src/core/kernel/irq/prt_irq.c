@@ -210,10 +210,6 @@ OS_SEC_L4_TEXT U32 PRT_HwiSetAttr(HwiHandle hwiNum, HwiPrior hwiPrio, HwiMode mo
     }
 #endif
 
-#if defined(OS_OPTION_HWI_PRIORITY)
-    OsHwiPrioritySet(hwiNum, hwiPrio);
-#endif
-
     OsHwiAttrSet(irqNum, hwiPrio, mode);
 
     OS_HWI_IRQ_UNLOCK(intSave);

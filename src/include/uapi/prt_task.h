@@ -22,6 +22,10 @@
 #include "./hw/armv7-m/prt_task.h"
 #endif
 
+#if ((OS_HARDWARE_PLATFORM == OS_ARMV8))
+#include "./hw/armv8/os_cpu_armv8.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {

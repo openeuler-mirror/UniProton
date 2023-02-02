@@ -68,6 +68,11 @@ extern U32 OsQueueConfigInit(void);
 extern U32 OsSwTmrInit(U32 maxTimerNum);
 #endif
 
+enum OsinitPhaseId {
+    OS_REGISTER_ID = 0,
+    OS_INIT_ID,
+    OS_MOUDLE_CONFIG
+};
 typedef U32 (*ConfigInitFunc)(void);
 struct OsModuleConfigInfo {
     enum MoudleId moudleId;

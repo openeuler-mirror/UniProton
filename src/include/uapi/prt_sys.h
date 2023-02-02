@@ -142,6 +142,11 @@ extern "C" {
 #define OS_SYS_US_PER_SECOND 1000000
 
 /*
+ * 每秒纳秒数
+ */
+#define OS_SYS_NS_PER_SECOND 1000000000
+
+/*
  * OS版本号
  */
 #define OS_SYS_OS_VER_LEN 48
@@ -164,6 +169,23 @@ enum SysThreadType {
 };
 
 /*
+ * @brief 计算系统绝对时间钩子函数的类型定义。
+ *
+ * @par 描述
+ * 由于OS没有接管硬件定时器，需要用户提供计算系统时间的钩子函数。
+ *
+ * @attention 获取的是64bit cycles 数据。
+ *
+ * @param 无。
+ *
+ * @retval 系统绝对时间
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see 无。
+ */
+typedef U64 (*SysTimeFunc)(void);
+
+/*
  * 系统模块配置信息的结构体定义。
  *
  * 保存系统模块的配置项信息。
@@ -171,6 +193,8 @@ enum SysThreadType {
 struct SysModInfo {
     /* CPU主频，时钟周期 */
     U32 systemClock;
+    /* 用户注册的获取系统时间函数 */
+    SysTimeFunc sysTimeHook;
     /* CPU type */
     U32 cpuType;
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)

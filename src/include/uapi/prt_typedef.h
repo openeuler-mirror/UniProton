@@ -33,6 +33,9 @@ typedef signed short S16;
 typedef signed int S32;
 typedef signed long long S64;
 
+typedef void *VirtAddr;
+typedef void *PhyAddr;
+
 #ifndef OS_SEC_ALW_INLINE
 #define OS_SEC_ALW_INLINE
 #endif
@@ -78,6 +81,42 @@ typedef void (*OsVoidFunc)(void);
 
 #ifndef OS_OK
 #define OS_OK 0
+#endif
+
+#ifndef OS_FAIL
+#define OS_FAIL 1
+#endif
+
+#ifndef U8_INVALID
+#define U8_INVALID 0xffU
+#endif
+
+#ifndef U12_INVALID
+#define U12_INVALID 0xfffU
+#endif
+
+#ifndef U16_INVALID
+#define U16_INVALID 0xffffU
+#endif
+
+#ifndef U32_INVALID
+#define U32_INVALID 0xffffffffU
+#endif
+
+#ifndef U64_INVALID
+#define U64_INVALID 0xffffffffffffffffUL
+#endif
+
+#ifndef U32_MAX
+#define U32_MAX 0xFFFFFFFFU
+#endif
+
+#ifndef S32_MAX
+#define S32_MAX 0x7FFFFFFF
+#endif
+
+#ifndef S32_MIN
+#define S32_MIN (-S32_MAX-1)
 #endif
 
 #ifndef LIKELY

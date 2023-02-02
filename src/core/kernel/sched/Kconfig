@@ -1,0 +1,21 @@
+config OS_OPTION_TASK_MIGRATE
+    bool "Whether support task migrate features or not"
+    default y
+    depends on OS_OPTION_SMP
+
+config OS_OPTION_SCHED_DOMAIN
+    bool "Whether schedule domain feature or not"
+    depends on OS_OPTION_SMP
+    default n
+
+config INTERNAL_OS_SCHEDULE_SINGLE_CORE_BY_CCODE
+    bool "single core when the scheduling part is implemented by using the C language or not"
+    depends on (OS_MAX_CORE_NUM=1)
+    default n
+    help
+      Internal function macro.This macro is used by the single core when the scheduling part is implemented by using the C language.
+
+config INTERNAL_OS_SCHEDULE_RT
+    bool "Whether support rt scheduler or not"
+	depends on OS_OPTION_SMP
+    default y
