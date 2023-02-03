@@ -63,7 +63,8 @@ OS_SEC_L4_TEXT U32 OsSemInit(void)
 /*
  * 描述：创建一个信号量
  */
-OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, enum SemMode semMode, SemHandle *semHandle, U32 cookie)
+OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode,
+                               SemHandle *semHandle, U32 cookie)
 {
     uintptr_t intSave;
     struct TagSemCb *semCreated = NULL;
@@ -91,8 +92,16 @@ OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, enum SemMode semMode, SemHandle *semHa
     semCreated->semCount = count;
     semCreated->semStat = OS_SEM_USED;
     semCreated->semMode = semMode;
+    semCreated->semType = semType;
     semCreated->semOwner = OS_INVALID_OWNER_ID;
-    semCreated->maxSemCount = OS_SEM_COUNT_MAX;
+    if (GET_SEM_TYPE(semType) == SEM_TYPE_BIN) {
+        INIT_LIST_OBJECT(&semCreated->semBList);
+#if defined(OS_OPTION_SEM_RECUR_PV)
+        if (GET_MUTEX_TYPE(semType) == PTHREAD_MUTEX_RECURSIVE) {
+            semCreated->recurCount = 0;
+        }
+#endif
+    }
 
     INIT_LIST_OBJECT(&semCreated->semList);
     *semHandle = (SemHandle)semCreated->semId;
@@ -112,7 +121,7 @@ OS_SEC_L4_TEXT U32 PRT_SemCreate(U32 count, SemHandle *semHandle)
         return OS_ERRNO_SEM_OVERFLOW;
     }
 
-    ret = OsSemCreate(count, SEM_MODE_FIFO, semHandle, (U32)(uintptr_t)semHandle);
+    ret = OsSemCreate(count, SEM_TYPE_COUNT, SEM_MODE_FIFO, semHandle, (U32)(uintptr_t)semHandle);
     return ret;
 }
 
@@ -139,6 +148,11 @@ OS_SEC_L4_TEXT U32 PRT_SemDelete(SemHandle semHandle)
         OsIntRestore(intSave);
         return OS_ERRNO_SEM_PENDED;
     }
+#ifdef OS_OPTION_BIN_SEM
+    if ((semDeleted->semOwner != OS_INVALID_OWNER_ID) && (GET_SEM_TYPE(semDeleted->semType) == SEM_TYPE_BIN)) {
+        ListDelete(&semDeleted->semBList);
+    }
+#endif
     semDeleted->semStat = OS_SEM_UNUSED;
     ListAdd(&semDeleted->semList, &g_unusedSemList);
 

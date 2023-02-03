@@ -7,6 +7,7 @@
 # Arch Modules Configuration
 #
 CONFIG_OS_ARCH_ARMV7_M=y
+CONFIG_OS_OPTION_GUARD_STACK=y
 
 #
 # ARM7-M Sepecfic Configuration
@@ -44,6 +45,9 @@ CONFIG_OS_OPTION_QUEUE=y
 #
 # Semaphore feature configuration
 #
+CONFIG_OS_OPTION_BIN_SEM=y
+CONFIG_OS_OPTION_SEM_RECUR_PV=y
+CONFIG_OS_OPTION_SEM_PRIOR=y
 
 #
 # Kernel Modules Configuration
@@ -114,3 +118,5 @@ CONFIG_OS_OPTION_RND=y
 #
 # Utility Modules Configuration
 #
+CONFIG_OS_OPTION_POSIX=y
+CONFIG_OS_POSIX_TYPE_NEWLIB=y

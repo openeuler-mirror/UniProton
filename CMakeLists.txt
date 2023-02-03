@@ -77,6 +77,13 @@ include_directories(
 	./platform/libboundscheck/include
 )
 
+if (${CONFIG_OS_OPTION_POSIX})
+include_directories(
+        ./src/osal/posix/include
+        ./src/include/posix
+)
+endif()
+
 if (NOT ${COMPILE_OPTION} STREQUAL "UniProton")
 ###添加安全库的cmakelists
 add_subdirectory(platform)

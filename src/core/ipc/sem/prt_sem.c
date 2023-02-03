@@ -18,6 +18,58 @@
 /* 核内信号量最大个数 */
 OS_SEC_BSS U16 g_maxSem;
 
+#if defined(OS_OPTION_BIN_SEM)
+OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, SemHandle semHandle)
+{
+    (void)semHandle;
+    /* 检查信号量控制块是否UNUSED，排除大部分错误场景 */
+    if (semPosted->semStat == OS_SEM_UNUSED) {
+        return OS_ERRNO_SEM_INVALID;
+    }
+    if (GET_SEM_TYPE((semPosted)->semType) == SEM_TYPE_COUNT) {
+        /* 释放计数型信号量且信号量计数大于最大计数 */
+        if ((semPosted)->semCount >= OS_SEM_COUNT_MAX) {
+            return OS_ERRNO_SEM_OVERFLOW;
+        }
+    } else if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
+        if (OS_INT_ACTIVE) {
+            return OS_ERRNO_SEM_MUTEX_POST_INTERR;
+        }
+
+        /* 如果不是 互斥信号量的持有任务来做post操作 */
+        if (semPosted->semOwner != RUNNING_TASK->taskPid) {
+            return OS_ERRNO_SEM_MUTEX_NOT_OWNER_POST;
+        }
+    }
+    return OS_OK;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemPostBinMutex(struct TagSemCb *semPosted, struct TagTskCb *resumedTask)
+{
+    semPosted->semOwner = resumedTask->taskPid;
+    if (semPosted->semType == SEM_TYPE_BIN) {
+        ListDelete(&semPosted->semBList);
+        ListTailAdd(&semPosted->semBList, &resumedTask->semBList);
+    }
+}
+#else
+OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, SemHandle semHandle)
+{
+    (void)semHandle;
+    /* 检查信号量控制块是否UNUSED，排除大部分错误场景 */
+    if (semPosted->semStat == OS_SEM_UNUSED) {
+        return OS_ERRNO_SEM_INVALID;
+    }
+
+    /* post计数型信号量的错误场景, 释放计数型信号量且信号量计数大于最大计数 */
+    if ((semPosted)->semCount >= OS_SEM_COUNT_MAX) {
+        return OS_ERRNO_SEM_OVERFLOW;
+    }
+
+    return OS_OK;
+}
+#endif
+
 /*
  * 描述：把当前运行任务挂接到信号量链表上
  */
@@ -51,7 +103,6 @@ TIMER_ADD:
 
         TSK_STATUS_SET(runTsk, OS_TSK_TIMEOUT);
     }
-
 }
 
 /*
@@ -67,7 +118,7 @@ OS_SEC_L0_TEXT struct TagTskCb *OsSemPendListGet(struct TagSemCb *semPended)
         OS_TSK_DELAY_LOCKED_DETACH(taskCb);
     }
 
-    // 必须先去除 OS_TSK_TIMEOUT 态，再入队[睡眠时是先出ready队，再置OS_TSK_TIMEOUT态]
+    /* 必须先去除 OS_TSK_TIMEOUT 态，再入队[睡眠时是先出ready队，再置OS_TSK_TIMEOUT态] */
     TSK_STATUS_CLEAR(taskCb, OS_TSK_TIMEOUT | OS_TSK_PEND);
     taskCb->taskSem = NULL;
     /* 如果去除信号量阻塞位后，该任务不处于阻塞态则将该任务挂入就绪队列并触发任务调度 */
@@ -75,6 +126,9 @@ OS_SEC_L0_TEXT struct TagTskCb *OsSemPendListGet(struct TagSemCb *semPended)
         OsTskReadyAddBgd(taskCb);
     }
 
+#if defined(OS_OPTION_BIN_SEM)
+    OsSemPostBinMutex(semPended, taskCb);
+#endif
     return taskCb;
 }
 
@@ -84,7 +138,6 @@ OS_SEC_L0_TEXT U32 OsSemPendParaCheck(U32 timeout)
         return OS_ERRNO_SEM_UNAVAILABLE;
     }
 
-    /* 如果锁任务的情况下 */
     if (OS_TASK_LOCK_DATA != 0) {
         return OS_ERRNO_SEM_PEND_IN_LOCK;
     }
@@ -93,11 +146,23 @@ OS_SEC_L0_TEXT U32 OsSemPendParaCheck(U32 timeout)
 
 OS_SEC_L0_TEXT bool OsSemPendNotNeedSche(struct TagSemCb *semPended, struct TagTskCb *runTsk)
 {
-    // 信号量获取成功
+#if defined(OS_OPTION_SEM_RECUR_PV)
+    if (GET_SEM_TYPE(semPended->semType) == SEM_TYPE_BIN && semPended->semOwner == runTsk->taskPid &&
+        (GET_MUTEX_TYPE(semPended->semType) == PTHREAD_MUTEX_RECURSIVE)) {
+        semPended->recurCount++;
+        return TRUE;
+    }
+#endif
+
     if (semPended->semCount > 0) {
         semPended->semCount--;
         semPended->semOwner = runTsk->taskPid;
-
+#if defined(OS_OPTION_BIN_SEM)
+        /* 如果是互斥信号量，把持有的互斥信号量挂接起来 */
+        if (GET_SEM_TYPE(semPended->semType) == SEM_TYPE_BIN) {
+            ListTailAdd(&semPended->semBList, &runTsk->semBList);
+        }
+#endif
         return TRUE;
     }
     return FALSE;
@@ -125,7 +190,6 @@ OS_SEC_L0_TEXT U32 PRT_SemPend(SemHandle semHandle, U32 timeout)
         return OS_ERRNO_SEM_INVALID;
     }
 
-    /* 如果是中断的情况 */
     if (OS_INT_ACTIVE) {
         OsIntRestore(intSave);
         return OS_ERRNO_SEM_PEND_INTERR;
@@ -170,22 +234,37 @@ OS_SEC_ALW_INLINE INLINE void OsSemPostSchePre(struct TagSemCb *semPosted)
 
     resumedTask = OsSemPendListGet(semPosted);
     semPosted->semOwner = resumedTask->taskPid;
+#if defined(OS_OPTION_BIN_SEM)
+    /*
+     * 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它，
+     * 再把它挂接到新的持有它的任务的持有链表上；然后尝试降低任务的优先级
+     */
+    if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
+        ListDelete(&semPosted->semBList);
+        ListTailAdd(&semPosted->semBList, &resumedTask->semBList);
+    }
+#endif
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, SemHandle semHandle)
+/*
+ * 描述：判断信号量post是否有效
+ * 备注：以下情况表示post无效，返回TRUE: post互斥二进制信号量，若该信号量被嵌套pend或者已处于空闲状态
+ */
+OS_SEC_ALW_INLINE INLINE bool OsSemPostIsInvalid(struct TagSemCb *semPosted)
 {
-    (void)semHandle;
-    /* 检查信号量控制块是否UNUSED，排除大部分错误场景 */
-    if (semPosted->semStat == OS_SEM_UNUSED) {
-        return OS_ERRNO_SEM_INVALID;
+    if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
+#if defined(OS_OPTION_SEM_RECUR_PV)
+        if ((GET_MUTEX_TYPE(semPosted->semType) == PTHREAD_MUTEX_RECURSIVE) && semPosted->recurCount > 0) {
+            semPosted->recurCount--;
+            return TRUE;
+        }
+#endif
+        /* 释放互斥二进制信号量且信号量已处于空闲状态 */
+        if ((semPosted)->semCount == OS_SEM_FULL) {
+            return TRUE;
+        }
     }
-
-    /* post计数型信号量的错误场景, 释放计数型信号量且信号量计数大于最大计数 */
-    if ((semPosted)->maxSemCount <= (semPosted)->semCount) {
-        return OS_ERRNO_SEM_OVERFLOW;
-    }
-    /* post同步二进制信号量或者不存在上述错误场景 */
-    return OS_OK;
+    return FALSE;
 }
 
 /*
@@ -203,11 +282,17 @@ OS_SEC_L0_TEXT U32 PRT_SemPost(SemHandle semHandle)
 
     semPosted = GET_SEM(semHandle);
     intSave = OsIntLock();
-    /* 检查post信号量时的错误场景 */
+
     ret = OsSemPostErrorCheck(semPosted, semHandle);
     if (ret != OS_OK) {
         OsIntRestore(intSave);
         return ret;
+    }
+
+    /* 信号量post无效，不需要调度 */
+    if (OsSemPostIsInvalid(semPosted) == TRUE) {
+        OsIntRestore(intSave);
+        return OS_OK;
     }
 
     /* 如果有任务阻塞在信号量上，就激活信号量阻塞队列上的首个任务 */
@@ -216,9 +301,14 @@ OS_SEC_L0_TEXT U32 PRT_SemPost(SemHandle semHandle)
         /* 相当于快速切换+中断恢复 */
         OsTskScheduleFastPs(intSave);
     } else {
-        /* 释放信号量，把持有信号量的任务ID设置为OS_THREAD_ID_INVALID */
         semPosted->semCount++;
         semPosted->semOwner = OS_INVALID_OWNER_ID;
+#if defined(OS_OPTION_BIN_SEM)
+        /* 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它 */
+        if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
+            ListDelete(&semPosted->semBList);
+        }
+#endif
     }
 
     OsIntRestore(intSave);
