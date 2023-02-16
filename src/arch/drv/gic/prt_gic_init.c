@@ -16,9 +16,6 @@
 #include "prt_gic_external.h"
 #include "prt_gic_internal.h"
 #include "prt_attr_external.h"
-#if defined(OS_OPTION_INIT)
-#include "prt_init_external.h"
-#endif
 #include "prt_task.h"
 
 /* ICC_SGIR_EL1 */

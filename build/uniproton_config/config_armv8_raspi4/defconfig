@@ -45,12 +45,6 @@ CONFIG_OS_CACHE_LINE_SIZE=64
 # Event feature configuration
 #
 CONFIG_OS_OPTION_EVENT=y
-
-#
-# Message feature configuration
-#
-# CONFIG_OS_OPTION_MSG_SHORT_MSG is not set
-CONFIG_OS_OPTION_MSG_NO_PAYLOAD=y
 CONFIG_OS_OPTION_QUEUE=y
 
 #
@@ -106,11 +100,6 @@ CONFIG_INTERNAL_OS_SWTMR=y
 #
 # OM Modules Configuration
 #
-
-#
-# CDA Modules Configuration
-#
-# CONFIG_OS_OPTION_CDA is not set
 # CONFIG_OS_OPTION_CPUP is not set
 
 #
@@ -126,21 +115,6 @@ CONFIG_OS_OPTION_CPUP_WARN=y
 #
 # Hook feature configuration
 #
-CONFIG_OS_OPTION_STKMON=y
-CONFIG_INTERNAL_OS_STKMON_MODE_SW=y
-
-#
-# Log Report Module Configuration
-#
-# CONFIG_OS_OPTION_LOG_REPORT is not set
-# CONFIG_INTERNAL_OS_LOG_DIRECT_OUTPUT is not set
-
-#
-# Init Trace Features
-#
-# CONFIG_OS_OPTION_INIT_TRACE_USR_HOOK is not set
-# CONFIG_OS_OPTION_INIT_PHASE_QUERY is not set
-# CONFIG_OS_OPTION_TRACE is not set
 
 #
 # security Modules Configuration
@@ -150,7 +124,6 @@ CONFIG_OS_OPTION_RND=y
 #
 # Utility Modules Configuration
 #
-CONFIG_OS_FOR_VEHICLE=y
 CONFIG_OS_OPTION_POSIX=y
 CONFIG_OS_POSIX_TYPE_NEWLIB=y
 

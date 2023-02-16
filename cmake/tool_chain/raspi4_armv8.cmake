@@ -3,16 +3,6 @@ set(OBJCOPY_PATH "$ENV{HCC_PATH}" )
 #################################################
 ## guest代码
 #################################################
-#创建不包含的对象库列表
-list(APPEND exclude
-	prt_fsem
-	prt_fsem_minor
-	prt_inst_sh_trace
-	prt_sscmem
-	prt_stkmon
-	prt_mcfsem
-)
-
 #添加进列表
 foreach(FILE_NAME ${ALL_OBJECT_LIBRARYS})
 	list(FIND exclude "${FILE_NAME}" is_inclide)
@@ -48,15 +38,15 @@ set(raspi4_armv8_export modules)
 # 注意：所有安装路径必须是相对CMAKE_INSTALL_PREFIX的相对路径，不可以使用绝对路径!!!
 # 否则安装目录下的配置文件(foo-config.cmake, foo-tragets.cmake等)拷贝到其它目录时无法工作。
 set(INSTALL_RASPI4_ARMV8_BASE_DIR                 .)
-set(INSTALL_RASPI4_ARMV8_INCLUDE_DIR              libck/include)
-set(INSTALL_RASPI4_ARMV8_ARCHIVE_DIR              libck/lib/raspi4)
-set(INSTALL_RASPI4_ARMV8_ARCHIVE_CONFIG_DIR       libck/config)
+set(INSTALL_RASPI4_ARMV8_INCLUDE_DIR              UniProton/include)
+set(INSTALL_RASPI4_ARMV8_ARCHIVE_DIR              UniProton/lib/raspi4)
+set(INSTALL_RASPI4_ARMV8_ARCHIVE_CONFIG_DIR       UniProton/config)
 set(INSTALL_RASPI4_ARMV8_CONFIG_DIR               cmake/raspi4)
 
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/tool_chain/raspi4_armv8_config.cmake.in
-	${CMAKE_CURRENT_BINARY_DIR}/libck-raspi4-armv8-config.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/uniproton-raspi4-armv8-config.cmake
 	INSTALL_DESTINATION ${INSTALL_RASPI4_ARMV8_CONFIG_DIR}
 	PATH_VARS
 	INSTALL_RASPI4_ARMV8_BASE_DIR
@@ -67,12 +57,12 @@ configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/tool_chain/raspi4_armv
 	INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}
 )
 install(EXPORT ${raspi4_armv8_export}
-		NAMESPACE LibCK::
-		FILE libck-raspi4-armv8-targets.cmake
+		NAMESPACE UniProton::
+		FILE uniproton-raspi4-armv8-targets.cmake
 		DESTINATION ${INSTALL_RASPI4_ARMV8_CONFIG_DIR}
 )
 install(FILES
-	${CMAKE_CURRENT_BINARY_DIR}/libck-raspi4-armv8-config.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/uniproton-raspi4-armv8-config.cmake
 	DESTINATION ${INSTALL_RASPI4_ARMV8_CONFIG_DIR}
 )
 
