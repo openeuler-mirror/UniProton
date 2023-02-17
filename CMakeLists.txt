@@ -17,6 +17,8 @@ set(LIB_RUN_TYPE "$ENV{LIB_RUN_TYPE}" )
 set(HOME_PATH "$ENV{HOME_PATH}" )
 set(BUILD_MACHINE_PLATFORM "$ENV{BUILD_MACHINE_PLATFORM}" )
 set(RPROTON_BINARY_DIR "$ENV{RPROTON_BINARY_DIR}" )
+#用于保存所有的对象库
+set(ALL_OBJECT_LIBRARYS "" CACHE STRING INTERNAL)
 
 if("${RPROTON_BINARY_DIR}" STREQUAL "")
   # this branch will be taken
@@ -75,6 +77,18 @@ include_directories(
 	./platform/libboundscheck/include
 )
 
+if (${CONFIG_OS_OPTION_POSIX})
+include_directories(
+        ./src/osal/posix/include
+        ./src/include/posix
+)
+endif()
+
+if (${CONFIG_OS_OPTION_OPENAMP})
+include_directories(
+	./thirdpart/openamp
+)
+endif()
 
 if (NOT ${COMPILE_OPTION} STREQUAL "UniProton")
 ###添加安全库的cmakelists

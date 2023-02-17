@@ -40,7 +40,7 @@ OS_SEC_L4_TEXT U32 PRT_SemGetInfo(SemHandle semHandle, struct SemInfo *semInfo)
     semInfo->owner = semGet->semOwner;
     semInfo->count = semGet->semCount;
     semInfo->mode = semGet->semMode;
-    semInfo->type = SEM_TYPE_COUNT;
+    semInfo->type = (GET_SEM_TYPE(semGet->semType) == SEM_TYPE_COUNT) ? SEM_TYPE_COUNT : SEM_TYPE_BIN;
 
     OsIntRestore(intSave);
     return OS_OK;

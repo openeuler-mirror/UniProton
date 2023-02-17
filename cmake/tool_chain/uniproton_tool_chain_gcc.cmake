@@ -29,7 +29,13 @@ if(${CPU_TYPE} STREQUAL "m4")
         set(CMAKE_ASM_FLAGS "--specs=nosys.specs")
         set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -O2  -pipe ${STRONG_COMPILE_WARING_FLAG} ${COMPILE_WARING_FLAG} -std=gnu11 -fno-common -fomit-frame-pointer -mthumb -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -Wa,-mimplicit-it=thumb  -fstack-protector-strong  -funsigned-char  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
         set(CMAKE_C_FLAGS "--specs=nosys.specs") #原ID形式\"888888\"
-        set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O2 -pipe  ${STRONG_COMPILE_WARING_FLAG} ${COMPILE_WARING_FLAG} -std=gnu11 -fno-common -fomit-frame-pointer -mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16   -fstack-protector-strong  -fdata-sections  -ffunction-sections -fshort-enums  -funsigned-char -DSECUREC_BUFFER_SIZE=32 <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+        set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O2 -pipe ")
+
+        file(STRINGS "$ENV{CONFIG_FILE_PATH}/defconfig" config_options REGEX "^CONFIG_OS_OPTION_POSIX" ENCODING "UTF-8")
+        foreach(config_option ${config_options})
+                set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT} -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS")
+        endforeach()
+        set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT} ${STRONG_COMPILE_WARING_FLAG} ${COMPILE_WARING_FLAG} -std=gnu11 -fno-common -fomit-frame-pointer -mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16   -fstack-protector-strong  -fdata-sections  -ffunction-sections -fshort-enums  -funsigned-char -DSECUREC_BUFFER_SIZE=32 <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
 endif()
 
 

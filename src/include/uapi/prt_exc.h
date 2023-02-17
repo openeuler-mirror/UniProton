@@ -22,6 +22,10 @@
 #include "./hw/armv7-m/prt_exc.h"
 #endif
 
+#if (OS_HARDWARE_PLATFORM == OS_ARMV8)
+#include "./hw/armv8/os_exc_armv8.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -77,7 +81,7 @@ struct ExcModInfo {
  *
  * @param hook [IN]  类型#ExcProcFunc，钩子函数。
  *
- * @retval #OS_OK  0x00000000，注册失败。
+ * @retval #OS_OK  0x00000000，注册成功。
  * @retval #其它值，注册失败。
  *
  * @par 依赖

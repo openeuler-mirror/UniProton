@@ -169,7 +169,7 @@ OS_SEC_L2_TEXT void OsCpupTickCal(void)
         }
     }
 
-    OsMcCpupSet(OsGetHwThreadId(), (U32)(CPUP_USE_RATE - g_cpup[TSK_GET_INDEX(IDLE_TASK_ID)].usage));
+    OsMcCpupSet(0x0U, (U32)(CPUP_USE_RATE - g_cpup[TSK_GET_INDEX(IDLE_TASK_ID)].usage));
 
     g_cpupDelTask = (U16)DIV64(g_cpuTimeDelTask * CPUP_USE_RATE, g_baseValue);
 }
@@ -230,7 +230,7 @@ OS_SEC_L2_TEXT U32 OsCpupThreadNow(void)
     g_cpuWinStart = curCycle;
 
     cpup = (U32)(CPUP_USE_RATE - DIV64(CPUP_USE_RATE * g_cpup[TSK_GET_INDEX(IDLE_TASK_ID)].allTime, cpuCycleAll));
-    OsMcCpupSet(OsGetHwThreadId(), cpup);
+    OsMcCpupSet(0x0U, cpup);
 
     OsCpupTimeClear();
 
@@ -303,7 +303,7 @@ OS_SEC_L2_TEXT U32 PRT_CpupThread(U32 inNum, struct CpupThread *cpup, U32 *outNu
         maxNum++;
     }
 
-    OsMcCpupSet(OsGetHwThreadId(),
+    OsMcCpupSet(0x0U,
                 (U32)DIV64(CPUP_USE_RATE * (cpuCycleAll - g_cpup[TSK_GET_INDEX(IDLE_TASK_ID)].allTime), cpuCycleAll));
 
     OsCpupTimeClear();

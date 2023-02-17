@@ -95,8 +95,6 @@ OS_SEC_L4_TEXT U32 OsHookConfigInit(void)
         hooks += hookCnt + 1;
     }
 
-    OS_SPIN_LOCK_INIT(g_hookRegLock);
-
     return OS_OK;
 }
 

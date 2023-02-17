@@ -1,2 +1,2 @@
 
-add_library(prt_rnd_set OBJECT prt_rnd_set.c)
+add_library_ex(prt_rnd_set.c)

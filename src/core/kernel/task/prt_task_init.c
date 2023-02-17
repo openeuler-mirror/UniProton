@@ -246,22 +246,6 @@ OS_SEC_L4_TEXT void OsTskStackInit(U32 stackSize, uintptr_t topStack)
     *((U32 *)(topStack)) = OS_TSK_STACK_TOP_MAGIC;
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateChkAndGetTcb(struct TagTskCb **taskCb)
-{
-    OsTskRecycle();
-
-    if (ListEmpty(&g_tskCbFreeList)) {
-        return OS_ERRNO_TSK_TCB_UNAVAILABLE;
-    }
-
-    // 先获取到该控制块
-    *taskCb = GET_TCB_PEND(OS_LIST_FIRST(&g_tskCbFreeList));
-    // 成功，从空闲列表中移除
-    ListDelete(OS_LIST_FIRST(&g_tskCbFreeList));
-
-    return OS_OK;
-}
-
 OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb,
                                                   uintptr_t **topStackOut, uintptr_t *curStackSize)
 {
@@ -317,6 +301,7 @@ OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskI
 #endif
     taskCb->lastErr = 0;
 
+    INIT_LIST_OBJECT(&taskCb->semBList);
     INIT_LIST_OBJECT(&taskCb->pendList);
     INIT_LIST_OBJECT(&taskCb->timerList);
 

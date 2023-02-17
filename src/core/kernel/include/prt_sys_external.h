@@ -23,7 +23,10 @@
 #include "prt_asm_cpu_external.h"
 #include "prt_cpu_external.h"
 
-#define OS_SYS_PID_BASE (OsGetHwThreadId() << OS_TSK_TCB_INDEX_BITS)
+#define OS_VAR_ARRAY_NUM OS_MAX_CORE_NUM
+#define THIS_CORE() OS_THIS_CORE
+
+#define OS_SYS_PID_BASE (0x0U << OS_TSK_TCB_INDEX_BITS)
 
 #define OS_INT_ACTIVE_MASK \
     (OS_FLG_HWI_ACTIVE | OS_FLG_TICK_ACTIVE | OS_FLG_SYS_ACTIVE | OS_FLG_EXC_ACTIVE)
@@ -49,12 +52,10 @@ typedef void (*TickDispFunc)(void);
 /* 有TICK情况下CPU占用率触发函数类型定义。 */
 typedef void (*TickEntryFunc)(void);
 typedef void (*TaskScanFunc)(void);
-typedef U64 (*SysTimeFunc)(void);
 /*
  * 模块间全局变量声明
  */
 extern U32 g_threadNum;
-
 extern U32 g_tickNoRespondCnt;
 #define TICK_NO_RESPOND_CNT g_tickNoRespondCnt
 
@@ -86,5 +87,10 @@ extern enum SysThreadType OsCurThreadType(void);
             g_taskScanHook();         \
         }                             \
     } while (0)
+
+OS_SEC_ALW_INLINE INLINE U32 OsSysGetTickPerSecond(void)
+{
+    return g_tickModInfo.tickPerSecond;
+}
 
 #endif /* PRT_SYS_EXTERNAL_H */

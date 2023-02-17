@@ -39,7 +39,7 @@ extern "C" {
  * @retval [0,0xFFFFFFFFFFFFFFFF] 系统当前的cycle数
  * @par 依赖
  * <ul><li>prt_clk.h：该接口声明所在的头文件。</li></ul>
- * @see 无
+ * @see PRT_CycleCountGet32()
  */
 extern U64 PRT_ClkGetCycleCount64(void);
 

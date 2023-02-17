@@ -169,3 +169,30 @@ function(link_library target_name  target_path  link_flag object_name object_pat
         add_dependencies(${target_name} ${object_target})
     endforeach()
 endfunction()
+
+function(add_library_ex file_name)
+    #[[
+    函数功能：传入要生成的对象库的文件名（不包含路径），生成对应的对象库并添加到全局变量中
+    用于后续能自动生成打包文件，无需开发人员再次人工指定
+    局限性：
+    1、只能传入单个文件，确保每个对象库只包含单个文件
+    2、生成对象库的文件，必然都是.c 或者.S文件
+    ]]
+    #查询传递进来的文件名是否包含路径
+    string(FIND ${file_name} "/" idx REVERSE)
+    if(${idx} GREATER -1)
+        string(SUBSTRING ${file_name} ${idx} -1 str2)
+        string(REPLACE "/" "" object_name ${str2})
+        string(REPLACE ".c" "" object_name ${object_name})
+    else()
+        #将.c .S文件去除后缀名，只保留文件名（文件名作为对象库的名字）
+        string(REPLACE ".c" "" object_name ${file_name})
+    endif()
+ 
+    string(REPLACE ".S" "" object_name ${object_name})
+    add_library(${object_name} OBJECT ${file_name})
+    #将对象库添加到全局变量中
+    list(APPEND ALL_OBJECT_LIBRARYS ${object_name})
+    set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
+    
+endfunction()

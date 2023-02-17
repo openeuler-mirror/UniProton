@@ -1,0 +1,4 @@
+config INTERNAL_OS_GIC_VER
+    string
+    depends on OS_ARCH_ARMV8
+    default "gicv600" if (INTERNAL_OS_RASPI4)

@@ -13,6 +13,7 @@ config OS_CPU_TYPE
 
 config OS_MAX_CORE_NUM
 	int "The maxinum number of cores"
+	default 4  if INTERNAL_OS_PLATFORM_ARMV8_AX
 	default 1  if INTERNAL_OS_PLATFORM_M4
 
 config INTERNAL_OS_BYTE_ORDER_LE

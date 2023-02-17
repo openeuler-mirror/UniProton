@@ -17,12 +17,72 @@
 
 #include "prt_module.h"
 #include "prt_errno.h"
+#include "prt_buildef.h"
 
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
 #endif /* __cpluscplus */
 #endif /* __cpluscplus */
+
+/*
+ * IPI触发类型。
+ */
+enum OsHwiIpiType {
+    OS_TYPE_TRIGGER_BY_MASK = 0, /* 通过mask确定需要触发的目标核 */
+    OS_TYPE_TRIGGER_TO_OTHER, /* 触发除本核外的其他核 */
+    OS_TYPE_TRIGGER_TO_SELF, /* 触发本核 */
+    OS_TYPE_TRIGGER_BUTT /* 非法 */
+};
+
+/*
+ * 支持的SGI中断编号为[0,15]
+ * 可用的核间中断号定义。
+ */
+#define OS_HWI_IPI_NO_00                                  0
+
+/*
+ * 可用的核间中断号定义[OS占用1号:触发它核响应一次调度的IPI中断号]。
+ */
+#define OS_HWI_IPI_NO_01                                  1
+
+/*
+ * 可用的核间中断号定义[OS占用2号:一个核异常后将其它核停住的IPI中断号]。
+ */
+#define OS_HWI_IPI_NO_02                                  2
+
+/*
+ * 可用的核间中断号定义[OS占用3号:响应tick中断的核触发它核的模拟tickIPI中断号]。
+ */
+#define OS_HWI_IPI_NO_03                                  3
+
+/*
+ * 可用的核间中断号定义[OS占用4号:核间通信用于核间通知的中断号]。
+ */
+#define OS_HWI_IPI_NO_04                                  4
+
+/*
+ * 可用的核间中断号定义。
+ */
+#define OS_HWI_IPI_NO_05                                  5
+#define OS_HWI_IPI_NO_06                                  6
+
+/*
+ * 可用的核间中断号定义[OS占用7号:openamp要求Linux和从核使用同一个IPI，Linux核目前只能使用7号]。
+ */
+#define OS_HWI_IPI_NO_07                                  7
+
+/*
+ * 可用的核间中断号定义。
+ */
+#define OS_HWI_IPI_NO_08                                  8
+#define OS_HWI_IPI_NO_09                                  9
+#define OS_HWI_IPI_NO_10                                  10
+#define OS_HWI_IPI_NO_011                                 11
+#define OS_HWI_IPI_NO_012                                 12
+#define OS_HWI_IPI_NO_013                                 13
+#define OS_HWI_IPI_NO_014                                 14
+#define OS_HWI_IPI_NO_015                                 15
 
 /*
  * 硬中断错误码：中断号非法。
@@ -133,22 +193,58 @@ extern "C" {
 #define OS_ERRNO_HWI_CORE_ID_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x0c)
 
 /*
+ * 硬中断错误码：硬件上报错误中断。
+ *
+ * 值: 0x0200080d
+ *
+ * 解决方案：无。
+ */
+#define OS_ERRNO_HWI_HW_REPORT_HWINO_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x0d)
+
+/*
  * 系统基本功能错误码：注册不可删除的中断失败
  *
- * 值: 0x0300141c
+ * 值: 0x0300080e
  *
  * 解决方案: 请确保传是独立型中断，或者修改OS_HWI_INTERNAL_NUM值
  */
-#define OS_ERROR_HWI_INT_REGISTER_FAILED OS_ERRNO_BUILD_FATAL(OS_MID_HWI, 0x1c)
+#define OS_ERROR_HWI_INT_REGISTER_FAILED OS_ERRNO_BUILD_FATAL(OS_MID_HWI, 0x0e)
 
 /*
  * 硬中断错误码：中断内存资源申请失败
  *
- * 值: 0x0200080d
+ * 值: 0x0200080f
  *
  * 解决方案: 检查默认分区大小配置是否正确
  */
-#define OS_ERRNO_HWI_RESOURCE_ALLOC_FAILED OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x0d)
+#define OS_ERRNO_HWI_RESOURCE_ALLOC_FAILED OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x0f)
+
+/*
+ * 核间中断错误码：中断目标核不支持1-N
+ *
+ * 值: 0x02000810
+ *
+ * 解决方案：目标核掩码只描述1个目标核，不能描述多个目标核
+ */
+#define OS_ERRNO_MULTI_TARGET_CORE OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x10)
+
+/*
+ * 硬中断错误码：删除os内部硬中断。
+ *
+ * 值: 0x02000811
+ *
+ * 解决方案：不允许删除os内部硬中断
+ */
+#define OS_ERRNO_HWI_DELETE_INT OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x11)
+
+/*
+ * 硬中断错误码：硬中断地址信息配置错误
+ *
+ * 值: 0x02000812
+ *
+ * 解决方案: 根据核手册正确配置OS_GIC_BASE_ADDR/OS_GICR_OFFSET/OS_GICR_STRIDE
+ */
+#define OS_ERROR_HWI_BASE_ADDR_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x12)
 
 /*
  * 硬中断优先级的类型定义。

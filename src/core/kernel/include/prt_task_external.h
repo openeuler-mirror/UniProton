@@ -24,6 +24,11 @@
 #include "prt_cpu_external.h"
 #include "prt_mem_external.h"
 
+#if defined(OS_OPTION_POSIX)
+#include "pthread.h"
+#define PTHREAD_KEYS_MAX 32
+#endif
+
 struct TagOsRunQue {
     U32 taskReadyListBitMap;
     /* 优先级bit位表 */
@@ -46,8 +51,8 @@ struct TagTskCb {
     U32 taskStatus;
     /* 任务的运行优先级 */
     TskPrior priority;
-    /* 保留字段 */
-    U16 reserved2;
+    /* 任务栈配置标记 */
+    U16 stackCfgFlg;
     /* 任务栈大小 */
     U32 stackSize;
     TskHandle taskPid;
@@ -66,13 +71,12 @@ struct TagTskCb {
     /* 存放任务名 */
     char name[OS_TSK_NAME_LEN];
 #endif
-    /* 任务栈配置标记 */
-    U16 stackCfgFlg;
-    U16 reserved;
     /* 信号量链表指针 */
     struct TagListObject pendList;
     /* 任务延时链表指针 */
     struct TagListObject timerList;
+    /* 持有互斥信号量链表 */
+    struct TagListObject semBList;
 
 #if defined(OS_OPTION_EVENT)
     /* 任务事件 */
@@ -85,6 +89,24 @@ struct TagTskCb {
     U32 lastErr;
     /* 任务恢复的时间点(单位Tick) */
     U64 expirationTick;
+#if defined(OS_OPTION_POSIX)
+    /* 当前任务状态 */
+    U8 state;
+    /* pthread cancel */
+    U8 cancelState;
+    U8 cancelType;
+    U8 cancelPending;
+	struct _pthread_cleanup_context *cancelBuf;
+    /* exit status */
+    void *retval;
+    /* count for thread join */
+    U16 joinCount;
+    /* semaphore for thread join */
+    SemHandle joinableSem;
+    /* pthread key */
+    void *tsd[PTHREAD_KEYS_MAX];
+    U32 tsdUsed;
+#endif
 };
 
 /*
@@ -163,6 +185,7 @@ extern volatile TskCoresleep g_taskCoreSleep;
 #define OS_TSK_BLOCK                   (OS_TSK_DELAY | OS_TSK_PEND | OS_TSK_SUSPEND  | OS_TSK_QUEUE_PEND | \
         OS_TSK_EVENT_PEND)
 
+#define OS_TSK_SUSPEND_READY_BLOCK (OS_TSK_SUSPEND)
 // 设置任务优先级就绪链表主BitMap中Bit位，每32个优先级对应一个BIT位，即Bit0(优先级0~31),Bit1(优先级32~63),依次类推。
 #define OS_SET_RDY_TSK_BIT_MAP(priority) \
         (OS_TSK_PRIO_RDY_BIT >> ((priority) >> OS_TSK_PRIO_BIT_MAP_POW))

@@ -32,7 +32,16 @@ OS_SEC_L4_TEXT void OsErrRecordInCda(U32 errorNo)
     g_normalErrorNo = errorNo;
 }
 
-OS_SEC_ALW_INLINE INLINE void OsErrRecord(U32 errorNo)
+/* 返回上次错误，并清零 */
+OS_SEC_L4_TEXT U32 OsFatalErrClr(void)
+{
+    U32 oldFatalErr;
+    oldFatalErr = g_fatalErrorNo;
+    g_fatalErrorNo = 0;
+    return oldFatalErr;
+}
+
+OS_SEC_L4_TEXT void OsErrRecord(U32 errorNo)
 {
     enum SysThreadType curThreadType;
     uintptr_t interruptSave;

@@ -92,6 +92,27 @@ typedef void (*TickHandleFunc)(void);
  */
 extern U64 PRT_TickGetCount(void);
 
+/*
+ * @brief Tick中断处理函数。
+ *
+ * @par 描述
+ * Tick中断处理函数。
+ *
+ * @attention
+ * <ul>
+ * <li>只有在Tick中断源由用户提供，并在Tick中断处理中调用有效。若在非tick中断处理函数中调用，可能引发tick时钟不准确</li>
+ * <li>Tick模块裁剪开关未打开，调用此接口无效。</li>
+ * </ul>
+ *
+ * @param 无。
+ *
+ * @retval 无。
+ * @par 依赖
+ * <ul><li>prt_tick.h：该接口声明所在的头文件。</li></ul>
+ * @see 无
+ */
+extern void PRT_TickISR(void);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

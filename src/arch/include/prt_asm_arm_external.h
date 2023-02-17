@@ -15,6 +15,10 @@
 #ifndef PRT_ASM_ARM_EXTERNAL_H
 #define PRT_ASM_ARM_EXTERNAL_H
 
+#if defined(OS_ARCH_ARMV8)
+#include "../cpu/armv8/common/os_asm_cpu_armv8_external.h"
+#endif
+
 /*
  * 描述 : stack_chk_guard支持用户传入seed写入函数宏
  *        argA argB argC 需要使用处传入三个可用寄存器

@@ -26,7 +26,7 @@
 #define OS_MEM_ALIGN_CHECK(value) ((value) & 0x3UL)
 
 #define OS_FSC_MEM_MAGIC_USED                               (struct TagFscMemCtrl *)0x5a5aa5a5
-#define OS_FSC_MEM_LAST_IDX                                 16
+#define OS_FSC_MEM_LAST_IDX                                 31
 #define OS_FSC_MEM_USED_HEAD_SIZE                           (sizeof(struct TagFscMemCtrl))
 #define OS_FSC_MEM_TAIL_SIZE                                (sizeof(U32))
 

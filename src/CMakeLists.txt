@@ -3,6 +3,7 @@ add_subdirectory(arch)
 add_subdirectory(core)
 add_subdirectory(mem)
 add_subdirectory(om)
+add_subdirectory(osal)
 add_subdirectory(security)
 add_subdirectory(utility)
 
@@ -13,5 +14,4 @@ endif()
 if(${CONFIG_OS_SUPPORT_NET})
     add_subdirectory(net)
 endif()
-
 

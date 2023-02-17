@@ -137,7 +137,7 @@ OS_SEC_TEXT void OsSwTmrScan(void)
     return;
 }
 
-OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwtmrCtrlInit(struct TagSwTmrCtrl *swtmr, U32 interval)
+OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmrCtrl *swtmr, U32 interval)
 {
     U32 sortIndex;
     U32 rollNum;
@@ -163,7 +163,7 @@ OS_SEC_TEXT void OsSwTmrStart(struct TagSwTmrCtrl *swtmr, U32 interval)
     struct TagSwTmrCtrl *temp = NULL;
     struct TagListObject *listObject = NULL;
 
-    listObject = OsSwtmrCtrlInit(swtmr, interval);
+    listObject = OsSwTmrStartInner(swtmr, interval);
     if (listObject->next == listObject) { // 该SortLink成员上是空链
         swtmr->next = (struct TagSwTmrCtrl *)listObject;
         swtmr->prev = (struct TagSwTmrCtrl *)listObject;

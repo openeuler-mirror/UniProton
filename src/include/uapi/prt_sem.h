@@ -160,6 +160,24 @@ extern "C" {
 #define OS_ERRNO_SEM_COUNT_GET_PTR_NULL OS_ERRNO_BUILD_ERROR(OS_MID_SEM, 0x0f)
 
 /*
+ * 信号量错误码：非当前互斥信号量的持有者释放该信号量。
+ *
+ * 值: 0x02000710
+ *
+ * 解决方案: 互斥信号量只能由其持有者释放，即互斥信号量的PV操作必须配对使用。
+ */
+#define OS_ERRNO_SEM_MUTEX_NOT_OWNER_POST OS_ERRNO_BUILD_ERROR(OS_MID_SEM, 0x10)
+
+/*
+ * 信号量错误码：在中断中释放互斥型信号量。
+ *
+ * 值: 0x02000711
+ *
+ * 解决方案: 只能在任务中对互斥型信号量进行PV操作。
+ */
+#define OS_ERRNO_SEM_MUTEX_POST_INTERR OS_ERRNO_BUILD_ERROR(OS_MID_SEM, 0x11)
+
+/*
  * 信号量等待时间设定：表示不等待。
  */
 #define OS_NO_WAIT 0
@@ -197,10 +215,10 @@ typedef U16 SemHandle;
 /*
  * 信号量类型。
  */
-enum SemType {
-    SEM_TYPE_COUNT, /* 计数型信号量 */
-    SEM_TYPE_BUTT   /* 非法信号量类型 */
-};
+/* 计数型信号量 */
+#define SEM_TYPE_COUNT 0
+/* 二进制信号量 */
+#define SEM_TYPE_BIN 1
 
 /*
  * 信号量模块被阻塞线程唤醒方式。
@@ -231,8 +249,8 @@ struct SemInfo {
     U32 owner;
     /* 信号量唤醒方式，为SEM_MODE_FIFO或SEM_MODE_PRIOR */
     enum SemMode mode;
-    /* 信号量类型，为SEM_TYPE_COUNT（计数型） */
-    enum SemType type;
+    /* 信号量类型，为SEM_TYPE_COUNT（计数型）或SEM_TYPE_BIN（互斥型） */
+    U32 type;
 };
 
 /*

@@ -95,7 +95,8 @@ enum HookType {
     OS_HOOK_HWI_EXIT,       // 硬中断退出钩子
     OS_HOOK_TSK_SWITCH,     // 任务切换钩子
     OS_HOOK_IDLE_PERIOD,    // IDLE钩子
-    OS_HOOK_TYPE_NUM        // 钩子总数
+    OS_HOOK_LAST_WORDS,     // 临终遗言钩子
+    OS_HOOK_TYPE_NUM,       // 钩子总数
 };
 
 /*

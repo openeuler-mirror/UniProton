@@ -35,4 +35,8 @@ extern void OsTickStartRegSet(U16 tickHwTimerIndex, U32 cyclePerTick);
 #include "../cpu/armv7-m/common/os_cpu_armv7_m_external.h"
 #endif
 
+#if defined(OS_ARCH_ARMV8)
+#include "../cpu/armv8/common/os_cpu_armv8_external.h"
+#endif
+
 #endif /* PRT_CPU_EXTERNAL_H */

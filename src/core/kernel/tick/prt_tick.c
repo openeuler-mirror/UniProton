@@ -47,3 +47,11 @@ OS_SEC_TEXT void OsTickDispatcher(void)
     TSKMON_TICK_RUN();
 }
 
+void PRT_TickISR(void)
+{
+#if !defined(OS_OPTION_TICK_USE_HWTMR)
+    if (OsSysGetTickPerSecond() != 0) {
+        TICK_NO_RESPOND_CNT++;
+    }
+#endif
+}
