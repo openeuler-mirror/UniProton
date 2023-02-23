@@ -30,7 +30,7 @@ extern "C" {
 
 /* ***************************** 中断模块配置 ************************** */
 /* 硬中断最大支持个数 */
-#define OS_HWI_MAX_NUM_CONFIG                           150
+#define OS_HWI_MAX_NUM_CONFIG                           87
 
 /* ***************************** 配置Tick中断模块 *************************** */
 /* Tick中断模块裁剪开关 */
@@ -40,7 +40,7 @@ extern "C" {
 
 /* ***************************** 配置定时器模块 ***************************** */
 /* 基于TICK的软件定时器裁剪开关 */
-#define OS_INCLUDE_TICK_SWTMER                          NO
+#define OS_INCLUDE_TICK_SWTMER                          YES
 /* 基于TICK的软件定时器最大个数 */
 #define OS_TICK_SWITIMER_MAX_NUM                        8
 
@@ -78,26 +78,26 @@ extern "C" {
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */
-#define OS_INCLUDE_SEM                                  NO
+#define OS_INCLUDE_SEM                                  YES
 
 /* 最大支持的信号量数 */
-#define OS_SEM_MAX_SUPPORT_NUM                          0
+#define OS_SEM_MAX_SUPPORT_NUM                          10
 
 /* ***************************** 配置队列模块 ******************************* */
 /* 队列模块裁剪开关 */
-#define OS_INCLUDE_QUEUE                                NO
+#define OS_INCLUDE_QUEUE                                YES
 /* 最大支持的队列数,范围(0,0xFFFF] */
 #define OS_QUEUE_MAX_SUPPORT_NUM                        10
 
 /* ************************* 钩子模块配置 *********************************** */
 /* 硬中断进入钩子最大支持个数, 范围[0, 255] */
-#define OS_HOOK_HWI_ENTRY_NUM                           0
+#define OS_HOOK_HWI_ENTRY_NUM                           20
 /* 硬中断退出钩子最大支持个数, 范围[0, 255] */
-#define OS_HOOK_HWI_EXIT_NUM                            0
+#define OS_HOOK_HWI_EXIT_NUM                            19
 /* 任务切换钩子最大支持个数, 范围[0, 255] */
-#define OS_HOOK_TSK_SWITCH_NUM                          0
+#define OS_HOOK_TSK_SWITCH_NUM                          14
 /* IDLE钩子最大支持个数, 范围[0, 255] */
-#define OS_HOOK_IDLE_NUM                                0
+#define OS_HOOK_IDLE_NUM                                13
 
 #ifdef __cplusplus
 #if __cplusplus
