@@ -295,7 +295,7 @@ U32 OsStart(void)
     return ret;
 }
 
-S32 main(void)
+S32 OsConfigStart(void)
 {
     U32 ret;
 

@@ -79,13 +79,12 @@ OS_SEC_L4_TEXT U32 OsIdleTskAMPCreate(void)
 {
     U32 ret;
     TskHandle taskHdl;
-    struct TskInitParam taskInitParam;
-    char tskName[OS_TSK_NAME_LEN] = "IdleTask";
+    struct TskInitParam taskInitParam = {0};
 
     /* Create background task. */
     taskInitParam.taskEntry = g_tskIdleEntry;
     taskInitParam.stackSize = g_tskModInfo.idleStackSize;
-    taskInitParam.name = tskName;
+    taskInitParam.name = "IdleTask";
     taskInitParam.taskPrio = OS_TSK_PRIORITY_LOWEST;
     taskInitParam.stackAddr = 0;
 

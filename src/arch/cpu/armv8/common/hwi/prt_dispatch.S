@@ -71,6 +71,7 @@ OsTaskTrap:
     str    x1, [x0]   // x0 is the &g_pRunningTask->sp
 
     ldr    x0, =g_sysStackHigh
+    ldr    x0, [x0]
     mov    sp, x0
     B      OsMainSchedule
 loop1:

@@ -69,7 +69,6 @@ OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode,
     uintptr_t intSave;
     struct TagSemCb *semCreated = NULL;
     struct TagListObject *unusedSem = NULL;
-
     (void)cookie;
 
     if (semHandle == NULL) {

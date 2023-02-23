@@ -18,6 +18,19 @@
 #include "prt_attr_external.h"
 #include "prt_task.h"
 
+#if (OS_GIC_VER == 2)
+union IccSgirEl1 {
+    struct {
+        U32 intId      : 4;
+        U32 rsvd0      : 11;
+        U32 nsatt      : 1;
+        U32 targetlist : 8;
+        U32 filter     : 2;
+        U32 rsvd1      : 6;
+    } bits;
+    U32 value;
+};
+#elif (OS_GIC_VER == 3)
 /* ICC_SGIR_EL1 */
 union IccSgirEl1 {
     struct {
@@ -37,6 +50,7 @@ union IccSgirEl1 {
     } bits;
     U64 value;
 };
+#endif
 
 /* GIC基地址 */
 OS_SEC_BSS uintptr_t g_gicdBase;
@@ -71,24 +85,54 @@ OS_SEC_L4_TEXT void OsGicEnableInt(U32 intId)
     }
 }
 
+#if (OS_GIC_VER == 2)
 /*
  * 描述: 触发中断到目标核，仅支持SGI
  */
-OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetCore)
+OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
 {
     union IccSgirEl1 iccSgirEl1;
-
-    iccSgirEl1.value           = 0;   // 每个位域默认为0
-    iccSgirEl1.bits.targetlist = intId;
-    iccSgirEl1.bits.aff1       = targetCore;
-    iccSgirEl1.bits.aff2       = g_gicCoreMap.bits.aff2;
-    iccSgirEl1.bits.aff3       = g_gicCoreMap.bits.aff3;
-
+    U32 core;
+    
     PRT_DSB();
-    GIC_REG_WRITE(GICD_SGIR, iccSgirEl1.value);
+    for (core = 0; (core < OS_MAX_CORE_NUM) && (targetList != 0); ++core) {
+        if ((targetList & (1U << core)) != 0) {
+            iccSgirEl1.value           = 0;   // 每个位域默认为0
+            iccSgirEl1.bits.intId = intId;
+            iccSgirEl1.bits.targetlist = 1 << core;
+            GIC_REG_WRITE(GICD_SGIR, iccSgirEl1.value);
+        }
+    }
     /* 内存屏障，强制生效执行上述对ICC_SGI1R_EL1的写操作 */
     PRT_ISB();
 }
+#elif (OS_GIC_VER == 3)
+/*
+ * 描述: 触发中断到目标核，仅支持SGI
+ */
+OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
+{
+    union IccSgirEl1 iccSgirEl1;
+    U32 core;
+    U16 targetMask = 0x1;
+    
+    PRT_DSB();
+    for (core = 0; (core < OS_MAX_CORE_NUM) && (targetList != 0); ++core) {
+        if ((targetList & (1U << core)) != 0) {
+            iccSgirEl1.value           = 0;   // 每个位域默认为0
+            iccSgirEl1.bits.intId = intId;
+            iccSgirEl1.bits.targetlist = targetMask;
+            iccSgirEl1.bits.aff1 = core;
+            iccSgirEl1.bits.aff2 = g_gicCoreMap.bits.aff2;
+            iccSgirEl1.bits.aff3 = g_gicCoreMap.bits.aff3;
+            OS_EMBED_ASM("MSR " REG_ALIAS(ICC_SGI1R_EL1) ", %0 \n" : : "r"(iccSgirEl1.value) : "memory");
+        }
+    }
+    /* 内存屏障，强制生效执行上述对ICC_SGI1R_EL1的写操作 */
+    PRT_ISB();
+}
+#endif
+
 
 /*
  * 描述: 设置中断的优先级

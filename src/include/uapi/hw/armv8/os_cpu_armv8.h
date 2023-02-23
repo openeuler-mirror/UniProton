@@ -90,6 +90,7 @@ OS_SEC_ALW_INLINE INLINE U32 OsGetCoreID(void)
 {
     U64 mpid;
     OS_EMBED_ASM("MRS  %0, MPIDR_EL1" : "=r"(mpid)::"memory", "cc");
+    OS_EMBED_ASM("dmb sy" ::: "memory");
     /* single-thread 模式下，核号取AFF0 AF1为0 */
     /* muti-thread 模式下，核号取AFF1 AF0为0 */
     /* 综上核号计算采用AFF0 + AFF1 */
