@@ -22,17 +22,19 @@
 #define GIC_IPRIORITY_INT_NUM     4
 // 配置中断优先级，每8bit的高4bit有效，低bit预留
 #define GIC_IPRIORITY_HIGH_BIT    4
+
+#if (OS_GIC_VER == 2)
 #define GIC_DIST_BASE   0xff841000
 #define GIC_CPU_BASE    0xff842000
-#define	GICD_SGIR		(GIC_DIST_BASE + 0xf00)
-#if (OS_GIC_VER == 2)
 #define IAR_MASK        0x3FFU
 #define GICC_IAR		(GIC_CPU_BASE + 0xc)
 #define GICC_EOIR		(GIC_CPU_BASE + 0x10)
-#endif
+#define	GICD_SGIR		(GIC_DIST_BASE + 0xf00)
+#elif (OS_GIC_VER == 3)
 #define ICC_IAR1_EL1              S3_0_C12_C12_0
 #define ICC_EOIR1_EL1             S3_0_C12_C12_1
 #define ICC_SGI1R_EL1             S3_0_C12_C11_5
+#endif
 #define GIC_REG_BASE              g_gicdBase
 #define MAX_SGI_ID                15   // 系统支持的最大SGI的中断号
 #define MIN_PPI_ID                16   // 系统支持的最小PPI的中断号

@@ -54,26 +54,10 @@ OS_SEC_DATA U32 g_tickTimerID = U32_INVALID;
 OS_SEC_DATA uintptr_t g_sysStackHigh = (uintptr_t)&__os_sys_sp_end;
 OS_SEC_DATA uintptr_t g_sysStackLow = (uintptr_t)&__os_sys_sp_start;
 
-#if defined(OS_OPTION_OPENAMP)
-INIT_SEC_L4_TEXT void InitSystemSp(void)
-{
-    uintptr_t stackBottom = (uintptr_t)(&__os_sys_sp_end);
-    U32 stackSize = (U32)((uintptr_t)(&__os_sys_sp_end) - (uintptr_t)(&__os_sys_sp_start));
-
-    // 系统栈16字节对齐
-    U32 stackStep = TRUNCATE((stackSize), OS_TSK_STACK_SIZE_ALIGN);
-
-    // OPENAMP背景下，多核系统栈仅初始化本核系统栈
-    g_sysStackHigh = stackBottom;
-    g_sysStackLow = g_sysStackHigh - stackStep;
-    return;
-}
-#else
 INIT_SEC_L4_TEXT void InitSystemSp(void)
 {
     return;
 }
-#endif
 
 /*
  * 描述: 获取系统栈的起始地址（低地址)
