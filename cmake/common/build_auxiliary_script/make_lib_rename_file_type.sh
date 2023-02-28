@@ -16,7 +16,7 @@ file=lib"${CK_LIB_SUFFIX}"
 
 if [ "${CPU_TYPE}" = "m4" ] ; then
     ARNAME=arm-none-eabi-ar ; OBJCOPYNAME=arm-none-eabi-objcopy;
-elif [ "${CPU_TYPE}" = "raspi4" ];
+elif [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ];
     then ARNAME=aarch64-none-elf-ar; OBJCOPYNAME=aarch64-none-elf-objcopy;
 else
     ARNAME=ar; OBJCOPYNAME=objcopy;
@@ -25,7 +25,7 @@ fi
 sleep 2
 pushd "$CK_LIB_PATH"
 ##为什么不加这一行要报错
-if [ "${CPU_TYPE}" = "m4" || [ "${CPU_TYPE}" = "raspi4" ] ; then
+if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] ; then
     [ -n tmp_"${file}" ] && rm -rf tmp_"${file}" 
 fi
 mkdir tmp_"${file}"
@@ -36,13 +36,13 @@ pushd tmp_"${file}"
 # 删除某变量指定的目录下所有文件。
 # 通过对变量${FILE_PATH}进行判断，当${FILE_PATH}为空时，不会错误删除根目录下的文件。
 [ -n "${file}" ] && rm -rf "${file}"
-if [ "${CPU_TYPE}" = "m4" || [ "${CPU_TYPE}" = "raspi4" ] ; then  
+if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ]; then  
     find . -name '*.s.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.s.o ./{}.o
     find . -name '*.S.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.S.o ./{}.o
     find . -name '*.c.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.c.o ./{}.o
 fi
 
-if [ "${CPU_TYPE}" = "m4" ] ]; then
+if [ "${CPU_TYPE}" = "m4" ] ; then
     for i in $(ls *.o);
     do
         if [ -f "${i}" ]  ; then
@@ -53,7 +53,7 @@ if [ "${CPU_TYPE}" = "m4" ] ]; then
     done
 fi
 
-if [ "${CPU_TYPE}" = "raspi4" ]; then
+if [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ]; then
     for i in $(ls *.o);
     do
         if [ -f "${i}" ]  ; then

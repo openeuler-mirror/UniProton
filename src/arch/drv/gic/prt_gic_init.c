@@ -98,7 +98,7 @@ OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
     for (core = 0; (core < OS_MAX_CORE_NUM) && (targetList != 0); ++core) {
         if ((targetList & (1U << core)) != 0) {
             iccSgirEl1.value           = 0;   // 每个位域默认为0
-            iccSgirEl1.bits.intId = intId;
+            iccSgirEl1.bits.intId      = intId;
             iccSgirEl1.bits.targetlist = 1 << core;
             GIC_REG_WRITE(GICD_SGIR, iccSgirEl1.value);
         }
@@ -120,11 +120,11 @@ OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
     for (core = 0; (core < OS_MAX_CORE_NUM) && (targetList != 0); ++core) {
         if ((targetList & (1U << core)) != 0) {
             iccSgirEl1.value           = 0;   // 每个位域默认为0
-            iccSgirEl1.bits.intId = intId;
+            iccSgirEl1.bits.intId      = intId;
             iccSgirEl1.bits.targetlist = targetMask;
-            iccSgirEl1.bits.aff1 = core;
-            iccSgirEl1.bits.aff2 = g_gicCoreMap.bits.aff2;
-            iccSgirEl1.bits.aff3 = g_gicCoreMap.bits.aff3;
+            iccSgirEl1.bits.aff1       = core;
+            iccSgirEl1.bits.aff2       = g_gicCoreMap.bits.aff2;
+            iccSgirEl1.bits.aff3       = g_gicCoreMap.bits.aff3;
             OS_EMBED_ASM("MSR " REG_ALIAS(ICC_SGI1R_EL1) ", %0 \n" : : "r"(iccSgirEl1.value) : "memory");
         }
     }
