@@ -9,11 +9,14 @@
 ## 1.2 安装编译器&构建器
 - #### 安装GNU Arm Embedded Toolchain编译器。
 1. 下载编译器.
-- 当前开源版本只涉及32位，官方下载地址为：[GNU Arm Embedded Toolchain编译器](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)，指定版本:10-2020-q4-major。
+- cortex_m4版本编译器，官方下载地址为：[GNU Arm Embedded Toolchain编译器](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)，指定版本:10-2020-q4-major。
+- armv8版本编译器，官方下载地址为：[gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz](https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz)
 2. 解压编译器.
 - 可以参考如下命令完成解压：
-<br>
+```
 		tar -xvf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2 -C /opt/buildtools
+		tar -xvf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz -C /opt/buildtools
+```
 
 ## 1.3 安装Cmake
 1. 通过官网进行下载[Cmake](https://cmake.org/download/)，下载指定版本3.20.5
@@ -105,10 +108,10 @@
 # 二、提供镜像，用户自行下载
 1. 在虚拟机操作命令：
 
-	`docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v001`
+	`docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v002`
 	- 执行完成之后，创建容器并进入(默认挂载当前执行命令的目录为容器内的/home/uniproton目录)
 
-	`docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v001`
+	`docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v002`
 2. 下载代码
     - 下载UniProton代码
         `git clone https://gitee.com/openeuler/UniProton.git`

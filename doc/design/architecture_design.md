@@ -17,6 +17,14 @@ UniProton系统由Mem、Arch、Kernel、IPC、OM五大子系统构成，Mem、Ar
 | cmake | common       | build_auxiliary_script | 转换Kconfig文件为buildef.h脚本 |
 |       | functions    |           | cmake的公共功能函数 |
 |       | tool_chain   |           | 编译器和编译选项配置文件 |
+| demos | helloworld   | apps      | 示例程序的main函数文件以及业务代码 |
+|       |              | bsp       | 板级驱动适配代码 |
+|       |              | build     | demo构建及链接脚本 |
+|       |              | config    | 用户配置文件，功能宏定制头文件 |
+|       |              | include   | src/include/uapi及posix目录下头文件拷贝目录 |
+|       |              | libs      | 源码编译静态库文件存放目录 |
+|       | Hi3093       |           | 与helloworld demo类似，详见对应目录下的readme文件 |
+|       | RASPI4       |           | 与helloworld demo类似，详见对应目录下的readme文件 |
 | doc   |              |           | 项目配置、规范、协议等文档 |
 |       | design       |           | UniProton系统架构和特性说明 |
 | platform |           |           | libboundscheck使用说明 |
@@ -27,13 +35,18 @@ UniProton系统由Mem、Arch、Kernel、IPC、OM五大子系统构成，Mem、Ar
 |       |              | config    | 用户配置功能宏开关 |
 |       | core         | ipc       | 事件、队列、信号量等功能 |
 |       |              | kernel    | 任务、中断、异常、软件定时器等功能 |
+|       | fs           | littlefs  | littlefs适配层代码，不包含完整littlefs代码 |
+|       |              | vfs       | 文件系统vfs层接口代码 |
 |       | include      | uapi      | 对外头文件 |
+|       |              | posix     | posix接口头文件 |
 |       | mem          |           | 内存管理基本功能 |
 |       |              | fsc       | 内存管理FSC算法代码 |
 |       |              | include   | 内存管理头文件 |
+|       | net          | lwip-2.1  | lwip适配层代码，不包含完整lwip代码 |
 |       | om           | cpup      | cpu占用率统计功能 |
 |       |              | err       | 错误处理功能 |
 |       |              | hook      | 钩子函数功能 |
 |       |              | include   | 系统管理头文件 |
+|       | osal         | posix     | posix功能实现源码 |
 |       | security     | rnd       | 随机化功能 |
 |       | utility      | lib       | 公共库函数 |
