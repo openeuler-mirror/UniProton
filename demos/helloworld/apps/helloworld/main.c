@@ -12,7 +12,7 @@
 void helloworld_task(U32 uwParam1, U32 uParam2, U32 uwParam3, U32 uwParam4)
 {
     printf("hello world!\n");
-    while(1) {
+    while (1) {
         PRT_TaskDelay(10);
     }
 
@@ -23,7 +23,7 @@ U32 PRT_AppInit(void)
 {
     U32 ret;
     TskHandle taskPid;
-    struct TskInitParam stInitParam = {helloworld_task, 10, 0, {0}, 0x500, "TaskA", 0};
+    struct TskInitParam stInitParam = {helloworld_task, 10, 0, {0}, 0x800, "TaskA", 0};
 
     ret = PRT_TaskCreate(&taskPid, &stInitParam);
     if (ret) {
@@ -58,8 +58,20 @@ void OsRandomSeedInit(void)
 #endif
 }
 
+extern U32 __data_start__;
+extern U32 __data_end__;
+extern U32 __text_end__;
 void OsGlobalDataInit(void)
 {
+    U32 size;
+    U32 *dest = (U32 *)&__data_start__;
+    U32 *src = (U32 *)&__text_end__;
+    U32 i;
+
+    size = (U32)&__data_end__ - (U32)&__data_start__;
+    for (i = 0; i < (size / 4); i++) {
+        dest[i] = src[i];
+    }
 }
 
 void PRT_HardBootInit(void)
