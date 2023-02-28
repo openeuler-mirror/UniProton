@@ -99,7 +99,7 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 		DESTINATION ${INSTALL_HI3093_ARMV8_ARCHIVE_CONFIG_DIR}
 	)
 	##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹}
-	file(GLOB common_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/common/*.h)
+	file(GLOB common_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/*.h)
 	install(FILES
 		${common_include_files}
 		DESTINATION ${INSTALL_HI3093_ARMV8_INCLUDE_DIR}/common
@@ -107,24 +107,17 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 
 
 	##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹 =======}
-	file(GLOB hw_board_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/sre/hw/board/*)
+	file(GLOB hw_board_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/hw/armv8/*)
 	install(FILES
 		${hw_board_include_files}
 		DESTINATION ${INSTALL_HI3093_ARMV8_INCLUDE_DIR}/hw/board
 	)
 
 	##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹}
-	file(GLOB hw_cpu_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/sre/hw/cpu/*)
+	file(GLOB hw_cpu_include_files  ${PROJECT_SOURCE_DIR}/src/include/posix/*)
 	install(FILES
 		${hw_cpu_include_files}
 		DESTINATION ${INSTALL_HI3093_ARMV8_INCLUDE_DIR}/hw/cpu
-	)
-
-	##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹}
-	file(GLOB hw_drv_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/sre/hw/drv/*)
-	install(FILES
-		${hw_drv_include_files}
-		DESTINATION ${INSTALL_HI3093_ARMV8_INCLUDE_DIR}/hw/drv
 	)
 
 	install(FILES
