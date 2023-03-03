@@ -1,7 +1,8 @@
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
-export APP=RASPI4
+export APP=hi3093
 export TMP_DIR=$APP
 
+sh ./build_static.sh $APP
 sh ./build_openamp.sh
 
 cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
