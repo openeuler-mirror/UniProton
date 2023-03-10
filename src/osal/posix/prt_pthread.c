@@ -44,12 +44,12 @@ static void OsPthreadRunDestructor(struct TagTskCb *self)
             destructor(val);
         }
     }
+    self->tsdUsed = 0;
 }
 
 void PRT_PthreadExit(void *retval)
 {
     U32 ret;
-    TskHandle task;
     uintptr_t intSave;
     struct TagTskCb *tskCb;
 
@@ -63,23 +63,27 @@ void PRT_PthreadExit(void *retval)
         f(x);
     }
 
-    task = tskCb->taskPid;
+    tskCb->retval = retval;
     /* thread is joinable and other threads are waitting */
     if (tskCb->state == PTHREAD_CREATE_JOINABLE && tskCb->joinCount > 0) {
-        tskCb->retval = retval;
         tskCb->state = PTHREAD_EXITED;
         OsPthreadNotifyParents(tskCb);
     } else {
-        tskCb->state = PTHREAD_TERMINATED;
+        if (tskCb->state == PTHREAD_CREATE_JOINABLE) {
+            tskCb->state = PTHREAD_EXITED;
+        } else {
+            tskCb->state = PTHREAD_TERMINATED;
+        }
         if (tskCb->joinableSem != 0) {
             PRT_SemDelete(tskCb->joinableSem);
+            tskCb->joinableSem = 0;
         }
         OsPthreadRunDestructor(tskCb);
     }
 
     OsIntRestore(intSave);
 
-    ret = PRT_TaskDelete(task);
+    ret = PRT_TaskDelete(tskCb->taskPid);
     if (ret != OS_OK) {
         OsErrRecord(ret);
     }
@@ -354,6 +358,32 @@ void _pthread_cleanup_pop(struct _pthread_cleanup_context *cb, int run)
     if (run) cb->_routine(cb->_arg);
 }
 
+U32 OsPthreadJoinExit(struct TagTskCb *tskCb, void **status)
+{
+    switch (tskCb->state) {
+        case PTHREAD_EXITED:
+            if (status != NULL) {
+                *status = tskCb->retval;
+            }
+            /* the last parent frees the resources */
+            if (tskCb->joinCount == 0) {
+                tskCb->state = PTHREAD_TERMINATED;
+                if (tskCb->joinableSem != 0) {
+                    PRT_SemDelete(tskCb->joinableSem);
+                    tskCb->joinableSem = 0;
+                }
+                OsPthreadRunDestructor(tskCb);
+            }
+            return OS_OK;
+        case PTHREAD_CREATE_JOINABLE:
+        case PTHREAD_CREATE_DETACHED:
+            return EINVAL;
+        case PTHREAD_TERMINATED: /* fall through */
+        default:
+            return ESRCH;
+    }
+}
+
 int PRT_PthreadJoin(TskHandle thread, void **status)
 {
     struct TagTskCb *tskCb = RUNNING_TASK;
@@ -372,6 +402,7 @@ int PRT_PthreadJoin(TskHandle thread, void **status)
     tskCb = GET_TCB_HANDLE(thread);
     /* the target thread already exited */
     if (tskCb->taskStatus == OS_TSK_UNUSED) {
+        ret = OsPthreadJoinExit(tskCb, status);
         OsIntRestore(intSave);
         return ret;
     }
@@ -389,25 +420,7 @@ int PRT_PthreadJoin(TskHandle thread, void **status)
         tskCb->joinCount--;
     }
 
-    if (tskCb->state == PTHREAD_EXITED) {
-        if (status != NULL) {
-            *status = tskCb->retval;
-        }
-        /* the last parent frees the resources */
-        if (tskCb->joinCount == 0) {
-            tskCb->state = PTHREAD_TERMINATED;
-            if (tskCb->joinableSem != 0) {
-                PRT_SemDelete(tskCb->joinableSem);
-            }
-            OsPthreadRunDestructor(tskCb);
-        }
-    } else if (tskCb->state == PTHREAD_CREATE_DETACHED) {
-        ret = EINVAL;
-    } else if (tskCb->state == PTHREAD_TERMINATED) {
-        ret = 0;
-    } else {
-        ret = ESRCH;
-    }
+    ret = OsPthreadJoinExit(tskCb, status);
     OsIntRestore(intSave);
 
     return ret;
@@ -466,6 +479,7 @@ static int OsPthreadCancelDetachedHandle(struct TagTskCb *tskCb)
         if (ret != OS_OK) {
             return EINVAL;
         }
+        tskCb->joinableSem = 0;
     }
     while (tskCb->cancelBuf) {
         void (*f)(void *) = tskCb->cancelBuf->_routine;
@@ -492,17 +506,17 @@ static int OsPthreadCancelJoinableHandle(struct TagTskCb *tskCb)
         tskCb->cancelBuf = tskCb->cancelBuf->_previous;
         f(x);
     }
+    tskCb->state = PTHREAD_EXITED;
     if (tskCb->joinCount == 0) {
-        tskCb->state = PTHREAD_TERMINATED;
         if (tskCb->joinableSem != 0) {
             ret = PRT_SemDelete(tskCb->joinableSem);
             if (ret != OS_OK) {
                 return EINVAL;
             }
+            tskCb->joinableSem = 0;
         }
         OsPthreadRunDestructor(tskCb);
     } else {
-        tskCb->state = PTHREAD_EXITED;
         while (tskCb->joinCount) {
             tskCb->joinCount--;
             ret = PRT_SemPost(tskCb->joinableSem);
