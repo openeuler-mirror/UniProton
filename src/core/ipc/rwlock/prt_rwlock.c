@@ -196,9 +196,10 @@ U32 OsRwLockRdPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
 
     intSave = PRT_HwiLock();
 
-    if (OsRwLockCheck(rwl) != OS_OK) {
+    ret = OsRwLockCheck(rwl);
+    if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        return ret;
     }
 
     runTask = (struct TagTskCb *)RUNNING_TASK;
@@ -243,9 +244,10 @@ U32 OsRwLockWrPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
 
     intSave = PRT_HwiLock();
 
-   if (OsRwLockCheck(rwl) != OS_OK) {
+    ret = OsRwLockCheck(rwl);
+    if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        return ret;
     }
 
     runTask = (struct TagTskCb *)RUNNING_TASK;
@@ -270,7 +272,6 @@ U32 OsRwLockWrPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
             PRT_HwiRestore(intSave);
             return EINVAL;
         }
-        rwl->rw_count--;
         PRT_HwiRestore(intSave);
         return OS_OK;
     }

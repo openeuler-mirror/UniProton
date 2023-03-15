@@ -44,11 +44,13 @@ int timer_create(clockid_t clockId, struct sigevent * restrict evp, timer_t * re
     struct TimerCreatePara timer = {0};
 
     if ((timerId == NULL) || (evp == NULL) || (clockId != CLOCK_REALTIME)) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     if (evp->sigev_notify != SIGEV_THREAD) { // 必须有超时处理函数
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     timer.type = OS_TIMER_SOFTWARE;
@@ -60,7 +62,8 @@ int timer_create(clockid_t clockId, struct sigevent * restrict evp, timer_t * re
     timer.arg2 = (U32)evp->sigev_value.sival_int;
     ret = PRT_TimerCreate(&timer, &swtmrId);
     if (ret != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     *timerId = (timer_t)swtmrId;
@@ -72,7 +75,8 @@ int timer_delete(timer_t timerId)
     U32 swtmrId = (U32)timerId;
 
     if (PRT_TimerDelete(0, swtmrId) != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     return OS_OK;
@@ -192,6 +196,8 @@ U32 OsTimeOut2Ticks(const struct timespec *time, U32 *ticks)
     } else {
         timeOut -= ((U64)(curTime.tv_nsec - time->tv_nsec) * OsSysGetTickPerSecond()) / OS_SYS_NS_PER_SECOND;
     }
+    // 因为tick误差在ms级，为了确保延时时间满足要求，向上加一
+    timeOut = timeOut + 1;
     *ticks = timeOut >= OS_WAIT_FOREVER ? OS_WAIT_FOREVER : (U32)timeOut;
 
     return OS_OK;
@@ -204,17 +210,20 @@ int timer_gettime(timer_t timerId, struct itimerspec *value)
     struct SwTmrInfo info;
 
     if (value == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     ret = PRT_TimerQuery(0, (TimerHandle)timerId, &expireTime);
     if (ret != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     ret = PRT_SwTmrInfoGet((TimerHandle)timerId, &info);
     if (ret != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     OsTimeMs2Spec(expireTime, &value->it_value);
@@ -231,29 +240,34 @@ int timer_settime(timer_t timerId, int flags, const struct itimerspec *value, st
     (void)flags;
 
     if (value == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     if (!OsTimeCheckSpec(&value->it_value) || !OsTimeCheckSpec(&value->it_interval)) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     expiry = OsTimeSpec2Tick(&value->it_value);
     interval = OsTimeSpec2Tick(&value->it_interval);
 
     if (interval != 0 && interval != expiry) {
-        return ENOTSUP;
+        errno = ENOTSUP;
+        return PTHREAD_OP_FAIL;
     }
 
     if (ovalue) {
         if (timer_gettime(timerId, ovalue) != OS_OK) {
-            return EINVAL;
+            errno = EINVAL;
+            return PTHREAD_OP_FAIL;
         }
     }
 
     ret = PRT_TimerStop(0, timerId);
     if (ret != OS_OK && ret != OS_ERRNO_SWTMR_UNSTART) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     // 当 it_value = 0, 表示要停止定时器.
@@ -269,7 +283,8 @@ int timer_settime(timer_t timerId, int flags, const struct itimerspec *value, st
     PRT_HwiRestore(intSave);
 
     if (PRT_TimerStart(0, timerId) != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     return OS_OK;

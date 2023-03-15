@@ -24,14 +24,15 @@ int sem_init(sem_t *sem, int shared, unsigned int value)
     uintptr_t intSave;
     SemHandle semHandle;
     struct TagSemCb *semCb;
-    char name[MAX_POSIX_SEMAPHORE_NAME_LEN + 1];
-    (void)shared;
 
+    (void)shared;
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     if (value > OS_SEM_COUNT_MAX) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     intSave = OsIntLock();
@@ -39,15 +40,13 @@ int sem_init(sem_t *sem, int shared, unsigned int value)
     ret = PRT_SemCreate(value, &semHandle);
     if (ret != OS_OK) {
         OsIntRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     // 创建成功
     semCb = GET_SEM(semHandle);
-    snprintf_s(name, MAX_POSIX_SEMAPHORE_NAME_LEN + 1, MAX_POSIX_SEMAPHORE_NAME_LEN, "defaultSem%d", semHandle);
-    if (strncpy_s((char *)semCb->name, MAX_POSIX_SEMAPHORE_NAME_LEN + 1, name, strlen(name) + 1) != 0) {
-        OS_GOTO_SYS_ERROR1();
-    }
+    snprintf_s(semCb->name, MAX_POSIX_SEMAPHORE_NAME_LEN + 1, MAX_POSIX_SEMAPHORE_NAME_LEN, "defaultSem%d", semHandle);
     sem->refCount++;
     sem->semHandle = semHandle;
     OsIntRestore(intSave);
@@ -68,11 +67,13 @@ sem_t *sem_open(const char *name, int flags, ...)
     SemHandle sem;
 
     if (name == NULL) {
-        return NULL;
+        errno = EINVAL;
+        return SEM_FAILED;
     }
 
     if (strlen(name) >= MAX_POSIX_SEMAPHORE_NAME_LEN) {
-        return NULL;
+        errno = EINVAL;
+        return SEM_FAILED;
     }
 
     va_start(arg, flags);
@@ -92,7 +93,8 @@ sem_t *sem_open(const char *name, int flags, ...)
     if (created == TRUE) {
         if (((U32)flags & (O_EXCL | O_CREAT)) == (O_EXCL | O_CREAT)) {
             PRT_HwiRestore(intSave);
-            return NULL;
+            errno = EEXIST;
+            return SEM_FAILED;
         }
         semCb->handle.refCount++;
         PRT_HwiRestore(intSave);
@@ -100,17 +102,20 @@ sem_t *sem_open(const char *name, int flags, ...)
     }
     if ((flags & O_CREAT) == 0) {
         PRT_HwiRestore(intSave);
-        return NULL;
+        errno = ENOENT;
+        return SEM_FAILED;
     }
     if (val > OS_SEM_COUNT_MAX) {
         PRT_HwiRestore(intSave);
-        return NULL;
+        errno = EINVAL;
+        return SEM_FAILED;
     }
 
     ret = PRT_SemCreate(val, &sem);
     if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return NULL;
+        errno = EAGAIN;
+        return SEM_FAILED;
     }
 
     semCb = GET_SEM(sem);
@@ -131,7 +136,8 @@ int sem_close(sem_t *sem)
     struct TagSemCb *semCb;
 
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     semCb = GET_SEM(sem->semHandle);
@@ -146,7 +152,8 @@ int sem_close(sem_t *sem)
         semCb->handle.refCount--;
     } else {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     PRT_HwiRestore(intSave);
@@ -160,19 +167,22 @@ int sem_getvalue(sem_t *__restrict sem, int *__restrict val)
     struct TagSemCb *semCb;
 
     if (val == NULL || sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     semCb = GET_SEM(sem->semHandle);
     intSave = PRT_HwiLock();
     if (semCb->name[0] == 0) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     ret = PRT_SemGetCount(sem->semHandle, (U32 *)val);
     if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     PRT_HwiRestore(intSave);
 
@@ -186,19 +196,22 @@ int sem_wait(sem_t *sem)
     struct TagSemCb *semCb;
 
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     semCb = GET_SEM(sem->semHandle);
     intSave = PRT_HwiLock();
     if (semCb->name[0] == 0) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     ret = PRT_SemPend(sem->semHandle, OS_WAIT_FOREVER);
     if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     PRT_HwiRestore(intSave);
 
@@ -212,19 +225,22 @@ int sem_trywait(sem_t *sem)
     struct TagSemCb *semCb;
 
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     semCb = GET_SEM(sem->semHandle);
     intSave = PRT_HwiLock();
     if (semCb->name[0] == 0) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     ret = PRT_SemPend(sem->semHandle, 0);
     if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EAGAIN;
+        errno = EAGAIN;
+        return PTHREAD_OP_FAIL;
     }
     PRT_HwiRestore(intSave);
 
@@ -236,22 +252,27 @@ int sem_timedwait(sem_t *__restrict sem, const struct timespec *__restrict at)
     U32 ret;
     U32 ticks;
 
-    if (at == NULL) {
-        return EINVAL;
+    if (at == NULL || sem == NULL) {
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     if ((at->tv_sec < 0) || (at->tv_nsec < 0) || (at->tv_nsec > OS_SYS_NS_PER_SECOND)) {
-        return EINVAL;
-    }
-    if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
-    ticks = OsTimeSpec2Tick(at);
+    ret = OsTimeOut2Ticks(at, &ticks);
+    if (ret != OS_OK) {
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
+    }
     ret = PRT_SemPend(sem->semHandle, ticks);
     if (ret == OS_ERRNO_SEM_TIMEOUT) {
-        return ETIMEDOUT;
+        errno = ETIMEDOUT;
+        return PTHREAD_OP_FAIL;
     } else if (ret != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     return OS_OK;
@@ -264,20 +285,23 @@ int sem_post(sem_t *sem)
     struct TagSemCb *semCb;
 
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     semCb = GET_SEM(sem->semHandle);
 
     intSave = PRT_HwiLock();
     if (semCb->name[0] == 0) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     ret = PRT_SemPost(sem->semHandle);
     if (ret != OS_OK) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     PRT_HwiRestore(intSave);
 
@@ -290,13 +314,15 @@ int sem_destroy(sem_t *sem)
     struct TagSemCb *semCb;
 
     if (sem == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     semCb = GET_SEM(sem->semHandle);
 
     ret = PRT_SemDelete(sem->semHandle);
     if (ret != OS_OK) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     (void)memset_s(semCb->name, MAX_POSIX_SEMAPHORE_NAME_LEN + 1, 0, MAX_POSIX_SEMAPHORE_NAME_LEN + 1);
@@ -315,7 +341,8 @@ int sem_unlink(const char *name)
     U32 ret = OS_OK;
 
     if (name == NULL) {
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
     intSave = PRT_HwiLock();
     for (i = 0; i < g_maxSem; i++) {
@@ -327,14 +354,16 @@ int sem_unlink(const char *name)
     }
     if (find == FALSE) {
         PRT_HwiRestore(intSave);
-        return EINVAL;
+        errno = EINVAL;
+        return PTHREAD_OP_FAIL;
     }
 
     if (semCb->handle.refCount == 0) {
         ret = PRT_SemDelete((SemHandle)i);
         if (ret != OS_OK) {
             PRT_HwiRestore(intSave);
-            return EINVAL;
+            errno = EINVAL;
+            return PTHREAD_OP_FAIL;
         }
     }
 
