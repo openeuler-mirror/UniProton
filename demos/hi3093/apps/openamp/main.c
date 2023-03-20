@@ -11,6 +11,8 @@
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
+extern U32 PRT_PrintfInit();
+
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()
 {
@@ -83,6 +85,11 @@ U32 PRT_HardDrvInit(void)
         return ret;
     }
 
+    ret = PRT_PrintfInit();
+    if (ret) {
+        return ret;
+    }
+    
     return OS_OK;
 }
 

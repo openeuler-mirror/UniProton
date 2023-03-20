@@ -20,6 +20,7 @@ include_directories(
     ./config
     ./bsp
     ./bsp/hi3093
+    ./bsp/uart
     ./apps/openamp
     ./build/open-amp/output/usr/local/include
     ./build/libmetal/output/usr/local/include
@@ -39,5 +40,5 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 
-list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
 add_executable(${APP} ${OBJS})

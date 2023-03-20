@@ -5,10 +5,10 @@
 
 #define MMU_IMAGE_ADDR             0x93000000ULL
 #define MMU_GIC_ADDR               0x24000000ULL
-#define MMU_UART_ADDR              0x08710000ULL
+#define MMU_UART_ADDR              0x08743000ULL
 #define MMU_OPENAMP_ADDR           0x90000000ULL
 
-#define UART_BASE_ADDR             0x08710000ULL
+#define UART_BASE_ADDR             MMU_UART_ADDR
 
 #define TEST_CLK_INT               30
 
