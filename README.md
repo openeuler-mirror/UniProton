@@ -41,4 +41,5 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 四、如何贡献
 ----------
-我们非常欢迎新贡献者加入到项目中来，也非常高兴能为新加入贡献者提供指导和帮助。在您贡献代码前，需要先签署[CLA](https://openeuler.org/en/cla.html)。
+我们非常欢迎新贡献者加入到项目中来，也非常高兴能为新加入贡献者提供指导和帮助。在您贡献代码前，需要先签署[CLA](https://clasign.osinfra.cn/sign/Z2l0ZWUlMkZvcGVuZXVsZXI=)。
+openeuler加入方式参见：[https://www.openeuler.org/zh/community/contribution](https://www.openeuler.org/zh/community/contribution)
