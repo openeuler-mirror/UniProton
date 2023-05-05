@@ -19,12 +19,13 @@
 /* GICD_ROUTER */
 union GicdRouter {
     struct {
-        U64 af0  : 2;  // bit[1:0]
-        U64 res1 : 6;  // bit[7:2]
-        U64 af1  : 2;  // bit[9:8]
-        U64 res0 : 21; // bit[30:10]
+        U64 af0  : 8;  // bit[7:0]
+        U64 af1  : 8;  // bit[15:8]
+        U64 af2  : 8;  // bit[23:16]
+        U64 res0 : 7;  // bit[30:24]
         U64 mode : 1;  // bit[31]
-        U64 res2 : 32; // bit[32~63]
+        U64 af3  : 8;  // bit[39:32]
+        U64 res1 : 24; // bit[40~63]
     } bits;
     U64    value;
 };

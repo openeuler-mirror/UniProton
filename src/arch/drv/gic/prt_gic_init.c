@@ -148,13 +148,12 @@ OS_SEC_L4_TEXT U32 OsGicSetPriority(U32 intId, U32 priority)
     
     /* 修改配置前，务必保证中断处于禁能状态 */
     if (intId <= MAX_NNSPI_ID) {
-        for (coreId = 0; coreId < OS_MAX_CORE_NUM; coreId++) {
-            state = OsGicrGetIntState(coreId, intId);
-            OsGicrDisableInt(coreId, intId);
-            OsGicrSetPriority(coreId, intId, priority);
-            if (state == GIC_ENABLE) {
-                OsGicrEnableInt(coreId, intId);
-            }
+        coreId = OsGetCoreID();
+        state = OsGicrGetIntState(coreId, intId);
+        OsGicrDisableInt(coreId, intId);
+        OsGicrSetPriority(coreId, intId, priority);
+        if (state == GIC_ENABLE) {
+            OsGicrEnableInt(coreId, intId);
         }
     } else {
         state = OsGicdGetIntState(intId);
