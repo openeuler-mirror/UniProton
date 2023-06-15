@@ -6,6 +6,7 @@ add_subdirectory(om)
 add_subdirectory(security)
 add_subdirectory(utility)
 add_subdirectory(libc)
+add_subdirectory(driver)
 
 if(${CONFIG_OS_SUPPORT_FS})
     add_subdirectory(fs)
