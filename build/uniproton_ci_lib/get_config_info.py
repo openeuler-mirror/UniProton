@@ -9,7 +9,7 @@ import globle
 from logs import BuilderNolog, log_msg
 
 
-logging.basicConfig(level=logging.NOTSET) 
+logging.basicConfig(stream=sys.stdout, level=logging.NOTSET) 
 logging.info(globle.config_dir)
 config_tree = xml.dom.minidom.parse(globle.config_dir)
 EXCEPTION_LIST = (AssertionError, AttributeError, IOError,

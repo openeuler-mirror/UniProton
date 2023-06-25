@@ -9,7 +9,7 @@ import logging
 from Kconfig2macro import do_cmd
 
 
-logging.basicConfig(level=logging.NOTSET) 
+logging.basicConfig(stream=sys.stdout, level=logging.NOTSET) 
 
 def make_buildef(home_path, kconf_dir, choice):
     kconfig_dir = "{}/build/uniproton_config/config_{}/defconfig".format(home_path,kconf_dir)

@@ -12,7 +12,7 @@ import logging
 import codecs
 
 
-logging.basicConfig(level=logging.NOTSET)
+logging.basicConfig(stream=sys.stdout, level=logging.NOTSET)
 
 HEADER_TYPE_BUILD = 0
 HEADER_TYPE_CONFIG = 1

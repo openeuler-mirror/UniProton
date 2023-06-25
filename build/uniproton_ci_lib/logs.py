@@ -11,7 +11,7 @@ import logging
 import globle
 
 
-logging.basicConfig(level=logging.NOTSET) 
+logging.basicConfig(stream=sys.stdout, level=logging.NOTSET) 
 
 class BuilderNolog():
 
