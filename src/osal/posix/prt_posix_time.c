@@ -28,13 +28,13 @@ static void OsTimerWrapper(TimerHandle tmrHandle, U32 arg1, U32 arg2, U32 arg3, 
     (void)tmrHandle;
     (void)arg3;
     (void)arg4;
-    void *(*sigev_notify_function)(union sigval) = (void *)arg1;
+    void *(*sigevNotifyFunction)(union sigval) = (void *)arg1;
 
     union sigval val = {
         .sival_int = arg2
     };
 
-    sigev_notify_function(val);
+    sigevNotifyFunction(val);
 }
 
 int timer_create(clockid_t clockId, struct sigevent * restrict evp, timer_t * restrict timerId)
@@ -185,7 +185,7 @@ U32 OsTimeOut2Ticks(const struct timespec *time, U32 *ticks)
 
     OsTimeGetRealTime(&curTime);
 
-    timeOutNs = (time->tv_sec - curTime.tv_sec) * OS_SYS_NS_PER_SECOND + (time->tv_nsec - curTime.tv_nsec);
+    timeOutNs = (S64)(time->tv_sec - curTime.tv_sec) * OS_SYS_NS_PER_SECOND + (time->tv_nsec - curTime.tv_nsec);
     if (timeOutNs <= 0) {
         return ETIMEDOUT;
     }
