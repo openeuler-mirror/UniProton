@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include "time32.h"
 #include <time.h>
 #include <pthread.h>

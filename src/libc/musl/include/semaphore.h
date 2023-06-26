@@ -9,14 +9,18 @@ extern "C" {
 #define __NEED_time_t
 #define __NEED_struct_timespec
 #include <bits/alltypes.h>
-
 #include <fcntl.h>
+#include <bits/semaphore_types.h>
+
+#if __cplusplus >= 201103L
+#define NULL nullptr
+#elif defined(__cplusplus)
+#define NULL 0L
+#else
+#define NULL ((void*)0)
+#endif
 
 #define SEM_FAILED ((sem_t *)0)
-
-typedef struct {
-	volatile int __val[4*sizeof(long)/sizeof(int)];
-} sem_t;
 
 int    sem_close(sem_t *);
 int    sem_destroy(sem_t *);

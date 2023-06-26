@@ -1295,6 +1295,30 @@ extern U32 PRT_TaskGetPendSem(TskHandle taskId, U16 *semId, U16 *pendState);
 extern U32 PRT_TaskGetName(TskHandle taskId, char **name);
 
 /*
+ * @brief 修改任务名。
+ *
+ * @par 描述
+ * 根据任务PID，修改任务名。
+ *
+ * @attention
+ * <ul>
+ * <li>在osStart之前不能调用该接口。</li>
+ * <li>不能修改ID不合法的任务名。</li>
+ * <li>若修改没有创建的任务名，修改失败。</li>
+ * </ul>
+ *
+ * @param taskId  [IN]  类型#TskHandle，任务ID。
+ * @param name [OUT] 类型#char *，保存任务名字符串的首地址。
+ *
+ * @retval #OS_OK  0x00000000，修改成功。
+ * @retval #其它值，修改失败。
+ * @par 依赖
+ * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
+ * @see
+ */
+extern U32 PRT_TaskSetName(TskHandle taskId, const char *name);
+
+/*
  * @brief 注册任务切换钩子。
  *
  * @par 描述

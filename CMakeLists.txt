@@ -78,10 +78,45 @@ include_directories(
 )
 
 if (${CONFIG_OS_OPTION_POSIX})
-include_directories(
-        ./src/osal/posix/include
-        ./src/include/posix
+set(muslsrcdir ${CMAKE_CURRENT_SOURCE_DIR}/src/libc/musl)
+execute_process(
+    WORKING_DIRECTORY ${muslsrcdir}
+    COMMAND sh -c "
+        echo ' Build generic_include_file!'
+        mkdir -p include/bits/
+        cp arch/generic/bits/*.h include/bits/
+        cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/*.h include/bits/
+        sed -f tools/mkalltypes.sed arch/${CMAKE_SYSTEM_PROCESSOR}/bits/alltypes.h.in include/alltypes.h.in > include/bits/alltypes.h
+        cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in include/bits/syscall.h
+        sed -n -e s/__NR_/SYS_/p < arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in >> include/bits/syscall.h
+        echo ' End generic_include_file!'
+    "
 )
+
+include_directories(
+        ./src/libc/litelibc/internal/include
+        ./src/libc/litelibc/include
+        ./src/libc/musl/src/include
+        ./src/libc/musl/include
+        ./src/core/ipc/rwlock
+)
+add_compile_options(
+        -std=c99 
+        -ffreestanding 
+        -nostdinc 
+        -Wno-undef 
+        -Wno-strict-prototypes 
+        -Wno-redundant-decls
+        -Wno-cast-qual
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-unused-parameter
+        -Wno-sign-compare
+        -Wno-jump-misses-init
+        -Wno-old-style-definition
+        -Wno-shadow
+        -Wno-unused-macros
+        )
 endif()
 
 if (${CONFIG_OS_OPTION_OPENAMP})

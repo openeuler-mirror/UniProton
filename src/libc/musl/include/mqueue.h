@@ -12,6 +12,7 @@ extern "C" {
 #define __NEED_time_t
 #define __NEED_struct_timespec
 #include <bits/alltypes.h>
+#include <bits/pthread_types.h>
 
 typedef int mqd_t;
 struct mq_attr {

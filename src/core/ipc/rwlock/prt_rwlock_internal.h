@@ -18,6 +18,7 @@
 #include "prt_buildef.h"
 #include "prt_typedef.h"
 #include "prt_list_external.h"
+#include "pthread.h"
 
 #define RWLOCK_COUNT_MASK 0x0000FFFFU
 #define RWLOCK_MAGIC_NUM  0xFDCAU
@@ -39,22 +40,8 @@ enum RwlockType {
     RWLOCK_TIMEWR
 };
 
-#if defined(OS_POSIX_TYPE_NEWLIB)
-typedef struct prt_pthread_rwlock_s {
-    U32 rw_magic : 16;
-    U32 index : 16;
-    int rw_count;
-    void *rw_owner;
-    struct prt_pthread_rwlock_s *next;
-    struct TagListObject rw_write;
-    struct TagListObject rw_read;
-} prt_pthread_rwlock_t;
-#else
-typedef pthread_rwlock_t prt_pthread_rwlock_t;
-#endif
-
-extern U32 OsRwLockRdPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType);
-extern U32 OsRwLockWrPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType);
-extern U32 OsRwLockUnlock(prt_pthread_rwlock_t *rwl, bool *needSched);
+extern U32 OsRwLockRdPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType);
+extern U32 OsRwLockWrPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType);
+extern U32 OsRwLockUnlock(pthread_rwlock_t *rwl, bool *needSched);
 
 #endif /* PRT_RWLOCK_INTERNAL_H */

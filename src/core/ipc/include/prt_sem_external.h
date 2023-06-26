@@ -18,8 +18,7 @@
 #include "prt_sem.h"
 #include "prt_task_external.h"
 #if defined(OS_OPTION_POSIX)
-#include "semaphore.h"
-#include "prt_posix_internal.h"
+#include "bits/semaphore_types.h"
 #endif
 
 #define OS_SEM_UNUSED 0
@@ -31,6 +30,8 @@
 
 #define OS_SEM_WITH_LOCK_FLAG    1
 #define OS_SEM_WITHOUT_LOCK_FLAG 0
+
+#define MAX_POSIX_SEMAPHORE_NAME_LEN    31
 
 #define GET_SEM_LIST(ptr) LIST_COMPONENT(ptr, struct TagSemCb, semList)
 #define GET_SEM(semid) (((struct TagSemCb *)g_allSem) + (semid))
@@ -77,5 +78,6 @@ extern U16 g_maxSem;
 extern struct TagSemCb *g_allSem;
 
 extern U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode, SemHandle *semHandle, U32 cookie);
+extern bool OsSemBusy(SemHandle semHandle);
 
 #endif /* PRT_SEM_EXTERNAL_H */

@@ -490,6 +490,27 @@ extern U32 PRT_TimerQuery(U32 mid, TimerHandle tmrHandle, U32 *expireTime);
  */
 extern U32 PRT_SwTmrInfoGet(TimerHandle tmrHandle, struct SwTmrInfo *info);
 
+/*
+ * @brief 获取指定软件定时器的超时次数。
+ *
+ * @par 描述
+ * 根据指定的定时器ID，获取定时器ID为tmrHandle的超时次数。
+ *
+ * @attention
+ * <ul>
+ * <li>软件定时器超时次数最大为255，如果超时次数大于255则指返回255</li>
+ * </ul>
+ *
+ * @param tmrHandle [IN]  类型#TimerHandle，定时器句柄；
+ * @param overrun      [OUT] 类型U32 *，存放软件定时器的超时次数。
+ *
+ * @retval #OS_OK  0x00000000，获取指定定时器的信息成功。
+ * @retval #其他值  信息获取失败。
+ * <ul><li>prt_timer.h：该接口声明所在的头文件。</li></ul>
+ * @see 无
+ */
+extern U32 PRT_TimerGetOverrun(U32 mid, TimerHandle tmrHandle, U32 *overrun);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

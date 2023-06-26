@@ -43,6 +43,7 @@ int     sched_yield(void);
 #define SCHED_FIFO 1
 #define SCHED_RR 2
 #define SCHED_BATCH 3
+#define SCHED_SPORADIC 4
 #define SCHED_IDLE 5
 #define SCHED_DEADLINE 6
 #define SCHED_RESET_ON_FORK 0x40000000

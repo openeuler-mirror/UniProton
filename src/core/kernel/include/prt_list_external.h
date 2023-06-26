@@ -16,11 +16,7 @@
 #define PRT_LIST_EXTERNAL_H
 
 #include "prt_typedef.h"
-
-struct TagListObject {
-    struct TagListObject *prev;
-    struct TagListObject *next;
-};
+#include "bits/list_types.h"
 
 #define LIST_OBJECT_INIT(object) { \
         &(object), &(object)       \

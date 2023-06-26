@@ -19,6 +19,7 @@ OS_SEC_ALW_INLINE INLINE void OsSwtmrProc(struct TagSwTmrCtrl *swtmr)
     switch (swtmr->state & OS_SWTMR_PRE_STATUS_MASK) {
         /* 为了超时状态未改变的情况下执行效率，先对定时器的此种状态进行处理 */
         case OS_SWTMR_STATUS_DEFAULT:
+            swtmr->overrun = 0;
             if (swtmr->mode == (U8)OS_TIMER_LOOP) {
                 OsSwTmrStart(swtmr, swtmr->interval);
             } else {
@@ -32,6 +33,7 @@ OS_SEC_ALW_INLINE INLINE void OsSwtmrProc(struct TagSwTmrCtrl *swtmr)
         case OS_SWTMR_PRE_CREATED:
             // ,定时器超时处理后，剩余时间置为0，启动定时器时再赋值swtmr->interval
             swtmr->idxRollNum = 0;
+            swtmr->overrun = 0;
             swtmr->state = (U8)OS_TIMER_CREATED;
             break;
         case OS_SWTMR_PRE_FREE:
@@ -127,6 +129,10 @@ OS_SEC_TEXT void OsSwTmrScan(void)
                 outLink = NULL;
             }
             break;
+        } else {
+            if (swtmr->overrun < (U8)0xFF) {
+                swtmr->overrun++;
+            }
         }
         swtmr->state = (U8)OS_TIMER_EXPIRED;
         object = object->next;
@@ -151,6 +157,7 @@ OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmr
     sortIndex = sortIndex & OS_SWTMR_SORTLINK_MASK;
     EVALUATE_H(swtmr->idxRollNum, sortIndex);
 
+    swtmr->overrun = 0;
     swtmr->state = (U8)OS_TIMER_RUNNING;
 
     return g_tmrSortLink.sortLink + sortIndex;
