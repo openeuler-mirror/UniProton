@@ -101,7 +101,7 @@ void OsRwLockTaskWake(struct TagTskCb *resumedTask)
     }
 }
 
-U32 OsRwLockTryRdCheck(struct TagTskCb *runTask, prt_pthread_rwlock_t *rwl)
+U32 OsRwLockTryRdCheck(struct TagTskCb *runTask, pthread_rwlock_t *rwl)
 {
     if ((struct TagTskCb *)(rwl->rw_owner) == runTask) {
         return EINVAL;
@@ -122,7 +122,7 @@ U32 OsRwLockTryRdCheck(struct TagTskCb *runTask, prt_pthread_rwlock_t *rwl)
     return OS_OK;
 }
 
-U32 OsRwlockTryWrCheck(struct TagTskCb *runTask, prt_pthread_rwlock_t *rwl)
+U32 OsRwlockTryWrCheck(struct TagTskCb *runTask, pthread_rwlock_t *rwl)
 {
     /* 读写锁被读锁获得，当前写锁任务不能获取锁 */
     if (rwl->rw_count > 0) {
@@ -137,7 +137,7 @@ U32 OsRwlockTryWrCheck(struct TagTskCb *runTask, prt_pthread_rwlock_t *rwl)
     return OS_OK;
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsRwLockCheck(prt_pthread_rwlock_t *rwl)
+OS_SEC_ALW_INLINE INLINE U32 OsRwLockCheck(pthread_rwlock_t *rwl)
 {
     if (rwl == NULL) {
         return EINVAL;
@@ -188,7 +188,7 @@ U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockLis
     return OS_OK;
 }
 
-U32 OsRwLockRdPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
+U32 OsRwLockRdPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
 {
     U32 ret;
     U32 intSave;
@@ -236,7 +236,7 @@ U32 OsRwLockRdPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
     return OsRwLockPendSchedule(runTask, &(rwl->rw_read), timeout, intSave);
 }
 
-U32 OsRwLockWrPend(prt_pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
+U32 OsRwLockWrPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
 {
     U32 ret;
     U32 intSave;
@@ -301,7 +301,7 @@ U32 OsRwLockGetMode(struct TagListObject *readList, struct TagListObject *writeL
     return RWLOCK_READFIRST_MODE;
 }
 
-U32 OsRwLockPost(prt_pthread_rwlock_t *rwl, bool *needSched)
+U32 OsRwLockPost(pthread_rwlock_t *rwl, bool *needSched)
 {
     U32 rwlockMode;
     struct TagTskCb *resumedTask = NULL;
@@ -354,7 +354,7 @@ U32 OsRwLockPost(prt_pthread_rwlock_t *rwl, bool *needSched)
     return OS_OK;
 }
 
-U32 OsRwLockUnlock(prt_pthread_rwlock_t *rwl, bool *needSched)
+U32 OsRwLockUnlock(pthread_rwlock_t *rwl, bool *needSched)
 {
     struct TagTskCb *runTask;
 

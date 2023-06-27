@@ -281,6 +281,16 @@ extern void OsSwTmrStop(struct TagSwTmrCtrl *swtmr, bool reckonOff);
  */
 extern void OsSwTmrDelete(struct TagSwTmrCtrl *swtmr);
 
+/*
+ * Function    : OsSwTmrGetOverrun
+ * Description : 查询软件定时器剩余超时时间
+ * Input       : tmrHandle  --- 定时器句柄
+ *               overrun  --- 定时器的超时次数，最大255
+ * Output      : overrun
+ * Return      : 成功时返回OS_OK，失败时返回错误码
+ */
+extern U32 OsSwTmrGetOverrun(TimerHandle tmrHandle, U32 *overrun);
+
 #define OsSwtmrIqrSplLock(a) OsIntLock()
 #define OsSwtmrIqrSplUnlock(a, b) OsIntRestore(b)
 

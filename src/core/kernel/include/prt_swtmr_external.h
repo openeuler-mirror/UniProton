@@ -51,6 +51,8 @@ struct TagSwTmrCtrl {
     U32 idxRollNum;
     /* 定时器超时时间 */
     U32 interval;
+    /* 定时器超时次数 */
+    U8 overrun;
     /* 定时器用户参数1 */
     U32 arg1;
     /* 定时器用户参数2 */

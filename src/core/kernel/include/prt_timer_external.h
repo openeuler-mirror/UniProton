@@ -34,6 +34,8 @@ typedef U32(*TimerSetIntervalFunc)(TimerHandle timerHdl, U32 interVal);
 
 typedef U32(*TimerQueryFunc)(TimerHandle timerHdl, U32 *expireTime);
 
+typedef U32(*TimerGetOverrunFunc)(TimerHandle timerHdl, U32 *overrun);
+
 /* 定时器函数库 */
 struct TagFuncsLibTimer {
     TimerCreateFunc createTimer;
@@ -43,6 +45,7 @@ struct TagFuncsLibTimer {
     TimerRestartFunc restartTimer;
     TimerSetIntervalFunc setIntervalTimer;
     TimerQueryFunc timerQuery;
+    TimerGetOverrunFunc getOverrun;
 };
 
 /* 定时器类型 */

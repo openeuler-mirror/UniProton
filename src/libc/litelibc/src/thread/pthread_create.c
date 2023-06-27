@@ -1,0 +1,184 @@
+/*
+ * Copyright (c) 2022-2023 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * Create: 2023-05-29
+ * Description: pthread_create 相关接口实现
+ */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include "pthread.h"
+#include "prt_posix_internal.h"
+#include "../../../core/kernel/task/prt_task_internal.h"
+#include "prt_err_external.h"
+
+static U32 OsPthreadCreatParaCheck(TskHandle *newthread, const pthread_attr_t *attrp,
+    prt_pthread_startroutine routine, pthread_attr_t *attr)
+{
+    int ret;
+
+    if (newthread == NULL || routine == NULL) {
+        return EINVAL;
+    }
+
+    if (attrp != NULL) {
+        *attr = *attrp;
+    } else {
+        ret = pthread_getattr_default_np(attr);
+        if (ret != OS_OK) {
+            OsErrRecord(ret);
+        }
+    }
+
+    return OS_OK;
+}
+
+OS_SEC_ALW_INLINE INLINE U32 OsPthreadCreateRsrcInit(U32 taskId, pthread_attr_t *attr,
+    struct TagTskCb *tskCb, uintptr_t **topStackOut, uintptr_t *curStackSize)
+{
+    U32 ret = OS_OK;
+    uintptr_t *topStack = NULL;
+
+    /* 创建任务线程 */
+    if (g_taskNameAdd != NULL) {
+        ret = g_taskNameAdd(taskId, "pthread");
+        if (ret != OS_OK) {
+            return ret;
+        }
+    }
+
+    /* 查看用户是否配置了任务栈，如没有，则进行内存申请，并标记为系统配置，如有，则标记为用户配置。 */
+    if (attr->stackaddr != 0) {
+        topStack = (void *)(attr->stackaddr);
+        tskCb->stackCfgFlg = OS_TSK_STACK_CFG_BY_USER;
+    } else {
+        topStack = OsTskMemAlloc(attr->stacksize);
+        if (topStack == NULL) {
+            ret = OS_ERRNO_TSK_NO_MEMORY;
+        } else {
+            tskCb->stackCfgFlg = OS_TSK_STACK_CFG_BY_SYS;
+        }
+    }
+    *curStackSize = attr->stacksize;
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+    *topStackOut = topStack;
+    return OS_OK;
+}
+
+static void OsPthreadWrapper(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    void *ret;
+
+    (void)param3;
+    (void)param4;
+    void *(*threadroutine)(void *) = (void *)param1;
+
+    ret = threadroutine((void *)param2);
+    PRT_PthreadExit(ret);
+}
+
+OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread_attr_t *attr,
+    uintptr_t topStackAddr, uintptr_t curStackSize, struct TagTskCb *tskCb)
+{
+    /* Initialize the task's stack */
+    tskCb->stackPointer = (void *)stackPtr;
+    tskCb->topOfStack = topStackAddr;
+    tskCb->stackSize = curStackSize;
+    tskCb->taskSem = NULL;
+    tskCb->priority = attr->schedparam.sched_priority;
+    tskCb->taskEntry = OsPthreadWrapper;
+#if defined(OS_OPTION_EVENT)
+    tskCb->event = 0;
+    tskCb->eventMask = 0;
+#endif
+    tskCb->lastErr = 0;
+    tskCb->taskStatus = OS_TSK_SUSPEND | OS_TSK_INUSE;
+    /* pthread init */
+    tskCb->tsdUsed = 0;
+    tskCb->state = attr->detachstate;
+    tskCb->cancelState = PTHREAD_CANCEL_ENABLE;
+    tskCb->cancelType = PTHREAD_CANCEL_DEFERRED;
+    tskCb->cancelPending = 0;
+	tskCb->cancelBuf = NULL;
+    tskCb->retval = NULL;
+    tskCb->joinCount = 0;
+    tskCb->joinableSem = 0;
+    tskCb->tsdUsed = 0;
+
+    INIT_LIST_OBJECT(&tskCb->pendList);
+    INIT_LIST_OBJECT(&tskCb->timerList);
+}
+
+int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*threadroutine)(void *), void *arg)
+{
+    TskHandle *thread = (TskHandle *)newthread;
+    U32 ret;
+    U32 taskId;
+    uintptr_t intSave;
+    void *stackPtr = NULL;
+    uintptr_t *topStack = NULL;
+    uintptr_t curStackSize = 0;
+    struct TagTskCb *tskCb = NULL;
+    pthread_attr_t attrp = {0};
+
+    ret = OsPthreadCreatParaCheck(thread, attr, threadroutine, &attrp);
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+    intSave = OsIntLock();
+    ret = OsTaskCreateChkAndGetTcb(&tskCb);
+    if (ret != OS_OK) {
+        OsIntRestore(intSave);
+        return ENOMEM;
+    }
+
+    taskId = tskCb->taskPid;
+
+    ret = OsPthreadCreateRsrcInit(taskId, &attrp, tskCb, &topStack, &curStackSize);
+    if (ret != OS_OK) {
+        ListAdd(&tskCb->pendList, &g_tskCbFreeList);
+        OsIntRestore(intSave);
+        return ENOMEM;
+    }
+    OsTskStackInit(curStackSize, (uintptr_t)topStack);
+
+    stackPtr = OsTskContextInit(taskId, curStackSize, topStack, (uintptr_t)OsTskEntry);
+
+    OsPthreadCreateTcbInit((uintptr_t)stackPtr, &attrp, (uintptr_t)topStack, curStackSize, tskCb);
+    tskCb->args[OS_TSK_PARA_0] = (uintptr_t)threadroutine;
+    tskCb->args[OS_TSK_PARA_1] = (uintptr_t)arg;
+    tskCb->args[OS_TSK_PARA_2] = 0;
+    tskCb->args[OS_TSK_PARA_3] = 0;
+    OsIntRestore(intSave);
+
+    if (tskCb->state == PTHREAD_CREATE_JOINABLE) {
+        ret = PRT_SemCreate(0, &tskCb->joinableSem);
+        if (ret != OS_OK) {
+            return EAGAIN;
+        }
+    }
+
+    ret = PRT_TaskResume(taskId);
+    if (ret != OS_OK) {
+        if (tskCb->state == PTHREAD_CREATE_JOINABLE) {
+            PRT_SemDelete(tskCb->joinableSem);
+        }
+        return EAGAIN;
+    }
+    *thread = taskId;
+
+    return OS_OK;
+}
+weak_alias(__pthread_create, pthread_create);

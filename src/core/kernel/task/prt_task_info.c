@@ -213,4 +213,38 @@ OS_SEC_L4_TEXT U32 PRT_TaskGetName(TskHandle taskId, char **name)
 
     return OS_OK;
 }
+
+/*
+ * 描述：修改制定的任务名
+ */
+OS_SEC_L4_TEXT U32 PRT_TaskSetName(TskHandle taskId, const char *name)
+{
+    uintptr_t intSave;
+    struct TagTskCb *taskCb = NULL;
+
+    if (CHECK_TSK_PID_OVERFLOW(taskId)) {
+        return OS_ERRNO_TSK_ID_INVALID;
+    }
+
+    if (name == NULL) {
+        return OS_ERRNO_TSK_PTR_NULL;
+    }
+
+    taskCb = GET_TCB_HANDLE(taskId);
+
+    intSave = OsIntLock();
+
+    if (TSK_IS_UNUSED(taskCb)) {
+        OsIntRestore(intSave);
+        return OS_ERRNO_TSK_NOT_CREATED;
+    }
+
+    if (g_taskNameAdd != NULL) {
+        g_taskNameAdd(taskId, name);
+    }
+
+    OsIntRestore(intSave);
+
+    return OS_OK;
+}
 #endif

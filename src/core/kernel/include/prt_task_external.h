@@ -26,7 +26,9 @@
 
 #if defined(OS_OPTION_POSIX)
 #include "pthread.h"
+#ifndef PTHREAD_KEYS_MAX
 #define PTHREAD_KEYS_MAX 32
+#endif
 #endif
 
 struct TagOsRunQue {
@@ -77,6 +79,8 @@ struct TagTskCb {
     struct TagListObject timerList;
     /* 持有互斥信号量链表 */
     struct TagListObject semBList;
+    /* 记录条件变量的等待线程 */
+    struct TagListObject condNode;
 
 #if defined(OS_OPTION_EVENT)
     /* 任务事件 */
@@ -96,7 +100,7 @@ struct TagTskCb {
     U8 cancelState;
     U8 cancelType;
     U8 cancelPending;
-	struct _pthread_cleanup_context *cancelBuf;
+    struct __ptcb *cancelBuf;
     /* exit status */
     void *retval;
     /* count for thread join */

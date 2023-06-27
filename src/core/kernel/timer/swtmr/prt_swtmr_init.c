@@ -66,6 +66,7 @@ OS_SEC_L4_TEXT U32 OsSwTimerGroupCreate(struct TmrGrpUserCfg *config, TimerGroup
     g_timerApi[TIMER_TYPE_SWTMR].deleteTimer = (TimerDeleteFunc)OsSwTmrDeleteTimer;
     g_timerApi[TIMER_TYPE_SWTMR].restartTimer = (TimerRestartFunc)OsSwTmrRestartTimer;
     g_timerApi[TIMER_TYPE_SWTMR].timerQuery = (TimerQueryFunc)OsSwTmrQuery;
+    g_timerApi[TIMER_TYPE_SWTMR].getOverrun = (TimerGetOverrunFunc)OsSwTmrGetOverrun;
 
     *groupId = OS_TICK_SWTMR_GROUP_ID;
 
@@ -106,6 +107,7 @@ OS_SEC_ALW_INLINE INLINE void OsSwTmrCreateTimerCbInit(struct TimerCreatePara *c
     swtmr->next = NULL;
     swtmr->prev = NULL;
     swtmr->idxRollNum = swtmr->interval;
+    swtmr->overrun = 0;
     swtmr->arg1 = createPara->arg1;
     swtmr->arg2 = createPara->arg2;
     swtmr->arg3 = createPara->arg3;
