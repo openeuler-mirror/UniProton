@@ -1,0 +1,1 @@
+add_library_ex(prt_cxx_init.c)

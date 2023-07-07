@@ -79,11 +79,11 @@ U32 PRT_AppInit(void)
 {
     U32 ret;
 
+    PRT_CppSystemInit();
     ret = OsTestInit();
     if (ret) {
         return ret;
     }
-
     return OS_OK;
 }
 

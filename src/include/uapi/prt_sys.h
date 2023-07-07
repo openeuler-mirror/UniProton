@@ -289,6 +289,26 @@ OS_SEC_ALW_INLINE INLINE U32 PRT_SysGetCoreId(void)
     return 0;
 }
 
+/*
+ * @brief 初始化c++。
+ *
+ * @par 描述
+ * 初始化c++。
+ *
+ * @attention
+ * <ul>
+ * <li> 初始化c++。</li>
+ * </ul>
+ *
+ * @param 无。
+ *
+ * @retval 无
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see 无
+ */
+extern void PRT_CppSystemInit(void);
+
 #ifdef __cplusplus
 #if __cplusplus
 }
