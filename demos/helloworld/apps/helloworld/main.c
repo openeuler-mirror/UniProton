@@ -3,11 +3,16 @@
 #include <string.h>
 #include <stdarg.h>
 #include "securec.h"
-#include "rtt_viewer.h"
 #include "prt_config.h"
 #include "prt_config_internal.h"
 #include "prt_clk.h"
+#include "prt_idle.h"
 #include "test.h"
+#if defined(_SIM_)
+#include "semihosting_dbg.h"
+#else
+#include "rtt_viewer.h"
+#endif
 
 void helloworld_task(U32 uwParam1, U32 uParam2, U32 uwParam3, U32 uwParam4)
 {
@@ -40,22 +45,12 @@ U32 PRT_AppInit(void)
 
 U32 PRT_HardDrvInit(void)
 {
+#if !defined(_SIM_)
     RttViewerInit();
     RttViewerModeSet(0, RTT_VIEWER_MODE_BLOCK_IF_FIFO_FULL);
+#endif
 
     return OS_OK;
-}
-
-U32 g_testRandStackProtect;
-void OsRandomSeedInit(void)
-{
-#if defined(OS_OPTION_RND)
-    U32 ret;
-    U32 seed;
-    seed = PRT_ClkGetCycleCount64();
-    g_testRandStackProtect = rand_r(&seed);
-    ret = PRT_SysSetRndNum(OS_SYS_RND_STACK_PROTECT,g_testRandStackProtect);
-#endif
 }
 
 extern U32 __data_start__;
@@ -77,7 +72,6 @@ void OsGlobalDataInit(void)
 void PRT_HardBootInit(void)
 {
     OsGlobalDataInit();
-    OsRandomSeedInit();
 }
 
 U32 PRT_Printf(const char *format, ...)
@@ -95,7 +89,11 @@ U32 PRT_Printf(const char *format, ...)
         return OS_ERROR;
     }
 
+#if defined(_SIM_)
+    SemihostingDbgWrite(buff, count);
+#else
     RttViewerWrite(0, buff, count);
+#endif
 
     return count;
 }
@@ -104,4 +102,3 @@ S32 main(void)
 {
     return OsConfigStart();
 }
-
