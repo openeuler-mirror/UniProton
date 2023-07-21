@@ -14,7 +14,12 @@ set(CXX_LIB ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crti.o
             ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crtend.o
             ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crtn.o)
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ../examples.ld")
+if("${SIM}" STREQUAL "_SIM_")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D${SIM}")
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ../qemu_m4.ld")
+else()
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ../examples.ld")
+endif()
 
 include_directories(./include ./config ./bsp)
 link_directories(./libs)

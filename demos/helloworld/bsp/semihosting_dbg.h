@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -9,37 +9,23 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2022-09-21
- * Description: 网络
+ * Create: 2023-7-5
+ * Description: semihosting dbg头文件
  */
-#ifndef LWIP_PORTING_SYS_ARCH_H
-#define LWIP_PORTING_SYS_ARCH_H
+#ifndef SEMIHOSTING_DBG_H
+#define SEMIHOSTING_DBG_H
 
-#include <stdint.h>
+#include "prt_typedef.h"
 
-/**
- * Semaphore
- */
-typedef uint32_t sys_sem_t;
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-/**
- * Mutex
- */
-typedef sys_sem_t sys_mutex_t;
+int SemihostingDbgWrite(const char *buf, int nbytes);
 
-/**
- * MessageBox
- */
-typedef sys_sem_t sys_mbox_t;
+#ifdef __cplusplus
+}
+#endif
 
-/**
- * Protector
- */
-typedef void *sys_prot_t;
-
-/**
- * Thread
- */
-typedef sys_sem_t sys_thread_t;
-
-#endif /* LWIP_PORTING_SYS_ARCH_H */
+#endif /* SEMIHOSTING_DBG_H */

@@ -1,4 +1,4 @@
-﻿set(CMAKE_ASM_COMPILER_ID "ARMASM")
+set(CMAKE_ASM_COMPILER_ID "ARMASM")
 add_library_ex(prt_hw.S)
 add_library_ex(prt_hw_exc.S)
 add_library_ex(prt_dispatch.S)
