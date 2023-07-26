@@ -29,6 +29,7 @@
 #ifndef PTHREAD_KEYS_MAX
 #define PTHREAD_KEYS_MAX 32
 #endif
+#include "prt_signal.h"
 #endif
 
 struct TagOsRunQue {
@@ -88,7 +89,6 @@ struct TagTskCb {
     /* 任务事件掩码 */
     U32 eventMask;
 #endif
-
     /* 任务记录的最后一个错误码 */
     U32 lastErr;
     /* 任务恢复的时间点(单位Tick) */
@@ -110,6 +110,19 @@ struct TagTskCb {
     /* pthread key */
     void *tsd[PTHREAD_KEYS_MAX];
     U32 tsdUsed;
+    /* 设置的阻塞信号掩码 */
+    signalSet sigMask;
+    /* 设置的等待信号掩码 */
+    signalSet sigWaitMask;
+    /* 未决信号掩码 */
+    signalSet sigPending;
+    /* 信号信息 */
+    struct TagListObject sigInfoList;
+    /* 信号处理函数 */
+    _sa_handler sigVectors[PRT_SIGNAL_MAX];
+    /* 保存任务的原SP */
+    void *oldStackPointer;
+    int holdSignal;
 #endif
 };
 
@@ -226,7 +239,7 @@ extern void OsTskScheduleFastPs(uintptr_t intSave);
 OS_SEC_ALW_INLINE INLINE void OsTskHighestSet(void)
 {
     U32 rdyListIdx;
-    struct TagListObject *readyList = NULL;
+    struct TagListObject *readyList;
     U32 childBitMapIdx;
 
     /* find the highest priority */

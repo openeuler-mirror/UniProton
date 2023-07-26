@@ -19,12 +19,11 @@
 #include "prt_posix_internal.h"
 #include "../../../core/kernel/task/prt_task_internal.h"
 #include "prt_err_external.h"
+#include "prt_signal_external.h"
 
 static U32 OsPthreadCreatParaCheck(TskHandle *newthread, const pthread_attr_t *attrp,
     prt_pthread_startroutine routine, pthread_attr_t *attr)
 {
-    int ret;
-
     if (newthread == NULL || routine == NULL) {
         return EINVAL;
     }
@@ -32,7 +31,7 @@ static U32 OsPthreadCreatParaCheck(TskHandle *newthread, const pthread_attr_t *a
     if (attrp != NULL) {
         *attr = *attrp;
     } else {
-        ret = pthread_getattr_default_np(attr);
+        int ret = pthread_getattr_default_np(attr);
         if (ret != OS_OK) {
             OsErrRecord(ret);
         }
@@ -118,6 +117,12 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
 
     INIT_LIST_OBJECT(&tskCb->pendList);
     INIT_LIST_OBJECT(&tskCb->timerList);
+
+    tskCb->sigMask = 0;
+    tskCb->sigWaitMask = 0;
+    tskCb->sigPending = 0;
+    INIT_LIST_OBJECT(&tskCb->sigInfoList);
+    OsInitSigVectors(tskCb);
 }
 
 int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*threadroutine)(void *), void *arg)

@@ -137,6 +137,7 @@ if (NOT "${RPROTON_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
         ${PROJECT_SOURCE_DIR}/src/include/uapi/prt_tick.h
         ${PROJECT_SOURCE_DIR}/src/include/uapi/prt_timer.h
         ${PROJECT_SOURCE_DIR}/src/include/uapi/prt_typedef.h
+        ${PROJECT_SOURCE_DIR}/src/include/uapi/prt_signal.h
         DESTINATION ${INSTALL_M4_CORTEX_INCLUDE_DIR}/
     )
 endif()

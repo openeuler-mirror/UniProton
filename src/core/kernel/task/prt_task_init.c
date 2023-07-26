@@ -15,6 +15,7 @@
 #include "prt_exc_external.h"
 #include "prt_task_internal.h"
 #include "prt_amp_task_internal.h"
+#include "prt_signal_external.h"
 
 /* Unused TCBs and ECBs that can be allocated. */
 OS_SEC_DATA struct TagListObject g_tskCbFreeList = LIST_OBJECT_INIT(g_tskCbFreeList);
@@ -148,7 +149,7 @@ OS_SEC_L4_TEXT U32 OsActivate(void)
  */
 OS_SEC_L4_TEXT void OsTskEntry(TskHandle taskId)
 {
-    struct TagTskCb *taskCb = NULL;
+    struct TagTskCb *taskCb;
     uintptr_t intSave;
 
     (void)taskId;
@@ -304,6 +305,14 @@ OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskI
     INIT_LIST_OBJECT(&taskCb->semBList);
     INIT_LIST_OBJECT(&taskCb->pendList);
     INIT_LIST_OBJECT(&taskCb->timerList);
+
+#if defined(OS_OPTION_POSIX)
+    taskCb->sigMask = 0;
+    taskCb->sigWaitMask = 0;
+    taskCb->sigPending = 0;
+    INIT_LIST_OBJECT(&taskCb->sigInfoList);
+    OsInitSigVectors(taskCb);
+#endif
 
     return;
 }
