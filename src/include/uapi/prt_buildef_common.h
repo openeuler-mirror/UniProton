@@ -23,14 +23,16 @@
 /* 编译器有个bug, 未定义的宏的数值默认是0，所以不用使用'0' */
 #define OS_CORTEX_M4        0x01
 #define OS_ARMV8            0x02
-#define OS_PLATFORM_INVALID 0x03
+#define OS_X86_64           0x03
+#define OS_PLATFORM_INVALID 0x04
 
 /* To define OS_CPU_TYPE */
 /* 编译器有个bug, 未定义的宏的数值默认是0，所以不用使用'0' */
 #define OS_STM32F407        0x01
 #define OS_RASPI4           0x02
 #define OS_HI3093           0x03
-#define OS_CPU_TYPE_INVALID 0x04
+#define OS_UVPCK            0x04
+#define OS_CPU_TYPE_INVALID 0x05
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 

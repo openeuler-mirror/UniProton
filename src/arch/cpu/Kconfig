@@ -2,7 +2,9 @@ choice
 	prompt "Platform Setup"
 config OS_ARCH_ARMV7_M
 	bool "ARMV7_M"
+config OS_ARCH_X86_64
+	bool "X86_64"
 endchoice
 
 source "arch/cpu/armv7-m/Kconfig"
-
+source "arch/cpu/x86_64/Kconfig"
