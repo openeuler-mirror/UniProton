@@ -417,6 +417,8 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface")
 elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
     set(BUILD_APP "UniPorton_test_posix_thread_pthread_interface")
     set(ALL_SRC runThreadPthreadTest.c ${ALL_PTHREAD_SRC})
+else()
+    return()
 endif()
 
 add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})

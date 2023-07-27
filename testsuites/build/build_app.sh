@@ -4,11 +4,34 @@ popd
 
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major
 
-ALL_APP=(
+build_flag=$1
+
+POSIX_APP=(
     "UniPorton_test_posix_time_interface" \
-         "UniPorton_test_posix_thread_sem_interface" 
-         "UniPorton_test_posix_thread_pthread_interface"
-         )
+    "UniPorton_test_posix_thread_sem_interface" \
+    "UniPorton_test_posix_thread_pthread_interface"
+)
+
+RHEALSTONE_APP=(
+    "deadlock-break" \
+    "interrupt-latency" \
+    "message-latency" \
+    "semaphore-shuffle" \
+    "task-preempt" \
+    "task-switch"
+)
+
+ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]}"
+
+if [[ $build_flag == "posix" || $build_flag == "POSIX" ]]; then
+    ALL_APP=${POSIX_APP[*]}
+elif [[ $build_flag == "rhealstone" || $build_flag == "RHEALSTONE" ]]; then
+    ALL_APP=${RHEALSTONE_APP[*]}
+fi
+
+echo "================================================"
+echo "Will build ${ALL_APP}"
+echo "================================================"
 
 for one_app in ${ALL_APP[*]}
 do
@@ -22,3 +45,7 @@ cp $TMP_DIR/$APP $APP.elf
 $TOOLCHAIN_PATH/bin/arm-none-eabi-objcopy -O binary $TMP_DIR/$APP $APP.bin
 rm -rf $TMP_DIR
 done
+
+echo "================================================"
+echo "Build ${ALL_APP} done"
+echo "================================================"
