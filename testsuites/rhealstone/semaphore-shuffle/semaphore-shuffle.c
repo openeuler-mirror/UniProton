@@ -4,155 +4,141 @@
  * This file's license is 2-clause BSD as in this distribution's LICENSE file.
  */
 
+#include <prt_task.h>
+#include <prt_sem.h>
+#include <prt_sys.h>
 #include "tmacros.h"
 #include "timesys.h"
 
 #define BENCHMARKS 50000
 
-rtems_task Task01( rtems_task_argument ignored );
-rtems_task Task02( rtems_task_argument ignored );
-rtems_task Init( rtems_task_argument ignored );
+static void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+static void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 
-rtems_id   Task_id[2];
-rtems_name Task_name[2];
-rtems_id    sem_id;
-rtems_name  sem_name;
+TskHandle task_ids[2];
+SemHandle sem_id;
 
-uint32_t    telapsed;
-uint32_t    tswitch_overhead;
-uint32_t    count;
-uint32_t    sem_exe;
+uint32_t telapsed;
+uint32_t tswitch;
+uint32_t count;
+uint32_t sem_flag;
 
-rtems_task Init( rtems_task_argument ignored )
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  rtems_status_code    status;
-  rtems_attribute      sem_attr;
-  rtems_task_priority  pri;
-  rtems_mode           prev_mode;
+    struct TskInitParam param;
+    TskHandle pid;
+    U32 status;
 
-  sem_attr =  RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY;
+    status = PRT_SemCreate(1, &sem_id);
+    directive_failed(status, "PRT_SemCreate of S0");
 
-  sem_name = rtems_build_name( 'S','0',' ',' ' );
-  status = rtems_semaphore_create(
-    sem_name,
-    1,
-    sem_attr,
-    0,
-    &sem_id
-  );
-  directive_failed( status, "rtems_semaphore_create of S0" );
+    param.taskEntry = Task01;
+    param.stackSize = 0x800;
+    param.name = "TA01";
+    param.taskPrio = OS_TSK_PRIORITY_19;
+    param.stackAddr = 0;
+    status = PRT_TaskCreate(&task_ids[0], &param);
+    directive_failed(status, "PRT_TaskCreate of TA01");
 
-  Task_name[0] = rtems_build_name( 'T','A','0','1' );
-  status = rtems_task_create(
-    Task_name[0],
-    30,
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[0]
-  );
-  directive_failed( status, "rtems_task_create of TA01" );
+    param.taskEntry = Task02;
+    param.stackSize = 0x800;
+    param.name = "TA02";
+    param.taskPrio = OS_TSK_PRIORITY_19;
+    param.stackAddr = 0;
+    status = PRT_TaskCreate(&task_ids[1], &param);
+    directive_failed(status, "PRT_TaskCreate of TA02");
 
-  Task_name[1] = rtems_build_name( 'T','A','0','2' );
-  status = rtems_task_create(
-    Task_name[1],
-    30,
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[1]
-  );
-  directive_failed( status , "rtems_task_create of TA02\n" );
+    status = PRT_TaskSelf(&pid);
+    directive_failed(status, "PRT_TaskSelf of self");
 
-  rtems_task_mode( RTEMS_PREEMPT, RTEMS_PREEMPT_MASK, &prev_mode );
-  /* Lower own priority so TA01 can start up and run */
-  rtems_task_set_priority( RTEMS_SELF, 40, &pri);
+    status = PRT_TaskSetPriority(pid, OS_TSK_PRIORITY_25);
+    directive_failed(status, "PRT_TaskSetPriority of self");
 
-  /* Get time of benchmark with no semaphore shuffling */
-  sem_exe = 0;
-  status = rtems_task_start( Task_id[0], Task01, 0 );
-  directive_failed( status, "rtems_task_start of TA01" );
+    sem_flag = 0;
+    status = PRT_TaskResume(task_ids[0]);
+    directive_failed(status, "PRT_TaskResume of TA01");
 
-  /* Get time of benchmark with semaphore shuffling */
-  sem_exe = 1;
-  status = rtems_task_restart( Task_id[0], 0 );
-  directive_failed( status, "rtems_task_restart of TA01" ); 
+    param.taskEntry = Task01;
+    param.stackSize = 0x800;
+    param.name = "TA01";
+    param.taskPrio = OS_TSK_PRIORITY_19;
+    param.stackAddr = 0;
+    status = PRT_TaskCreate(&task_ids[0], &param);
+    directive_failed(status, "PRT_TaskCreate of TA01");
 
-  /* Should never reach here */
-  rtems_test_assert( false );
+    param.taskEntry = Task02;
+    param.stackSize = 0x800;
+    param.name = "TA02";
+    param.taskPrio = OS_TSK_PRIORITY_19;
+    param.stackAddr = 0;
+    status = PRT_TaskCreate(&task_ids[1], &param);
+    directive_failed(status, "PRT_TaskCreate of TA02");
+
+    sem_flag = 1;
+    status = PRT_TaskResume(task_ids[0]);
+    directive_failed(status, "benchmark_task_create of TA01");
+
+    rtems_test_assert(false);
 }
 
-rtems_task Task01( rtems_task_argument ignored )
+static void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  rtems_status_code status;
+    U32 status;
 
-  /* Start up TA02, yield so it can run */
-  if ( sem_exe == 0 ) {
-    status = rtems_task_start( Task_id[1], Task02, 0 );
-    directive_failed( status, "rtems_task_start of TA02" );
-  } else {
-    status = rtems_task_restart( Task_id[1], 0 );
-    directive_failed( status, "rtems_task_restart of TA02" );
-  }
-  rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-
-  /* Benchmark code */
-  for ( ; count < BENCHMARKS ; ) {
-    if ( sem_exe == 1 ) {
-      rtems_semaphore_obtain( sem_id, RTEMS_WAIT, 0 );
+    if (sem_flag == 0) {
+        status = PRT_TaskResume(task_ids[1]);
+        directive_failed(status, "PRT_TaskResume of TA02");
+    } else {
+        status = PRT_TaskResume(task_ids[1]);
+        directive_failed(status, "PRT_TaskResume of TA02");
     }
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
+    PRT_TaskDelay(0);
 
-    if ( sem_exe == 1 ) {
-      rtems_semaphore_release( sem_id );
+    for (; count < BENCHMARKS;) {
+        if (sem_flag == 1) {
+            PRT_SemPend(sem_id, OS_WAIT_FOREVER);
+        }
+        PRT_TaskDelay(0);
+
+        if (sem_flag == 1) {
+            PRT_SemPost(sem_id);
+        }
+        PRT_TaskDelay(0);
     }
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-  }
 
-  /* Should never reach here */
-  rtems_test_assert( false );
+    rtems_test_assert(false);
 }
 
-rtems_task Task02( rtems_task_argument ignored )
+static void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
 
-  /* Benchmark code */
-  benchmark_timer_initialize();
-  for ( count = 0; count < BENCHMARKS; count++ ) {
-    if ( sem_exe == 1 ) {
-      rtems_semaphore_obtain( sem_id, RTEMS_WAIT, 0 );
-    }
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
+    benchmark_timer_initialize();
+    for (count = 0; count < BENCHMARKS; count++) {
+        if (sem_flag == 1) {
+            PRT_SemPend(sem_id, OS_WAIT_FOREVER);
+        }
+        PRT_TaskDelay(0);
 
-    if ( sem_exe == 1 ) {
-      rtems_semaphore_release( sem_id );
+        if (sem_flag == 1) {
+            PRT_SemPost(sem_id);
+        }
+        PRT_TaskDelay(0);
     }
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-  }
-  telapsed = benchmark_timer_read();
+    telapsed = benchmark_timer_read();
 
-  /* Check which run this was */
-  if (sem_exe == 0) {
-    tswitch_overhead = telapsed;
-    rtems_task_suspend( Task_id[0] );
-    rtems_task_suspend( RTEMS_SELF );
-  } else {
-    put_time(
-       "Rhealstone: Semaphore Shuffle",
-       telapsed,
-       (BENCHMARKS * 2),        /* Total number of semaphore-shuffles*/
-       tswitch_overhead,        /* Overhead of loop and task switches */
-       0
-    );
-    rtems_test_exit( 0 );
-  }
+    if (sem_flag == 0) {
+        tswitch = telapsed;
+        PRT_TaskSuspend(task_ids[0]);
+        PRT_TaskSuspend(task_ids[1]);
+    } else {
+        put_time(
+            "Rhealstone: Semaphore Shuffle",
+            telapsed,
+            (BENCHMARKS * 2),
+            tswitch,
+            0
+        );
+        PRT_SysReboot();
+    }
 }
-
-/* configuration information */
-#define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
-#define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
-#define CONFIGURE_RTEMS_INIT_TASKS_TABLE
-#define CONFIGURE_MAXIMUM_TASKS 3
-#define CONFIGURE_MAXIMUM_SEMAPHORES 1
-#define CONFIGURE_INIT
-#include <rtems/confdefs.h>

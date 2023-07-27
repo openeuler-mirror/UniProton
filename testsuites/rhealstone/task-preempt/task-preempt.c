@@ -4,111 +4,102 @@
  * This file's license is 2-clause BSD as in this distribution's LICENSE file.
  */
 
+#include <prt_task.h>
+#include <prt_sys.h>
 #include "tmacros.h"
 #include "timesys.h"
-#include <rtems/timerdrv.h>
-#define BENCHMARKS 50000   /* Number of benchmarks to run and average over */
+#define BENCHMARKS 50000
 
-rtems_task Task02( rtems_task_argument ignored );
-rtems_task Task01( rtems_task_argument ignored );
-rtems_task Init( rtems_task_argument ignored );
+void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 
-rtems_id           Task_id[2];
-rtems_name         Task_name[2];
+TskHandle task_ids[2];
+const char *task_name[2];
 
-uint32_t           telapsed;          /* total time elapsed during benchmark */
-uint32_t           tloop_overhead;    /* overhead of loops */
-uint32_t           tswitch_overhead;  /* overhead of time it takes to switch 
-                                       * from TA02 to TA01, includes rtems_suspend
-                                       * overhead
-                                       */
-unsigned long      count1;
-rtems_status_code  status;
+uint32_t telapsed;
+uint32_t tloop;
+uint32_t tswitch;
 
-rtems_task Task01( rtems_task_argument ignored )
+unsigned long count1;
+U32 status;
+
+void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  /* Start up TA02, get preempted */
-  status = rtems_task_start( Task_id[1], Task02, 0);
-  directive_failed( status, "rtems_task_start of TA02");
 
-  tswitch_overhead = benchmark_timer_read();
+    status = PRT_TaskResume(task_ids[1]);
+    directive_failed(status, "PRT_TaskResume of TA02");
 
-  benchmark_timer_initialize();
-  /* Benchmark code */
-  for ( count1 = 0; count1 < BENCHMARKS; count1++ ) {
-    rtems_task_resume( Task_id[1] );  /* Awaken TA02, preemption occurs */
-  }
+    tswitch = benchmark_timer_read();
 
-  /* Should never reach here */
-  rtems_test_assert( false );
+    benchmark_timer_initialize();
+
+    for(count1 = 0; count1 < BENCHMARKS; count1++) {
+        PRT_TaskResume(task_ids[1]);
+    }
+
+
+    rtems_test_assert(false);
 }
 
-rtems_task Task02( rtems_task_argument ignored )
+void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  /* Find overhead of task switch back to TA01 (not a preemption) */
-  benchmark_timer_initialize();
-  rtems_task_suspend( RTEMS_SELF );
 
-  /* Benchmark code */
-  for ( ; count1 < BENCHMARKS - 1; ) {
-    rtems_task_suspend( RTEMS_SELF );
-  }
+    benchmark_timer_initialize();
+    PRT_TaskSuspend(task_ids[1]);
 
-  telapsed = benchmark_timer_read();
-  put_time(
-     "Rhealstone: Task Preempt",
-     telapsed,                     /* Total time of all benchmarks */
-     BENCHMARKS - 1,               /* BENCHMARKS - 1 total preemptions */
-     tloop_overhead,               /* Overhead of loops */
-     tswitch_overhead              /* Overhead of task switch back to TA01 */
-  );
 
-  rtems_test_exit( 0 );
+    for(; count1 < BENCHMARKS - 1;) {
+        PRT_TaskSuspend(task_ids[1]);
+    }
+
+    telapsed = benchmark_timer_read();
+    put_time(
+        "Rhealstone: Task Preempt",
+        telapsed,
+        BENCHMARKS - 1,
+        tloop,
+        tswitch
+    );
+
+    PRT_SysReboot();
 }
 
-rtems_task Init( rtems_task_argument ignored )
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  Task_name[0] = rtems_build_name( 'T','A','0','1' );
-  status = rtems_task_create(
-    Task_name[0],
-    30,               /* TA01 is low priority task */
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[0]
-  );
-  directive_failed( status, "rtems_task_create of TA01");
+    struct TskInitParam param;
 
-  Task_name[1] = rtems_build_name( 'T','A','0','2' );
-  status = rtems_task_create(
-    Task_name[1],
-    28,               /* TA02 is high priority task */
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[1]
-  );
-  directive_failed( status, "rtems_task_create of TA02");
+    param.taskEntry = (TskEntryFunc)Task01;
+    param.stackSize = 0x800;
+    param.name = "TA01";
+    param.taskPrio = OS_TSK_PRIORITY_08;
+    param.stackAddr = 0;
 
-  /* Find loop overhead */
-  benchmark_timer_initialize();
-  for ( count1 = 0; count1 < ( BENCHMARKS * 2 ) - 1; count1++ ); {
-     /* rtems_task_resume( Task_id[1] ); */
-  }
-  tloop_overhead = benchmark_timer_read();
+    status = PRT_TaskCreate(&task_ids[0], &param);
+    directive_failed(status, "PRT_TaskCreate of TA01");
 
-  status = rtems_task_start( Task_id[0], Task01, 0 );
-  directive_failed( status, "rtems_task_start of TA01");
+    param.taskEntry = (TskEntryFunc)Task02;
+    param.stackSize = 0x0800;
+    param.name = "TA02";
+    param.taskPrio = OS_TSK_PRIORITY_05;
+    param.stackAddr = 0;
 
-  status = rtems_task_delete( RTEMS_SELF );
-  directive_failed( status, "rtems_task_delete of INIT");
+    status = PRT_TaskCreate(&task_ids[1], &param);
+    directive_failed(status, "PRT_TaskCreate of TA02");
+
+
+    benchmark_timer_initialize();
+    for (count1 = 0; count1 < (BENCHMARKS * 2) - 1; count1++); {
+        /* PRT_TaskResume(task_ids[1]) */
+        asm volatile("");
+    }
+    tloop = benchmark_timer_read();
+
+    status = PRT_TaskResume(task_ids[0]);
+    directive_failed(status, "PRT_TaskResume of TA01");
+
+    TskHandle taskId;
+    PRT_TaskSelf(&taskId);
+    status = PRT_TaskDelete(taskId);
+    directive_failed(status, "PRT_TaskDelete of INIT");
 }
-
-/* configuration information */
-#define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
-#define CONFIGURE_APPLICATION_NEEDS_TIMER_DRIVER
-#define CONFIGURE_TICKS_PER_TIMESLICE        0
-#define CONFIGURE_RTEMS_INIT_TASKS_TABLE
-#define CONFIGURE_MAXIMUM_TASKS 3
-#define CONFIGURE_INIT
-#include <rtems/confdefs.h>

@@ -4,113 +4,117 @@
  * This file's license is 2-clause BSD as in this distribution's LICENSE file.
  */
 
-#include <rtems/timerdrv.h>
+#include <prt_task.h>
+#include <prt_sys.h>
 #include "tmacros.h"
 #include "timesys.h"
 
 #define BENCHMARKS 50000
+#define OS_SYSTICK_RELOAD_REG 0xE000E014
+#define OS_SYSTICK_CURRENT_REG 0xE000E018
 
-rtems_task Task02(rtems_task_argument ignored);
-rtems_task Init(rtems_task_argument ignored);
+void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 
-rtems_id           Task_id[2];
-rtems_name         Task_name[2];
-uint32_t           loop_overhead;
-uint32_t           dir_overhead;
-unsigned long      count1, count2;
-rtems_status_code  status;
+TskHandle task_ids[2];
+const char *task_name[2];
+uint32_t loop;
+uint32_t dir_overhead;
+unsigned long count1, count2;
+unsigned long count11 = 0;
+unsigned long count22 = 0;
+U32 status;
 
-rtems_task Task02( rtems_task_argument ignored )
+void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  uint32_t telapsed;
+    param1 = param1;
+    param2 = param2;
+    param3 = param3;
+    param4 = param4;
+    uint32_t telapsed;
 
-  /* All overhead accounted for now, we can begin benchmark */
-  benchmark_timer_initialize();
 
-  for ( count1 = 0; count1 < BENCHMARKS - 1; count1++ ) {
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-  }
+    benchmark_timer_initialize();
 
-  telapsed = benchmark_timer_read();
-  put_time(
-     "Rhealstone: Task switch",
-     telapsed,
-     ( BENCHMARKS * 2 ) - 1,   /* ( BENCHMARKS * 2 ) - 1 total benchmarks */
-     loop_overhead,            /* Overhead of loop */
-     dir_overhead              /* Overhead of rtems_task_wake_after directive */
-  );
+    for (count1 = 0; count1 < BENCHMARKS - 1; count1++) {
+        PRT_TaskDelay(0);
+    }
 
-  rtems_test_exit( 0 );
+    telapsed = benchmark_timer_read();
+    put_time(
+        "Rhealstone: Task switch", telapsed, (BENCHMARKS * 2) - 1,
+        loop,
+        dir_overhead
+    );
+
+    PRT_SysReboot();
 }
 
-rtems_task Task01( rtems_task_argument ignored )
+void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  status = rtems_task_start( Task_id[1], Task02, 0 );
-  directive_failed( status, "rtems_task_start of TA02" );
+    param1 = param1;
+    param2 = param2;
+    param3 = param3;
+    param4 = param4;
+    status = PRT_TaskResume(task_ids[1]);
+    directive_failed(status, "PRT_TaskResume of TA02");
 
-  /* Yield processor so second task can startup and run */
-  rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
+    PRT_TaskDelay(0);
 
-  for ( count2 = 0; count2 < BENCHMARKS; count2++ ) {
-    rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-  }
+    for (count2 = 0; count2 < BENCHMARKS; count2++) {
+        PRT_TaskDelay(0);
+    }
 
-  /* Should never reach here */
-  rtems_test_assert( false );
-  
+    rtems_test_assert(false);
 }
 
-rtems_task Init( rtems_task_argument ignored )
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-  Task_name[0] = rtems_build_name( 'T','A','0','1' );
-  status = rtems_task_create(
-    Task_name[0],
-    30,
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[0]
-  );
-  directive_failed( status, "rtems_task_create of TA01" );
+    param1 = param1;
+    param2 = param2;
+    param3 = param3;
+    param4 = param4;
+    struct TskInitParam param;
 
-  Task_name[1] = rtems_build_name( 'T','A','0','2' );
-  status = rtems_task_create(
-    Task_name[1],
-    30,
-    RTEMS_MINIMUM_STACK_SIZE,
-    RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES,
-    &Task_id[1]
-  );
-  directive_failed( status, "rtems_task_create of TA02" );
+    param.taskEntry = (TskEntryFunc)Task01;
+    param.stackSize = 0x800;
+    param.name = "TA01";
+    param.taskPrio = OS_TSK_PRIORITY_05;
+    param.stackAddr = 0;
 
-  /* find overhead of routine (no task switches) */
-  benchmark_timer_initialize();
-  for ( count1 = 0; count1 < BENCHMARKS - 1; count1++ ) {
-    /* rtems_task_wake_after( RTEMS_YIELD_PROCESSOR ) */
-  }
-  for ( count2 = 0; count2 < BENCHMARKS; count2++ ) {
-    /* rtems_task_wake_after( RTEMS_YIELD_PROCESSOR ) */
-  }
-  loop_overhead = benchmark_timer_read();
+    status = PRT_TaskCreate(&task_ids[0], &param);
+    directive_failed(status, "PRT_TaskCreate of TA01");
 
-  /* find overhead of rtems_task_wake_after call (no task switches) */
-  benchmark_timer_initialize();
-  rtems_task_wake_after( RTEMS_YIELD_PROCESSOR );
-  dir_overhead = benchmark_timer_read();
+    param.taskEntry = (TskEntryFunc)Task02;
+    param.stackSize = 0x800;
+    param.name = "TA02";
+    param.taskPrio = OS_TSK_PRIORITY_05;
+    param.stackAddr = 0;
 
-  status = rtems_task_start( Task_id[0], Task01, 0);
-  directive_failed( status, "rtems_task_start of TA01" );
+    status = PRT_TaskCreate(&task_ids[1], &param);
+    directive_failed(status, "PRT_TaskCreate of TA02");
 
-  status = rtems_task_delete( RTEMS_SELF);
-  directive_failed( status, "rtems_task_delete of INIT" );
+
+    benchmark_timer_initialize();
+    for (count1 = 0; count1 < BENCHMARKS - 1; count1++) {
+        /* PRT_TaskDelay(0) */
+        asm volatile("");
+    }
+    for (count2 = 0; count2 < BENCHMARKS; count2++) {
+        /* PRT_TaskDelay(0) */
+        asm volatile("");
+    }
+    loop = benchmark_timer_read();
+
+    benchmark_timer_initialize();
+    PRT_TaskDelay(0);
+    dir_overhead = benchmark_timer_read();
+
+    status = PRT_TaskResume(task_ids[0]);
+    directive_failed(status, "PRT_TaskResume of TA01");
+
+    TskHandle taskId;
+    PRT_TaskSelf(&taskId);
+    status = PRT_TaskDelete(taskId);
+    directive_failed(status, "PRT_TaskDelete of INIT");
 }
-
-/* configuration information */
-#define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
-#define CONFIGURE_APPLICATION_NEEDS_TIMER_DRIVER
-#define CONFIGURE_TICKS_PER_TIMESLICE        0
-#define CONFIGURE_RTEMS_INIT_TASKS_TABLE
-#define CONFIGURE_MAXIMUM_TASKS 3
-#define CONFIGURE_INIT
-#include <rtems/confdefs.h>

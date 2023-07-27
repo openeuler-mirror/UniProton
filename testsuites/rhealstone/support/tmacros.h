@@ -15,19 +15,18 @@
 #define __TMACROS_h
 
 #include <inttypes.h>
-#include <bsp.h>    /* includes <rtems.h> */
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <rtems/error.h>
-#include <rtems/score/threaddispatch.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void benchmark_timer_initialize(void);
+uint32_t benchmark_timer_read(void);
 
 #define FOREVER 1                  /* infinite loop */
 
@@ -37,7 +36,10 @@ extern "C" {
 #define TEST_EXTERN extern
 #endif
 
-#include <buffer_test_io.h>
+// #include <buffer_test_io.h>
+#define FLUSH_OUTPUT()
+#define rtems_test_exit(stat) PRT_SysReboot()
+
 
 /*
  *  Check that that the dispatch disable level is proper for the
@@ -47,7 +49,7 @@ extern "C" {
  *  another cpu may be accessing the core at any point when this core
  *  does not have it locked.
  */
-#if defined SMPTEST
+#if 1
  #define check_dispatch_disable_level( _expect ) 
 #else
  #define check_dispatch_disable_level( _expect ) \
@@ -70,11 +72,11 @@ extern "C" {
  *  These macros properly report errors within the Classic API
  */
 #define directive_failed( _dirstat, _failmsg )  \
- fatal_directive_status( _dirstat, RTEMS_SUCCESSFUL, _failmsg )
+ fatal_directive_status( _dirstat, OS_OK, _failmsg )
 
 #define directive_failed_with_level( _dirstat, _failmsg, _level )  \
  fatal_directive_status_with_level( \
-      _dirstat, RTEMS_SUCCESSFUL, _failmsg, _level )
+      _dirstat, OS_OK, _failmsg, _level )
 
 #define fatal_directive_status( _stat, _desired, _msg ) \
   fatal_directive_status_with_level( _stat, _desired, _msg, 0 )
@@ -82,8 +84,8 @@ extern "C" {
 #define fatal_directive_check_status_only( _stat, _desired, _msg ) \
   do { \
     if ( (_stat) != (_desired) ) { \
-      printf( "\n%s FAILED -- expected (%s) got (%s)\n", \
-              (_msg), rtems_status_text(_desired), rtems_status_text(_stat) ); \
+      printf( "\n%s FAILED -- expected (%d) got (%d)\n", \
+              (_msg), (_desired), (_stat) ); \
       FLUSH_OUTPUT(); \
       rtems_test_exit( _stat ); \
     } \
@@ -137,11 +139,11 @@ extern "C" {
  */
 
 #define int_service_failed( _dirstat, _failmsg )  \
- fatal_int_service_status( _dirstat, RTEMS_SUCCESSFUL, _failmsg )
+ fatal_int_service_status( _dirstat, OS_OK, _failmsg )
 
 #define int_service_failed_with_level( _dirstat, _failmsg, _level )  \
  fatal_int_service_status_with_level( \
-      _dirstat, RTEMS_SUCCESSFUL, _failmsg, _level )
+      _dirstat, OS_OK, _failmsg, _level )
 
 #define fatal_int_service_status( _stat, _desired, _msg ) \
   fatal_int_service_status_with_level( _stat, _desired, _msg, 0 )
@@ -252,7 +254,7 @@ extern "C" {
   do { \
     if (!(__exp)) { \
       printf( "%s: %d %s\n", __FILE__, __LINE__, #__exp ); \
-      rtems_test_exit(0); \
+      PRT_SysReboot(); \
     } \
   } while (0)
 
@@ -284,7 +286,7 @@ extern "C" {
 /* rtems_task_argument is a typedef to Thread_Entry_numeric_type */
 #define PRIdrtems_task_argument PRIdThread_Entry_numeric_type
 
-/* rtems_event_set is a typedef to unit32_t */
+/* rtems_event_set is a typedef to uint32_t */
 #define PRIxrtems_event_set PRIx32
 
 /* HACK: newlib defines pthread_t as a typedef to __uint32_t */
