@@ -59,7 +59,7 @@ for one_app in ${ALL_APP[*]}
 do
 export APP=${one_app}
 export TMP_DIR=$APP
-if [ $sim_flag ]; then
+if $sim_flag; then
     cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DSIM:STRING="_SIM_"
 else
     cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
