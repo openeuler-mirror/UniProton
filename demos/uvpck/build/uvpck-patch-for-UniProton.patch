@@ -1,0 +1,11 @@
+--- config.xml	2023-08-07 11:28:05.217652695 +0800
++++ UniProton/config.xml	2023-08-07 11:24:59.682106835 +0800
+@@ -4,7 +4,7 @@
+     <UniProton_compile_mode>release</UniProton_compile_mode>
+     <tools>
+         <tool tool_name="cmake">
+-            <tool_path>/opt/buildtools/cmake-3.20.5/bin</tool_path>
++            <tool_path>/opt/buildtools/nativesdk/sysroots/x86_64-pokysdk-linux/usr/bin</tool_path>
+         </tool>
+     </tools>
+     <projects>
