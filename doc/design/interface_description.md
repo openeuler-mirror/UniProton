@@ -1,77 +1,94 @@
 # UniProton 接口描述说明书
+
 ## 1 简介
-    本文描述了UniProton对外提供的接口设计，重点描述了接口原型和字段定义等。本文档作为UniProton接口设计的基线文档，能够长期维护与使用。本文档将主要用于指导UniProton和所有使用UniProton接口的子系统的相关开发，也帮助测试人员了解UniProton提供的对外接口设计，支持相关开发和测试人员其完成UniProton及其内部各模块的开发和测试。
+
+本文描述了UniProton对外提供的接口设计，重点描述了接口原型和字段定义等。本文档作为UniProton接口设计的基线文档，能够长期维护与使用。本文档将主要用于指导UniProton和所有使用UniProton接口的子系统的相关开发，也帮助测试人员了解UniProton提供的对外接口设计，支持相关开发和测试人员其完成UniProton及其内部各模块的开发和测试。
+
 ### 1.1目的
-    本文主要用于指导UniProton的开发和测试人员了解UniProton对外提供的接口设计，以支持其完成UniProton各模块的开发和测试。该文档为UniProton接口设计的基线文档，长期维护与使用。
+
+本文主要用于指导UniProton的开发和测试人员了解UniProton对外提供的接口设计，以支持其完成UniProton各模块的开发和测试。该文档为UniProton接口设计的基线文档，长期维护与使用。
+
 ### 1.2全量范围
-    本文档所列接口用于嵌入式产品。
+
+本文档所列接口用于嵌入式产品。
+
 ## 2 总体描述
+
 ### 2.1 公共设计约定
+
 #### 2.1.1 处理器平台支持
-    UniProton支持各类处理器平台，当前仅支持cortex_m4芯片等，定义两个宏来识别一个确定的处理器平台：
+
+UniProton支持各类处理器平台，当前仅支持cortex_m4芯片等，定义两个宏来识别一个确定的处理器平台：
      OS_HARDWARE_PLATFORM：代表当前UniProton版本支持的处理器内核，它被赋值为以下枚举值之一：
        OS_CORTEX_M4
     基于各类处理器平台，UniProton向各类用户软件提供的基本统一的接口集合。对于一些具有特殊硬件功能的处理器，UniProton还为其提供相关的应用解决方案，相应地增加一些用户接口。
     本文主要描述基于cortex_m4处理器硬件平台的UniProton接口。
-
+    
     #define OS_HARDWARE_PLATFORM    OS_CORTEX_M4
     #define OS_CPU_TYPE             OS_STM32F407
-    
+
 #### 2.1.2 功能裁剪
-    UniProton支持各项功能的裁减。其中，对于裁减与否不影响实时运行效率的功能，UniProton通过配置文件prt_config.h里的裁减宏来实现功能裁减，这种方式不要求重新编译UniProton库文件。
-    UniProton还有部分功能的裁减会影响实时运行效率，对此，UniProton在prt_buildef.h文件中提供裁减宏，改变裁减宏的值需要重新编译UniProton库文件。
 
-    
+UniProton支持各项功能的裁减。其中，对于裁减与否不影响实时运行效率的功能，UniProton通过配置文件prt_config.h里的裁减宏来实现功能裁减，这种方式不要求重新编译UniProton库文件。
+
+UniProton还有部分功能的裁减会影响实时运行效率，对此，UniProton在prt_buildef.h文件中提供裁减宏，改变裁减宏的值需要重新编译UniProton库文件。
+
 #### 2.1.3 基本数据类型
-    为了屏蔽各种处理器平台在数据类型定义上的差异，UniProton对C语言基本数据类型进行统一定义，供UniProton各功能模块及业务使用。基本数据类型定义为：
 
-    typedef unsigned char U8;
-    typedef unsigned short U16;
-    typedef unsigned int U32;
-    typedef unsigned long long U64;
-    typedef signed char S8;
-    typedef signed short S16;
-    typedef signed int S32;
-    typedef signed long long S64;
+为了屏蔽各种处理器平台在数据类型定义上的差异，UniProton对C语言基本数据类型进行统一定义，供UniProton各功能模块及业务使用。基本数据类型定义为：
+```c
+typedef unsigned char U8;
+typedef unsigned short U16;
+typedef unsigned int U32;
+typedef unsigned long long U64;
+typedef signed char S8;
+typedef signed short S16;
+typedef signed int S32;
+typedef signed long long S64;
+```
 
 #### 2.1.4 常用宏
-    UniProton还提供以下常用宏定义。
-    prt_typedef.h
-    #ifndef OS_SEC_ALW_INLINE
-    #define OS_SEC_ALW_INLINE
-    #endif
-    #ifndef INLINE
-    #define INLINE static __inline __attribute__((always_inline))
-    #endif
-    #ifndef OS_EMBED_ASM
-    #define OS_EMBED_ASM __asm__ __volatile__
-    #endif
-    #define ALIGN(addr, boundary) (((uintptr_t)(addr) + (boundary) - 1) & ~((uintptr_t)(boundary) - 1))
-    #define TRUNCATE(addr, size)  ((addr) & ~((uintptr_t)(size) - 1))
-    #endif
-    #define YES 1
-    #endif
-    #define NO 0
-    #ifndef FALSE
-    #define FALSE ((bool)0)
-    #endif
-    #ifndef TRUE
-    #define TRUE ((bool)1)
-    #endif
-    #ifndef NULL
-    #define NULL ((void *)0)
-    #endif
-    #define OS_ERROR   (U32)(-1)
-    #define OS_INVALID (-1)
-    #ifndef OS_OK
-    #define OS_OK 0
-    #endif
-    #ifndef LIKELY
-    #define LIKELY(x) __builtin_expect(!!(x), 1)
-    #endif
-    #ifndef UNLIKELY
-    #define UNLIKELY(x) __builtin_expect(!!(x), 0)
-    #endif
+
+UniProton 还提供以下常用宏定义。
+
+```c
+prt_typedef.h
+#ifndef OS_SEC_ALW_INLINE
+#define OS_SEC_ALW_INLINE
+#endif
+#ifndef INLINE
+#define INLINE static __inline __attribute__((always_inline))
+#endif
+#ifndef OS_EMBED_ASM
+#define OS_EMBED_ASM __asm__ __volatile__
+#endif
+#define ALIGN(addr, boundary) (((uintptr_t)(addr) + (boundary) - 1) & ~((uintptr_t)(boundary) - 1))
+#define TRUNCATE(addr, size)  ((addr) & ~((uintptr_t)(size) - 1))
+#endif
+#define YES 1
+#endif
+#define NO 0
+#ifndef FALSE
+#define FALSE ((bool)0)
+#endif
+#ifndef TRUE
+#define TRUE ((bool)1)
+#endif
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+#define OS_ERROR   (U32)(-1)
+#define OS_INVALID (-1)
+#ifndef OS_OK
+#define OS_OK 0
+#endif
+#ifndef LIKELY
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#endif
+#ifndef UNLIKELY
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+```
 ## 3 接口定义
 ### 3.1 prt接口
 #### 3.1.1 时钟模块
