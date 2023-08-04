@@ -40,4 +40,15 @@
             </platform>
         </project>
     </projects>
+    <projects>
+        <project cpu_type="uvpck">
+            <lib_type>SRE</lib_type>
+            <platform plat_name="x86_64">
+                <name>x86_64</name>
+                <compile_path_x86>/usr1/openeuler/gcc/openeuler_gcc_x86_64/bin</compile_path_x86>
+                <compile_path_arm64>None</compile_path_arm64>
+                <kconf_dir>uvpck</kconf_dir>
+            </platform>
+        </project>
+    </projects>
 </config>
