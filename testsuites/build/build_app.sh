@@ -6,8 +6,9 @@ export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major
 
 ALL_APP=(
     "UniPorton_test_posix_time_interface" \
-         "UniPorton_test_posix_thread_sem_interface" 
+         "UniPorton_test_posix_thread_sem_interface"
          "UniPorton_test_posix_thread_pthread_interface"
+         "UniPorton_test_posix_signal_interface"
          )
 
 for one_app in ${ALL_APP[*]}

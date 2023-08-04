@@ -19,7 +19,7 @@
 int main(void)
 {
 	sigset_t signalset;
-	int i, test_failed=0;
+	int i, test_failed = 0;
 
       int siglist[] = { SIGABRT, SIGALRM, SIGBUS, SIGCHLD,
                         SIGCONT, SIGFPE, SIGHUP, SIGILL, SIGINT,
@@ -38,7 +38,7 @@ int main(void)
 			#ifdef DEBUG
 				printf("sigfillset did not insert signal %s\n in set", siglist[i]);
  			#endif
-			test_failed=1;
+			test_failed = 1;
 		}
 	}
 

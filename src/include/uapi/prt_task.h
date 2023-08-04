@@ -471,6 +471,13 @@ extern "C" {
 /*
  * 任务或任务控制块状态标志。
  *
+ * 任务被阻塞（等待信号）。
+ */
+#define OS_TSK_WAIT_SIGNAL 0x0002
+
+/*
+ * 任务或任务控制块状态标志。
+ *
  * 任务被挂起。
  */
 #define OS_TSK_SUSPEND 0x0004
@@ -509,6 +516,13 @@ extern "C" {
  * 任务正运行，仍在就绪队列。
  */
 #define OS_TSK_RUNNING 0x0080
+
+/*
+ * 任务有信号在准备处理。
+ *
+ * OS_TSK_HOLD_SIGNAL
+ */
+#define OS_TSK_HOLD_SIGNAL 0x0400
 
 /*
  * 任务或任务控制块状态标志。

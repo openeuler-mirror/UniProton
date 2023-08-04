@@ -403,6 +403,16 @@ list(REMOVE_ITEM ALL_PTHREAD_SRC
 
 )
 
+list(APPEND ALL_SIGNAL_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigwait/sigwait_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigprocmask/sigprocmask_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigaction/sigaction_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigfillset/sigfillset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigaddset/sigaddset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/sigdelset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
+)
+
 list(APPEND OBJS 
     $<TARGET_OBJECTS:bsp>
     $<TARGET_OBJECTS:config>
@@ -417,6 +427,9 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface")
 elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
     set(BUILD_APP "UniPorton_test_posix_thread_pthread_interface")
     set(ALL_SRC runThreadPthreadTest.c ${ALL_PTHREAD_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
+    set(BUILD_APP "UniPorton_test_posix_signal_interface")
+    set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})
 endif()
 
 add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})

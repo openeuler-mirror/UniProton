@@ -75,9 +75,20 @@ list(REMOVE_ITEM MUSL_THREAD_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__unmapself.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__wait.c
     )
+
+# 需要编译的signal相关.c文件
+set(MULS_SIGNAL_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigfillset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigemptyset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigaddset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigdelset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
+    )
+
 list(APPEND MULS_SOURCE
     ${MUSL_TIME_SOURCE}
-    ${MUSL_THREAD_SOURCE})
+    ${MUSL_THREAD_SOURCE}
+    ${MULS_SIGNAL_SOURCE})
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
