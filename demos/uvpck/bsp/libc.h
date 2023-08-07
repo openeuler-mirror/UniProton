@@ -21,7 +21,7 @@ extern "C" {
 #define    BUF             (MAXEXP + MAXFRACT + 1)    /* + decimal point */
 
 #define ARG(basetype) \
-    (ulonglongValue = siFlags & LONGLONGINT ? va_arg(argp, long long basetype) : \
+    (ulonglongValue = flags & LONGLONGINT ? va_arg(argp, long long basetype) : \
         flags & LONGINT ? va_arg(argp, long basetype) : \
         flags & SHORTINT ? (short basetype)va_arg(argp, int) : \
         va_arg(argp, int))
