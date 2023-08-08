@@ -19,8 +19,6 @@ static struct rpmsg_virtio_device rvdev;
 static struct metal_io_region *io;
 struct rpmsg_device *g_rdev;
 struct rpmsg_endpoint g_ept;
-U32 g_receivedMsg;
-bool g_openampFlag = false;
 #define RPMSG_ENDPOINT_NAME "console"
 
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
@@ -36,7 +34,6 @@ int send_message(unsigned char *message, int len)
 char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
-    g_openampFlag = true;
     send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
 
     return OS_OK;
@@ -84,10 +81,8 @@ int rpmsg_service_init(void)
     if (err) {
         return err;
     }
-	
-    send_message((void *)&g_receivedMsg, sizeof(U32));
-	
-    while (!g_openampFlag);
-		
+
+    while (!is_rpmsg_ept_ready(&g_ept));
+
     return OS_OK;
 }
