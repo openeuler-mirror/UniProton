@@ -77,6 +77,8 @@ extern "C" {
 
 #define OS_POSIX_SET_TZDST
 
+#define OS_OPTION_OPENAMP
+
 #ifdef __cplusplus
 #if __cplusplus
 }

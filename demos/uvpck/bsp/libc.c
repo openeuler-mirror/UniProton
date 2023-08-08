@@ -3,6 +3,7 @@
 #include <math.h>
 #include "securec.h"
 #include "libc.h"
+#include "stdint.h"
 
 #ifdef __cplusplus
 #if __cplusplus

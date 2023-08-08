@@ -1,92 +1,9 @@
 diff -urN ethercat-master/CMakeLists.txt ethercat-master-m/CMakeLists.txt
 --- ethercat-master/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
-+++ ethercat-master-m/CMakeLists.txt	2023-08-04 16:53:29.165192276 +0800
++++ ethercat-master-m/CMakeLists.txt	2023-08-08 19:51:01.667796800 +0800
 @@ -0,0 +1 @@
 +add_subdirectory(master)
 \ No newline at end of file
-diff -urN ethercat-master/documentation/graphs/Makefile ethercat-master-m/documentation/graphs/Makefile
---- ethercat-master/documentation/graphs/Makefile	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/documentation/graphs/Makefile	1970-01-01 08:00:00.000000000 +0800
-@@ -1,35 +0,0 @@
--#-----------------------------------------------------------------------------
--#
--# $Id$
--#
--#-----------------------------------------------------------------------------
--
--GRAPHS := \
--	fsm_change \
--	fsm_eoe \
--	fsm_master \
--	fsm_pdo_conf \
--	fsm_pdo_entry_conf \
--	fsm_pdo_entry_read \
--	fsm_pdo_read \
--	fsm_sii \
--	fsm_slave_conf \
--	fsm_slave_scan
--
--#-----------------------------------------------------------------------------
--
--PDF = $(addsuffix .pdf,$(GRAPHS))
--
--#-----------------------------------------------------------------------------
--
--all: pdf
--
--pdf: $(PDF)
--
--%.pdf: %.dot
--	dot -Tpdf -o $@ $<
--
--clean:
--	@rm -f *.pdf
--
--#-----------------------------------------------------------------------------
-Binary files ethercat-master/documentation/images/ethercat.pdf and ethercat-master-m/documentation/images/ethercat.pdf differ
-Binary files ethercat-master/documentation/images/ighsign.pdf and ethercat-master-m/documentation/images/ighsign.pdf differ
-diff -urN ethercat-master/documentation/images/Makefile ethercat-master-m/documentation/images/Makefile
---- ethercat-master/documentation/images/Makefile	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/documentation/images/Makefile	1970-01-01 08:00:00.000000000 +0800
-@@ -1,38 +0,0 @@
--#-----------------------------------------------------------------------------
--#
--# $Id$
--#
--#-----------------------------------------------------------------------------
--
--FIGS := \
--	app-config.fig \
--	attach.fig \
--	dc.fig \
--	fmmus.fig \
--	fsm-coedown.fig \
--	fsm-eoe.fig \
--	interrupt.fig \
--	master-locks.fig \
--	masters.fig \
--	phases.fig \
--	statetrans.fig
--
--FIGPDFS = $(FIGS:.fig=.pdf)
--
--SVGS := \
--	architecture.svg
--
--SVGPDFS = $(SVGS:.svg=.pdf)
--
--all: $(FIGPDFS) $(SVGPDFS)
--
--%.pdf: %.fig
--	fig2dev -L pdf -z A4 -p xxx -c $< $@	
--
--%.pdf: %.svg
--	inkscape --export-pdf=$@ $<
--
--clean:
--	@rm -rv $(FIGPDFS) $(SVGPDFS)
--
--#-----------------------------------------------------------------------------
 diff -urN ethercat-master/documentation/Makefile ethercat-master-m/documentation/Makefile
 --- ethercat-master/documentation/Makefile	2023-06-26 17:45:40.000000000 +0800
 +++ ethercat-master-m/documentation/Makefile	1970-01-01 08:00:00.000000000 +0800
@@ -185,9 +102,90 @@ diff -urN ethercat-master/documentation/Makefile ethercat-master-m/documentation
 -		images/*.bak
 -
 -#------------------------------------------------------------------------------
+diff -urN ethercat-master/documentation/graphs/Makefile ethercat-master-m/documentation/graphs/Makefile
+--- ethercat-master/documentation/graphs/Makefile	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/documentation/graphs/Makefile	1970-01-01 08:00:00.000000000 +0800
+@@ -1,35 +0,0 @@
+-#-----------------------------------------------------------------------------
+-#
+-# $Id$
+-#
+-#-----------------------------------------------------------------------------
+-
+-GRAPHS := \
+-	fsm_change \
+-	fsm_eoe \
+-	fsm_master \
+-	fsm_pdo_conf \
+-	fsm_pdo_entry_conf \
+-	fsm_pdo_entry_read \
+-	fsm_pdo_read \
+-	fsm_sii \
+-	fsm_slave_conf \
+-	fsm_slave_scan
+-
+-#-----------------------------------------------------------------------------
+-
+-PDF = $(addsuffix .pdf,$(GRAPHS))
+-
+-#-----------------------------------------------------------------------------
+-
+-all: pdf
+-
+-pdf: $(PDF)
+-
+-%.pdf: %.dot
+-	dot -Tpdf -o $@ $<
+-
+-clean:
+-	@rm -f *.pdf
+-
+-#-----------------------------------------------------------------------------
+diff -urN ethercat-master/documentation/images/Makefile ethercat-master-m/documentation/images/Makefile
+--- ethercat-master/documentation/images/Makefile	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/documentation/images/Makefile	1970-01-01 08:00:00.000000000 +0800
+@@ -1,38 +0,0 @@
+-#-----------------------------------------------------------------------------
+-#
+-# $Id$
+-#
+-#-----------------------------------------------------------------------------
+-
+-FIGS := \
+-	app-config.fig \
+-	attach.fig \
+-	dc.fig \
+-	fmmus.fig \
+-	fsm-coedown.fig \
+-	fsm-eoe.fig \
+-	interrupt.fig \
+-	master-locks.fig \
+-	masters.fig \
+-	phases.fig \
+-	statetrans.fig
+-
+-FIGPDFS = $(FIGS:.fig=.pdf)
+-
+-SVGS := \
+-	architecture.svg
+-
+-SVGPDFS = $(SVGS:.svg=.pdf)
+-
+-all: $(FIGPDFS) $(SVGPDFS)
+-
+-%.pdf: %.fig
+-	fig2dev -L pdf -z A4 -p xxx -c $< $@	
+-
+-%.pdf: %.svg
+-	inkscape --export-pdf=$@ $<
+-
+-clean:
+-	@rm -rv $(FIGPDFS) $(SVGPDFS)
+-
+-#-----------------------------------------------------------------------------
 diff -urN ethercat-master/include/ecrt.h ethercat-master-m/include/ecrt.h
 --- ethercat-master/include/ecrt.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/include/ecrt.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/include/ecrt.h	2023-08-08 19:50:38.605139700 +0800
 @@ -1920,7 +1920,7 @@
      );
  #else
@@ -206,9 +204,39 @@ diff -urN ethercat-master/include/ecrt.h ethercat-master-m/include/ecrt.h
      );
  #endif
  
+diff -urN ethercat-master/master/CMakeLists.txt ethercat-master-m/master/CMakeLists.txt
+--- ethercat-master/master/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
++++ ethercat-master-m/master/CMakeLists.txt	2023-08-08 19:51:01.334803300 +0800
+@@ -0,0 +1,25 @@
++set(ECRT_SRC
++    coe_emerg_ring.c
++    datagram_pair.c
++    datagram.c
++    domain.c
++    flag.c
++    fmmu_config.c
++    fsm_coe.c
++    fsm_slave.c
++    mailbox.c
++    master.c
++    module.c
++    pdo_entry.c
++    pdo_list.c
++    pdo.c
++    reg_request.c
++    sdo_entry.c
++    sdo_request.c
++    sdo.c
++    slave_config.c
++    slave.c
++    sync_config.c
++    sync.c
++)
++add_library(ethercat_src OBJECT ${ECRT_SRC})
+\ No newline at end of file
 diff -urN ethercat-master/master/cdev.c ethercat-master-m/master/cdev.c
 --- ethercat-master/master/cdev.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/cdev.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/cdev.c	2023-08-08 19:51:00.679585000 +0800
 @@ -32,10 +32,6 @@
  
  /*****************************************************************************/
@@ -248,8 +276,8 @@ diff -urN ethercat-master/master/cdev.c ethercat-master-m/master/cdev.c
  
 diff -urN ethercat-master/master/cdev.h ethercat-master-m/master/cdev.h
 --- ethercat-master/master/cdev.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/cdev.h	2023-08-04 16:53:29.233188856 +0800
-@@ -37,10 +37,8 @@
++++ ethercat-master-m/master/cdev.h	2023-08-08 19:51:01.312761800 +0800
+@@ -37,10 +37,9 @@
  #ifndef __EC_CDEV_H__
  #define __EC_CDEV_H__
  
@@ -257,11 +285,12 @@ diff -urN ethercat-master/master/cdev.h ethercat-master-m/master/cdev.h
 -#include <linux/cdev.h>
 -
  #include "globals.h"
++#include "sys/stat.h"
 +#include "prt_mem.h"
  
  /*****************************************************************************/
  
-@@ -48,7 +46,7 @@
+@@ -48,7 +47,7 @@
  */
  typedef struct {
      ec_master_t *master; /**< Master owning the device. */
@@ -270,39 +299,9 @@ diff -urN ethercat-master/master/cdev.h ethercat-master-m/master/cdev.h
  } ec_cdev_t;
  
  /*****************************************************************************/
-diff -urN ethercat-master/master/CMakeLists.txt ethercat-master-m/master/CMakeLists.txt
---- ethercat-master/master/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
-+++ ethercat-master-m/master/CMakeLists.txt	2023-08-04 16:53:29.233188856 +0800
-@@ -0,0 +1,25 @@
-+set(ECRT_SRC
-+    coe_emerg_ring.c
-+    datagram_pair.c
-+    datagram.c
-+    domain.c
-+    flag.c
-+    fmmu_config.c
-+    fsm_coe.c
-+    fsm_slave.c
-+    mailbox.c
-+    master.c
-+    module.c
-+    pdo_entry.c
-+    pdo_list.c
-+    pdo.c
-+    reg_request.c
-+    sdo_entry.c
-+    sdo_request.c
-+    sdo.c
-+    slave_config.c
-+    slave.c
-+    sync_config.c
-+    sync.c
-+)
-+add_library(ethercat_src OBJECT ${ECRT_SRC})
-\ No newline at end of file
 diff -urN ethercat-master/master/coe_emerg_ring.c ethercat-master-m/master/coe_emerg_ring.c
 --- ethercat-master/master/coe_emerg_ring.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/coe_emerg_ring.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/coe_emerg_ring.c	2023-08-08 19:51:00.633479900 +0800
 @@ -35,8 +35,6 @@
  
  /*****************************************************************************/
@@ -359,7 +358,7 @@ diff -urN ethercat-master/master/coe_emerg_ring.c ethercat-master-m/master/coe_e
      if (ring->read_index == ring->write_index) {
 diff -urN ethercat-master/master/coe_emerg_ring.h ethercat-master-m/master/coe_emerg_ring.h
 --- ethercat-master/master/coe_emerg_ring.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/coe_emerg_ring.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/coe_emerg_ring.h	2023-08-08 19:51:01.122451800 +0800
 @@ -38,13 +38,14 @@
  #define __EC_COE_EMERG_RING_H__
  
@@ -389,7 +388,7 @@ diff -urN ethercat-master/master/coe_emerg_ring.h ethercat-master-m/master/coe_e
  
 diff -urN ethercat-master/master/datagram.c ethercat-master-m/master/datagram.c
 --- ethercat-master/master/datagram.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/datagram.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/datagram.c	2023-08-08 19:51:01.207547900 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -573,7 +572,7 @@ diff -urN ethercat-master/master/datagram.c ethercat-master-m/master/datagram.c
      }
 diff -urN ethercat-master/master/datagram.h ethercat-master-m/master/datagram.h
 --- ethercat-master/master/datagram.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/datagram.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/datagram.h	2023-08-08 19:51:01.580223200 +0800
 @@ -37,11 +37,8 @@
  #ifndef __EC_DATAGRAM_H__
  #define __EC_DATAGRAM_H__
@@ -589,7 +588,7 @@ diff -urN ethercat-master/master/datagram.h ethercat-master-m/master/datagram.h
  
 diff -urN ethercat-master/master/datagram_pair.c ethercat-master-m/master/datagram_pair.c
 --- ethercat-master/master/datagram_pair.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/datagram_pair.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/datagram_pair.c	2023-08-08 19:51:00.908103100 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -619,7 +618,7 @@ diff -urN ethercat-master/master/datagram_pair.c ethercat-master-m/master/datagr
  }
 diff -urN ethercat-master/master/datagram_pair.h ethercat-master-m/master/datagram_pair.h
 --- ethercat-master/master/datagram_pair.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/datagram_pair.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/datagram_pair.h	2023-08-08 19:51:01.541165200 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_DATAGRAM_PAIR_H__
  #define __EC_DATAGRAM_PAIR_H__
@@ -631,7 +630,7 @@ diff -urN ethercat-master/master/datagram_pair.h ethercat-master-m/master/datagr
  
 diff -urN ethercat-master/master/debug.c ethercat-master-m/master/debug.c
 --- ethercat-master/master/debug.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/debug.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/debug.c	2023-08-08 19:51:00.994190300 +0800
 @@ -34,10 +34,6 @@
  
  /*****************************************************************************/
@@ -645,7 +644,7 @@ diff -urN ethercat-master/master/debug.c ethercat-master-m/master/debug.c
  #include "debug.h"
 diff -urN ethercat-master/master/device.c ethercat-master-m/master/device.c
 --- ethercat-master/master/device.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/device.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/device.c	2023-08-08 19:51:01.421955000 +0800
 @@ -34,11 +34,6 @@
  
  /*****************************************************************************/
@@ -775,7 +774,7 @@ diff -urN ethercat-master/master/device.c ethercat-master-m/master/device.c
 -/*****************************************************************************/
 diff -urN ethercat-master/master/device.h ethercat-master-m/master/device.h
 --- ethercat-master/master/device.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/device.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/device.h	2023-08-08 19:51:01.347801600 +0800
 @@ -37,10 +37,8 @@
  #ifndef __EC_DEVICE_H__
  #define __EC_DEVICE_H__
@@ -1005,7 +1004,7 @@ diff -urN ethercat-master/master/device.h ethercat-master-m/master/device.h
  int ec_device_init(ec_device_t *, ec_master_t *);
 diff -urN ethercat-master/master/domain.c ethercat-master-m/master/domain.c
 --- ethercat-master/master/domain.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/domain.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/domain.c	2023-08-08 19:51:01.180533200 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -1234,7 +1233,7 @@ diff -urN ethercat-master/master/domain.c ethercat-master-m/master/domain.c
 -/*****************************************************************************/
 diff -urN ethercat-master/master/domain.h ethercat-master-m/master/domain.h
 --- ethercat-master/master/domain.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/domain.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/domain.h	2023-08-08 19:51:01.297754500 +0800
 @@ -37,13 +37,14 @@
  #ifndef __EC_DOMAIN_H__
  #define __EC_DOMAIN_H__
@@ -1254,7 +1253,7 @@ diff -urN ethercat-master/master/domain.h ethercat-master-m/master/domain.h
  
 diff -urN ethercat-master/master/eoe_request.c ethercat-master-m/master/eoe_request.c
 --- ethercat-master/master/eoe_request.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/eoe_request.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/eoe_request.c	2023-08-08 19:51:00.821931700 +0800
 @@ -33,10 +33,6 @@
  
  /*****************************************************************************/
@@ -1268,7 +1267,7 @@ diff -urN ethercat-master/master/eoe_request.c ethercat-master-m/master/eoe_requ
  /*****************************************************************************/
 diff -urN ethercat-master/master/eoe_request.h ethercat-master-m/master/eoe_request.h
 --- ethercat-master/master/eoe_request.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/eoe_request.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/eoe_request.h	2023-08-08 19:51:01.267675400 +0800
 @@ -37,9 +37,6 @@
  #ifndef __EC_EOE_REQUEST_H__
  #define __EC_EOE_REQUEST_H__
@@ -1281,7 +1280,7 @@ diff -urN ethercat-master/master/eoe_request.h ethercat-master-m/master/eoe_requ
  /*****************************************************************************/
 diff -urN ethercat-master/master/ethernet.c ethercat-master-m/master/ethernet.c
 --- ethercat-master/master/ethernet.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/ethernet.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/ethernet.c	2023-08-08 19:51:01.521078200 +0800
 @@ -34,10 +34,6 @@
  
  /*****************************************************************************/
@@ -1457,7 +1456,7 @@ diff -urN ethercat-master/master/ethernet.c ethercat-master-m/master/ethernet.c
      EC_SLAVE_DBG(eoe->slave, 0, "EoE %s TX queued frame"
 diff -urN ethercat-master/master/ethernet.h ethercat-master-m/master/ethernet.h
 --- ethercat-master/master/ethernet.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/ethernet.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/ethernet.h	2023-08-08 19:51:01.108420900 +0800
 @@ -37,9 +37,6 @@
  #ifndef __EC_ETHERNET_H__
  #define __EC_ETHERNET_H__
@@ -1470,7 +1469,7 @@ diff -urN ethercat-master/master/ethernet.h ethercat-master-m/master/ethernet.h
  #include "slave.h"
 diff -urN ethercat-master/master/flag.c ethercat-master-m/master/flag.c
 --- ethercat-master/master/flag.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/flag.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/flag.c	2023-08-08 19:51:01.052244800 +0800
 @@ -25,8 +25,6 @@
  
  /****************************************************************************/
@@ -1500,7 +1499,7 @@ diff -urN ethercat-master/master/flag.c ethercat-master-m/master/flag.c
  }
 diff -urN ethercat-master/master/flag.h ethercat-master-m/master/flag.h
 --- ethercat-master/master/flag.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/flag.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/flag.h	2023-08-08 19:51:01.282717600 +0800
 @@ -29,7 +29,9 @@
  #ifndef __EC_FLAG_H__
  #define __EC_FLAG_H__
@@ -1514,7 +1513,7 @@ diff -urN ethercat-master/master/flag.h ethercat-master-m/master/flag.h
  
 diff -urN ethercat-master/master/foe_request.c ethercat-master-m/master/foe_request.c
 --- ethercat-master/master/foe_request.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/foe_request.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/foe_request.c	2023-08-08 19:51:01.080388600 +0800
 @@ -32,11 +32,6 @@
  
  /*****************************************************************************/
@@ -1574,7 +1573,7 @@ diff -urN ethercat-master/master/foe_request.c ethercat-master-m/master/foe_requ
  /*****************************************************************************/
 diff -urN ethercat-master/master/foe_request.h ethercat-master-m/master/foe_request.h
 --- ethercat-master/master/foe_request.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/foe_request.h	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/foe_request.h	2023-08-08 19:51:01.237602600 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_FOE_REQUEST_H__
  #define __EC_FOE_REQUEST_H__
@@ -1586,7 +1585,7 @@ diff -urN ethercat-master/master/foe_request.h ethercat-master-m/master/foe_requ
  #include "globals.h"
 diff -urN ethercat-master/master/fsm_change.c ethercat-master-m/master/fsm_change.c
 --- ethercat-master/master/fsm_change.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_change.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_change.c	2023-08-08 19:51:00.864026200 +0800
 @@ -209,7 +209,7 @@
          return;
      }
@@ -1598,7 +1597,7 @@ diff -urN ethercat-master/master/fsm_change.c ethercat-master-m/master/fsm_chang
          fsm->state = ec_fsm_change_state_error;
 diff -urN ethercat-master/master/fsm_coe.c ethercat-master-m/master/fsm_coe.c
 --- ethercat-master/master/fsm_coe.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_coe.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_coe.c	2023-08-08 19:51:01.009197900 +0800
 @@ -498,7 +498,7 @@
          )
  {
@@ -2223,7 +2222,7 @@ diff -urN ethercat-master/master/fsm_coe.c ethercat-master-m/master/fsm_coe.c
      }
 diff -urN ethercat-master/master/fsm_eoe.c ethercat-master-m/master/fsm_eoe.c
 --- ethercat-master/master/fsm_eoe.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_eoe.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_eoe.c	2023-08-08 19:51:00.777868300 +0800
 @@ -239,7 +239,7 @@
          ec_print_data(data, cur - data);
      }
@@ -2244,7 +2243,7 @@ diff -urN ethercat-master/master/fsm_eoe.c ethercat-master-m/master/fsm_eoe.c
              if (diff_ms < EC_EOE_RESPONSE_TIMEOUT) {
 diff -urN ethercat-master/master/fsm_foe.c ethercat-master-m/master/fsm_foe.c
 --- ethercat-master/master/fsm_foe.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_foe.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_foe.c	2023-08-08 19:51:01.502045400 +0800
 @@ -615,7 +615,7 @@
          return;
      }
@@ -2274,7 +2273,7 @@ diff -urN ethercat-master/master/fsm_foe.c ethercat-master-m/master/fsm_foe.c
  }
 diff -urN ethercat-master/master/fsm_master.c ethercat-master-m/master/fsm_master.c
 --- ethercat-master/master/fsm_master.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_master.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_master.c	2023-08-08 19:51:00.949139900 +0800
 @@ -334,20 +334,20 @@
      }
  
@@ -2456,7 +2455,7 @@ diff -urN ethercat-master/master/fsm_master.c ethercat-master-m/master/fsm_maste
          // scanning and setting system times complete
 diff -urN ethercat-master/master/fsm_pdo.c ethercat-master-m/master/fsm_pdo.c
 --- ethercat-master/master/fsm_pdo.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_pdo.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_pdo.c	2023-08-08 19:51:01.039245000 +0800
 @@ -105,11 +105,11 @@
          ec_fsm_pdo_t *fsm /**< PDO configuration state machine. */
          )
@@ -2498,7 +2497,7 @@ diff -urN ethercat-master/master/fsm_pdo.c ethercat-master-m/master/fsm_pdo.c
      ec_fsm_pdo_conf_action_next_pdo_mapping(fsm, datagram);
 diff -urN ethercat-master/master/fsm_pdo_entry.c ethercat-master-m/master/fsm_pdo_entry.c
 --- ethercat-master/master/fsm_pdo_entry.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_pdo_entry.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_pdo_entry.c	2023-08-08 19:51:00.723697300 +0800
 @@ -93,11 +93,11 @@
          ec_fsm_pdo_entry_t *fsm /**< PDO mapping state machine. */
          )
@@ -2534,7 +2533,7 @@ diff -urN ethercat-master/master/fsm_pdo_entry.c ethercat-master-m/master/fsm_pd
              }
 diff -urN ethercat-master/master/fsm_slave.c ethercat-master-m/master/fsm_slave.c
 --- ethercat-master/master/fsm_slave.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_slave.c	2023-08-04 16:53:29.233188856 +0800
++++ ethercat-master-m/master/fsm_slave.c	2023-08-08 19:51:00.739730000 +0800
 @@ -215,7 +215,7 @@
      ec_sdo_request_t *req;
  
@@ -2555,7 +2554,7 @@ diff -urN ethercat-master/master/fsm_slave.c ethercat-master-m/master/fsm_slave.
                  break;
 diff -urN ethercat-master/master/fsm_slave_config.c ethercat-master-m/master/fsm_slave_config.c
 --- ethercat-master/master/fsm_slave_config.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_slave_config.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/fsm_slave_config.c	2023-08-08 19:51:01.442012100 +0800
 @@ -1377,7 +1377,7 @@
  
      EC_SLAVE_DBG(slave, 1, "Checking for synchrony.\n");
@@ -2587,7 +2586,7 @@ diff -urN ethercat-master/master/fsm_slave_config.c ethercat-master-m/master/fsm
              cycle = sync0->cycle_time + sync1->cycle_time;
 diff -urN ethercat-master/master/fsm_slave_scan.c ethercat-master-m/master/fsm_slave_scan.c
 --- ethercat-master/master/fsm_slave_scan.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_slave_scan.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/fsm_slave_scan.c	2023-08-08 19:51:00.935138700 +0800
 @@ -274,7 +274,7 @@
  {
      ec_datagram_t *datagram = fsm->datagram;
@@ -2662,7 +2661,7 @@ diff -urN ethercat-master/master/fsm_slave_scan.c ethercat-master-m/master/fsm_s
              EC_SLAVE_DBG(slave, 1, "Slave announces to support unknown"
 diff -urN ethercat-master/master/fsm_soe.c ethercat-master-m/master/fsm_soe.c
 --- ethercat-master/master/fsm_soe.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/fsm_soe.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/fsm_soe.c	2023-08-08 19:51:01.193548300 +0800
 @@ -200,12 +200,12 @@
      EC_SLAVE_ERR(fsm->slave, "");
  
@@ -2726,7 +2725,7 @@ diff -urN ethercat-master/master/fsm_soe.c ethercat-master-m/master/fsm_soe.c
          fsm->jiffies_start = fsm->datagram->jiffies_sent;
 diff -urN ethercat-master/master/globals.h ethercat-master-m/master/globals.h
 --- ethercat-master/master/globals.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/globals.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/globals.h	2023-08-08 19:51:00.835930900 +0800
 @@ -27,12 +27,27 @@
  #ifndef __EC_MASTER_GLOBALS_H__
  #define __EC_MASTER_GLOBALS_H__
@@ -2819,7 +2818,7 @@ diff -urN ethercat-master/master/globals.h ethercat-master-m/master/globals.h
  #endif
 diff -urN ethercat-master/master/ioctl.c ethercat-master-m/master/ioctl.c
 --- ethercat-master/master/ioctl.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/ioctl.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/ioctl.c	2023-08-08 19:51:01.025228900 +0800
 @@ -1428,7 +1428,7 @@
      ioctl->subindex = req->subindex;
      ioctl->size = req->data_size;
@@ -2876,7 +2875,7 @@ diff -urN ethercat-master/master/ioctl.c ethercat-master-m/master/ioctl.c
      if (copy_from_user(&ioctl, (void __user *) arg, sizeof(ioctl))) {
 diff -urN ethercat-master/master/locks.h ethercat-master-m/master/locks.h
 --- ethercat-master/master/locks.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/locks.h	2023-08-07 10:42:18.762511804 +0800
++++ ethercat-master-m/master/locks.h	2023-08-08 19:51:01.151463100 +0800
 @@ -38,43 +38,24 @@
  #define __EC_LOCKS_H__
  
@@ -2941,7 +2940,7 @@ diff -urN ethercat-master/master/locks.h ethercat-master-m/master/locks.h
 \ No newline at end of file
 diff -urN ethercat-master/master/mailbox.c ethercat-master-m/master/mailbox.c
 --- ethercat-master/master/mailbox.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/mailbox.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/mailbox.c	2023-08-08 19:51:00.792889700 +0800
 @@ -34,9 +34,6 @@
  
  /*****************************************************************************/
@@ -2988,7 +2987,7 @@ diff -urN ethercat-master/master/mailbox.c ethercat-master-m/master/mailbox.c
          if (slave->master->debug_level && data_size > 0) {
 diff -urN ethercat-master/master/master.c ethercat-master-m/master/master.c
 --- ethercat-master/master/master.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/master.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/master.c	2023-08-08 19:51:01.137463000 +0800
 @@ -34,15 +34,6 @@
  
  /*****************************************************************************/
@@ -4008,7 +4007,7 @@ diff -urN ethercat-master/master/master.c ethercat-master-m/master/master.c
 -/*****************************************************************************/
 diff -urN ethercat-master/master/master.h ethercat-master-m/master/master.h
 --- ethercat-master/master/master.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/master.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/master.h	2023-08-08 19:51:00.878033800 +0800
 @@ -37,12 +37,6 @@
  #ifndef __EC_MASTER_H__
  #define __EC_MASTER_H__
@@ -4128,7 +4127,7 @@ diff -urN ethercat-master/master/master.h ethercat-master-m/master/master.h
      ec_datagram_t sync_datagram; /**< Datagram used for DC drift
 diff -urN ethercat-master/master/module.c ethercat-master-m/master/module.c
 --- ethercat-master/master/module.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/module.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/module.c	2023-08-08 19:51:00.709689000 +0800
 @@ -33,10 +33,6 @@
  
  /*****************************************************************************/
@@ -4357,7 +4356,7 @@ diff -urN ethercat-master/master/module.c ethercat-master-m/master/module.c
 -/*****************************************************************************/
 diff -urN ethercat-master/master/pdo.c ethercat-master-m/master/pdo.c
 --- ethercat-master/master/pdo.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/pdo.c	2023-08-08 19:51:01.402960100 +0800
 @@ -34,9 +34,6 @@
  
  /*****************************************************************************/
@@ -4468,9 +4467,21 @@ diff -urN ethercat-master/master/pdo.c ethercat-master-m/master/pdo.c
          }
      }
  }
+diff -urN ethercat-master/master/pdo.h ethercat-master-m/master/pdo.h
+--- ethercat-master/master/pdo.h	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/master/pdo.h	2023-08-08 19:51:00.848954700 +0800
+@@ -37,8 +37,6 @@
+ #ifndef __EC_PDO_H__
+ #define __EC_PDO_H__
+ 
+-#include <linux/list.h>
+-
+ #include "globals.h"
+ #include "pdo_entry.h"
+ 
 diff -urN ethercat-master/master/pdo_entry.c ethercat-master-m/master/pdo_entry.c
 --- ethercat-master/master/pdo_entry.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo_entry.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/pdo_entry.c	2023-08-08 19:51:01.599273800 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -4504,7 +4515,7 @@ diff -urN ethercat-master/master/pdo_entry.c ethercat-master-m/master/pdo_entry.
          }
 diff -urN ethercat-master/master/pdo_entry.h ethercat-master-m/master/pdo_entry.h
 --- ethercat-master/master/pdo_entry.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo_entry.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/pdo_entry.h	2023-08-08 19:51:01.482048300 +0800
 @@ -37,9 +37,9 @@
  #ifndef __EC_PDO_ENTRY_H__
  #define __EC_PDO_ENTRY_H__
@@ -4517,21 +4528,9 @@ diff -urN ethercat-master/master/pdo_entry.h ethercat-master-m/master/pdo_entry.
  
  /*****************************************************************************/
  
-diff -urN ethercat-master/master/pdo.h ethercat-master-m/master/pdo.h
---- ethercat-master/master/pdo.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo.h	2023-08-04 16:53:29.237188655 +0800
-@@ -37,8 +37,6 @@
- #ifndef __EC_PDO_H__
- #define __EC_PDO_H__
- 
--#include <linux/list.h>
--
- #include "globals.h"
- #include "pdo_entry.h"
- 
 diff -urN ethercat-master/master/pdo_list.c ethercat-master-m/master/pdo_list.c
 --- ethercat-master/master/pdo_list.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo_list.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/pdo_list.c	2023-08-08 19:51:01.066318200 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -4662,7 +4661,7 @@ diff -urN ethercat-master/master/pdo_list.c ethercat-master-m/master/pdo_list.c
  }
 diff -urN ethercat-master/master/pdo_list.h ethercat-master-m/master/pdo_list.h
 --- ethercat-master/master/pdo_list.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/pdo_list.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/pdo_list.h	2023-08-08 19:51:00.893033500 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_PDO_LIST_H__
  #define __EC_PDO_LIST_H__
@@ -4674,7 +4673,7 @@ diff -urN ethercat-master/master/pdo_list.h ethercat-master-m/master/pdo_list.h
  
 diff -urN ethercat-master/master/reg_request.c ethercat-master-m/master/reg_request.c
 --- ethercat-master/master/reg_request.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/reg_request.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/reg_request.c	2023-08-08 19:51:01.382905300 +0800
 @@ -33,10 +33,6 @@
  
  /*****************************************************************************/
@@ -4721,7 +4720,7 @@ diff -urN ethercat-master/master/reg_request.c ethercat-master-m/master/reg_requ
 -/*****************************************************************************/
 diff -urN ethercat-master/master/reg_request.h ethercat-master-m/master/reg_request.h
 --- ethercat-master/master/reg_request.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/reg_request.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/reg_request.h	2023-08-08 19:51:01.166477400 +0800
 @@ -37,9 +37,9 @@
  #ifndef __EC_REG_REQUEST_H__
  #define __EC_REG_REQUEST_H__
@@ -4734,41 +4733,9 @@ diff -urN ethercat-master/master/reg_request.h ethercat-master-m/master/reg_requ
  
  /*****************************************************************************/
  
-diff -urN ethercat-master/master/rtdm.c ethercat-master-m/master/rtdm.c
---- ethercat-master/master/rtdm.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/rtdm.c	2023-08-04 16:53:29.237188655 +0800
-@@ -30,10 +30,6 @@
-  * RTDM interface.
-  */
- 
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/mman.h>
--
- #include <rtdm/rtdm_driver.h>
- 
- #include "master.h"
-@@ -105,7 +101,7 @@
-     if (ret) {
-         EC_MASTER_ERR(master, "Initialization of RTDM interface failed"
-                 " (return value %i).\n", ret);
--        kfree(rtdm_dev->dev);
-+        PRT_MemFree(OS_MID_SYS, rtdm_dev->dev);
-     }
- 
-     return ret;
-@@ -129,7 +125,7 @@
-                 "Failed to unregister RTDM device (code %i).\n", ret);
-     }
- 
--    kfree(rtdm_dev->dev);
-+    PRT_MemFree(OS_MID_SYS, rtdm_dev->dev);
- }
- 
- /****************************************************************************/
 diff -urN ethercat-master/master/rtdm-ioctl.c ethercat-master-m/master/rtdm-ioctl.c
 --- ethercat-master/master/rtdm-ioctl.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/rtdm-ioctl.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/rtdm-ioctl.c	2023-08-08 19:51:01.025228900 +0800
 @@ -1428,7 +1428,7 @@
      ioctl->subindex = req->subindex;
      ioctl->size = req->data_size;
@@ -4823,9 +4790,41 @@ diff -urN ethercat-master/master/rtdm-ioctl.c ethercat-master-m/master/rtdm-ioct
      int retval;
  
      if (copy_from_user(&ioctl, (void __user *) arg, sizeof(ioctl))) {
+diff -urN ethercat-master/master/rtdm.c ethercat-master-m/master/rtdm.c
+--- ethercat-master/master/rtdm.c	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/master/rtdm.c	2023-08-08 19:51:00.754770900 +0800
+@@ -30,10 +30,6 @@
+  * RTDM interface.
+  */
+ 
+-#include <linux/module.h>
+-#include <linux/slab.h>
+-#include <linux/mman.h>
+-
+ #include <rtdm/rtdm_driver.h>
+ 
+ #include "master.h"
+@@ -105,7 +101,7 @@
+     if (ret) {
+         EC_MASTER_ERR(master, "Initialization of RTDM interface failed"
+                 " (return value %i).\n", ret);
+-        kfree(rtdm_dev->dev);
++        PRT_MemFree(OS_MID_SYS, rtdm_dev->dev);
+     }
+ 
+     return ret;
+@@ -129,7 +125,7 @@
+                 "Failed to unregister RTDM device (code %i).\n", ret);
+     }
+ 
+-    kfree(rtdm_dev->dev);
++    PRT_MemFree(OS_MID_SYS, rtdm_dev->dev);
+ }
+ 
+ /****************************************************************************/
 diff -urN ethercat-master/master/rtos_list.h ethercat-master-m/master/rtos_list.h
 --- ethercat-master/master/rtos_list.h	1970-01-01 08:00:00.000000000 +0800
-+++ ethercat-master-m/master/rtos_list.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/rtos_list.h	2023-08-08 19:51:01.655797000 +0800
 @@ -0,0 +1,114 @@
 +/*
 + * 双向链表操作的内部头文件
@@ -4944,7 +4943,7 @@ diff -urN ethercat-master/master/rtos_list.h ethercat-master-m/master/rtos_list.
 \ No newline at end of file
 diff -urN ethercat-master/master/sdo.c ethercat-master-m/master/sdo.c
 --- ethercat-master/master/sdo.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/sdo.c	2023-08-08 19:51:00.664576100 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -4990,9 +4989,21 @@ diff -urN ethercat-master/master/sdo.c ethercat-master-m/master/sdo.c
          if (entry->subindex != subindex)
              continue;
          return entry;
+diff -urN ethercat-master/master/sdo.h ethercat-master-m/master/sdo.h
+--- ethercat-master/master/sdo.h	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/master/sdo.h	2023-08-08 19:51:00.980153900 +0800
+@@ -37,8 +37,6 @@
+ #ifndef __EC_SDO_H__
+ #define __EC_SDO_H__
+ 
+-#include <linux/list.h>
+-
+ #include "globals.h"
+ #include "sdo_entry.h"
+ 
 diff -urN ethercat-master/master/sdo_entry.c ethercat-master-m/master/sdo_entry.c
 --- ethercat-master/master/sdo_entry.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo_entry.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/sdo_entry.c	2023-08-08 19:51:01.559161200 +0800
 @@ -34,8 +34,6 @@
  
  /*****************************************************************************/
@@ -5013,7 +5024,7 @@ diff -urN ethercat-master/master/sdo_entry.c ethercat-master-m/master/sdo_entry.
  /*****************************************************************************/
 diff -urN ethercat-master/master/sdo_entry.h ethercat-master-m/master/sdo_entry.h
 --- ethercat-master/master/sdo_entry.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo_entry.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/sdo_entry.h	2023-08-08 19:51:01.462008500 +0800
 @@ -37,10 +37,9 @@
  #ifndef __EC_SDO_ENTRY_H__
  #define __EC_SDO_ENTRY_H__
@@ -5027,21 +5038,9 @@ diff -urN ethercat-master/master/sdo_entry.h ethercat-master-m/master/sdo_entry.
  
  /*****************************************************************************/
  
-diff -urN ethercat-master/master/sdo.h ethercat-master-m/master/sdo.h
---- ethercat-master/master/sdo.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo.h	2023-08-04 16:53:29.237188655 +0800
-@@ -37,8 +37,6 @@
- #ifndef __EC_SDO_H__
- #define __EC_SDO_H__
- 
--#include <linux/list.h>
--
- #include "globals.h"
- #include "sdo_entry.h"
- 
 diff -urN ethercat-master/master/sdo_request.c ethercat-master-m/master/sdo_request.c
 --- ethercat-master/master/sdo_request.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo_request.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/sdo_request.c	2023-08-08 19:51:01.251631600 +0800
 @@ -33,10 +33,6 @@
  
  /*****************************************************************************/
@@ -5129,7 +5128,7 @@ diff -urN ethercat-master/master/sdo_request.c ethercat-master-m/master/sdo_requ
 -/*****************************************************************************/
 diff -urN ethercat-master/master/sdo_request.h ethercat-master-m/master/sdo_request.h
 --- ethercat-master/master/sdo_request.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/sdo_request.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/sdo_request.h	2023-08-08 19:51:01.363845000 +0800
 @@ -37,9 +37,9 @@
  #ifndef __EC_SDO_REQUEST_H__
  #define __EC_SDO_REQUEST_H__
@@ -5153,7 +5152,7 @@ diff -urN ethercat-master/master/sdo_request.h ethercat-master-m/master/sdo_requ
  
 diff -urN ethercat-master/master/slave.c ethercat-master-m/master/slave.c
 --- ethercat-master/master/slave.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/slave.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/slave.c	2023-08-08 19:51:01.618293800 +0800
 @@ -34,9 +34,6 @@
  
  /*****************************************************************************/
@@ -5367,9 +5366,75 @@ diff -urN ethercat-master/master/slave.c ethercat-master-m/master/slave.c
              ec_slave_find_names_for_pdo(slave, pdo);
          }
      }
+diff -urN ethercat-master/master/slave.h ethercat-master-m/master/slave.h
+--- ethercat-master/master/slave.h	2023-06-26 17:45:40.000000000 +0800
++++ ethercat-master-m/master/slave.h	2023-08-08 19:51:00.694653900 +0800
+@@ -37,16 +37,13 @@
+ #ifndef __EC_SLAVE_H__
+ #define __EC_SLAVE_H__
+ 
+-#include <linux/list.h>
+-#include <linux/kobject.h>
+-#include <linux/rtmutex.h>
+-
+ #include "globals.h"
+ #include "datagram.h"
+ #include "pdo.h"
+ #include "sync.h"
+ #include "sdo.h"
+ #include "fsm_slave.h"
++#include "locks.h"
+ 
+ /*****************************************************************************/
+ 
+@@ -61,7 +58,7 @@
+  * \param args arguments (optional)
+  */
+ #define EC_SLAVE_INFO(slave, fmt, args...) \
+-    printk(KERN_INFO "EtherCAT %u-%u: " fmt, slave->master->index, \
++    printf("EtherCAT %u-%u: " fmt, slave->master->index, \
+             slave->ring_position, ##args)
+ 
+ /** Convenience macro for printing slave-specific errors to syslog.
+@@ -75,7 +72,7 @@
+  * \param args arguments (optional)
+  */
+ #define EC_SLAVE_ERR(slave, fmt, args...) \
+-    printk(KERN_ERR "EtherCAT ERROR %u-%u: " fmt, slave->master->index, \
++    printf("EtherCAT ERROR %u-%u: " fmt, slave->master->index, \
+             slave->ring_position, ##args)
+ 
+ /** Convenience macro for printing slave-specific warnings to syslog.
+@@ -89,7 +86,7 @@
+  * \param args arguments (optional)
+  */
+ #define EC_SLAVE_WARN(slave, fmt, args...) \
+-    printk(KERN_WARNING "EtherCAT WARNING %u-%u: " fmt, \
++    printf("EtherCAT WARNING %u-%u: " fmt, \
+             slave->master->index, slave->ring_position, ##args)
+ 
+ /** Convenience macro for printing slave-specific debug messages to syslog.
+@@ -107,7 +104,7 @@
+ #define EC_SLAVE_DBG(slave, level, fmt, args...) \
+     do { \
+         if (slave->master->debug_level >= level) { \
+-            printk(KERN_DEBUG "EtherCAT DEBUG %u-%u: " fmt, \
++            printf("EtherCAT DEBUG %u-%u: " fmt, \
+                     slave->master->index, slave->ring_position, ##args); \
+         } \
+     } while (0)
+@@ -258,7 +255,7 @@
+     ec_fsm_slave_t fsm; /**< Slave state machine. */
+ 
+     uint8_t read_mbox_busy; /**< Flag set during a mailbox read request. */
+-    struct rt_mutex mbox_sem; /**< Semaphore protecting the check_mbox variable. */
++    ec_lock_t mbox_sem; /**< Semaphore protecting the check_mbox variable. */
+ 
+ #ifdef EC_EOE
+     ec_mbox_data_t mbox_eoe_frag_data; /**< Received mailbox data for EoE, type frame fragment. */
 diff -urN ethercat-master/master/slave_config.c ethercat-master-m/master/slave_config.c
 --- ethercat-master/master/slave_config.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/slave_config.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/slave_config.c	2023-08-08 19:51:00.807888800 +0800
 @@ -36,9 +36,6 @@
  
  /*****************************************************************************/
@@ -5892,7 +5957,7 @@ diff -urN ethercat-master/master/slave_config.c ethercat-master-m/master/slave_c
 -/*****************************************************************************/
 diff -urN ethercat-master/master/slave_config.h ethercat-master-m/master/slave_config.h
 --- ethercat-master/master/slave_config.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/slave_config.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/slave_config.h	2023-08-08 19:51:00.965140000 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_SLAVE_CONFIG_H__
  #define __EC_SLAVE_CONFIG_H__
@@ -5938,75 +6003,9 @@ diff -urN ethercat-master/master/slave_config.h ethercat-master-m/master/slave_c
                      sc->master->index, sc->alias, sc->position, ##args); \
          } \
      } while (0)
-diff -urN ethercat-master/master/slave.h ethercat-master-m/master/slave.h
---- ethercat-master/master/slave.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/slave.h	2023-08-04 16:53:29.237188655 +0800
-@@ -37,16 +37,13 @@
- #ifndef __EC_SLAVE_H__
- #define __EC_SLAVE_H__
- 
--#include <linux/list.h>
--#include <linux/kobject.h>
--#include <linux/rtmutex.h>
--
- #include "globals.h"
- #include "datagram.h"
- #include "pdo.h"
- #include "sync.h"
- #include "sdo.h"
- #include "fsm_slave.h"
-+#include "locks.h"
- 
- /*****************************************************************************/
- 
-@@ -61,7 +58,7 @@
-  * \param args arguments (optional)
-  */
- #define EC_SLAVE_INFO(slave, fmt, args...) \
--    printk(KERN_INFO "EtherCAT %u-%u: " fmt, slave->master->index, \
-+    printf("EtherCAT %u-%u: " fmt, slave->master->index, \
-             slave->ring_position, ##args)
- 
- /** Convenience macro for printing slave-specific errors to syslog.
-@@ -75,7 +72,7 @@
-  * \param args arguments (optional)
-  */
- #define EC_SLAVE_ERR(slave, fmt, args...) \
--    printk(KERN_ERR "EtherCAT ERROR %u-%u: " fmt, slave->master->index, \
-+    printf("EtherCAT ERROR %u-%u: " fmt, slave->master->index, \
-             slave->ring_position, ##args)
- 
- /** Convenience macro for printing slave-specific warnings to syslog.
-@@ -89,7 +86,7 @@
-  * \param args arguments (optional)
-  */
- #define EC_SLAVE_WARN(slave, fmt, args...) \
--    printk(KERN_WARNING "EtherCAT WARNING %u-%u: " fmt, \
-+    printf("EtherCAT WARNING %u-%u: " fmt, \
-             slave->master->index, slave->ring_position, ##args)
- 
- /** Convenience macro for printing slave-specific debug messages to syslog.
-@@ -107,7 +104,7 @@
- #define EC_SLAVE_DBG(slave, level, fmt, args...) \
-     do { \
-         if (slave->master->debug_level >= level) { \
--            printk(KERN_DEBUG "EtherCAT DEBUG %u-%u: " fmt, \
-+            printf("EtherCAT DEBUG %u-%u: " fmt, \
-                     slave->master->index, slave->ring_position, ##args); \
-         } \
-     } while (0)
-@@ -258,7 +255,7 @@
-     ec_fsm_slave_t fsm; /**< Slave state machine. */
- 
-     uint8_t read_mbox_busy; /**< Flag set during a mailbox read request. */
--    struct rt_mutex mbox_sem; /**< Semaphore protecting the check_mbox variable. */
-+    ec_lock_t mbox_sem; /**< Semaphore protecting the check_mbox variable. */
- 
- #ifdef EC_EOE
-     ec_mbox_data_t mbox_eoe_frag_data; /**< Received mailbox data for EoE, type frame fragment. */
 diff -urN ethercat-master/master/soe_request.c ethercat-master-m/master/soe_request.c
 --- ethercat-master/master/soe_request.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/soe_request.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/soe_request.c	2023-08-08 19:51:01.094387700 +0800
 @@ -33,10 +33,6 @@
  
  /*****************************************************************************/
@@ -6055,7 +6054,7 @@ diff -urN ethercat-master/master/soe_request.c ethercat-master-m/master/soe_requ
      }
 diff -urN ethercat-master/master/soe_request.h ethercat-master-m/master/soe_request.h
 --- ethercat-master/master/soe_request.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/soe_request.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/soe_request.h	2023-08-08 19:51:00.921120200 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_SOE_REQUEST_H__
  #define __EC_SOE_REQUEST_H__
@@ -6067,7 +6066,7 @@ diff -urN ethercat-master/master/soe_request.h ethercat-master-m/master/soe_requ
  /*****************************************************************************/
 diff -urN ethercat-master/master/voe_handler.c ethercat-master-m/master/voe_handler.c
 --- ethercat-master/master/voe_handler.c	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/voe_handler.c	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/voe_handler.c	2023-08-08 19:51:01.639293500 +0800
 @@ -33,8 +33,6 @@
  
  /*****************************************************************************/
@@ -6142,7 +6141,7 @@ diff -urN ethercat-master/master/voe_handler.c ethercat-master-m/master/voe_hand
 -/*****************************************************************************/
 diff -urN ethercat-master/master/voe_handler.h ethercat-master-m/master/voe_handler.h
 --- ethercat-master/master/voe_handler.h	2023-06-26 17:45:40.000000000 +0800
-+++ ethercat-master-m/master/voe_handler.h	2023-08-04 16:53:29.237188655 +0800
++++ ethercat-master-m/master/voe_handler.h	2023-08-08 19:51:01.222547200 +0800
 @@ -37,8 +37,6 @@
  #ifndef __EC_VOE_HANDLER_H__
  #define __EC_VOE_HANDLER_H__
