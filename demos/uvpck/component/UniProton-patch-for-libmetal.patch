@@ -1,19 +1,21 @@
-diff -urN libmetal-2022.10.0/CMakeLists.txt libmetal-UniProton/CMakeLists.txt
+diff -urN libmetal-2022.10.0/CMakeLists.txt libmetal-m/CMakeLists.txt
 --- libmetal-2022.10.0/CMakeLists.txt	2022-10-28 10:12:23.000000000 +0800
-+++ libmetal-UniProton/CMakeLists.txt	2023-07-18 15:16:31.452237000 +0800
-@@ -6,7 +6,8 @@
++++ libmetal-m/CMakeLists.txt	2023-08-10 15:32:28.669060200 +0800
+@@ -6,7 +6,10 @@
  if (POLICY CMP0077)
    cmake_policy(SET CMP0077 NEW)
  endif()
 -
-+include_directories(../../include)
++include_directories(
++  ../../include
++  ../../include/libc/include)
 +set (CMAKE_SYSTEM_NAME Uniproton)
  set (LIBMETAL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
  
  list (APPEND CMAKE_MODULE_PATH
-diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake libmetal-UniProton/cmake/platforms/uniproton_arm64_gcc.cmake
+diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake libmetal-m/cmake/platforms/uniproton_arm64_gcc.cmake
 --- libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/cmake/platforms/uniproton_arm64_gcc.cmake	2023-07-18 15:15:22.379731100 +0800
++++ libmetal-m/cmake/platforms/uniproton_arm64_gcc.cmake	2023-08-10 15:09:20.037838400 +0800
 @@ -0,0 +1,16 @@
 +#cross-compilation config
 +
@@ -28,12 +30,12 @@ diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake libmetal-
 +set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE STRING "")
 +set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER CACHE STRING "")
 +set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER CACHE STRING "")
-+set(CMAKE_C_FLAGS "-D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++set(CMAKE_C_FLAGS "-nostdlib -nostdinc -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
 +
 +# vim: expandtab:ts=2:sw=2:smartindent
-diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake libmetal-UniProton/cmake/platforms/uniproton_x86_64_gcc.cmake
+diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake libmetal-m/cmake/platforms/uniproton_x86_64_gcc.cmake
 --- libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/cmake/platforms/uniproton_x86_64_gcc.cmake	2023-07-18 16:41:50.077229400 +0800
++++ libmetal-m/cmake/platforms/uniproton_x86_64_gcc.cmake	2023-08-10 15:09:26.051593000 +0800
 @@ -0,0 +1,16 @@
 +#cross-compilation config
 +
@@ -48,12 +50,12 @@ diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake libmetal
 +set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE STRING "")
 +set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER CACHE STRING "")
 +set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER CACHE STRING "")
-+set(CMAKE_C_FLAGS "-D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++set(CMAKE_C_FLAGS "-nostdlib -nostdinc -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
 +
 +# vim: expandtab:ts=2:sw=2:smartindent
-diff -urN libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt libmetal-UniProton/lib/system/uniproton/CMakeLists.txt
+diff -urN libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt libmetal-m/lib/system/uniproton/CMakeLists.txt
 --- libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/CMakeLists.txt	2023-07-18 09:50:13.868328200 +0800
++++ libmetal-m/lib/system/uniproton/CMakeLists.txt	2023-08-09 16:49:41.747777500 +0800
 @@ -0,0 +1,17 @@
 +collect (PROJECT_LIB_HEADERS alloc.h)
 +collect (PROJECT_LIB_HEADERS assert.h)
@@ -72,9 +74,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt libmetal-UniPro
 +collect (PROJECT_LIB_SOURCES shmem.c)
 +
 +# vim: expandtab:ts=2:sw=2:smartindent
-diff -urN libmetal-2022.10.0/lib/system/uniproton/alloc.h libmetal-UniProton/lib/system/uniproton/alloc.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/alloc.h libmetal-m/lib/system/uniproton/alloc.h
 --- libmetal-2022.10.0/lib/system/uniproton/alloc.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/alloc.h	2023-07-18 09:50:13.848342000 +0800
++++ libmetal-m/lib/system/uniproton/alloc.h	2023-08-09 16:49:41.755782100 +0800
 @@ -0,0 +1,39 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -115,9 +117,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/alloc.h libmetal-UniProton/lib
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_ALLOC__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/assert.h libmetal-UniProton/lib/system/uniproton/assert.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/assert.h libmetal-m/lib/system/uniproton/assert.h
 --- libmetal-2022.10.0/lib/system/uniproton/assert.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/assert.h	2023-07-18 09:50:13.854309600 +0800
++++ libmetal-m/lib/system/uniproton/assert.h	2023-08-09 16:49:41.763791100 +0800
 @@ -0,0 +1,26 @@
 +/*
 + * Copyright (c) 2018, Xilinx Inc. and Contributors. All rights reserved.
@@ -145,9 +147,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/assert.h libmetal-UniProton/li
 +
 +#endif /* __METAL_UNIPROTON_ASSERT__H__ */
 +
-diff -urN libmetal-2022.10.0/lib/system/uniproton/cache.h libmetal-UniProton/lib/system/uniproton/cache.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/cache.h libmetal-m/lib/system/uniproton/cache.h
 --- libmetal-2022.10.0/lib/system/uniproton/cache.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/cache.h	2023-07-18 09:50:13.860311000 +0800
++++ libmetal-m/lib/system/uniproton/cache.h	2023-08-09 16:49:41.770780300 +0800
 @@ -0,0 +1,39 @@
 +/*
 + * Copyright (c) 2018, Linaro Limited. and Contributors. All rights reserved.
@@ -188,9 +190,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/cache.h libmetal-UniProton/lib
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_CACHE__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.c libmetal-UniProton/lib/system/uniproton/condition.c
+diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.c libmetal-m/lib/system/uniproton/condition.c
 --- libmetal-2022.10.0/lib/system/uniproton/condition.c	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/condition.c	2023-07-18 09:50:13.876310900 +0800
++++ libmetal-m/lib/system/uniproton/condition.c	2023-08-09 16:49:41.777777600 +0800
 @@ -0,0 +1,33 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -225,9 +227,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.c libmetal-UniProton
 +	metal_mutex_acquire(m);
 +	return 0;
 +}
-diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.h libmetal-UniProton/lib/system/uniproton/condition.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.h libmetal-m/lib/system/uniproton/condition.h
 --- libmetal-2022.10.0/lib/system/uniproton/condition.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/condition.h	2023-07-18 09:50:13.884312900 +0800
++++ libmetal-m/lib/system/uniproton/condition.h	2023-08-09 16:49:41.783776100 +0800
 @@ -0,0 +1,30 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -259,9 +261,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.h libmetal-UniProton
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_CONDITION__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/device.c libmetal-UniProton/lib/system/uniproton/device.c
+diff -urN libmetal-2022.10.0/lib/system/uniproton/device.c libmetal-m/lib/system/uniproton/device.c
 --- libmetal-2022.10.0/lib/system/uniproton/device.c	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/device.c	2023-07-18 09:50:13.890309000 +0800
++++ libmetal-m/lib/system/uniproton/device.c	2023-08-09 16:49:41.790777500 +0800
 @@ -0,0 +1,21 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -284,9 +286,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/device.c libmetal-UniProton/li
 +	return 0;
 +}
 +
-diff -urN libmetal-2022.10.0/lib/system/uniproton/init.c libmetal-UniProton/lib/system/uniproton/init.c
+diff -urN libmetal-2022.10.0/lib/system/uniproton/init.c libmetal-m/lib/system/uniproton/init.c
 --- libmetal-2022.10.0/lib/system/uniproton/init.c	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/init.c	2023-07-18 09:50:13.898316300 +0800
++++ libmetal-m/lib/system/uniproton/init.c	2023-08-09 16:49:41.796776600 +0800
 @@ -0,0 +1,27 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -315,9 +317,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/init.c libmetal-UniProton/lib/
 +{
 +	metal_bus_unregister(&metal_generic_bus);
 +}
-diff -urN libmetal-2022.10.0/lib/system/uniproton/io.h libmetal-UniProton/lib/system/uniproton/io.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/io.h libmetal-m/lib/system/uniproton/io.h
 --- libmetal-2022.10.0/lib/system/uniproton/io.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/io.h	2023-07-18 09:50:13.905310600 +0800
++++ libmetal-m/lib/system/uniproton/io.h	2023-08-09 16:49:41.803776900 +0800
 @@ -0,0 +1,37 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -356,9 +358,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/io.h libmetal-UniProton/lib/sy
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_IO__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/irq.h libmetal-UniProton/lib/system/uniproton/irq.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/irq.h libmetal-m/lib/system/uniproton/irq.h
 --- libmetal-2022.10.0/lib/system/uniproton/irq.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/irq.h	2023-07-18 09:50:13.913310000 +0800
++++ libmetal-m/lib/system/uniproton/irq.h	2023-08-09 16:49:41.809779500 +0800
 @@ -0,0 +1,27 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -387,9 +389,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/irq.h libmetal-UniProton/lib/s
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_IRQ__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/log.h libmetal-UniProton/lib/system/uniproton/log.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/log.h libmetal-m/lib/system/uniproton/log.h
 --- libmetal-2022.10.0/lib/system/uniproton/log.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/log.h	2023-07-18 09:50:13.920308600 +0800
++++ libmetal-m/lib/system/uniproton/log.h	2023-08-09 16:49:41.815776600 +0800
 @@ -0,0 +1,27 @@
 +/*
 + * Copyright (c) 2018, Xilinx Inc. and Contributors. All rights reserved.
@@ -418,9 +420,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/log.h libmetal-UniProton/lib/s
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_LOG__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/mutex.h libmetal-UniProton/lib/system/uniproton/mutex.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/mutex.h libmetal-m/lib/system/uniproton/mutex.h
 --- libmetal-2022.10.0/lib/system/uniproton/mutex.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/mutex.h	2023-07-18 09:50:13.927308700 +0800
++++ libmetal-m/lib/system/uniproton/mutex.h	2023-08-09 16:49:41.822776600 +0800
 @@ -0,0 +1,73 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -495,9 +497,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/mutex.h libmetal-UniProton/lib
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_MUTEX__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/shmem.c libmetal-UniProton/lib/system/uniproton/shmem.c
+diff -urN libmetal-2022.10.0/lib/system/uniproton/shmem.c libmetal-m/lib/system/uniproton/shmem.c
 --- libmetal-2022.10.0/lib/system/uniproton/shmem.c	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/shmem.c	2023-07-18 09:50:13.933308000 +0800
++++ libmetal-m/lib/system/uniproton/shmem.c	2023-08-09 16:49:41.830781400 +0800
 @@ -0,0 +1,19 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
@@ -518,10 +520,10 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/shmem.c libmetal-UniProton/lib
 +{
 +	return metal_shmem_open_generic(name, size, io);
 +}
-diff -urN libmetal-2022.10.0/lib/system/uniproton/sleep.h libmetal-UniProton/lib/system/uniproton/sleep.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/sleep.h libmetal-m/lib/system/uniproton/sleep.h
 --- libmetal-2022.10.0/lib/system/uniproton/sleep.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/sleep.h	2023-07-18 10:20:50.711934100 +0800
-@@ -0,0 +1,35 @@
++++ libmetal-m/lib/system/uniproton/sleep.h	2023-08-09 17:25:20.982666000 +0800
+@@ -0,0 +1,36 @@
 +/*
 + * Copyright (c) 2018, Linaro Limited. and Contributors. All rights reserved.
 + *
@@ -549,6 +551,7 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/sleep.h libmetal-UniProton/lib
 +
 +static inline int __metal_sleep_usec(unsigned int usec)
 +{
++*(volatile uint32_t *)0xf02400000 = 0x10004000;
 +	return PRT_TaskDelay((U32)(OS_TICK_PER_SECOND * usec / 1000000));
 +}
 +
@@ -557,9 +560,9 @@ diff -urN libmetal-2022.10.0/lib/system/uniproton/sleep.h libmetal-UniProton/lib
 +#endif
 +
 +#endif /* __METAL_UNIPROTON_SLEEP__H__ */
-diff -urN libmetal-2022.10.0/lib/system/uniproton/sys.h libmetal-UniProton/lib/system/uniproton/sys.h
+diff -urN libmetal-2022.10.0/lib/system/uniproton/sys.h libmetal-m/lib/system/uniproton/sys.h
 --- libmetal-2022.10.0/lib/system/uniproton/sys.h	1970-01-01 08:00:00.000000000 +0800
-+++ libmetal-UniProton/lib/system/uniproton/sys.h	2023-07-18 09:50:13.947313600 +0800
++++ libmetal-m/lib/system/uniproton/sys.h	2023-08-09 16:49:41.846794400 +0800
 @@ -0,0 +1,39 @@
 +/*
 + * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
