@@ -1,7 +1,7 @@
-diff -urN openamp-2022.10.1/CMakeLists.txt openamp-UniProton/CMakeLists.txt
+diff -urN openamp-2022.10.1/CMakeLists.txt openamp-m/CMakeLists.txt
 --- openamp-2022.10.1/CMakeLists.txt	2022-12-13 11:21:05.000000000 +0800
-+++ openamp-UniProton/CMakeLists.txt	2023-07-18 15:45:14.448134100 +0800
-@@ -6,7 +6,11 @@
++++ openamp-m/CMakeLists.txt	2023-08-10 15:29:05.804585600 +0800
+@@ -6,7 +6,12 @@
  if (POLICY CMP0077)
    cmake_policy(SET CMP0077 NEW)
  endif()
@@ -9,14 +9,15 @@ diff -urN openamp-2022.10.1/CMakeLists.txt openamp-UniProton/CMakeLists.txt
 +include_directories(
 +  ../../build/libmetal/output/usr/local/include
 +  ../../component/open-amp/lib/include
-+  ../../include ../../config)
++  ../../include ../../config
++  ../../include/libc/include)
 +set (CMAKE_SYSTEM_NAME Uniproton)
  set (OPENAMP_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
  set (OPENAMP_BIN_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
  
-diff -urN openamp-2022.10.1/cmake/depends.cmake openamp-UniProton/cmake/depends.cmake
+diff -urN openamp-2022.10.1/cmake/depends.cmake openamp-m/cmake/depends.cmake
 --- openamp-2022.10.1/cmake/depends.cmake	2022-12-13 11:21:05.000000000 +0800
-+++ openamp-UniProton/cmake/depends.cmake	2023-07-18 15:45:55.149845300 +0800
++++ openamp-m/cmake/depends.cmake	2023-08-10 15:28:38.347866700 +0800
 @@ -1,5 +1,5 @@
  if (WITH_LIBMETAL_FIND)
 -  find_package (Libmetal REQUIRED)
@@ -24,9 +25,9 @@ diff -urN openamp-2022.10.1/cmake/depends.cmake openamp-UniProton/cmake/depends.
    collect (PROJECT_INC_DIRS "${LIBMETAL_INCLUDE_DIR}")
    collect (PROJECT_LIB_DIRS "${LIBMETAL_LIB_DIR}")
    collect (PROJECT_LIB_DEPS "${LIBMETAL_LIB}")
-diff -urN openamp-2022.10.1/cmake/platforms/uniproton_arm64_gcc.cmake openamp-UniProton/cmake/platforms/uniproton_arm64_gcc.cmake
+diff -urN openamp-2022.10.1/cmake/platforms/uniproton_arm64_gcc.cmake openamp-m/cmake/platforms/uniproton_arm64_gcc.cmake
 --- openamp-2022.10.1/cmake/platforms/uniproton_arm64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
-+++ openamp-UniProton/cmake/platforms/uniproton_arm64_gcc.cmake	2023-07-18 15:48:16.364726400 +0800
++++ openamp-m/cmake/platforms/uniproton_arm64_gcc.cmake	2023-08-09 16:49:52.650428300 +0800
 @@ -0,0 +1,16 @@
 +#cross-compilation config
 +
@@ -44,9 +45,9 @@ diff -urN openamp-2022.10.1/cmake/platforms/uniproton_arm64_gcc.cmake openamp-Un
 +set(CMAKE_C_FLAGS "-D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
 +
 +# vim: expandtab:ts=2:sw=2:smartindent
-diff -urN openamp-2022.10.1/cmake/platforms/uniproton_x86_64_gcc.cmake openamp-UniProton/cmake/platforms/uniproton_x86_64_gcc.cmake
+diff -urN openamp-2022.10.1/cmake/platforms/uniproton_x86_64_gcc.cmake openamp-m/cmake/platforms/uniproton_x86_64_gcc.cmake
 --- openamp-2022.10.1/cmake/platforms/uniproton_x86_64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
-+++ openamp-UniProton/cmake/platforms/uniproton_x86_64_gcc.cmake	2023-07-18 16:43:56.103144300 +0800
++++ openamp-m/cmake/platforms/uniproton_x86_64_gcc.cmake	2023-08-09 16:49:52.661428400 +0800
 @@ -0,0 +1,16 @@
 +#cross-compilation config
 +
