@@ -8,15 +8,13 @@
 #include "prt_task.h"
 #include "prt_hwi.h"
 #include "prt_sys.h"
+#include "prt_lapic.h"
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U64 g_cpuClock = 0;
 char g_modelID[64] = {0};
 const TskPrior g_testTskPri = 25;
-
-#define TIMER_IRQ 0xf8
-#define TEST_HWI_NUM 0xeb
 
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()
@@ -64,7 +62,7 @@ U32 OsTestInit(void)
     return OS_OK;
 }
 
-void HwiTimerIsr()
+void HwiTimerIsr(HwiArg arg)
 {
     PRT_TickISR();
 }
@@ -127,23 +125,19 @@ U32 PRT_HardDrvInit(void)
 
     GetCpuCycle();
 
-    ret = PRT_HwiSetAttr(TIMER_IRQ, 0, OS_HWI_MODE_ENGROSS);
+    ret = PRT_HwiSetAttr(OS_LAPIC_TIMER, 0, OS_HWI_MODE_ENGROSS);
     if (ret != OS_OK) {
         printf("line %d, errno: 0x%08x\n", __LINE__, ret);
         return ret;
     }
 
-    ret = PRT_HwiCreate(TIMER_IRQ, (HwiProcFunc)HwiTimerIsr, 0);
+    ret = PRT_HwiCreate(OS_LAPIC_TIMER, (HwiProcFunc)HwiTimerIsr, 0);
     if (ret != OS_OK) {
         printf("create hwi failed:0x%llx\n", ret);
         return ret;
     }
 
-    ret = PRT_HwiEnable(TIMER_IRQ);
-    if (ret != OS_OK) {
-        printf("enable hwi failed:0x%llx\n", ret);
-        return ret;
-    }
+    OsLapicConfigTick();
 
     CpuOfflineHwiCreate();
 

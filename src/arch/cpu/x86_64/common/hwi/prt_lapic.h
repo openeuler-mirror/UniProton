@@ -35,7 +35,7 @@ typedef union {
 
 #define X2APIC_SVR       0x80f
 #define X2APIC_TDCR      0x83e
-#define X2APIC_LVT_TS    0x832
+#define LAPIC_LVT_TIMER  0x832
 #define X2APIC_TICR      0x838
 #define X2APIC_LVT_LINT0 0x835
 #define X2APIC_LVT_LINT1 0x836
@@ -50,6 +50,8 @@ typedef union {
 #define X2APIC_LDVR      0x803
 #define X2APIC_PPR       0x80A
 #define X2APIC_LDR       0x80d
+
+#define OS_LAPIC_TIMER      0xfc
 
 extern void OsWriteMsr(U32 msr, U64 value);
 extern void OsReadCpuInfo(U32 id, CpuInfo *info);
