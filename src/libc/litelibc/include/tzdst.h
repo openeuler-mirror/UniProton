@@ -28,6 +28,8 @@
 #ifndef __TZDST_H__
 #define __TZDST_H__
 
+#include "time.h"
+
 #ifdef POSIX_SET_TZDST
 
 /**

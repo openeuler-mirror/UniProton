@@ -10,9 +10,9 @@ file(GLOB_RECURSE LITELIBC_SOURCE litelibc/src/*.c litelibc/internal/*.c)
 # 需要编译的musl的.c文件
 set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/sleep.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/usleep.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/c_locale.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/__lctrans.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/langinfo.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/libc.c
     )
 
@@ -50,6 +50,29 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
+if (${PLAM_TYPE} STREQUAL "x86_64")
+    list(APPEND  MULS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memcpy.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memmove.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/stpcpy.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcpy.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdlib/strtol.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
+    )
+else()
+    list(REMOVE_ITEM LITELIBC_SOURCE
+        "${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c"
+    )
+endif()
+
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
 file(GLOB MUSL_THREAD_SOURCE musl/src/thread/*.c)
 
@@ -60,6 +83,7 @@ list(REMOVE_ITEM MUSL_TIME_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/utime.c
     # 当前不支持文件系统、环境变量获取
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/getdate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/strftime.c
 )
 list(REMOVE_ITEM MUSL_THREAD_SOURCE
     # 当前不支持syscall、tls、vmclock
@@ -101,7 +125,7 @@ target_compile_options(musllibc PUBLIC
         -Wno-implicit-fallthrough
         -Wno-cast-function-type
         )
-if (${OS_POSIX_SET_TZDST})
+if (${CONFIG_OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)
 endif()
 

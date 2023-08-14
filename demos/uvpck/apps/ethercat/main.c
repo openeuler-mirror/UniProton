@@ -10,6 +10,10 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
+#ifdef POSIX_TESTCASE
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U64 g_cpuClock = 0;
@@ -35,6 +39,10 @@ void TestTaskEntry()
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
+    printf("test entry\n");
+#ifdef POSIX_TESTCASE
+    Init(0, 0, 0, 0);
+#endif
 }
 
 U32 OsTestInit(void)
@@ -42,7 +50,7 @@ U32 OsTestInit(void)
     U32 ret;
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
-    
+
     param.stackAddr = (U32)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = g_testTskPri;

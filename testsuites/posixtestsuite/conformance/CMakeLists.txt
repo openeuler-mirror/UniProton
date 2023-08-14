@@ -13,6 +13,10 @@ file(GLOB ALL_TIME_SRC
     ./interfaces/timer_settime/speculative/[0-9]**.c
     ./interfaces/timer_gettime/[0-9]**.c
     ./interfaces/timer_gettime/speculative/[0-9]**.c
+    ./interfaces/time/[0-9]**.c
+    ./interfaces/gettimeofday/[0-9]**.c
+    ./interfaces/usleep/[0-9]**.c
+    ./interfaces/getpagesize/[0-9]**.c
     
     ./interfaces/asctime/[0-9]**.c
     ./interfaces/clock/[0-9]**.c
@@ -413,10 +417,14 @@ list(APPEND ALL_SIGNAL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
 )
 
-list(APPEND OBJS 
-    $<TARGET_OBJECTS:bsp>
-    $<TARGET_OBJECTS:config>
-)
+if(${CPU_TYPE} STREQUAL "x86_64")
+    include_directories(../include)
+elseif(${CPU_TYPE} STREQUAL "m4")
+    list(APPEND OBJS 
+        $<TARGET_OBJECTS:bsp>
+        $<TARGET_OBJECTS:config>
+    )
+endif()
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface")
     set(BUILD_APP "UniPorton_test_posix_time_interface")
@@ -432,5 +440,9 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
     set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})
 endif()
 
-add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
-target_link_libraries(${BUILD_APP} PUBLIC testsuite_support)
+if(${CPU_TYPE} STREQUAL "x86_64")
+    add_library(posixTest OBJECT ${ALL_SRC})
+elseif(${CPU_TYPE} STREQUAL "m4")
+    add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
+    target_link_libraries(${BUILD_APP} PUBLIC testsuite_support)
+endif()

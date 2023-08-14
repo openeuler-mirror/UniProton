@@ -27,7 +27,7 @@ int clock_1_1(int argc, char *argv[])
 	int i;
 
 	c1 = clock();
-	sec1 = c1/CLOCKS_PER_SEC;
+	sec1 = (double)c1/CLOCKS_PER_SEC;
 
 	for (i = 0; i < LARGENUMBER; i++)
 	{
@@ -36,7 +36,7 @@ int clock_1_1(int argc, char *argv[])
 	}
 
 	c2 = clock();
-	sec2 = c2/CLOCKS_PER_SEC;
+	sec2 = (double)c2/CLOCKS_PER_SEC;
     
     if (sec2 > sec1) {
 		printf("Times T1=%.2f, T2=%.2f\n", sec1, sec2);
