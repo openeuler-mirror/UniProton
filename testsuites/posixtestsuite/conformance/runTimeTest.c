@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
+#include "prt_buildef.h"
 #include "securec.h"
+#ifndef OS_ARCH_X86_64
 #include "rtt_viewer.h"
+#endif
 #include "prt_config.h"
 #include "prt_config_internal.h"
 #include "prt_clk.h"

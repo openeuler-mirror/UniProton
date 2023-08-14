@@ -15,13 +15,41 @@
 #include "prt_typedef.h"
 #include "prt_buildef.h"
 #include "prt_attr_external.h"
+#include "prt_tick_external.h"
+#include "../hwi/prt_lapic.h"
 
-OS_SEC_L4_TEXT void OsHwInit(void)
+/* 系统当前运行的时间，单位cycle */
+OS_SEC_BSS U64 g_cycleNow;
+/* 系统当前运行的时间，时间是g_cyclePerTick的整数倍 */
+// OS_SEC_BSS U64 g_cycleByTickNow;
+
+extern volatile U64 g_uniTicks;
+
+OS_SEC_L2_TEXT void OsCycleUpdate(void)
 {
-    return;
+    U64 hwCycleFirst;
+    U64 hwCycleSecond;
+
+    // 假设 A 和 B 之间如果发生tick中断, 则 hwCycleFirst < hwCycleSecond
+    U64 tick1 = g_uniTicks;
+    OsReadMsr(X2APIC_TCCR, &hwCycleFirst); // A
+    U64 tick2 = g_uniTicks;
+    OsReadMsr(X2APIC_TCCR, &hwCycleSecond); // B
+
+    /* 发生tick反转，需要手动补偿一个周期 */
+    if (hwCycleFirst < hwCycleSecond) {
+        tick2 = tick1 + 1;
+    }
+    g_cycleNow = (tick2 * OsGetCyclePerTick() + (OsGetCyclePerTick() - hwCycleSecond));
 }
 
 OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)
 {
-    return 0;
+    U64 cycle;
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
+    OsCycleUpdate();
+    cycle = g_cycleNow;
+    PRT_HwiRestore(intSave);
+    return cycle;
 }

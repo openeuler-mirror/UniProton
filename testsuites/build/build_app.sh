@@ -1,5 +1,14 @@
+#!/bin/bash
+
+LIB_RUN_TYPE=""
+if [ $# = 1 ] ; then
+    LIB_RUN_TYPE=$1
+else
+    LIB_RUN_TYPE="FPGA"
+fi
+
 pushd ../../
-python3 build.py m4
+python3 build.py m4 normal $LIB_RUN_TYPE
 popd
 
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major
@@ -15,7 +24,7 @@ for one_app in ${ALL_APP[*]}
 do
 export APP=${one_app}
 export TMP_DIR=$APP
-cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
+cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DLIB_RUN_TYPE:STRING=$LIB_RUN_TYPE -DCPU_TYPE:SRTING="m4"
 pushd $TMP_DIR
 make $APP --trace
 popd

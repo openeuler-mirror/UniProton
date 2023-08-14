@@ -1,4 +1,7 @@
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include "securec.h"
 
 #define OS_MAX_SHOW_LEN 256
@@ -29,4 +32,18 @@ int printf(const char *format, ...)
     va_end(vaList);
 
     return len;
+}
+
+void perror(const char *msg)
+{
+    char *errstr = strerror(errno);
+
+    if (msg && *msg) {
+        printf("%s: %s\n", msg, errstr);
+    }
+}
+
+int puts(const char *s)
+{
+    return printf("%s\n", s);
 }

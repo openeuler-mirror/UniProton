@@ -73,6 +73,11 @@ extern int mktime_1_1();
 extern int strftime_3_1();
 extern int timer_getoverrun_6_1();
 
+extern int getpagesize_1_1();
+extern int usleep_1_1();
+extern int gettimeofday_1_1();
+extern int time_1_1();
+
 typedef int test_run_main();
 
 test_run_main *run_test_arry_1[] = {
@@ -122,7 +127,12 @@ test_run_main *run_test_arry_1[] = {
     mktime_1_1,
 
     strftime_3_1,
-    timer_getoverrun_6_1
+    timer_getoverrun_6_1,
+
+    getpagesize_1_1,
+    usleep_1_1,
+    gettimeofday_1_1,
+    time_1_1
 };
 
 char run_test_name_1[][50] = {
@@ -172,7 +182,12 @@ char run_test_name_1[][50] = {
     "mktime_1_1",
 
     "strftime_3_1",
-    "timer_getoverrun_6_1"
+    "timer_getoverrun_6_1",
+
+    "getpagesize_1_1",
+    "usleep_1_1",
+    "gettimeofday_1_1",
+    "time_1_1"
 };
 
 

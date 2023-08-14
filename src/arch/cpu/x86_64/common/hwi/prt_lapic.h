@@ -24,6 +24,7 @@ typedef union {
     } info;
 } IcrInfo;
 
+#define OS_SYSTICK_CONTROL_COUNTFLAG_MSK (1U << 16)
 #define MSR_APICBASE          0x1b
 #define MSR_APICBASE_ENABLE   (1<<11)
 #define MSR_X2APICBASE_ENABLE (1<<10)
@@ -37,6 +38,7 @@ typedef union {
 #define X2APIC_TDCR      0x83e
 #define LAPIC_LVT_TIMER  0x832
 #define X2APIC_TICR      0x838
+#define X2APIC_TCCR      0x839
 #define X2APIC_LVT_LINT0 0x835
 #define X2APIC_LVT_LINT1 0x836
 #define X2APIC_LVT_TSR   0x833

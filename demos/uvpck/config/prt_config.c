@@ -295,6 +295,10 @@ U32 OsStart(void)
     return ret;
 }
 
+INIT_SEC_L4_TEXT void OsHwInit(void)
+{
+}
+
 S32 OsConfigStart(void)
 {
     U32 ret;
