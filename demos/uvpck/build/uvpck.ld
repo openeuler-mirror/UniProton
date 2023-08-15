@@ -5,6 +5,7 @@ ENTRY(start)
 SECTIONS
 {
     . = 0xf02400000;
+    __openamp_phys_addr = .;
     __os_print_start = .;
     . = . + 0x100000;
     __os_print_end = .;
