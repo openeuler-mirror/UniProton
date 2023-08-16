@@ -417,6 +417,10 @@ list(APPEND ALL_SIGNAL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
 )
 
+list(APPEND ALL_PROXY_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/proxy/1-1.c
+)
+
 if(${CPU_TYPE} STREQUAL "x86_64")
     include_directories(../include)
 elseif(${CPU_TYPE} STREQUAL "m4")
@@ -438,6 +442,9 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
 elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
     set(BUILD_APP "UniPorton_test_posix_signal_interface")
     set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+    set(BUILD_APP "UniPorton_test_proxy_posix_interface")
+    set(ALL_SRC runProxyTest.c ${ALL_PROXY_SRC})
 endif()
 
 if(${CPU_TYPE} STREQUAL "x86_64")
