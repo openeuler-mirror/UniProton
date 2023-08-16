@@ -12,7 +12,7 @@ OS版本信息：UniProton 22.03
 <ol>
 <li>进入到用户的工作目录，这里假设为/workspace/UniProton。</li>
 <li>将UniProton的源码放在/workspace/UniProton目录下。</li>
-<li>参考[编译指导](./UniProton_build.md) 准备编译环境以及libboundscheck库下载。</li>
+<li>参考[编译指导](../UniProton_build.md) 准备编译环境以及libboundscheck库下载。</li>
 <li>编译生成的libRASPI4.a文件和libCortexMXsec_c.lib文件在UniProton/output/UniProton/lib/raspi4/目录下。将这两个静态库文件拷贝到demos/raspi4/libs目录下。</li>
 <li>将UniProton/src/include目录下的头文件拷贝到demos/raspi4/include目录下。</li>
 <li>可以通过修改demos/raspi4/config目录下的prt_config.c和prt_config.h以适配用户功能，prt_config.h可配置os功能开关，按需裁剪。</li>
