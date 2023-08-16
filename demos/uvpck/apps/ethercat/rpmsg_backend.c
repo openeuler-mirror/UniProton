@@ -16,6 +16,7 @@
 #include "metal/device.h"
 #include "prt_hwi.h"
 
+extern unsigned long long __openamp_phys_addr;
 static metal_phys_addr_t shm_physmap[] = { SHM_START_PHYS_ADDR };
 static struct metal_device shm_device = {
     .name = SHM_DEVICE_NAME,
@@ -107,6 +108,7 @@ int rpmsg_backend_init(struct metal_io_region **io, struct virtio_device *vdev)
     int32_t                  err;
     struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
     struct metal_device     *device;
+    unsigned long long phys_addr = *(unsigned long long *)&__openamp_phys_addr;
 
     err = rpmsg_hwi_init();
     if (err) {
@@ -119,6 +121,7 @@ int rpmsg_backend_init(struct metal_io_region **io, struct virtio_device *vdev)
         return err;
     }
 
+    shm_physmap[0] += phys_addr;
     err = metal_register_generic_device(&shm_device);
     if (err) {
         return err;
