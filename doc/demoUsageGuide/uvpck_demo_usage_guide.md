@@ -29,9 +29,9 @@ oebuild bitbake openeuler-image
 下载并编译 uniproton 个人分支代码:
 
 ```sh
-git clone https://gitee.com/MegamindLS/UniProton.git
+git clone https://gitee.com/openeuler/UniProton.git
 cd UniProton
-git checkout -b tmp origin/tmp
+git checkout -b dev origin/dev
 cd demos/uvpck/build
 sh ./build_app.sh
 ```
@@ -40,7 +40,7 @@ sh ./build_app.sh
 
 ## 编译 mcs_km.ko及rpmsg_main
 参考 "构建安装指导"，构建出mcs_km.ko及rpmsg_main，并根据指导拷贝libmetal,libopen_amp,libsysfs到安装环境
-https://gitee.com/openeuler/mcs
+https://gitee.com/openeuler/mcs/tree/uniproton_dev/ （注意要使用uniproton_dev分支）
 
 可在当前root用户目录下创建deploy目录，把生成的mcs_km.ko,rpmsg_main，及前面生成的uvpck.bin统一放到此目录
 
