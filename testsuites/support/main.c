@@ -98,10 +98,7 @@ int printf(const char *format, ...)
     return count;
 }
 
-
-
 S32 main(void)
 {
     return OsConfigStart();
 }
-

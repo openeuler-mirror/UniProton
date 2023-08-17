@@ -77,6 +77,8 @@ struct OsModuleConfigInfo {
     enum MoudleId moudleId;
     ConfigInitFunc moudleConfigFunc[OS_MOUDLE_CONFIG];
 };
+
+extern S32 OsConfigStart(void);
 #ifdef __cplusplus
 #if __cplusplus
 }

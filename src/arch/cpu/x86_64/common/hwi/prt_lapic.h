@@ -58,6 +58,7 @@ typedef union {
 extern void OsWriteMsr(U32 msr, U64 value);
 extern void OsReadCpuInfo(U32 id, CpuInfo *info);
 extern U32 OsLapicInit(void);
+extern void OsLapicConfigTick(void);
 extern void OsReadMsr(U32 id, U64 *info);
 
 #endif

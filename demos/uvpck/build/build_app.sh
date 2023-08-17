@@ -1,5 +1,6 @@
 export TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64
 export ALL="uvpck UniPorton_test_posix_time_interface"
+# export ALL="task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency" # rhealstone testcase
 
 sh ./build_static.sh uvpck
 sh ./build_openamp.sh $TOOLCHAIN_PATH
@@ -13,9 +14,15 @@ function build()
     pushd $TMP_DIR
     make $APP
     popd
-    cp ./$TMP_DIR/$APP $APP.elf
+    if [ "$APP" == "task-switch" ] || [ "$APP" == "task-preempt" ] || [ "$APP" == "semaphore-shuffle" ] ||
+        [ "$APP" == "interrupt-latency" ] || [ "$APP" == "deadlock-break" ] || [ "$APP" == "message-latency" ]
+    then
+        cp ./$TMP_DIR/testsuites/$APP $APP.elf
+    else
+        cp ./$TMP_DIR/$APP $APP.elf
+    fi
     $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objcopy -O binary ./$APP.elf $APP.bin
-    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objdump -D ./$APP.elf > $APP.asm
+    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objdump -S ./$APP.elf > $APP.asm
     rm -rf $TMP_DIR
 }
 

@@ -1,10 +1,10 @@
+#include <stdio.h>
 #include "prt_hwi.h"
 #include "prt_task.h"
-#include <stdio.h>
 
 #define CPU_OFFLINE_HWI 0x2
 
-void NmiIsr()
+void NmiIsr(void)
 {
     printf("Rtos Stop ... \r\n");
     while (1) {
@@ -12,7 +12,7 @@ void NmiIsr()
     }
 }
 
-void CpuOfflineHwiCreate()
+void CpuOfflineHwiCreate(void)
 {
     U32 ret;
 

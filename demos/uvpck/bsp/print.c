@@ -5,33 +5,25 @@
 #include "securec.h"
 
 #define OS_MAX_SHOW_LEN 256
+char buff[OS_MAX_SHOW_LEN];
 
 extern int send_message(unsigned char *message, int len);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
-int Test_Printf(const char *format, va_list vaList)
+int printf(const char *format, ...)
 {
     int len;
-    char buff[OS_MAX_SHOW_LEN] = {0};
+    va_list vaList;
 
+    memset_s(buff, OS_MAX_SHOW_LEN, 0, OS_MAX_SHOW_LEN);
+    va_start(vaList, format);
     len = vsnprintf(buff, OS_MAX_SHOW_LEN, format, vaList);
     if (len == -1) {
         return len;
     }
-
-    return send_message(buff, len);
-}
-
-int printf(const char *format, ...)
-{
-    int len = 0;
-    va_list vaList;
-
-    va_start(vaList, format);
-    len = Test_Printf(format, vaList);
     va_end(vaList);
 
-    return len;
+    return send_message(buff, len + 1);
 }
 
 void perror(const char *msg)
