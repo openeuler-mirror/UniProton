@@ -42,7 +42,7 @@ extern "C" {
 
 /* ***************************** 配置定时器模块 ***************************** */
 /* 基于TICK的软件定时器裁剪开关 */
-#define OS_INCLUDE_TICK_SWTMER                          NO
+#define OS_INCLUDE_TICK_SWTMER                          YES
 /* 基于TICK的软件定时器最大个数 */
 #define OS_TICK_SWITIMER_MAX_NUM                        32
 
@@ -72,7 +72,7 @@ extern "C" {
 
 /* ***************************** 配置内存管理模块 ************************** */
 /* 用户可以创建的最大分区数，取值范围[0,253] */
-#define OS_MEM_MAX_PT_NUM                               200
+#define OS_MEM_MAX_PT_NUM                               20
 /* 私有FSC内存分区起始地址 */
 #define OS_MEM_FSC_PT_ADDR                              (uintptr_t)&g_memRegion00[0]
 /* 私有FSC内存分区大小 */

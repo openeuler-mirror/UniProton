@@ -93,7 +93,7 @@ U32 OsLapicInit(void)
     return OS_OK;
 }
 
-void OsLapicConfigTick()
+void OsLapicConfigTick(void)
 {
     /* Initial Count register，此值会赋值给CCR，当CCR减少到0时触发一次时钟中断 */
     OsWriteMsr(X2APIC_TICR, 25000000 / 8000);

@@ -14,12 +14,14 @@
 
 #include "rpmsg_backend.h"
 
+#define RPMSG_ENDPOINT_NAME "console"
+
 static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
 static struct metal_io_region *io;
 struct rpmsg_device *g_rdev;
 struct rpmsg_endpoint g_ept;
-#define RPMSG_ENDPOINT_NAME "console"
+char *g_s1 = "Hello, UniProton! \r\n";
 
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -31,7 +33,6 @@ int send_message(unsigned char *message, int len)
     return rpmsg_send(&g_ept, message, len);
 }
 
-char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
     send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
@@ -41,7 +42,7 @@ int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32
 
 int openamp_init(void)
 {
-    int32_t err;
+    int err;
 
     err = rpmsg_backend_init(&io, &vdev);
     if (err) {
@@ -54,8 +55,6 @@ int openamp_init(void)
     }
 
     g_rdev = rpmsg_virtio_get_rpmsg_device(&rvdev);
-
-
     err = rpmsg_create_ept(&g_ept, g_rdev, RPMSG_ENDPOINT_NAME,
                            0xF, RPMSG_ADDR_ANY,
                            rpmsg_endpoint_cb, rpmsg_service_unbind);
@@ -76,13 +75,19 @@ void openamp_deinit(void)
 
 int rpmsg_service_init(void)
 {
-    int32_t err;
+    int err;
+    volatile int ret;
+
     err = openamp_init();
     if (err) {
         return err;
     }
 
-    while (!is_rpmsg_ept_ready(&g_ept));
+    ret = is_rpmsg_ept_ready(&g_ept);
+    while (ret == 0) {
+        ret = is_rpmsg_ept_ready(&g_ept);
+        __asm__ __volatile__ ("mfence");
+    }
 
     return OS_OK;
 }

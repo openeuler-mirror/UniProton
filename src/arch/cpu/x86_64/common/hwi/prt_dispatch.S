@@ -58,7 +58,9 @@
     and     $~15, %rax
     sub     $0x2c0, %rax
     movq    %rax, (%rdi)
+#if defined(OS_OPTION_FPU)
     fxsave64  (%rax)
+#endif
     add     $0x200, %rax
     popq    RAX_OFFSET(%rax)
     popq    RIP_OFFSET(%rax)
@@ -97,7 +99,9 @@ OsTaskTrap:
 
 OsTskContextLoad:
     movq    (%rdi), %rax
+#if defined(OS_OPTION_FPU)
     fxrstor64 (%rax)
+#endif
     add     $0x200, %rax
     movq    RBX_OFFSET(%rax), %rbx
     movq    RCX_OFFSET(%rax), %rcx
