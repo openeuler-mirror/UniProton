@@ -28,7 +28,8 @@ fi
 POSIX_APP=(
     "UniPorton_test_posix_time_interface" \
     "UniPorton_test_posix_thread_sem_interface" \
-    "UniPorton_test_posix_thread_pthread_interface"
+    "UniPorton_test_posix_thread_pthread_interface" \
+    "UniPorton_test_posix_malloc_interface"
 )
 
 RHEALSTONE_APP=(
