@@ -21,11 +21,9 @@
  */
 OS_SEC_L0_TEXT void OsMainSchedule(void)
 {
+    struct TagTskCb *prevTsk;
     if ((UNI_FLAG & OS_FLG_TSK_REQ) != 0) {
-        /* 有任务切换钩子&最高优先级任务等待调度 */
-        if (RUNNING_TASK != g_highestTask) {
-            OsTskSwitchHookCaller(RUNNING_TASK->taskPid, g_highestTask->taskPid);
-        }
+        prevTsk = RUNNING_TASK;
 
         /* 清除OS_FLG_TSK_REQ标记位 */
         UNI_FLAG &= ~OS_FLG_TSK_REQ;
@@ -34,6 +32,11 @@ OS_SEC_L0_TEXT void OsMainSchedule(void)
         g_highestTask->taskStatus |= OS_TSK_RUNNING;
 
         RUNNING_TASK = g_highestTask;
+
+        /* 有任务切换钩子&最高优先级任务等待调度 */
+        if (prevTsk != g_highestTask) {
+            OsTskSwitchHookCaller(prevTsk->taskPid, g_highestTask->taskPid);
+        }
     }
     // 如果中断没有驱动一个任务ready，直接回到被打断的任务
     OsTskContextLoad((uintptr_t)RUNNING_TASK);
