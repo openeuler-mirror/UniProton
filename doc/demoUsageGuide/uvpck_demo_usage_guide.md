@@ -69,11 +69,11 @@ linux /bzImage  root=*** rw rootwait quiet  console=ttyS0,115200 console=tty0 ma
 ## 部署 uniproton
 ```sh
 #插入ko
-# load_addr_start           指定二进制文件的加载地址
+# load_addr        指定二进制文件的加载地址
 # 对8G内存环境加载地址为0x1c0000000
-insmod mcs_km.ko load_addr_start=0x1c0000000
+insmod mcs_km.ko load_addr=0x1c0000000
 # 对16G内存环境加载地址为0x400000000
-insmod mcs_km.ko load_addr_start=0x400000000
+insmod mcs_km.ko load_addr=0x400000000
 
 # 执行rpmsg_main
 # -c cpu           指定在哪个cpu拉起二进制文件
@@ -88,7 +88,7 @@ insmod mcs_km.ko load_addr_start=0x400000000
 运行后，根据提示使用对应的pty设备和UniProton进行通信：
 ```sh
 openEuler-Embedded ~ # cd ~/deploy
-openEuler-Embedded ~/deploy # insmod mcs_km.ko load_addr_start=0x1c0000000
+openEuler-Embedded ~/deploy # insmod mcs_km.ko load_addr=0x1c0000000
 openEuler-Embedded ~/deploy # ./rpmsg_main -c 3 -b ap_boot -t uvpck.bin -a 0x1c0000000
 cpu:3, ld:1c0000000, entry:1c0000000, path:uvpck3.bin share_mem:1bde00000
 
