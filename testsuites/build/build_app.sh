@@ -18,6 +18,7 @@ ALL_APP=(
          "UniPorton_test_posix_thread_sem_interface"
          "UniPorton_test_posix_thread_pthread_interface"
          "UniPorton_test_posix_signal_interface"
+         "UniPorton_test_proxy_posix_interface"
          )
 
 for one_app in ${ALL_APP[*]}

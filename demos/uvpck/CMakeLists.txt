@@ -33,6 +33,7 @@ include_directories(
     ../../platform/libboundscheck/include
     /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
     /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
+    ../../output/libc/include
 )
 
 link_directories(./libs)
@@ -50,6 +51,10 @@ link_libraries(
     -Wl,--end-group
 )
 
+if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+set(RPC_DEMO_SWITCH ON)
+endif()
+
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
@@ -65,6 +70,14 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
         add_executable(${APP} ${OBJS})
 endif()
 
+if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+    add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
+    add_subdirectory(../../src/component/proxy proxy)
+    target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ethercat_src> $<TARGET_OBJECTS:posixTest>)
+    add_executable(${APP} ${OBJS})
+endif()
+
 #rpmsg
 if (${APP} MATCHES "uvpck")
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ethercat_src>)
@@ -72,4 +85,3 @@ if (${APP} MATCHES "uvpck")
 else()
     add_subdirectory(testsuites)
 endif()
-

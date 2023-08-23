@@ -61,7 +61,11 @@ static void virtio_set_status(struct virtio_device *vdev, unsigned char status)
 
 static uint32_t virtio_get_features(struct virtio_device *vdev)
 {
+#ifndef STATIC_EP
     return BIT(VIRTIO_RPMSG_F_NS);
+#else
+    return 0;
+#endif
 }
 
 static void virtio_set_features(struct virtio_device *vdev, uint32_t features)
