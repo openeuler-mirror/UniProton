@@ -66,8 +66,6 @@
 #define MAX_FUNC_ID_LEN sizeof(unsigned long)
 #endif
 
-typedef unsigned int uint32_t;
-
 typedef struct iaddrinfo {
     int ai_flags;
     int ai_family;

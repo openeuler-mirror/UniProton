@@ -22,10 +22,12 @@
 
 static char *__strdup(const char *s)
 {
-	size_t l = strlen(s);
-	char *d = malloc(l + 1);
-	if (!d) return NULL;
-	memcpy_s(d, l + 1, s, l + 1);
+    size_t l = strlen(s);
+    char *d = malloc(l + 1);
+    if (d == NULL) {
+        return NULL;
+    }
+    memcpy_s(d, l + 1, s, l + 1);
     return d;
 }
 
@@ -47,7 +49,7 @@ int OsProxyEncodeAddrList(const struct addrinfo *ai, char *buf, int *buflen)
     const struct addrinfo *p = ai;
     int hlen = sizeof(iaddrinfo_t) - sizeof(int);
 
-    if(ai == NULL || buf == NULL || buflen == NULL) {
+    if (ai == NULL || buf == NULL || buflen == NULL) {
         return -RPC_EINVAL;
     }
     while (p != NULL) {

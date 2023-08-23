@@ -7,9 +7,8 @@
 #define STATUS_READY       0
 #define STATUS_WAITING     1
 
-typedef unsigned int uint32_t;
-
 #ifndef NO_STD_HEADERS
+#include <bits/alltypes.h>
 #include <poll.h>
 #include <netdb.h>
 #include <sys/stat.h>
@@ -18,13 +17,13 @@ typedef unsigned int uint32_t;
 #include <sys/select.h>
 #include <sys/un.h>
 #else 
+typedef unsigned int uint32_t;
 
 //  bits/sockaddr.h
 typedef unsigned short int sa_family_t;
 //  bits/socket.h
 
-struct sockaddr
-{
+struct sockaddr {
     sa_family_t sa_family;
     char sa_data[14];
 };
@@ -40,49 +39,46 @@ typedef __socklen_t socklen_t;
 //  netdb.h
 
 /* Structure to contain information about address of a service provider.  */
-struct addrinfo
-{
-  int ai_flags;                 /* Input flags.  */
-  int ai_family;                /* Protocol family for socket.  */
-  int ai_socktype;              /* Socket type.  */
-  int ai_protocol;              /* Protocol for socket.  */
-  socklen_t ai_addrlen;         /* Length of socket address.  */
-  struct sockaddr *ai_addr;     /* Socket address for socket.  */
-  char *ai_canonname;           /* Canonical name for service location.  */
-  struct addrinfo *ai_next;     /* Pointer to next in list.  */
+struct addrinfo {
+    int ai_flags;                 /* Input flags.  */
+    int ai_family;                /* Protocol family for socket.  */
+    int ai_socktype;              /* Socket type.  */
+    int ai_protocol;              /* Protocol for socket.  */
+    socklen_t ai_addrlen;         /* Length of socket address.  */
+    struct sockaddr *ai_addr;     /* Socket address for socket.  */
+    char *ai_canonname;           /* Canonical name for service location.  */
+    struct addrinfo *ai_next;     /* Pointer to next in list.  */
 };
 
 
 /* Description of data base entry for a single host.  */
-struct hostent
-{
-  char *h_name;                 /* Official name of host.  */
-  char **h_aliases;             /* Alias list.  */
-  int h_addrtype;               /* Host address type.  */
-  int h_length;                 /* Length of address.  */
-  char **h_addr_list;           /* List of addresses from name server.  */
+struct hostent {
+    char *h_name;                 /* Official name of host.  */
+    char **h_aliases;             /* Alias list.  */
+    int h_addrtype;               /* Host address type.  */
+    int h_length;                 /* Length of address.  */
+    char **h_addr_list;           /* List of addresses from name server.  */
 };
 
 //  bits/socket_type.h
 /* Types of sockets.  */
-enum __socket_type
-{
-  SOCK_STREAM = 1,              /* Sequenced, reliable, connection-based
+enum __socket_type {
+    SOCK_STREAM = 1,              /* Sequenced, reliable, connection-based
                                    byte streams.  */
 #define SOCK_STREAM SOCK_STREAM
-  SOCK_DGRAM = 2,               /* Connectionless, unreliable datagrams
+    SOCK_DGRAM = 2,               /* Connectionless, unreliable datagrams
                                    of fixed maximum length.  */
 #define SOCK_DGRAM SOCK_DGRAM
-  SOCK_RAW = 3,                 /* Raw protocol interface.  */
+    SOCK_RAW = 3,                 /* Raw protocol interface.  */
 #define SOCK_RAW SOCK_RAW
-  SOCK_RDM = 4,                 /* Reliably-delivered messages.  */
+    SOCK_RDM = 4,                 /* Reliably-delivered messages.  */
 #define SOCK_RDM SOCK_RDM
-  SOCK_SEQPACKET = 5,           /* Sequenced, reliable, connection-based,
+    SOCK_SEQPACKET = 5,           /* Sequenced, reliable, connection-based,
                                    datagrams of fixed maximum length.  */
 #define SOCK_SEQPACKET SOCK_SEQPACKET
-  SOCK_DCCP = 6,                /* Datagram Congestion Control Protocol.  */
+    SOCK_DCCP = 6,                /* Datagram Congestion Control Protocol.  */
 #define SOCK_DCCP SOCK_DCCP
-  SOCK_PACKET = 10,             /* Linux specific way of getting packets
+    SOCK_PACKET = 10,             /* Linux specific way of getting packets
                                    at the dev level.  For writing rarp and
                                    other similar things on the user level. */
 #define SOCK_PACKET SOCK_PACKET
@@ -90,10 +86,10 @@ enum __socket_type
   /* Flags to be ORed into the type parameter of socket and socketpair and
      used for the flags parameter of paccept.  */
 
-  SOCK_CLOEXEC = 02000000,      /* Atomically set close-on-exec flag for the
+    SOCK_CLOEXEC = 02000000,      /* Atomically set close-on-exec flag for the
                                    new descriptor(s).  */
 #define SOCK_CLOEXEC SOCK_CLOEXEC
-  SOCK_NONBLOCK = 00004000      /* Atomically mark descriptor(s) as
+    SOCK_NONBLOCK = 00004000      /* Atomically mark descriptor(s) as
                                    non-blocking.  */
 #define SOCK_NONBLOCK SOCK_NONBLOCK
 };
@@ -121,8 +117,7 @@ enum __socket_type
 typedef unsigned long int nfds_t;
 
 /* Data structure describing a polling request.  */
-struct pollfd
-{
+struct pollfd {
     int fd;                     /* File descriptor to poll.  */
     short int events;           /* Types of events poller cares about.  */
     short int revents;          /* Types of events that actually occurred.  */
@@ -130,34 +125,30 @@ struct pollfd
 
 //  sys/un.h
 
-struct sockaddr_un
-{
+struct sockaddr_un {
     sa_family_t sun_family;
     char sun_path[108];
 };
 
 //  sys/socket.h
-enum
-{
-  SHUT_RD = 0,          /* No more receptions.  */
+enum {
+    SHUT_RD = 0,          /* No more receptions.  */
 #define SHUT_RD         SHUT_RD
-  SHUT_WR,              /* No more transmissions.  */
+    SHUT_WR,              /* No more transmissions.  */
 #define SHUT_WR         SHUT_WR
-  SHUT_RDWR             /* No more receptions or transmissions.  */
+    SHUT_RDWR             /* No more receptions or transmissions.  */
 #define SHUT_RDWR       SHUT_RDWR
 };
 
 //  netinet/in.h
 
 typedef uint32_t in_addr_t;
-struct in_addr 
-{
+struct in_addr {
     in_addr_t s_addr;
 };
 
 typedef uint16_t in_port_t;
-struct sockaddr_in
-{
+struct sockaddr_in {
     sa_family_t sin_family;
     in_port_t sin_port;
     struct in_addr sin_addr;

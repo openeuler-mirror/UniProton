@@ -23,6 +23,7 @@ include_directories(
     ./apps/openamp
     ./build/open-amp/output/usr/local/include
     ./build/libmetal/output/usr/local/include
+    ../../output/libc/include
 )
 
 link_directories(./libs)
@@ -39,5 +40,10 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 
+if (RPC_DEMO_SWITCH)
+add_subdirectory(../../src/component/proxy proxy)
+list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+else()
 list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+endif()
 add_executable(${APP} ${OBJS})

@@ -20,25 +20,10 @@ static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
 static struct metal_io_region *io;
 struct rpmsg_device *g_rdev;
-struct rpmsg_endpoint g_ept;
-char *g_s1 = "Hello, UniProton! \r\n";
 
-void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
-{
-    rpmsg_destroy_ept(ep);
-}
+extern int rpmsg_endpoint_init(struct rpmsg_device *rdev);
 
-int send_message(unsigned char *message, int len)
-{
-    return rpmsg_send(&g_ept, message, len);
-}
-
-int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
-{
-    send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
-
-    return OS_OK;
-}
+extern void example_init();
 
 int openamp_init(void)
 {
@@ -55,9 +40,9 @@ int openamp_init(void)
     }
 
     g_rdev = rpmsg_virtio_get_rpmsg_device(&rvdev);
-    err = rpmsg_create_ept(&g_ept, g_rdev, RPMSG_ENDPOINT_NAME,
-                           0xF, RPMSG_ADDR_ANY,
-                           rpmsg_endpoint_cb, rpmsg_service_unbind);
+
+    err = rpmsg_endpoint_init(g_rdev);
+
     if (err) {
         return err;
     }
@@ -76,18 +61,12 @@ void openamp_deinit(void)
 int rpmsg_service_init(void)
 {
     int err;
-    volatile int ret;
 
     err = openamp_init();
     if (err) {
         return err;
     }
 
-    ret = is_rpmsg_ept_ready(&g_ept);
-    while (ret == 0) {
-        ret = is_rpmsg_ept_ready(&g_ept);
-        __asm__ __volatile__ ("mfence");
-    }
-
+    example_init();
     return OS_OK;
 }
