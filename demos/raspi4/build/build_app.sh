@@ -3,7 +3,7 @@ export APP=raspi4
 export TMP_DIR=$APP
 
 sh ./build_static.sh $APP
-sh ./build_openamp.sh
+sh ./build_openamp.sh $TOOLCHAIN_PATH
 
 cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
 pushd $TMP_DIR

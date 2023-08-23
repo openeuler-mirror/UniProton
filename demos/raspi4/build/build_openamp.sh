@@ -31,7 +31,7 @@ cd libmetal
 mkdir -p build
 cd build
 rm -rf *
-cmake ../../../component/libmetal -DCMAKE_TOOLCHAIN_FILE=../../../component/libmetal/cmake/platforms/uniproton_arm64_gcc.cmake -DWITH_DOC=OFF -DWITH_EXAMPLES=OFF -DWITH_TESTS=OFF -DWITH_DEFAULT_LOGGER=OFF -DWITH_SHARED_LIB=OFF
+cmake ../../../component/libmetal -DCMAKE_TOOLCHAIN_FILE=../../../component/libmetal/cmake/platforms/uniproton_arm64_gcc.cmake -DTOOLCHAIN_PATH:STRING=$1 -DWITH_DOC=OFF -DWITH_EXAMPLES=OFF -DWITH_TESTS=OFF -DWITH_DEFAULT_LOGGER=OFF -DWITH_SHARED_LIB=OFF
 make VERBOSE=1 DESTDIR=../output install
 if [ $? -ne 0 ];then
 	echo "make metal failed!"
@@ -46,7 +46,7 @@ cd open-amp
 mkdir -p build
 cd build
 rm -rf *
-cmake ../../../component/open-amp -DCMAKE_TOOLCHAIN_FILE=../../../component/open-amp/cmake/platforms/uniproton_arm64_gcc.cmake
+cmake ../../../component/open-amp -DCMAKE_TOOLCHAIN_FILE=../../../component/open-amp/cmake/platforms/uniproton_arm64_gcc.cmake -DTOOLCHAIN_PATH:STRING=$1
 make VERBOSE=1 DESTDIR=../output install
 if [ $? -ne 0 ];then
         echo "make openamp failed!"
