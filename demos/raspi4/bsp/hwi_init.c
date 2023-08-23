@@ -76,12 +76,11 @@ void OsSicrInit(void)
     union SicrWaker sicrWaker;
     uintptr_t regAddr;
     U32 intId;
-    
+
     regAddr = GICR_WAKER_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
     sicrWaker.value = GIC_REG_READ(regAddr);
     sicrWaker.bits.sleepReq = 0;
     GIC_REG_WRITE(regAddr, sicrWaker.value);
-    
     sicrWaker.value = GIC_REG_READ(regAddr);
     while (sicrWaker.bits.isSleep == 1) {
         sicrWaker.value = GIC_REG_READ(regAddr);
@@ -168,18 +167,18 @@ void OsSiccCfgPriorityMask(void)
 U32 OsSiccInit(void)
 {
     U32 ret;
-    
+
     ret = OsSiccEnableSre();
     if (ret != OS_OK) {
         return ret;
     }
-    
+
     OsSiccCfgIntPreempt();
-    
+
     OsSiccEnableGroup1();
-    
+
     OsSiccCfgPriorityMask();
-    
+
     return OS_OK;
 }
 
@@ -240,18 +239,18 @@ U32 OsSicInitLocal(void)
 {
     U32 ret;
     U32 intId;
-    
+
     OsSicrInit();
-    
+
     ret = OsSiccInit();
     if (ret != OS_OK) {
         return ret;
     }
-    
+
     for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
         OsSicSetGroup(intId, SIC_GROUP_G1NS);
     }
-    
+
     return OS_OK;
 }
 
@@ -326,13 +325,13 @@ U32 OsHwiInit(void)
 {
 #if (OS_GIC_VER == 3)
     U32 ret;
-    
+
     ret = OsSicInitLocal();
     if (ret != OS_OK) {
         return ret;
     }
-    
-    if(OsGetCoreID() == 0) {
+
+    if(PRT_GetCoreID() == 0) {
         OsSicInitGlobal();
     }
 #elif (OS_GIC_VER == 2)
