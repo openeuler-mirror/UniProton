@@ -52,6 +52,6 @@
                                     GICC_CTLR_IRQBYPDISGRP1)    
 
 #define GIC_REG_READ(addr)         (*(volatile U32 *)((uintptr_t)(addr)))
-#define GIC_REG_WRITE(data, addr)  (*(volatile U32 *)((uintptr_t)(addr)) = (U32)(data))
+#define GIC_REG_WRITE(addr, data)  (*(volatile U32 *)((uintptr_t)(addr)) = (U32)(data))
 
 #endif
