@@ -1,8 +1,8 @@
 export TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64
-export ALL="uvpck UniPorton_test_posix_time_interface"
+export ALL="x86_64 UniPorton_test_posix_time_interface"
 # export ALL="task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency" # rhealstone testcase
 
-sh ./build_static.sh uvpck
+sh ./build_static.sh x86_64
 sh ./build_openamp.sh $TOOLCHAIN_PATH
 
 function build()

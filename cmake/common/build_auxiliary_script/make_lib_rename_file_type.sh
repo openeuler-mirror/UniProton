@@ -18,7 +18,7 @@ if [ "${CPU_TYPE}" = "m4" ] ; then
     ARNAME=arm-none-eabi-ar ; OBJCOPYNAME=arm-none-eabi-objcopy;
 elif [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ];
     then ARNAME=aarch64-none-elf-ar; OBJCOPYNAME=aarch64-none-elf-objcopy;
-elif [ "${CPU_TYPE}" = "uvpck" ];
+elif [ "${CPU_TYPE}" = "x86_64" ];
     then ARNAME=x86_64-openeuler-linux-gnu-ar; OBJCOPYNAME=x86_64-openeuler-linux-gnu-objcopy;
 else
     ARNAME=ar; OBJCOPYNAME=objcopy;
@@ -27,7 +27,7 @@ fi
 sleep 2
 pushd "$CK_LIB_PATH"
 ##为什么不加这一行要报错
-if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "uvpck" ] ; then
+if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "x86_64" ] ; then
     [ -n tmp_"${file}" ] && rm -rf tmp_"${file}" 
 fi
 mkdir tmp_"${file}"

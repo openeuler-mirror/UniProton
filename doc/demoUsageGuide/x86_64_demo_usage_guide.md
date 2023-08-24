@@ -32,21 +32,21 @@ oebuild bitbake openeuler-image
 git clone https://gitee.com/openeuler/UniProton.git
 cd UniProton
 git checkout -b dev origin/dev
-cd demos/uvpck/build
+cd demos/x86_64/build
 sh ./build_app.sh
 ```
 
-镜像路径: build/aarch64-std/UniProton/demos/uvpck/build/uvpck.bin
+镜像路径: build/aarch64-std/UniProton/demos/x86_64/build/x86_64.bin
 
 ## 编译 mcs_km.ko及rpmsg_main
 参考 "构建安装指导"，构建出mcs_km.ko及rpmsg_main，并根据指导拷贝libmetal,libopen_amp,libsysfs到安装环境
 https://gitee.com/openeuler/mcs/tree/uniproton_dev/ （注意要使用uniproton_dev分支）
 
-可在当前root用户目录下创建deploy目录，把生成的mcs_km.ko,rpmsg_main，及前面生成的uvpck.bin统一放到此目录
+可在当前root用户目录下创建deploy目录，把生成的mcs_km.ko,rpmsg_main，及前面生成的x86_64.bin统一放到此目录
 
 ## 编译 ap_boot
 ```sh
-cd demos/uvpck/ap_boot
+cd demos/x86_64/ap_boot
 make
 ```
 把当前目录下生成的ap_boot文件拷贝到deploy目录
@@ -77,20 +77,20 @@ insmod mcs_km.ko load_addr=0x400000000
 
 # 执行rpmsg_main
 # -c cpu           指定在哪个cpu拉起二进制文件
-# -t uvpck.bin     可执行二进制文件
+# -t x86_64.bin    可执行二进制文件
 # -a address       指定二进制文件的加载地址
 # 对8G内存环境加载地址为0x1c0000000
-./rpmsg_main -c 3 -t uvpck.bin -a 0x1c0000000
+./rpmsg_main -c 3 -t x86_64.bin -a 0x1c0000000
 # 对16G内存环境加载地址为0x400000000
-./rpmsg_main -c 3 -t uvpck.bin -a 0x400000000
+./rpmsg_main -c 3 -t x86_64.bin -a 0x400000000
 ```
 
 运行后，根据提示使用对应的pty设备和UniProton进行通信：
 ```sh
 openEuler-Embedded ~ # cd ~/deploy
 openEuler-Embedded ~/deploy # insmod mcs_km.ko load_addr=0x1c0000000
-openEuler-Embedded ~/deploy # ./rpmsg_main -c 3 -b ap_boot -t uvpck.bin -a 0x1c0000000
-cpu:3, ld:1c0000000, entry:1c0000000, path:uvpck3.bin share_mem:1bde00000
+openEuler-Embedded ~/deploy # ./rpmsg_main -c 3 -b ap_boot -t x86_64.bin -a 0x1c0000000
+cpu:3, ld:1c0000000, entry:1c0000000, path:x86_64.bin share_mem:1bde00000
 
 Initialize the virtio, virtqueue and rpmsg device
 virt add:0x7f98776d3000, status_reg:0x7f98776d3000, tx:0x7f98776ff000, rx:0x7f98776fb000, mempool:0x7f98776d7000

@@ -31,7 +31,6 @@
 #define OS_STM32F407        0x01
 #define OS_RASPI4           0x02
 #define OS_HI3093           0x03
-#define OS_UVPCK            0x04
 #define OS_CPU_TYPE_INVALID 0x05
 
 #ifndef INIT_SEC_L4_TEXT

@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 #ifndef OS_CPU_TYPE
-#define OS_CPU_TYPE OS_UVPCK
+#define OS_CPU_TYPE OS_X86_64
 #endif
 
 #define OS_MAX_CORE_NUM 1

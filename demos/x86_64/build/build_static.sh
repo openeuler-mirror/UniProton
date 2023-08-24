@@ -5,9 +5,9 @@ cp libboundscheck/include/* ../include
 cp libboundscheck/src/* ../../../platform/libboundscheck/src
 rm -rf libboundscheck
 
-cp uvpck-patch-for-UniProton.patch ./../../../
+cp x86_64-patch-for-UniProton.patch ./../../../
 pushd ./../../../
-patch -N -p1 -d . < uvpck-patch-for-UniProton.patch
+patch -N -p1 -d . < x86_64-patch-for-UniProton.patch
 python build.py $1
 cp output/UniProton/lib/$1/* demos/$1/libs
 cp output/libboundscheck/lib/$1/* demos/$1/libs
