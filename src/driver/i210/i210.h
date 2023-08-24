@@ -126,7 +126,7 @@ struct pkt {
 void i210_init(void);
 int i210_packet_recv(unsigned char *packet, int size);
 int i210_packet_send(const unsigned char *packet, int length);
-int i210_get_link_status(void);
+bool i210_get_link_status(void);
 int i210_get_mac_address(unsigned char *buf, int buf_len);
 
 #endif

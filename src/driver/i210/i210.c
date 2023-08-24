@@ -124,12 +124,12 @@ int i210_packet_recv(unsigned char *packet, int size)
     return length;
 }
 
-int i210_get_link_status(void)
+bool i210_get_link_status(void)
 {
     U32 status;
     mac_read(g_macdev, E1000_STATUS, &status);
 
-    return ((status & E1000_STATUS_LU) ? 1 : 0);
+    return ((status & E1000_STATUS_LU) ? true : false);
 }
 
 #define MAC_ADDR_BYTE_NUM 6
