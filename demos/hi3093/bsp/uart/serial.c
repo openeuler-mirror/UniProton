@@ -6,6 +6,8 @@ serial_t g_sys_serial;
 #define HW_UART_NO  (g_sys_serial.cfg.hw_uart_no)
 #define UART_CLK    (PERI_APB_FREQ)
 #define EAGAIN      11
+#define UART4_CONFIG_REUSE_ADDR1 0x0874507c
+#define UART4_CONFIG_REUSE_ADDR2 0x08745080
 
 void serial_soft_init(serial_cfg *cfg, uart_ops *hw_ops)
 {
@@ -31,6 +33,9 @@ void serial_soft_init(serial_cfg *cfg, uart_ops *hw_ops)
 
 void serial_init(serial_cfg *cfg, uart_ops *hw_ops)
 {
+    /* write IOCFG to 0, and then we can reuse uart4 */
+    UART_REG_WRITE(0, UART4_CONFIG_REUSE_ADDR1);
+    UART_REG_WRITE(0, UART4_CONFIG_REUSE_ADDR2);
     if (!cfg || !hw_ops) {
         return;
     }

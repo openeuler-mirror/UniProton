@@ -130,4 +130,7 @@
 #define DW_RFIFO_NOT_EMP  0x08
 #define DW_RFIFO_FULL     0x10
 
+#define UART_REG_READ(addr)          (*(volatile U32 *)(((uintptr_t)addr)))
+#define UART_REG_WRITE(value, addr)  (*(volatile U32 *)((uintptr_t)addr) = (U32)value)
+
 #endif /* __DW_UART_REGS_H__ */
