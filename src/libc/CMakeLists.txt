@@ -75,9 +75,35 @@ list(REMOVE_ITEM MUSL_THREAD_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__unmapself.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__wait.c
     )
+
+# 查找math编译文件  
+file(GLOB MUSL_MATH_SOURCE musl/src/math/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/math/${CMAKE_SYSTEM_PROCESSOR}/)
+    file(GLOB MUSL_MATH_ARCH_SOURCE musl/src/math/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_MATH_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}" "" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_MATH_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_MATH_SOURCE ${tmp_replace_source})
+        endif()
+        list(APPEND MUSL_MATH_SOURCE ${tmp_one_source})
+    endforeach()
+endif()
+
+file(GLOB MUSL_FENV_SOURCE musl/src/fenv/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
+    file(GLOB MUSL_FENV_ARCH_SOURCE musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    list(REMOVE_ITEM MUSL_FENV_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/fenv.c)
+    list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
+endif()
+
 list(APPEND MULS_SOURCE
     ${MUSL_TIME_SOURCE}
-    ${MUSL_THREAD_SOURCE})
+    ${MUSL_THREAD_SOURCE}
+    ${MUSL_MATH_SOURCE}
+    ${MUSL_FENV_SOURCE})
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
@@ -89,6 +115,8 @@ target_compile_options(musllibc PUBLIC
         -Wno-discarded-qualifiers
         -Wno-implicit-fallthrough
         -Wno-cast-function-type
+        -Wno-float-conversion
+        -Wno-unknown-pragmas
         )
 if (${OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)

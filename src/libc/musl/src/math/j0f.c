@@ -13,7 +13,9 @@
  * ====================================================
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include "libm.h"
 
 static float pzerof(float), qzerof(float);
