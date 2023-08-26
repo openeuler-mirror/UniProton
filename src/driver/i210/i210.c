@@ -123,3 +123,23 @@ int i210_packet_recv(unsigned char *packet, int size)
 
     return length;
 }
+
+bool i210_get_link_status(void)
+{
+    U32 status;
+    mac_read(g_macdev, E1000_STATUS, &status);
+
+    return ((status & E1000_STATUS_LU) ? true : false);
+}
+
+#define MAC_ADDR_BYTE_NUM 6
+int i210_get_mac_address(unsigned char *buf, int buf_len)
+{
+    unsigned char *pmac_addr;
+    if (g_macdev == NULL) {
+        return -1;
+    }
+
+    pmac_addr = (unsigned char*)(uintptr_t)(g_macdev->mac_base + E1000_RAL);
+    return memcpy_s(buf, buf_len, pmac_addr, MAC_ADDR_BYTE_NUM);
+}

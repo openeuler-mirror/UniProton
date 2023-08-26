@@ -49,6 +49,12 @@
 #define E1000_TDH(_n)   (0x0e010 + ((_n) * 0x40))
 #define E1000_TDT(_n)   (0x0e018 + ((_n) * 0x40))
 
+#define E1000_STATUS    0x00008         /* Device Status - RO */
+#define E1000_STATUS_LU 0x00000002      /* Link up.0=no,1=link */
+
+#define E1000_RAL  0x05400
+#define E1000_RAH  0x05404
+
 /* Transmit Descriptor */
 struct mac_tx_desc {
     unsigned long long buffer_addr; /* Address of the descriptor's data buf */
@@ -120,5 +126,7 @@ struct pkt {
 void i210_init(void);
 int i210_packet_recv(unsigned char *packet, int size);
 int i210_packet_send(const unsigned char *packet, int length);
+bool i210_get_link_status(void);
+int i210_get_mac_address(unsigned char *buf, int buf_len);
 
 #endif
