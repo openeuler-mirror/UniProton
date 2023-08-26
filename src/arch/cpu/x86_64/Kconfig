@@ -10,8 +10,8 @@ config INTERNAL_OS_PLATFORM_X86_64
 choice
     prompt "Cpu Type"
 
-config INTERNAL_OS_UVPCK
-    bool "OS_UVPCK"
+config INTERNAL_OS_X86_64
+    bool "OS_X86_64"
     select INTERNAL_OS_PLATFORM_X86_64
 
 endchoice

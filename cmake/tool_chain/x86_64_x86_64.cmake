@@ -8,7 +8,7 @@ set(OBJCOPY_PATH "$ENV{OBJCOPY_PATH}" )
 foreach(FILE_NAME ${ALL_OBJECT_LIBRARYS})
     list(FIND exclude "${FILE_NAME}" is_include)
     if(${is_include} EQUAL -1)
-    list(APPEND X86_64_UVPCK_SRCS
+    list(APPEND X86_64_SRCS
         $<TARGET_OBJECTS:${FILE_NAME}>
     )
     endif()
@@ -18,7 +18,7 @@ endforeach()
 string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
 string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
 #编译.a库
-add_library(UVPCK  STATIC "${X86_64_UVPCK_SRCS}")
+add_library(X86_64 STATIC "${X86_64_SRCS}")
 add_custom_target(cleanobj)
 add_custom_command(TARGET cleanobj POST_BUILD
                    COMMAND echo "Finish Building!"
@@ -28,9 +28,9 @@ if (${COMPILE_MODE} STREQUAL "debug")
     message("=============== COMPILE_MODE is ${COMPILE_MODE} ===============")
 else()
     add_custom_command(
-        TARGET UVPCK
+        TARGET X86_64
         POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "UVPCK.a"
+        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "X86_64.a"
     )
 endif()
  ####以下为X86_64 make install打包脚本#####
@@ -42,16 +42,16 @@ set(x86_64_export modules)
 set(INSTALL_X86_64_BASE_DIR               .)
 set(INSTALL_X86_64_INCLUDE_DIR            UniProton/include)
 set(INSTALL_X86_64_INCLUDE_SEC_DIR        libboundscheck/include)
-set(INSTALL_X86_64_ARCHIVE_DIR            UniProton/lib/uvpck)
-set(INSTALL_X86_64_ARCHIVE_SEC_DIR        libboundscheck/lib/uvpck)
+set(INSTALL_X86_64_ARCHIVE_DIR            UniProton/lib/x86_64)
+set(INSTALL_X86_64_ARCHIVE_SEC_DIR        libboundscheck/lib/x86_64)
 set(INSTALL_X86_64_ARCHIVE_CONFIG_DIR     UniProton/config)
-set(INSTALL_X86_64_CONFIG_DIR             cmake/uvpck)
+set(INSTALL_X86_64_CONFIG_DIR             cmake/x86_64)
 
 
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/tool_chain/uvpck_x86_64-config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/UniProton-x86_64-uvpck-config.cmake
+configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/tool_chain/x86_64-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/UniProton-x86_64-config.cmake
     INSTALL_DESTINATION ${INSTALL_X86_64_CONFIG_DIR}
     PATH_VARS
     INSTALL_X86_64_BASE_DIR
@@ -65,16 +65,16 @@ configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/tool_chain/uvpck_x86_6
 )
 install(EXPORT ${x86_64_export}
         NAMESPACE UniProton::
-        FILE UniProton-x86_64-uvpck-targets.cmake
+        FILE UniProton-x86_64-targets.cmake
         DESTINATION ${INSTALL_X86_64_CONFIG_DIR}
 )
 install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/UniProton-x86_64-uvpck-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/UniProton-x86_64-config.cmake
     DESTINATION ${INSTALL_X86_64_CONFIG_DIR}
 )
 
 install(TARGETS
-    UVPCK
+    X86_64
     EXPORT ${x86_64_export}
     ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_DIR}/
 )
@@ -99,8 +99,8 @@ else()
 endif()
 
 install(FILES
-    ${PROJECT_SOURCE_DIR}/build/uniproton_config/config_uvpck/prt_buildef.h
-    DESTINATION ${INSTALL_X86_64_ARCHIVE_CONFIG_DIR}/x86_64/config_uvpck
+    ${PROJECT_SOURCE_DIR}/build/uniproton_config/config_x86_64/prt_buildef.h
+    DESTINATION ${INSTALL_X86_64_ARCHIVE_CONFIG_DIR}/x86_64/config_x86_64
 )
 if (NOT "${RPROTON_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
     install(FILES
@@ -111,10 +111,10 @@ if (NOT "${RPROTON_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
     )
 
     ##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹}
-    file(GLOB hw_drv_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/hw/uvpck/*)
+    file(GLOB hw_drv_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/hw/x86_64/*)
     install(FILES
         ${hw_drv_include_files}
-        DESTINATION ${INSTALL_X86_64_INCLUDE_DIR}/hw/uvpck
+        DESTINATION ${INSTALL_X86_64_INCLUDE_DIR}/hw/x86_64
     )
 
     install(FILES
