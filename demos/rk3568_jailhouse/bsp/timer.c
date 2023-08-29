@@ -20,6 +20,13 @@ U64 GetGenericTimerFreq(void)
 
 void TimerIsr(uintptr_t para)
 {
+    static timerCnt = 0;
+    timerCnt++;
+    if (timerCnt > 1000) {
+        timerCnt = 0;
+        PRT_Printf("TimerIsr enter! \n");
+    }
+
     (void)para;
     U32 cfgMask = 0x0;
     U64 cycle = PMU_TIMER_FREQUENCY / OS_TICK_PER_SECOND;
@@ -27,10 +34,10 @@ void TimerIsr(uintptr_t para)
     OS_EMBED_ASM("MSR CNTP_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
     PRT_ISB();
     OS_EMBED_ASM("MSR CNTP_TVAL_EL0, %0" : : "r"(cycle) : "memory", "cc");
-    
+
     cfgMask = 0x1;
     OS_EMBED_ASM("MSR CNTP_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
-    
+
     PRT_TickISR();
     PRT_ISB();
 }
@@ -59,7 +66,6 @@ U32 CoreTimerStart(void)
 U32 TestClkStart(void)
 {
     U32 ret;
-    
     ret = PRT_HwiSetAttr(TEST_CLK_INT, 10, OS_HWI_MODE_ENGROSS);
     if (ret != OS_OK) {
         return ret;
@@ -83,6 +89,6 @@ U32 TestClkStart(void)
     if (ret != OS_OK) {
         return ret;
     }
-    
+
     return OS_OK;
 }

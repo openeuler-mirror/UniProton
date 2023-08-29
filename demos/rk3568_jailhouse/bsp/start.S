@@ -97,7 +97,16 @@ Start:
     LDR    x1, =__os_sys_sp_end
     BIC    sp, x1, #0xf
 
-    BL     mmu_init
+    MRS    x10, CNTKCTL_EL1
+    ORR    x10, x10, #0x3
+    MSR    CNTKCTL_EL1, x10
+
+    /* enable FPU */
+    MRS    x10, CPACR_EL1
+    MOV    x10, #3 << 20
+    MSR    CPACR_EL1, x10
+    ISB
+
     B      OsResetVector
 
 OsEnterReset:
