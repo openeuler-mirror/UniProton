@@ -1,5 +1,5 @@
 # Date:   2019-11-11
-# Copyright © Huawei Technologies Co., Ltd. 2010-2020. All rights reserved.
+# Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
 ###########################################################################
 
 
@@ -196,3 +196,4 @@ function(add_library_ex file_name)
     set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
     
 endfunction()
+
