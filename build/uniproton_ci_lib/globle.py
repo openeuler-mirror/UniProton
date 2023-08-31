@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # coding=utf-8
 # The build entrance of UniProton.
-# Copyright © Huawei Technologies Co., Ltd. 2010-2020. All rights reserved.
-import os
+# Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
 
+import os
 
 build_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 home_path = os.path.dirname(build_dir)
