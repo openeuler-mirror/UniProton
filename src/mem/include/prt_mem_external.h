@@ -28,7 +28,7 @@
 #define OS_FSC_MEM_MAGIC_USED                               (struct TagFscMemCtrl *)0x5a5aa5a5
 #define OS_FSC_MEM_LAST_IDX                                 31
 #define OS_FSC_MEM_USED_HEAD_SIZE                           (sizeof(struct TagFscMemCtrl))
-#define OS_FSC_MEM_TAIL_SIZE                                (sizeof(U32))
+#define OS_FSC_MEM_TAIL_SIZE                                (sizeof(uintptr_t))
 
 #define OS_FSC_MEM_SZGET(currBlk)                           ((U32)(currBlk->size))
 #define OS_FSC_MEM_MAXVAL                                   ((1U << OS_FSC_MEM_LAST_IDX) - OS_FSC_MEM_SIZE_ALIGN)
