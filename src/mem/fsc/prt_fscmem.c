@@ -82,6 +82,10 @@ OS_SEC_TEXT void *OsFscMemAllocInner(U32 mid, U32 size, uintptr_t align)
         return NULL;
     }
 
+    if (align < sizeof(uintptr_t)) {
+        align = sizeof(uintptr_t);
+    }
+
     /* 由于已经按OS_FSC_MEM_SIZE_ALIGN字节对齐，最大可能补齐的大小是align - OS_FSC_MEM_SIZE_ALIGN */
     allocSize = ALIGN(size, OS_FSC_MEM_SIZE_ALIGN) + (align - OS_FSC_MEM_SIZE_ALIGN) +
         OS_FSC_MEM_USED_HEAD_SIZE + OS_FSC_MEM_TAIL_SIZE;

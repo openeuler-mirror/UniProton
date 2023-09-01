@@ -68,7 +68,6 @@ struct OsFpuStack {
 #define OS_HWI_MAX (OS_HWI_MAX_NUM - 1)
 
 #define OS_HWI_INTERNAL_NUM 5
-#define OS_TSK_STACK_SIZE_ALIGN 16
 #define OS_HWI_PRI_NUM 256
 #define OS_HWI_PRIO_CHECK(hwiPrio) ((hwiPrio) >= OS_HWI_PRI_NUM)
 #define OS_IRQ2HWI(irqNum) ((irqNum) + OS_HWI_MIN)
