@@ -27,7 +27,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 
 int rpmsg_endpoint_init(struct rpmsg_device *rdev)
 {
-    rpmsg_create_ept(&g_ept, rdev, RPMSG_ENDPOINT_NAME,
+    return rpmsg_create_ept(&g_ept, rdev, RPMSG_ENDPOINT_NAME,
                     0xF, RPMSG_ADDR_ANY,
                     rpmsg_endpoint_cb, rpmsg_service_unbind);
 }
