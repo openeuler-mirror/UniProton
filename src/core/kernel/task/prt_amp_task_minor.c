@@ -95,8 +95,8 @@ OS_SEC_L2_TEXT U32 PRT_TaskResume(TskHandle taskPid)
         return OS_ERRNO_TSK_ACTIVE_FAILED;
     }
 
-    /* If task is not suspended then return */
-    if ((OS_TSK_SUSPEND & taskCb->taskStatus) == 0) {
+    /* If task is not suspended and not in interruptible delay then return */
+    if (((OS_TSK_SUSPEND | OS_TSK_DELAY_INTERRUPTIBLE) & taskCb->taskStatus) == 0) {
         OsIntRestore(intSave);
         return OS_ERRNO_TSK_NOT_SUSPENDED;
     }

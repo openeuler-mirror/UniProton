@@ -553,6 +553,20 @@ extern "C" {
 #define OS_TSK_QUEUE_BUSY 0x4000
 
 /*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务被延时，可被唤醒。
+ */
+#define OS_TSK_DELAY_INTERRUPTIBLE 0x8000
+
+/*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务在等待队列中
+ */
+#define OS_TSK_WAITQUEUE_PEND 0x10000
+
+/*
  * 任务模块的错误码定义。
  */
 /*

@@ -53,6 +53,7 @@ extern int OsMutexParamCheck(prt_pthread_mutex_t *mutex);
 extern void OsPthreadNotifyParents(struct TagTskCb *tskCb);
 extern void OsPthreadRunDestructor(struct TagTskCb *self);
 extern int OsCondParamCheck(pthread_cond_t *cond);
+extern int PRT_PthreadTimedJoin(TskHandle thread, void **status, U32 timeout);
 
 #endif
 

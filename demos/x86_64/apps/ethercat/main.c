@@ -14,6 +14,20 @@
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
+#ifdef LINUX_TESTCASE
+void kthreadTest(void);
+void schedTest(void);
+void waitTest(void);
+#endif
+
+#ifdef ETHERCAT_TESTCASE
+int ethercat_main(void);
+int ethercat_init(void);
+void test_ethercat_main();
+bool wait_for_slave_scan_complete();
+bool wait_for_slave_respond();
+#endif
+
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U64 g_cpuClock = 0;
@@ -40,6 +54,24 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+#ifdef ETHERCAT_TESTCASE
+    ethercat_init();
+    if (!wait_for_slave_respond()) {
+        printf("[TEST] no slave responding!");
+        return;
+    }
+
+    if (!wait_for_slave_scan_complete()) {
+        printf("[TEST] slave scan not compete yet!");
+        return;
+    }
+    test_ethercat_main();
+#endif
+#ifdef LINUX_TESTCASE
+    kthreadTest();
+    schedTest();
+    waitTest();
+#endif
 #ifdef POSIX_TESTCASE
     Init(0, 0, 0, 0);
 #endif

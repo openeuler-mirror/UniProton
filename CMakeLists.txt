@@ -99,9 +99,23 @@ include_directories(
         ./src/libc/musl/src/include
         ./src/libc/musl/include
         ./src/core/ipc/rwlock
+        ./src/driver/i210
 )
+
+if (${PLAM_TYPE} STREQUAL "x86_64")
+set(LINUX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/osal/linux)
+include_directories(
+    ${LINUX_INCLUDE_DIR}/include_self_def
+)
+endif()
+
+if (${PLAM_TYPE} STREQUAL "x86_64")
+    add_compile_options(-std=gnu99)
+else()
+    add_compile_options(-std=c99)
+endif()
+
 add_compile_options(
-        -std=c99 
         -ffreestanding 
         -nostdinc 
         -Wno-undef 

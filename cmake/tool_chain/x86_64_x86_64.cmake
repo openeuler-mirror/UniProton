@@ -44,6 +44,8 @@ set(INSTALL_X86_64_INCLUDE_DIR            UniProton/include)
 set(INSTALL_X86_64_INCLUDE_SEC_DIR        libboundscheck/include)
 set(INSTALL_X86_64_ARCHIVE_DIR            UniProton/lib/x86_64)
 set(INSTALL_X86_64_ARCHIVE_SEC_DIR        libboundscheck/lib/x86_64)
+set(INSTALL_X86_64_ARCHIVE_LINUX_DIR      linux/lib/x86_64)
+set(INSTALL_X86_64_ARCHIVE_ETHERCAT_DIR   ethercat/lib/x86_64)
 set(INSTALL_X86_64_ARCHIVE_CONFIG_DIR     UniProton/config)
 set(INSTALL_X86_64_CONFIG_DIR             cmake/x86_64)
 
@@ -77,6 +79,18 @@ install(TARGETS
     X86_64
     EXPORT ${x86_64_export}
     ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_DIR}/
+)
+
+install(TARGETS
+    linuxlib
+    EXPORT ${x86_64_export}
+    ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_LINUX_DIR}/
+)
+
+install(TARGETS
+    ethercat_src
+    EXPORT ${x86_64_export}
+    ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_ETHERCAT_DIR}/
 )
 
 if (${COMPILE_OPTION} STREQUAL "coverity" OR ${COMPILE_OPTION} STREQUAL "fortify" OR ${COMPILE_OPTION} STREQUAL "UniProton")

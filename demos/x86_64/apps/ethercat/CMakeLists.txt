@@ -6,6 +6,6 @@ elseif (${APP} STREQUAL "task-switch" OR ${APP} STREQUAL "task-preempt" OR
     ${APP} STREQUAL "deadlock-break" OR ${APP} STREQUAL "message-latency")
     set (SRC rpmsg_backend.c rpmsg_service.c example_default.c)
 else()
-    set (SRC ethercat_igh.c main.c rpmsg_backend.c rpmsg_service.c example_default.c)
+    set (SRC ethercat_igh.c main.c rpmsg_backend.c rpmsg_service.c example_default.c demo.c)
 endif()
 add_library(ethercat OBJECT ${SRC})

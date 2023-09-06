@@ -56,10 +56,3 @@ popd
 
 cp ./libmetal/output/usr/local/lib/*.a ../libs
 cp ./open-amp/output/usr/local/lib/*.a ../libs
-
-echo "######################### build ethercat #########################"         
-pushd ../component
-rm -rf ./ethercat-master
-tar -xf ethercat-master.tar
-patch -p1 -d ethercat-master < UniProton-patch-for-ethercat.patch
-popd
