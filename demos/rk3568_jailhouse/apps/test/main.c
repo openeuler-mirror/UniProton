@@ -8,28 +8,32 @@
 #include "prt_task.h"
 #include "test.h"
 
-TskHandle g_testTskHandle;
+#ifdef POSIX_TESTCASE
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
+#define TEST_TASK_NUM 2
+TskHandle g_testTskHandle[TEST_TASK_NUM];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
-#if defined(OS_OPTION_OPENAMP)
-int TestOpenamp()
+void TestTask1()
 {
-    int ret;
+#ifdef POSIX_TESTCASE
+    Init(0, 0, 0, 0);
+#endif
 
-    ret = rpmsg_service_init();
-    if (ret) {
-        return ret;
+    while (1) {
+        printf("TestTask1 run! \n");
+        PRT_TaskDelay(2000);
     }
-    
-    return OS_OK;
 }
-#endif
 
-void TestTaskEntry()
+void TestTask2()
 {
-#if defined(OS_OPTION_OPENAMP)
-    TestOpenamp();
-#endif
+    while (1) {
+        printf("TestTask2 run! \n");
+        PRT_TaskDelay(1000);
+    }
 }
 
 U32 OsTestInit(void)
@@ -37,19 +41,37 @@ U32 OsTestInit(void)
     U32 ret;
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
-    
+
+    // create task1
     param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)TestTaskEntry;
+    param.taskEntry = (TskEntryFunc)TestTask1;
     param.taskPrio = 25;
-    param.name = "TestTask";
+    param.name = "TestTask1";
     param.stackSize = 0x2000;
     
-    ret = PRT_TaskCreate(&g_testTskHandle, &param);
+    ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
     if (ret) {
         return ret;
     }
     
-    ret = PRT_TaskResume(g_testTskHandle);
+    ret = PRT_TaskResume(g_testTskHandle[0]);
+    if (ret) {
+        return ret;
+    }
+
+    // create task2
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)TestTask2;
+    param.taskPrio = 30;
+    param.name = "TestTask2";
+    param.stackSize = 0x2000;
+    
+    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
+    if (ret) {
+        return ret;
+    }
+    
+    ret = PRT_TaskResume(g_testTskHandle[1]);
     if (ret) {
         return ret;
     }
@@ -83,6 +105,12 @@ U32 PRT_HardDrvInit(void)
         return ret;
     }
 
+    /* 暂不使用uart，先直接写串口寄存器地址 */
+    // ret = PRT_PrintfInit();
+    // if (ret) {
+    //     return ret;
+    // }
+    
     return OS_OK;
 }
 

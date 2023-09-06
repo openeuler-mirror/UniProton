@@ -5,8 +5,7 @@ _heap_size = 0x10000;
 
 MEMORY
 {
-    IMU_SRAM (rwx) : ORIGIN = 0x93000000, LENGTH = 0x800000
-    MMU_MEM (rwx) : ORIGIN = 0x93800000, LENGTH = 0x800000
+    IMU_SRAM (rwx) : ORIGIN = 0x0, LENGTH = 0x800000
 }
 
 SECTIONS
@@ -83,7 +82,7 @@ SECTIONS
     {
         . = ALIGN(8);
         __data_start = .;
-        *(.data)
+        *(*.data)
         *(.data.*)
         . = ALIGN(8);
         __os_text_start = .;
@@ -105,16 +104,10 @@ SECTIONS
     {
         . = ALIGN(8);
         __bss_start__ = .;
-        *(.bss)
+        *(*.bss)
         *(.bss.*)
         *(COMMON)
         . = ALIGN(8);
         __bss_end__ = .;
     } > IMU_SRAM
-    
-    .mmu.table.base :
-    {
-        PROVIDE (g_mmu_page_begin = .);
-        PROVIDE (g_mmu_page_end = g_mmu_page_begin + 0x8000);
-    } > MMU_MEM
 }

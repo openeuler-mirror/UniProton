@@ -21,9 +21,8 @@ include_directories(
     ./bsp
     ./bsp/rk3568_jailhouse
     ./bsp/uart
-    ./apps/openamp
-    ./build/open-amp/output/usr/local/include
-    ./build/libmetal/output/usr/local/include
+    ./apps/test
+    ../../output/libc/include
 )
 
 link_directories(./libs)
@@ -31,8 +30,6 @@ link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRK3568_JAILHOUSE.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     -Wl,--end-group
 )
 
@@ -40,5 +37,15 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 
-list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
-add_executable(${APP} ${OBJS})
+if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
+    ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
+    add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
+    target_compile_options(test PUBLIC -DPOSIX_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:test> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
+    add_executable(${APP} ${OBJS})
+else()
+    list(APPEND OBJS $<TARGET_OBJECTS:test> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
+    add_executable(${APP} ${OBJS})
+endif()

@@ -1,1 +1,1 @@
-add_subdirectory(openamp)
+add_subdirectory(test)

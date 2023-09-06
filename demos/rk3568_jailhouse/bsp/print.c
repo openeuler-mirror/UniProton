@@ -31,7 +31,6 @@ void uart_recv_hwi(void)
 
 U32 PRT_UartInit(void)
 {
-
     U32 ret;
     (void)PRT_HwiDelete(CCORE_SYS_UART4_INTID);
 
@@ -57,7 +56,11 @@ U32 PRT_UartInit(void)
 
 void uart_poll_send(unsigned char ch)
 {
-    serial_putc((char)ch);
+    /* 暂不使用uart，先直接写串口寄存器地址 */
+    // serial_putc((char)ch);
+    volatile int time = 100;
+    *(unsigned int *)UART_BASE_ADDR = ch;
+    while (time--);
 }
 
 void TestPutc(unsigned char ch)

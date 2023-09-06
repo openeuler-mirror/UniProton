@@ -421,7 +421,7 @@ list(APPEND ALL_PROXY_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/proxy/1-1.c
 )
 
-if(${CPU_TYPE} STREQUAL "x86_64")
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse")
     include_directories(../include)
 elseif(${CPU_TYPE} STREQUAL "m4")
     list(APPEND OBJS 
@@ -447,7 +447,7 @@ elseif(${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
     set(ALL_SRC runProxyTest.c ${ALL_PROXY_SRC})
 endif()
 
-if(${CPU_TYPE} STREQUAL "x86_64")
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse")
     add_library(posixTest OBJECT ${ALL_SRC})
 elseif(${CPU_TYPE} STREQUAL "m4")
     add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})

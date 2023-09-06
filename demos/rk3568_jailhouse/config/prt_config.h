@@ -105,9 +105,9 @@ extern "C" {
 /* GIC地址可配置开关 */
 #define OS_INCLUDE_GIC_BASE_ADDR_CONFIG                 YES
 /* GIC基地址配置 */
-#define OS_GIC_BASE_ADDR                                0x24000000U
+#define OS_GIC_BASE_ADDR                                0xfd400000U
 /* GICR相对于GIC基地址偏移量配置 */
-#define OS_GICR_OFFSET                                  0x40000U
+#define OS_GICR_OFFSET                                  0x60000U
 /* GICR核间偏移量配置 */
 #define OS_GICR_STRIDE                                  0x20000U
 

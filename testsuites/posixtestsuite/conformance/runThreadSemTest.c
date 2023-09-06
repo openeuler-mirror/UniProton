@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "prt_buildef.h"
 #include "securec.h"
-#ifndef OS_ARCH_X86_64
+#ifdef OS_ARCH_ARMV7_M
 #include "rtt_viewer.h"
 #endif
 #include "prt_config.h"

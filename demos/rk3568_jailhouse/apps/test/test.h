@@ -6,3 +6,4 @@
 #include "prt_mem.h"
 
 extern U32 PRT_Printf(const char *format, ...);
+#define printf PRT_Printf
