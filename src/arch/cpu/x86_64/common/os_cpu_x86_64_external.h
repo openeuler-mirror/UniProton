@@ -16,6 +16,7 @@
 #define OS_CPU_X86_64_EXTERNAL_H
 
 #include "prt_typedef.h"
+#include "prt_hwi.h"
 
 struct TagOsStack {
     U64 rax;

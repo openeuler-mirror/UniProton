@@ -247,7 +247,7 @@ OS_SEC_L4_TEXT void OsTskStackInit(U32 stackSize, uintptr_t topStack)
     *((U32 *)(topStack)) = OS_TSK_STACK_TOP_MAGIC;
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb,
+OS_SEC_L4_TEXT U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb,
                                                   uintptr_t **topStackOut, uintptr_t *curStackSize)
 {
     U32 ret = OS_OK;
@@ -282,7 +282,7 @@ OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitPara
     return OS_OK;
 }
 
-OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *initParam,
+OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *initParam,
     uintptr_t topStackAddr, uintptr_t curStackSize, struct TagTskCb *taskCb)
 {
     /* Initialize the task's stack */
@@ -307,6 +307,15 @@ OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskI
     INIT_LIST_OBJECT(&taskCb->timerList);
 
 #if defined(OS_OPTION_POSIX)
+    taskCb->tsdUsed = 0;
+    taskCb->state = PTHREAD_CREATE_JOINABLE;
+    taskCb->cancelState = PTHREAD_CANCEL_ENABLE;
+    taskCb->cancelType = PTHREAD_CANCEL_DEFERRED;
+    taskCb->cancelPending = 0;
+    taskCb->cancelBuf = NULL;
+    taskCb->retval = NULL;
+    taskCb->joinCount = 0;
+    taskCb->joinableSem = 0;
     taskCb->sigMask = 0;
     taskCb->sigWaitMask = 0;
     taskCb->sigPending = 0;

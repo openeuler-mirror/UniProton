@@ -23,8 +23,6 @@ include_directories(
     ./config
     ./bsp
     ./bsp/x86_64
-    ./component/ethercat-master/include
-    ./component/ethercat-master/master
     ./apps/ethercat
     ./build/open-amp/output/usr/local/include
     ./build/libmetal/output/usr/local/include
@@ -45,6 +43,8 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblinuxlib.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libethercat_src.a"
     "/usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
     "/usr1/openeuler/gcc/openeuler_gcc_x86_64/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
     "/usr1/openeuler/gcc/openeuler_gcc_x86_64/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
@@ -58,7 +58,6 @@ endif()
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
-add_subdirectory(component/ethercat-master)
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
@@ -66,7 +65,7 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
         add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
         target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
-        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ethercat_src> $<TARGET_OBJECTS:posixTest>)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
         add_executable(${APP} ${OBJS})
 endif()
 
@@ -74,13 +73,25 @@ if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
     add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
     add_subdirectory(../../src/component/proxy proxy)
     target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
-    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ethercat_src> $<TARGET_OBJECTS:posixTest>)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+    add_executable(${APP} ${OBJS})
+endif()
+
+if (${APP} MATCHES "linuxTest")
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    target_compile_options(ethercat PUBLIC -DLINUX_TESTCASE)
+    add_executable(${APP} ${OBJS})
+endif()
+
+if (${APP} MATCHES "ethercatTest")
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    target_compile_options(ethercat PUBLIC -DETHERCAT_TESTCASE)
     add_executable(${APP} ${OBJS})
 endif()
 
 #rpmsg
 if (${APP} MATCHES "x86_64")
-    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ethercat_src>)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
     add_executable(${APP} ${OBJS})
 else()
     add_subdirectory(testsuites)

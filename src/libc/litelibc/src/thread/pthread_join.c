@@ -44,7 +44,7 @@ static U32 OsPthreadJoinExit(struct TagTskCb *tskCb, void **status)
     }
 }
 
-static int PRT_PthreadTimedJoin(TskHandle thread, void **status, U32 timeout)
+int PRT_PthreadTimedJoin(TskHandle thread, void **status, U32 timeout)
 {
     struct TagTskCb *tskCb = RUNNING_TASK;
     uintptr_t intSave;

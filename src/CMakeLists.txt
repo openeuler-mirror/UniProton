@@ -13,7 +13,5 @@ if(${CONFIG_OS_SUPPORT_FS})
     add_subdirectory(fs)
 endif()
 
-if(${CONFIG_OS_SUPPORT_NET})
-    add_subdirectory(net)
-endif()
+add_subdirectory(net)
 
