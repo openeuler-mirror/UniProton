@@ -35,7 +35,7 @@ extern "C" {
 #define WORD_PACK(val) (((val) << 24) | ((val) << 16) | ((val) << 8) | (val))
 
 /* UniProton模块注册函数的声明 */
-extern U32 OsFscMemInit(U32 addr, U32 size);
+extern U32 OsFscMemInit(uintptr_t addr, U32 size);
 extern U32 OsSysRegister(struct SysModInfo *modInfo);
 extern U32 OsTickRegister(struct TickModInfo *modInfo);
 extern U32 OsTskRegister(struct TskModInfo *modInfo);
