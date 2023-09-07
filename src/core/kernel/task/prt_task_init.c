@@ -170,13 +170,16 @@ OS_SEC_L4_TEXT void OsTskEntry(TskHandle taskId)
     OsTaskExit(taskCb);
 }
 
+OS_SEC_ALW_INLINE INLINE bool OsCheckAddrOffsetOverflow(uintptr_t base, size_t size)
+{
+    return (base + size) < base;
+}
+
 /*
  * 描述：创建任务参数检查
  */
 OS_SEC_L4_TEXT U32 OsTaskCreateParaCheck(const TskHandle *taskPid, struct TskInitParam *initParam)
 {
-    U64 stackAddrLen;
-
     if ((taskPid == NULL) || (initParam == NULL)) {
         return OS_ERRNO_TSK_PTR_NULL;
     }
@@ -202,9 +205,7 @@ OS_SEC_L4_TEXT U32 OsTaskCreateParaCheck(const TskHandle *taskPid, struct TskIni
     }
     /* 使用用户内存，则需要包含OS使用的资源，size最小值要包含OS的消耗 */
     if (initParam->stackAddr != 0) {
-        /* 保证栈空间在4G范围内不溢出 */
-        stackAddrLen = (U64)(initParam->stackAddr) + (U64)(initParam->stackSize);
-        if (stackAddrLen > OS_MAX_U32) {
+        if (OsCheckAddrOffsetOverflow(initParam->stackAddr, initParam->stackSize)) {
             return OS_ERRNO_TSK_STACKADDR_TOO_BIG;
         }
     }

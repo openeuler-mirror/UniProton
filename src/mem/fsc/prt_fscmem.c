@@ -212,7 +212,7 @@ OS_SEC_TEXT void *OsMemAllocAlign(U32 mid, U8 ptNo, U32 size, enum MemAlign alig
 /*
  * 描述：初始化内存
  */
-OS_SEC_TEXT U32 OsFscMemInit(U32 addr, U32 size)
+OS_SEC_TEXT U32 OsFscMemInit(uintptr_t addr, U32 size)
 {
     U32 idx;
     struct TagFscMemCtrl *headBlk = NULL;
