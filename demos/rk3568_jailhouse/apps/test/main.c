@@ -7,6 +7,7 @@
 #include "prt_config_internal.h"
 #include "prt_task.h"
 #include "test.h"
+#include "ivshmem_demo.h"
 
 #ifdef POSIX_TESTCASE
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
@@ -28,8 +29,26 @@ void TestTask1()
     }
 }
 
+#define VENDORID			0x110a
+#define DEVICEID			0x4106
+
 void TestTask2()
 {
+    int bdf = pci_find_device(VENDORID, DEVICEID, 0);
+    if (bdf == -1) {
+        printf("IVSHMEM: No PCI devices found .. nothing to do.\n");
+    } else {
+        printf("IVSHMEM: Found device at %02x:%02x.%x\n", bdf >> 8, (bdf >> 3) & 0x1f, bdf & 0x3);
+    }
+
+    unsigned int class_rev = pci_read_config(bdf, 0x8, 4);
+    if (class_rev != (PCI_DEV_CLASS_OTHER << 24 |
+        JAILHOUSE_SHMEM_PROTO_UNDEFINED << 8)) {
+        printf("IVSHMEM: class/revision %08x, not supported\n", class_rev);
+    } else {
+        printf("IVSHMEM: class/revision %08x, supported\n", class_rev);
+    }
+
     while (1) {
         printf("TestTask2 run! \n");
         PRT_TaskDelay(1000);
@@ -82,6 +101,8 @@ U32 OsTestInit(void)
 U32 PRT_AppInit(void)
 {
     U32 ret;
+
+    pci_init();
 
     ret = OsTestInit();
     if (ret) {
