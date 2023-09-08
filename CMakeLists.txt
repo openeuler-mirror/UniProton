@@ -99,6 +99,7 @@ include_directories(
         ./src/libc/musl/src/include
         ./src/libc/musl/include
         ./src/core/ipc/rwlock
+        ./src/kal/include
 )
 add_compile_options(
         -std=c99 
