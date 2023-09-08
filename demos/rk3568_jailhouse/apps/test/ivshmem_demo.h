@@ -1,15 +1,18 @@
+#define VENDORID			0x110a
+#define DEVICEID			0x4106
+
 #define PCI_CFG_VENDOR_ID	0x000
 #define PCI_CFG_DEVICE_ID	0x002
 #define PCI_CFG_COMMAND		0x004
-# define PCI_CMD_IO		(1 << 0)
-# define PCI_CMD_MEM		(1 << 1)
-# define PCI_CMD_MASTER		(1 << 2)
-# define PCI_CMD_INTX_OFF	(1 << 10)
+#define PCI_CMD_IO		(1 << 0)
+#define PCI_CMD_MEM		(1 << 1)
+#define PCI_CMD_MASTER		(1 << 2)
+#define PCI_CMD_INTX_OFF	(1 << 10)
 #define PCI_CFG_STATUS		0x006
-# define PCI_STS_INT		(1 << 3)
-# define PCI_STS_CAPS		(1 << 4)
+#define PCI_STS_INT		(1 << 3)
+#define PCI_STS_CAPS		(1 << 4)
 #define PCI_CFG_BAR		0x010
-# define PCI_BAR_64BIT		0x4
+#define PCI_BAR_64BIT		0x4
 #define PCI_CFG_CAP_PTR		0x034
 
 #define PCI_ID_ANY		0xffff
@@ -115,3 +118,4 @@ static U64 __attribute__((aligned(4096)))
 
 void pci_init(void);
 int pci_find_device(U16 vendor, U16 device, U16 start_bdf);
+int pci_find_cap(U16 bdf, U16 cap);

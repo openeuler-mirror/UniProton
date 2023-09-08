@@ -29,9 +29,6 @@ void TestTask1()
     }
 }
 
-#define VENDORID			0x110a
-#define DEVICEID			0x4106
-
 void TestTask2()
 {
     int bdf = pci_find_device(VENDORID, DEVICEID, 0);
@@ -47,6 +44,13 @@ void TestTask2()
         printf("IVSHMEM: class/revision %08x, not supported\n", class_rev);
     } else {
         printf("IVSHMEM: class/revision %08x, supported\n", class_rev);
+    }
+
+    int vndr_cap = pci_find_cap(bdf, PCI_CAP_VENDOR);
+    if (vndr_cap < 0) {
+        printf("IVSHMEM ERROR: missing vendor capability, vndr_cap: %d\n", vndr_cap);
+    } else {
+        printf("IVSHMEM: has vendor capability, vndr_cap: %d\n", vndr_cap);
     }
 
     while (1) {
