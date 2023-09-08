@@ -22,6 +22,21 @@ static inline void synchronization_barrier(void)
     dsb(ish);
 }
 
+static inline void mmio_write8(void *address, U8 value)
+{
+    *(volatile U8 *)address = value;
+}
+
+static inline void mmio_write16(void *address, U16 value)
+{
+    *(volatile U16 *)address = value;
+}
+
+static inline void mmio_write32(void *address, U32 value)
+{
+    *(volatile U32 *)address = value;
+}
+
 void *zalloc(unsigned long size, unsigned long align)
 {
     void *base = PRT_MemAlloc(0, 0, size); //diff
@@ -105,6 +120,28 @@ U32 pci_read_config(U16 bdf, unsigned int addr, unsigned int size)
     }
 }
 
+U64 pci_cfg_read64(U16 bdf, unsigned int addr)
+{
+    return pci_read_config(bdf, addr, 4) | ((U64)pci_read_config(bdf, addr + 4, 4) << 32);
+}
+
+void pci_write_config(U16 bdf, unsigned int addr, U32 value, unsigned int size)
+{
+    void *cfgaddr = pci_get_device_mmcfg_base(bdf) + addr;
+
+    switch (size) {
+        case 1:
+            mmio_write8(cfgaddr, value);
+            break;
+        case 2:
+            mmio_write16(cfgaddr, value);
+            break;
+        case 4:
+            mmio_write32(cfgaddr, value);
+            break;
+    }
+}
+
 int pci_find_device(U16 vendor, U16 device, U16 start_bdf)
 {
     unsigned int bdf;
@@ -119,4 +156,20 @@ int pci_find_device(U16 vendor, U16 device, U16 start_bdf)
             return bdf;
     }
     return -1;
+}
+
+int pci_find_cap(U16 bdf, U16 cap)
+{
+    U8 pos = PCI_CFG_CAP_PTR - 1;
+
+    if (!(pci_read_config(bdf, PCI_CFG_STATUS, 2) & PCI_STS_CAPS))
+        return -1;
+
+    while (1) {
+        pos = pci_read_config(bdf, pos + 1, 1);
+        if (pos == 0)
+            return -1;
+        if (pci_read_config(bdf, pos, 1) == cap)
+            return pos;
+    }
 }
