@@ -1,3 +1,6 @@
+#ifndef IVSHMEM_DEMO_H
+#define IVSHMEM_DEMO_H
+
 #define VENDORID			0x110a
 #define DEVICEID			0x4106
 
@@ -64,16 +67,32 @@
 #define PMD_INDEX(addr)		(((addr) >> 21) & 0x1ff)
 
 #define PCI_DEV_CLASS_OTHER	0xff
+#define IVSHMEM_CFG_STATE_TAB_SZ	0x04
+#define IVSHMEM_CFG_RW_SECTION_SZ	0x08
+#define IVSHMEM_CFG_OUT_SECTION_SZ	0x10
+#define IVSHMEM_CFG_ADDRESS		0x18
 #define JAILHOUSE_SHMEM_PROTO_UNDEFINED	0x0000
 
-struct jailhouse_console {
+#define BAR_BASE			0xff000000
+#define MAX_VECTORS	4
+#define MAX_DEVICE_COUNT 0x10000
+
+#define BYTES_NUMBER_ONE 1
+#define BYTES_NUMBER_TWO 2
+#define BYTES_NUMBER_FOUR 4
+#define IN_SECTION_ADDRESS_TWO 0x2000
+#define IN_SECTION_ADDRESS_THREE 0x4000
+#define MAP_RANGE_SIZE 0x100000
+#define TEST_SHMEME_INT 134
+
+struct JailhouseConsole {
     U64 address;
     U32 size;
     U16 type;
     U16 flags;
     U32 divider;
-    U32 gate_nr;
-    U64 clock_reg;
+    U32 gateNr;
+    U64 clockReg;
 } __attribute__((packed));
 
 #define COMM_REGION_GENERIC_HEADER					\
@@ -82,40 +101,74 @@ struct jailhouse_console {
     /** Communication region ABI revision */			\
     U16 revision;							\
     /** Cell state, initialized by hypervisor, updated by cell. */	\
-    volatile U32 cell_state;					\
+    volatile U32 cellState;					\
     /** Message code sent from hypervisor to cell. */		\
-    volatile U32 msg_to_cell;					\
+    volatile U32 msgToCell;					\
     /** Reply code sent from cell to hypervisor. */			\
-    volatile U32 reply_from_cell;					\
+    volatile U32 replyFromCell;					\
     /** Holds static flags, see JAILHOUSE_COMM_FLAG_*. */		\
     U32 flags;							\
     /** Debug console that may be accessed by the inmate. */	\
-    struct jailhouse_console console;				\
+    struct JailhouseConsole console;				\
     /** Base address of PCI memory mapped config. */		\
-    U64 pci_mmconfig_base;
+    U64 pciMmconfigBase;
 
-struct jailhouse_comm_region {
+struct JailhouseCommRegion {
     COMM_REGION_GENERIC_HEADER;
-    U8 gic_version;
+    U8 gicVersion;
     U8 padding[7];
-    U64 gicd_base;
-    U64 gicc_base;
-    U64 gicr_base;
-    U32 vpci_irq_base;
+    U64 gicdBase;
+    U64 giccBase;
+    U64 gicrBase;
+    U32 vpciIrqBase;
 } __attribute__((packed));
 
-#define comm_region	((struct jailhouse_comm_region *)COMM_REGION_BASE)
+struct IvshmRegs {
+    U32 id;
+    U32 maxPeers;
+    U32 intControl;
+    U32 doorbell;
+    U32 state;
+};
 
-enum map_type { MAP_CACHED, MAP_UNCACHED };
+struct IvshmemDeviceData {
+    U16 bdf;
+    struct IvshmRegs *registers;
+    U32 *stateTable;
+    U32 stateTableSize;
+    U32 *rwSection;
+    U64 rwSectionSize;
+    U32 *inSections;
+    U32 *outSection;
+    U64 outSectionSize;
+    U32 *msixTable;
+    U32 id;
+    int msixCap;
+};
+
+#define commRegion	((struct JailhouseCommRegion *)COMM_REGION_BASE)
+
+enum MapType { MAP_CACHED, MAP_UNCACHED };
 
 #define JAILHOUSE_INMATE_MEM_PAGE_DIR_LEN	512  // diff
 #define PAGE_SIZE	(4 * 1024ULL)
 
 static U64 __attribute__((aligned(4096)))
-	page_directory[JAILHOUSE_INMATE_MEM_PAGE_DIR_LEN];
+    pageDirectory[JAILHOUSE_INMATE_MEM_PAGE_DIR_LEN];
 
-#define dsb(domain)	asm volatile("dsb " #domain ::: "memory")
+#define DSB(domain)	asm volatile("dsb " #domain ::: "memory")
 
-void pci_init(void);
-int pci_find_device(U16 vendor, U16 device, U16 start_bdf);
-int pci_find_cap(U16 bdf, U16 cap);
+#define DEFAULT_IRQ_BASE	(commRegion->vpciIrqBase + 32)
+
+int PciInit(void);
+int PciDeviceFind(U16 vendor, U16 device, U16 start_bdf);
+int PciCapFind(U16 bdf, U16 cap);
+void IrqSend(struct IvshmemDeviceData *d);
+int DeviceInit(struct IvshmemDeviceData *d);
+void MmioWrite32(void *address, U32 value);
+void PrintShmem(struct IvshmemDeviceData *d);
+U32 MmioRead32(void *address);
+void ShmemHandler(U32 intNum);
+U32 TestShmemStart(void);
+
+#endif
