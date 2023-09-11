@@ -5,6 +5,7 @@ add_subdirectory(mem)
 add_subdirectory(om)
 add_subdirectory(security)
 add_subdirectory(utility)
+add_subdirectory(kal)
 add_subdirectory(libc)
 
 if(${CONFIG_OS_SUPPORT_FS})

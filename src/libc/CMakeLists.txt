@@ -52,6 +52,7 @@ endif()
 
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
 file(GLOB MUSL_THREAD_SOURCE musl/src/thread/*.c)
+file(GLOB MUSL_IPC_SOURCE musl/src/ipc/*.c)
 
 # 当前不支持功能，不提供该接口
 list(REMOVE_ITEM MUSL_TIME_SOURCE
@@ -75,6 +76,11 @@ list(REMOVE_ITEM MUSL_THREAD_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__unmapself.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__wait.c
     )
+
+list(REMOVE_ITEM MUSL_IPC_SOURCE
+    # 当前不支持文件系统
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ipc/ftok.c
+)
 
 # 查找math编译文件  
 file(GLOB MUSL_MATH_SOURCE musl/src/math/*.c)
@@ -103,7 +109,8 @@ list(APPEND MULS_SOURCE
     ${MUSL_TIME_SOURCE}
     ${MUSL_THREAD_SOURCE}
     ${MUSL_MATH_SOURCE}
-    ${MUSL_FENV_SOURCE})
+    ${MUSL_FENV_SOURCE}
+    ${MUSL_IPC_SOURCE})
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
