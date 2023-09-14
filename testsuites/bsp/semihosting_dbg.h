@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -9,19 +9,23 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2022-11-15
- * Description: free功能实现
+ * Create: 2023-7-5
+ * Description: semihosting dbg头文件
  */
-#include "stdlib.h"
-#include "prt_mem.h"
+#ifndef SEMIHOSTING_DBG_H
+#define SEMIHOSTING_DBG_H
 
-void *malloc(size_t n)
-{
-    return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
-}
+#include "prt_typedef.h"
 
-// 临时解决缺少__libc_malloc, 回合主线时如果malloc文件夹已合入则可删除
-void *__libc_malloc(size_t n)
+#ifdef __cplusplus
+extern "C"
 {
-	return malloc(n);
+#endif
+
+int SemihostingDbgWrite(const char *buf, int nbytes);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* SEMIHOSTING_DBG_H */

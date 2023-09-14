@@ -109,10 +109,27 @@ set(MULS_SIGNAL_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
     )
 
-list(APPEND MULS_SOURCE
-    ${MUSL_TIME_SOURCE}
-    ${MUSL_THREAD_SOURCE}
-    ${MULS_SIGNAL_SOURCE})
+    file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
+    list(REMOVE_ITEM MUSL_EXIT_SOURCE
+        # 暂不支持文件系统，删除该接口
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/assert.c
+    )
+    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
+        list(APPEND MUSL_EXIT_SOURCE
+            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/arm/__aeabi_atexit.c
+        )
+    endif()
+    # 临时解决缺少__libc_malloc, 回合主线时如果malloc文件夹已合入则可删除
+    list(APPEND MUSL_EXIT_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
+    )
+    
+    list(APPEND MULS_SOURCE
+        ${MUSL_TIME_SOURCE}
+        ${MUSL_THREAD_SOURCE}
+        ${MULS_SIGNAL_SOURCE}
+        ${MUSL_EXIT_SOURCE})
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
