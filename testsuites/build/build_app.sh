@@ -1,3 +1,4 @@
+set -e
 pushd ../../
 python3 build.py m4
 popd
@@ -29,6 +30,7 @@ POSIX_APP=(
     "UniPorton_test_posix_time_interface" \
     "UniPorton_test_posix_thread_sem_interface" \
     "UniPorton_test_posix_thread_pthread_interface" \
+    "UniPorton_test_posix_stdlib_interface" \
     "UniPorton_test_posix_ipc_interface"
 )
 

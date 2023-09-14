@@ -59,14 +59,13 @@ static struct {
     {"0.4996908522051874110779982354932499499602e9", 499690852.20518744}, // 0x1.dc8ad6434872ap+28
 };
 
-int strtod_test(void)
+int atof_test(void)
 {
     int i;
     double x;
-    char *p;
 
     for (i = 0; i < length(t); i++) {
-        x = strtod(t[i].s, &p);
+        x = atof(t[i].s);
         if (x != t[i].f)
             t_error("strtod(\"%s\") want %a got %a\n", t[i].s, t[i].f, x);
     }

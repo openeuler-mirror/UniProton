@@ -105,12 +105,31 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
     list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
 endif()
 
+# 适配stdlib
+file(GLOB MUSL_STDLIB_SOURCE musl/src/stdlib/*.c)
+# stdlib 依赖
+list(APPEND  MUSL_STDLIB_SOURCE
+    musl/src/stdio/sprintf.c
+    musl/src/stdio/vprintf.c
+    musl/src/stdio/vsnprintf.c
+    musl/src/stdio/__uflow.c
+    musl/src/stdio/__toread.c
+    musl/src/stdio/__stdio_exit.c
+    musl/src/stdio/__lockfile.c
+    musl/src/stdio/ofl.c
+    musl/src/internal/shgetc.c
+    musl/src/internal/intscan.c
+    musl/src/internal/floatscan.c
+)
+
 list(APPEND MULS_SOURCE
     ${MUSL_TIME_SOURCE}
     ${MUSL_THREAD_SOURCE}
     ${MUSL_MATH_SOURCE}
     ${MUSL_FENV_SOURCE}
-    ${MUSL_IPC_SOURCE})
+    ${MUSL_STDLIB_SOURCE}
+    ${MUSL_IPC_SOURCE}
+    )
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
