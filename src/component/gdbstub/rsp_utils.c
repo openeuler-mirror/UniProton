@@ -118,10 +118,10 @@ STUB_TEXT int OsGdbSendPacketNoAck(const U8 *data, int len)
  */
 STUB_TEXT int OsGdbSendPacket(const U8 *data, int len)
 {
-	int ret = OsGdbSendPacketNoAck(data, len);
-	if (ret) {
-		return ret;
-	}
+    int ret = OsGdbSendPacketNoAck(data, len);
+    if (ret) {
+        return ret;
+    }
     if (OsGdbGetchar() == '+') {
         return 0;
     }
@@ -228,5 +228,5 @@ STUB_TEXT int OsGdbSendException(U8 *buf, int len, U8 exception)
  */
 STUB_TEXT int OsGdbSendError(U8 *buf, int len, U8 error)
 {
-	return OsGdbSendErrPkt(buf, len, 'E', error);
+    return OsGdbSendErrPkt(buf, len, 'E', error);
 }

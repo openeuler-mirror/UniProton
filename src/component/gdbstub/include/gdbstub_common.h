@@ -40,10 +40,10 @@ enum GdbBkptState {
 };
 
 struct GdbBkpt {
-	uintptr_t               addr;
-	unsigned char           instr[BREAK_INSTR_SIZE];
-	enum GdbBkptType        type;
-	enum GdbBkptState       state;
+    uintptr_t               addr;
+    unsigned char           instr[BREAK_INSTR_SIZE];
+    enum GdbBkptType        type;
+    enum GdbBkptState       state;
 };
 
 /* regs */

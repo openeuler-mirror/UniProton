@@ -95,14 +95,14 @@ static STUB_TEXT int OsGdbHex2U64(char **ptr, U64 *val, int maxlen)
     OsGdbHex2U64((char **)&ptr, &v, 2 * sizeof(v));             \
     CHECK_ERROR(ptr == NULL);                                   \
     arg =( __typeof__(arg)) v;                                  \
-} while(0);
+} while(0)
 
 #define CHECK_HEXS(arg, cnt)  do {                              \
     U64 v = 0;                                                  \
     cnt = OsGdbHex2U64((char **)&ptr, &v, 2 * sizeof(v));       \
     CHECK_ERROR(ptr == NULL);                                   \
     arg =( __typeof__(arg)) v;                                  \
-} while(0);
+} while(0)
 
 int __weak STUB_TEXT OsGdbConfigGetMemRegions(struct GdbMemRegion **regions)
 {
@@ -139,7 +139,7 @@ static STUB_TEXT int GdbInvalidWriteAddr(uintptr_t addr)
 
 static STUB_TEXT int GdbInvalidBkptAddr(uintptr_t addr)
 {
-    return !GdbAddrCheck(addr, GDB_MEM_REGION_SWBKPT);
+    return !GdbAddrCheck(addr, GDB_MEM_REGION_NO_SWBKPT);
 }
 
 /*
@@ -576,7 +576,7 @@ static STUB_TEXT int GdbSerialStub()
         default:
             OsGdbSendPacket(NULL, 0);
             break;
-        }
+        } /* switch */
 
         /*
          * If this is an recoverable error, send an error message to
@@ -586,6 +586,7 @@ static STUB_TEXT int GdbSerialStub()
             OsGdbSendPacket(GDB_ERROR_GENERAL, 3);
             state = RECEIVING;
         }
+
     } /* while */
     return 0;
 }

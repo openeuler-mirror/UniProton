@@ -108,7 +108,6 @@ static STUB_TEXT int RBufferRead(RBuffer *buffer, char *buf, int len)
     return cnt;
 }
 
-
 /* Non-thread-safe */
 STUB_TEXT void OsGdbFlush()
 {

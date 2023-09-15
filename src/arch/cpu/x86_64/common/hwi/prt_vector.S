@@ -1,9 +1,14 @@
+#include "prt_buildef.h"
+
 .section .text
 
 .extern OsHwiDispatchProc
 .extern OsHwiDisapatchTail
 .extern OsTskContextLoad
-
+#ifdef OS_GDB_STUB
+.extern OsHwiGdbExcProc
+.global g_debugContext
+#endif
 .global g_runningTask
 .global __os_sys_sp_end
 
@@ -61,7 +66,6 @@
 OsVector\intNum:
     pushq   $0
     cli
-
     and     $~15, %rsp
     sub     $0xc0, %rsp
     movq    %rax, HWI_RAX_OFFSET(%rsp)
@@ -74,60 +78,8 @@ OsVector\intNum:
     movabs  $g_runningTask, %rcx
     movq    (%rcx), %r8
     movq    %rax, (%r8)
-
     jmp OsIntDispatcher
 .endm
-
-.macro EXC_NOERROR_VECTOR intNum
-.align 128
-.globl OsVector\intNum
-OsVector\intNum:
-    pushq  $0
-    cli
-    and    $~15, %rsp
-    movabs $0xf02500000, %rax
-    movabs $0xaaaaaaaa, %rdx
-    movq %rdx, (%rax)
-    add  $0x8, %rax
-    popq %rbx
-    popq %rcx
-    movq %rbx, (%rax)
-    add  $0x8, %rax
-    movq %rcx, (%rax)
-    add  $0x8, %rax
-    movq $(\intNum), (%rax)
-    add  $0x8, %rax
-    movabs $0xaaaaaaaa, %rdx
-    movq %rdx, (%rax)
-    jmp loop1
-.endm
-
-.macro EXC_ERROR_VECTOR intNum
-.align 128
-.globl OsVector\intNum
-OsVector\intNum:
-    cli
-    and    $~15, %rsp
-    movabs $0xf02500000, %rax
-    movabs $0xaaaaaaaa, %rdx
-    movq %rdx, (%rax)
-    add  $0x8, %rax
-    popq %rbx
-    popq %rcx
-    movq %rbx, (%rax)
-    add  $0x8, %rax
-    movq %rcx, (%rax)
-    add  $0x8, %rax
-    movq $(\intNum), (%rax)
-    add  $0x8, %rax
-    movabs $0xaaaaaaaa, %rdx
-    movq %rdx, (%rax)
-    jmp loop1
-.endm
-
-loop1:
-    hlt
-    jmp loop1
 
 .macro ERROR_VECTOR intNum
 .align 128
@@ -147,6 +99,7 @@ OsVector\intNum:
     movq    (%rcx), %r8
     movq    %rax, (%r8)
     jmp OsIntDispatcher
+
 .endm
 
 OsIntDispatcher:
@@ -157,12 +110,85 @@ OsIntDispatcher:
     call OsHwiDispatchProc
     movabs  $g_runningTask, %rax
     movq    (%rax), %rdi
-    jmp OsTskContextLoad
+    jmp     OsTskContextLoad
+
+#ifdef OS_GDB_STUB
+.macro NOERROR_VECTOR_DBG intNum
+.align 128
+.globl OsVector\intNum
+.pushsection .stub.text,"ax"
+OsVector\intNum:
+    pushq   $0
+    cli
+    and     $~15, %rsp
+    sub     $0xc0, %rsp
+    movq    %rax, HWI_RAX_OFFSET(%rsp)
+    mov     %rsp, %rax
+    add     $0xc0, %rsp
+    SAVE_REGISTER
+    movq    $(\intNum), HWI_INTNUM_OFFSET(%rax)
+    sub     $0x200, %rax
+    fxsave64 (%rax)
+    movabs  $g_debugContext, %rcx
+    movq    (%rcx), %r8
+    movq    %rax, (%r8)
+    jmp OsDbgExcDispatcher
+.popsection
+.endm
+
+.pushsection .stub.text,"ax"
+OsDbgExcDispatcher:
+    movq %rax, %rdi
+    movabs $__os_sys_sp_end, %rsp
+    sub $0x4000, %rsp
+    cld
+    call OsHwiDbgExcProc
+    movabs  $g_debugContext, %rax
+    movq    (%rax), %rdi
+    jmp     OsDbgContextRestore
+
+OsDbgContextRestore:
+    movq    (%rdi), %rax
+#if defined(OS_OPTION_FPU)
+    fxrstor64 (%rax)
+#endif
+    add     $0x200, %rax
+    movq    HWI_RBX_OFFSET(%rax), %rbx
+    movq    HWI_RCX_OFFSET(%rax), %rcx
+    movq    HWI_RDX_OFFSET(%rax), %rdx
+    movq    HWI_RSI_OFFSET(%rax), %rsi
+    movq    HWI_RDI_OFFSET(%rax), %rdi
+    movq    HWI_RBP_OFFSET(%rax), %rbp
+    movq    HWI_R8_OFFSET(%rax),  %r8
+    movq    HWI_R9_OFFSET(%rax),  %r9
+    movq    HWI_R10_OFFSET(%rax), %r10
+    movq    HWI_R11_OFFSET(%rax), %r11
+    movq    HWI_R12_OFFSET(%rax), %r12
+    movq    HWI_R13_OFFSET(%rax), %r13
+    movq    HWI_R14_OFFSET(%rax), %r14
+    movq    HWI_R15_OFFSET(%rax), %r15
+    pushq   HWI_SS_OFFSET(%rax)
+    pushq   HWI_RSP_OFFSET(%rax)
+    pushq   HWI_RFLAGS_OFFSET(%rax)
+    pushq   HWI_CS_OFFSET(%rax)
+    pushq   HWI_RIP_OFFSET(%rax)
+    movq    HWI_RAX_OFFSET(%rax), %rax
+    iretq
+.popsection
+#endif
 
 NOERROR_VECTOR 0
+#ifdef OS_GDB_STUB
+NOERROR_VECTOR_DBG 1
+#else
 NOERROR_VECTOR 1
+#endif
 NOERROR_VECTOR 2
+#ifdef OS_GDB_STUB
+NOERROR_VECTOR_DBG 3
+#else
 NOERROR_VECTOR 3
+#endif
 NOERROR_VECTOR 4
 NOERROR_VECTOR 5
 NOERROR_VECTOR 6
