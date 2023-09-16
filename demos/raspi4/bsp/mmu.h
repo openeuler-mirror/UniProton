@@ -50,7 +50,7 @@
                               PMD_ATTRINDX_MASK | \
                               PTE_TYPE_VALID)
 
-#define TCR_IPS(x)           ((x) << 32)                              
+#define TCR_IPS(x)           ((x) << 32)
 #define TCR_T0SZ(x)          ((64 - (x)) << 0)
 #define TCR_IRGN_NC          (0 << 8)
 #define TCR_IRGN_WBWA        (1 << 8)

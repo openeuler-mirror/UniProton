@@ -17,37 +17,15 @@
 
 size_t malloc_usable_size(void *p)
 {
-	struct TagFscMemCtrl *currBlk = NULL; /* 当前内存块指针 */
-	U32 *blkTailMagic = NULL;
+    struct TagFscMemCtrl *currBlk = NULL; /* 当前内存块指针 */
+    U32 *blkTailMagic = NULL;
 
-	if (p == NULL) {
+    if (p == NULL) {
         return 0;
     }
-	
-	currBlk = (struct TagFscMemCtrl *)OsMemGetHeadAddr((uintptr_t)p);
-	/* 找到内存越界检查魔术字的地址 */
-	blkTailMagic = (U32 *)((uintptr_t)currBlk + (uintptr_t)(currBlk->size) - (uintptr_t)OS_FSC_MEM_TAIL_SIZE);
-	return (uintptr_t)blkTailMagic - (uintptr_t)p;
+
+    currBlk = (struct TagFscMemCtrl *)OsMemGetHeadAddr((uintptr_t)p);
+    /* 找到内存越界检查魔术字的地址 */
+    blkTailMagic = (U32 *)((uintptr_t)currBlk + (uintptr_t)(currBlk->size) - (uintptr_t)OS_FSC_MEM_TAIL_SIZE);
+    return (U8*)blkTailMagic - (U8*)p;
 }
-
-/*
-size_t malloc_usable_size(void *p)
-{
-	struct TagFscMemCtrl *currBlk = NULL;
-	uintptr_t blkSize;	
-	uintptr_t headOffset = *((U16 *)p - 1);
-	uintptr_t usableSize = 0;
-
-	if (p == NULL) {
-        return 0;
-    }
-	
-	currBlk = (struct TagFscMemCtrl *)OsMemGetHeadAddr((uintptr_t)p);
-    blkSize = currBlk->size;	
-	if (blkSize <= ((uintptr_t)OS_FSC_MEM_TAIL_SIZE + headOffset + OS_FSC_MEM_USED_HEAD_SIZE)) {
-		return 0;
-	}
-	usableSize = blkSize - ((uintptr_t)OS_FSC_MEM_TAIL_SIZE + headOffset + OS_FSC_MEM_USED_HEAD_SIZE);
-	return usableSize;
-}*/
-

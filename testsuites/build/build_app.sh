@@ -1,3 +1,4 @@
+set -e
 pushd ../../
 python3 build.py m4
 popd
@@ -29,7 +30,9 @@ POSIX_APP=(
     "UniPorton_test_posix_time_interface" \
     "UniPorton_test_posix_thread_sem_interface" \
     "UniPorton_test_posix_thread_pthread_interface" \
-    "UniPorton_test_posix_malloc_interface"
+    "UniPorton_test_posix_malloc_interface" \
+    "UniPorton_test_posix_stdlib_interface" \
+    "UniPorton_test_posix_ipc_interface"
 )
 
 RHEALSTONE_APP=(
@@ -41,15 +44,19 @@ RHEALSTONE_APP=(
     "task-switch"
 )
 
-ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]}"
+MATH_APP=("UniPorton_test_posix_math_interface")
+
+ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]} ${MATH_APP[*]}"
 if ${sim_flag}; then
-    ALL_APP="${POSIX_APP[*]}"
+    ALL_APP="${POSIX_APP[*]} ${MATH_APP[*]}"
 fi
 
 if [[ $build_flag == "posix" || $build_flag == "POSIX" ]]; then
     ALL_APP=${POSIX_APP[*]}
 elif [[ $build_flag == "rhealstone" || $build_flag == "RHEALSTONE" ]]; then
     ALL_APP=${RHEALSTONE_APP[*]}
+elif [[ $build_flag == "math" || $build_flag == "MATH" ]]; then
+    ALL_APP=${MATH_APP[*]}
 fi
 
 echo "================================================"
@@ -68,9 +75,19 @@ fi
 pushd $TMP_DIR
 make $APP --trace
 popd
-cp $TMP_DIR/$APP $APP.elf
-$TOOLCHAIN_PATH/bin/arm-none-eabi-objcopy -O binary $TMP_DIR/$APP $APP.bin
-rm -rf $TMP_DIR
+if [[ $APP == "UniPorton_test_posix_math_interface" ]]; then
+    all_math_app=$(ls $TMP_DIR/UniPorton_test_posix_math_*)
+    for one_math in ${all_math_app}; do
+        file_name=${one_math#*/*}
+        cp $TMP_DIR/$file_name $file_name.elf
+        $TOOLCHAIN_PATH/bin/arm-none-eabi-objcopy -O binary $TMP_DIR/$file_name $file_name.bin
+    done
+    rm -rf $TMP_DIR
+else
+    cp $TMP_DIR/$APP $APP.elf
+    $TOOLCHAIN_PATH/bin/arm-none-eabi-objcopy -O binary $TMP_DIR/$APP $APP.bin
+    rm -rf $TMP_DIR
+fi
 done
 
 echo "================================================"

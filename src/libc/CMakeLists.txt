@@ -52,6 +52,7 @@ endif()
 
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
 file(GLOB MUSL_THREAD_SOURCE musl/src/thread/*.c)
+file(GLOB MUSL_IPC_SOURCE musl/src/ipc/*.c)
 
 # 当前不支持功能，不提供该接口
 list(REMOVE_ITEM MUSL_TIME_SOURCE
@@ -75,9 +76,60 @@ list(REMOVE_ITEM MUSL_THREAD_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__unmapself.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/thread/__wait.c
     )
+
+list(REMOVE_ITEM MUSL_IPC_SOURCE
+    # 当前不支持文件系统
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ipc/ftok.c
+)
+
+# 查找math编译文件  
+file(GLOB MUSL_MATH_SOURCE musl/src/math/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/math/${CMAKE_SYSTEM_PROCESSOR}/)
+    file(GLOB MUSL_MATH_ARCH_SOURCE musl/src/math/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_MATH_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}" "" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_MATH_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_MATH_SOURCE ${tmp_replace_source})
+        endif()
+        list(APPEND MUSL_MATH_SOURCE ${tmp_one_source})
+    endforeach()
+endif()
+
+file(GLOB MUSL_FENV_SOURCE musl/src/fenv/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
+    file(GLOB MUSL_FENV_ARCH_SOURCE musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    list(REMOVE_ITEM MUSL_FENV_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/fenv.c)
+    list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
+endif()
+
+# 适配stdlib
+file(GLOB MUSL_STDLIB_SOURCE musl/src/stdlib/*.c)
+# stdlib 依赖
+list(APPEND  MUSL_STDLIB_SOURCE
+    musl/src/stdio/sprintf.c
+    musl/src/stdio/vprintf.c
+    musl/src/stdio/vsnprintf.c
+    musl/src/stdio/__uflow.c
+    musl/src/stdio/__toread.c
+    musl/src/stdio/__stdio_exit.c
+    musl/src/stdio/__lockfile.c
+    musl/src/stdio/ofl.c
+    musl/src/internal/shgetc.c
+    musl/src/internal/intscan.c
+    musl/src/internal/floatscan.c
+)
+
 list(APPEND MULS_SOURCE
     ${MUSL_TIME_SOURCE}
-    ${MUSL_THREAD_SOURCE})
+    ${MUSL_THREAD_SOURCE}
+    ${MUSL_MATH_SOURCE}
+    ${MUSL_FENV_SOURCE}
+    ${MUSL_STDLIB_SOURCE}
+    ${MUSL_IPC_SOURCE}
+    )
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
@@ -89,6 +141,8 @@ target_compile_options(musllibc PUBLIC
         -Wno-discarded-qualifiers
         -Wno-implicit-fallthrough
         -Wno-cast-function-type
+        -Wno-float-conversion
+        -Wno-unknown-pragmas
         )
 if (${OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)

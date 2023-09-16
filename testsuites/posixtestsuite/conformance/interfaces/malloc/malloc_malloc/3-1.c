@@ -1,6 +1,5 @@
 #define _XOPEN_SOURCE 600
 #include <stdio.h>
-//#include <sys/types.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -13,24 +12,24 @@
 
 int malloc_malloc_3_1()
 {
-	size_t mallocSize = MALLOC_SIZE_MAX / 0xffffff;
-	void *ptr1 = malloc(mallocSize);
-	if (ptr1 == NULL) {
-		printf(TNAME " Error at malloc(): malloc ptr1 failed.\n");
-		return PTS_UNRESOLVED;
-	}
+    size_t mallocSize = MALLOC_SIZE_MAX / 0xffffff;
+    void *ptr1 = malloc(mallocSize);
+    if (ptr1 == NULL) {
+        printf(TNAME " Error at malloc(): malloc ptr1 failed.\n");
+        return PTS_UNRESOLVED;
+    }
 
-	void *ptr2 = malloc(mallocSize * (0xffffff - 1));
-	if (ptr2 != NULL) {
-		PTS_FREE(ptr1);
-		PTS_FREE(ptr2);
-		printf(TNAME " Error at malloc(): malloc ptr2 failed.\n");
-		return PTS_FAIL;
-	}
+    void *ptr2 = malloc(mallocSize * (0xffffff - 1));
+    if (ptr2 != NULL) {
+        PTS_FREE(ptr1);
+        PTS_FREE(ptr2);
+        printf(TNAME " Error at malloc(): malloc ptr2 failed.\n");
+        return PTS_FAIL;
+    }
 
-	PTS_FREE(ptr1);
-	printf("Test PASSED\n");
-	return PTS_PASS;
+    PTS_FREE(ptr1);
+    printf("Test PASSED\n");
+    return PTS_PASS;
 }
 
 

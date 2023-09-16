@@ -17,12 +17,12 @@
 
 void *__libc_malloc(size_t n)
 {
-	return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
+    return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
 }
 
 static void *default_malloc(size_t n)
 {
-	return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
+    return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
 }
 
 weak_alias(default_malloc, malloc);

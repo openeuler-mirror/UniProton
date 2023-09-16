@@ -15,7 +15,9 @@
  * should use scalbn() instead.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <math.h>
 
 double scalb(double x, double fn)

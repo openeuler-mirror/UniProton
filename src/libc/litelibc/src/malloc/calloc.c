@@ -17,15 +17,15 @@
 
 void *calloc(size_t m, size_t n)
 {
-	if (n && m > (size_t)-1/n) {
-		return 0;
-	}
-	n *= m;
-	void *p = malloc(n);
-	if (!p) {
-		return p;
-	}
-	return memset(p, 0, ALIGN(n, OS_FSC_MEM_SIZE_ALIGN));
+    if (n && m > (size_t)-1/n) {
+        return 0;
+    }
+    n *= m;
+    void *p = malloc(n);
+    if (!p) {
+        return p;
+    }
+    return memset(p, 0, ALIGN(n, OS_FSC_MEM_SIZE_ALIGN));
 }
 
 

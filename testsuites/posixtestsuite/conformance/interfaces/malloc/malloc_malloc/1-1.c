@@ -1,6 +1,5 @@
 #define _XOPEN_SOURCE 600
 #include <stdio.h>
-//#include <sys/types.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -12,15 +11,15 @@
 
 int malloc_malloc_1_1()
 {
-	void *ptr = malloc(0);
+    void *ptr = malloc(0);
 
-	if (ptr != NULL) {
-		PTS_FREE(ptr);
-		printf(TNAME " Error at malloc(): malloc failed.\n");
-		return PTS_FAIL;
-	}
-	
-	printf("Test PASSED\n");
-	return PTS_PASS;
+    if (ptr != NULL) {
+        PTS_FREE(ptr);
+        printf(TNAME " Error at malloc(): malloc failed.\n");
+        return PTS_FAIL;
+    }
+
+    printf("Test PASSED\n");
+    return PTS_PASS;
 }
 

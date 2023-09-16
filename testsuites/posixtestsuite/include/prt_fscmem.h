@@ -69,12 +69,12 @@ enum MemAlign {
 /*
  * free ptr
  */
-#define PTS_FREE(ptr) do {		\
-		if ((ptr) != NULL) {	\
-			free(ptr);			\
-			(ptr) = NULL;		\
-		}						\
-	} while(0)
+#define PTS_FREE(ptr) do {      \
+        if ((ptr) != NULL) {    \
+            free(ptr);          \
+            (ptr) = NULL;       \
+        }                       \
+    } while(0)
 
 
 size_t malloc_usable_size(void *p);

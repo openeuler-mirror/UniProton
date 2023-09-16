@@ -17,6 +17,6 @@
 
 void *aligned_alloc(size_t align, size_t len)
 {
-	return PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, len, align);
+    return PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, len, align);
 }
 

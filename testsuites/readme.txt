@@ -14,3 +14,7 @@ sh build_app.sh sim
 qemu-system-arm -M mps2-an386 -cpu cortex-m4 --semihosting -kernel Uniproton_xxx_test.bin 
 
 注意: qemu不支持rhealstone测试, 默认不编译
+
+调试:
+qemu-system-arm -M mps2-an386 -cpu cortex-m4 --semihosting -kernel Uniproton_xxx_test.bin -s -S
+gdb Uniproton_xxx_test.elf

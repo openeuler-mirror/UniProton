@@ -19,25 +19,27 @@
 
 void *realloc(void *p, size_t n)
 {
-	void *newPtr = NULL;
-	size_t oldSize;
-	struct TagFscMemCtrl *currBlk = NULL; /* 当前内存块指针 */
-	
-	if (!p) {
-		return malloc(n);
-	}
-	if (n == 0) {
-		free(p);
-		return NULL;
-	}
-	currBlk = (struct TagFscMemCtrl *)OsMemGetHeadAddr((uintptr_t)p);
-	oldSize = malloc_usable_size(p);
-	if (oldSize == n) {
-		return p;
-	}
-	newPtr = malloc(n);
-	memcpy(newPtr, p, (n < oldSize) ? n : oldSize);
-	free(p);
-	return newPtr;
+    void *newPtr = NULL;
+    size_t oldSize;
+
+    if (!p) {
+        return malloc(n);
+    }
+    if (n == 0) {
+        free(p);
+        return NULL;
+    }
+
+    oldSize = malloc_usable_size(p);
+    if (oldSize == n) {
+        return p;
+    }
+    newPtr = malloc(n);
+    if (!newPtr) {
+        return NULL;
+    }
+    memcpy(newPtr, p, (n < oldSize) ? n : oldSize);
+    free(p);
+    return newPtr;
 }
 

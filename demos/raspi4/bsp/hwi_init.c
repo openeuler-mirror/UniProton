@@ -76,12 +76,11 @@ void OsSicrInit(void)
     union SicrWaker sicrWaker;
     uintptr_t regAddr;
     U32 intId;
-    
+
     regAddr = GICR_WAKER_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
     sicrWaker.value = GIC_REG_READ(regAddr);
     sicrWaker.bits.sleepReq = 0;
     GIC_REG_WRITE(regAddr, sicrWaker.value);
-    
     sicrWaker.value = GIC_REG_READ(regAddr);
     while (sicrWaker.bits.isSleep == 1) {
         sicrWaker.value = GIC_REG_READ(regAddr);
@@ -168,18 +167,18 @@ void OsSiccCfgPriorityMask(void)
 U32 OsSiccInit(void)
 {
     U32 ret;
-    
+
     ret = OsSiccEnableSre();
     if (ret != OS_OK) {
         return ret;
     }
-    
+
     OsSiccCfgIntPreempt();
-    
+
     OsSiccEnableGroup1();
-    
+
     OsSiccCfgPriorityMask();
-    
+
     return OS_OK;
 }
 
@@ -240,18 +239,18 @@ U32 OsSicInitLocal(void)
 {
     U32 ret;
     U32 intId;
-    
+
     OsSicrInit();
-    
+
     ret = OsSiccInit();
     if (ret != OS_OK) {
         return ret;
     }
-    
+
     for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
         OsSicSetGroup(intId, SIC_GROUP_G1NS);
     }
-    
+
     return OS_OK;
 }
 
@@ -307,32 +306,32 @@ void OsGicInitCpuInterface(void)
     int i;
     U32 val;
 
-    GIC_REG_WRITE(0xFFFFFFFF, GICD_ICACTIVERn);
-    GIC_REG_WRITE(0xFFFF0000, GICD_ICENABLERn);
-    GIC_REG_WRITE(0x0000FFFF, GICD_ISENABLERn);
+    GIC_REG_WRITE(GICD_ICACTIVERn, 0xFFFFFFFF);
+    GIC_REG_WRITE(GICD_ICENABLERn, 0xFFFF0000);
+    GIC_REG_WRITE(GICD_ISENABLERn, 0x0000FFFF);
 
     for (i = 0; i < 32; i += 4) {
-        GIC_REG_WRITE(0xA0A0A0A0, GICD_IPRIORITYn + i);
+        GIC_REG_WRITE(GICD_IPRIORITYn + i, 0xA0A0A0A0);
     }
 
-    GIC_REG_WRITE(0xF0, GICC_PMR);
+    GIC_REG_WRITE(GICC_PMR, 0xF0);
     val = GIC_REG_READ(GICC_CTLR);
     val &= ~GICC_CTLR_BYPASS_MASK;
     val |= GICC_CTLR_ENABLE_MASK;
-    GIC_REG_WRITE(val, GICC_CTLR);
+    GIC_REG_WRITE(GICC_CTLR, val);
 }
 #endif
 U32 OsHwiInit(void)
 {
 #if (OS_GIC_VER == 3)
     U32 ret;
-    
+
     ret = OsSicInitLocal();
     if (ret != OS_OK) {
         return ret;
     }
-    
-    if(OsGetCoreID() == 0) {
+
+    if(PRT_GetCoreID() == 0) {
         OsSicInitGlobal();
     }
 #elif (OS_GIC_VER == 2)

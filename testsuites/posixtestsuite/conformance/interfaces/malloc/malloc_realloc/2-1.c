@@ -1,6 +1,5 @@
 #define _XOPEN_SOURCE 600
 #include <stdio.h>
-//#include <sys/types.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -13,13 +12,14 @@
 
 int malloc_realloc_2_1()
 {
-	U32 *newPtr = realloc(NULL, sizeof(U32) * MALLOC_SIZE_NEW);
-	if (!newPtr) {
-		printf(TNAME " Error at realloc(): realloc failed.\n");
-		return PTS_FAIL;
-	}
-	
-	printf("Test PASSED\n");
-	return PTS_PASS;
+    U32 *newPtr = realloc(NULL, sizeof(U32) * MALLOC_SIZE_NEW);
+    if (!newPtr) {
+        printf(TNAME " Error at realloc(): realloc failed.\n");
+        return PTS_FAIL;
+    }
+
+    printf("Test PASSED\n");
+    PTS_FREE(newPtr);
+    return PTS_PASS;
 }
 

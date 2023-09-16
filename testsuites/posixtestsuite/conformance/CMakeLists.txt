@@ -165,10 +165,10 @@ file(GLOB ALL_PTHREAD_SRC
 file(GLOB ALL_MALLOC_SRC
     ./interfaces/malloc/malloc_malloc/[0-9]**.c
     ./interfaces/malloc/malloc_calloc/[0-9]**.c
-	./interfaces/malloc/malloc_memalign/[0-9]**.c
-	./interfaces/malloc/malloc_realloc/[0-9]**.c
-	./interfaces/malloc/malloc_reallocarray/[0-9]**.c
-	./interfaces/malloc/malloc_usable_size/[0-9]**.c
+    ./interfaces/malloc/malloc_memalign/[0-9]**.c
+    ./interfaces/malloc/malloc_realloc/[0-9]**.c
+    ./interfaces/malloc/malloc_reallocarray/[0-9]**.c
+    ./interfaces/malloc/malloc_usable_size/[0-9]**.c
 )
 
 list(REMOVE_ITEM ALL_TIME_SRC 
