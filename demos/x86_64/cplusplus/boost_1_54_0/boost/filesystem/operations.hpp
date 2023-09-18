@@ -1026,7 +1026,7 @@ namespace detail
 
     ~filesystem_error() throw() {}
 
-    const path& path1() const
+    /*const path& path1() const
     {
       static const path empty_path;
       return m_imp_ptr.get() ? m_imp_ptr->m_path1 : empty_path ;
@@ -1035,7 +1035,7 @@ namespace detail
     {
       static const path empty_path;
       return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path ;
-    }
+    }*/
 
     const char* what() const throw()
     {
