@@ -9,7 +9,7 @@
 //  See library home page at http://www.boost.org/libs/filesystem
 
 //--------------------------------------------------------------------------------------// 
-
+#include "prt_cplusplus_adapter.hpp"
 //  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
 #if !(defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
@@ -66,6 +66,11 @@ using boost::system::error_category;
 using boost::system::system_category;
 using std::string;
 using std::wstring;
+
+int statStub(const char *pathname, struct stat *statbuf)
+{
+    return 0;
+}
 
 # ifdef BOOST_POSIX_API
 
@@ -1605,7 +1610,7 @@ namespace detail
 #   ifdef BOOST_POSIX_API
 
     struct stat path_stat;
-    if (::stat(p.c_str(), &path_stat)!= 0)
+    if (::statStub(p.c_str(), &path_stat)!= 0)
     {
       if (ec != 0)                            // always report errno, even though some
         ec->assign(errno, system_category());   // errno values are not status_errors

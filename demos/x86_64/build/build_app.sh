@@ -4,7 +4,7 @@ export TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64
 # x86_64 UniPorton_test_posix_time_interface UniPorton_test_proxy_posix_interface
 # task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency
 # linuxTest ethercatTest
-export ALL="linuxTest ethercatTest"
+export ALL="linuxTest ethercatTest x86_64"
 
 sh ./build_static.sh x86_64
 sh ./build_openamp.sh $TOOLCHAIN_PATH

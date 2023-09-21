@@ -9,6 +9,7 @@
 
 //  Old standard library configurations, particularly MingGW, don't support wide strings.
 //  Report this with an explicit error message.
+#include "prt_cplusplus_adapter.hpp"
 #include <boost/config.hpp>
 # if defined( BOOST_NO_STD_WSTRING )
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support

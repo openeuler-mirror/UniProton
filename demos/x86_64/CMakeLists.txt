@@ -32,6 +32,7 @@ include_directories(
     /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
     /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
     ../../output/libc/include
+    ./cplusplus/boost_1_54_0
 )
 
 link_directories(./libs)
@@ -58,6 +59,7 @@ endif()
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
+add_subdirectory(cplusplus)
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
@@ -91,7 +93,7 @@ endif()
 
 #rpmsg
 if (${APP} MATCHES "x86_64")
-    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
     add_executable(${APP} ${OBJS})
 else()
     add_subdirectory(testsuites)
