@@ -29,6 +29,10 @@
 #ifndef PTHREAD_KEYS_MAX
 #define PTHREAD_KEYS_MAX 32
 #endif
+#include "prt_signal.h"
+#if defined(OS_OPTION_LINUX)
+#include <linux/kthread.h>
+#endif
 #endif
 
 struct TagOsRunQue {
@@ -81,14 +85,16 @@ struct TagTskCb {
     struct TagListObject semBList;
     /* 记录条件变量的等待线程 */
     struct TagListObject condNode;
-
+#if defined(OS_OPTION_LINUX)
+    /* 等待队列指针 */
+    struct TagListObject waitList;
+#endif
 #if defined(OS_OPTION_EVENT)
     /* 任务事件 */
     U32 event;
     /* 任务事件掩码 */
     U32 eventMask;
 #endif
-
     /* 任务记录的最后一个错误码 */
     U32 lastErr;
     /* 任务恢复的时间点(单位Tick) */
@@ -110,6 +116,22 @@ struct TagTskCb {
     /* pthread key */
     void *tsd[PTHREAD_KEYS_MAX];
     U32 tsdUsed;
+    /* 设置的阻塞信号掩码 */
+    signalSet sigMask;
+    /* 设置的等待信号掩码 */
+    signalSet sigWaitMask;
+    /* 未决信号掩码 */
+    signalSet sigPending;
+    /* 信号信息 */
+    struct TagListObject sigInfoList;
+    /* 信号处理函数 */
+    _sa_handler sigVectors[PRT_SIGNAL_MAX];
+    /* 保存任务的原SP */
+    void *oldStackPointer;
+    int holdSignal;
+#if defined(OS_OPTION_LINUX)
+    struct task_struct *kthreadTsk;
+#endif
 #endif
 };
 
@@ -187,7 +209,12 @@ extern volatile TskCoresleep g_taskCoreSleep;
 // 保留一个idle task。最大任务handle为FE，FF表示硬中断线程。
 #define MAX_TASK_NUM                   ((1U << OS_TSK_TCB_INDEX_BITS) - 2)  // 254
 #define OS_TSK_BLOCK                   (OS_TSK_DELAY | OS_TSK_PEND | OS_TSK_SUSPEND  | OS_TSK_QUEUE_PEND | \
-        OS_TSK_EVENT_PEND)
+        OS_TSK_EVENT_PEND | OS_TSK_WAITQUEUE_PEND)
+
+#if defined(OS_OPTION_LINUX)
+#define KTHREAD_TSK_STATE_TST(tsk, tskState)   (((tsk)->kthreadTsk->state == (tskState)))
+#define KTHREAD_TSK_STATE_SET(tsk, tskState)   ((tsk)->kthreadTsk->state = (tskState))
+#endif
 
 #define OS_TSK_SUSPEND_READY_BLOCK (OS_TSK_SUSPEND)
 // 设置任务优先级就绪链表主BitMap中Bit位，每32个优先级对应一个BIT位，即Bit0(优先级0~31),Bit1(优先级32~63),依次类推。
@@ -226,7 +253,7 @@ extern void OsTskScheduleFastPs(uintptr_t intSave);
 OS_SEC_ALW_INLINE INLINE void OsTskHighestSet(void)
 {
     U32 rdyListIdx;
-    struct TagListObject *readyList = NULL;
+    struct TagListObject *readyList;
     U32 childBitMapIdx;
 
     /* find the highest priority */

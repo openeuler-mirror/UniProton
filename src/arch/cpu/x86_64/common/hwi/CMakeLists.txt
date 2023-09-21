@@ -1,0 +1,6 @@
+add_library_ex(prt_hwi_init.c)
+add_library_ex(prt_reset_vector.S)
+add_library_ex(prt_dispatch.S)
+add_library_ex(prt_vector.S)
+add_library_ex(prt_lapic.c)
+add_library_ex(prt_idt.c)

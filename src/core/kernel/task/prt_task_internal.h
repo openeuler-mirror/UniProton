@@ -16,6 +16,7 @@
 #define PRT_TASK_INTERNAL_H
 
 #include "prt_task_external.h"
+#include "prt_signal_external.h"
 #include "prt_asm_cpu_external.h"
 
 /*
@@ -39,13 +40,28 @@ extern void OsTskIdleBgd(void);
 extern U32 OsTaskDelStatusCheck(struct TagTskCb *taskCb);
 extern void OsTskRecycle(void);
 extern void OsTskStackInit(U32 stackSize, uintptr_t topStack);
+extern U32 OsTaskCreateParaCheck(const TskHandle *taskPid, struct TskInitParam *initParam);
+void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *initParam, uintptr_t topStackAddr,
+    uintptr_t curStackSize, struct TagTskCb *taskCb);
+U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb, uintptr_t **topStackOut,
+    uintptr_t *curStackSize);
 
 OS_SEC_ALW_INLINE INLINE void OsMoveTaskToReady(struct TagTskCb *taskCb)
 {
+    if (TSK_STATUS_TST(taskCb, OS_TSK_DELAY_INTERRUPTIBLE)) {
+        /* 可中断delay, 属于定时等待的任务时候，去掉其定时等待标志位*/
+        if (TSK_STATUS_TST(taskCb, OS_TSK_TIMEOUT)) {
+            OS_TSK_DELAY_LOCKED_DETACH(taskCb);
+        }
+        TSK_STATUS_CLEAR(taskCb, OS_TSK_TIMEOUT | OS_TSK_DELAY_INTERRUPTIBLE);
+    }
+
     /* If task is not blocked then move it to ready list */
     if ((taskCb->taskStatus & OS_TSK_BLOCK) == 0) {
         OsTskReadyAdd(taskCb);
-
+#if defined(OS_OPTION_LINUX)
+        KTHREAD_TSK_STATE_SET(taskCb, TASK_RUNNING);
+#endif   
         if ((OS_FLG_BGD_ACTIVE & UNI_FLAG) != 0) {
             OsTskSchedule();
             return;

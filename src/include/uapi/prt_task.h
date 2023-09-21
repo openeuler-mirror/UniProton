@@ -26,6 +26,10 @@
 #include "./hw/armv8/os_cpu_armv8.h"
 #endif
 
+#if ((OS_HARDWARE_PLATFORM == OS_X86_64))
+#include "./hw/x86_64/os_cpu_x86_64.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -467,6 +471,13 @@ extern "C" {
 /*
  * 任务或任务控制块状态标志。
  *
+ * 任务被阻塞（等待信号）。
+ */
+#define OS_TSK_WAIT_SIGNAL 0x0002
+
+/*
+ * 任务或任务控制块状态标志。
+ *
  * 任务被挂起。
  */
 #define OS_TSK_SUSPEND 0x0004
@@ -507,6 +518,13 @@ extern "C" {
 #define OS_TSK_RUNNING 0x0080
 
 /*
+ * 任务有信号在准备处理。
+ *
+ * OS_TSK_HOLD_SIGNAL
+ */
+#define OS_TSK_HOLD_SIGNAL 0x0400
+
+/*
  * 任务或任务控制块状态标志。
  *
  * OS_TSK_EVENT_PEND      --- 任务阻塞于等待读事件。
@@ -533,6 +551,20 @@ extern "C" {
  * OS_TSK_QUEUE_BUSY      --- 队列正在读写数据。
  */
 #define OS_TSK_QUEUE_BUSY 0x4000
+
+/*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务被延时，可被唤醒。
+ */
+#define OS_TSK_DELAY_INTERRUPTIBLE 0x8000
+
+/*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务在等待队列中
+ */
+#define OS_TSK_WAITQUEUE_PEND 0x10000
 
 /*
  * 任务模块的错误码定义。

@@ -1,0 +1,8 @@
+include_directories(include)
+if(${CONFIG_OS_ARCH_X86_64})
+    include_directories(arch/x86_64)
+    add_library_ex(arch/x86_64/gdbstub.c)
+endif()
+add_library_ex(rsp_utils.c)
+add_library_ex(gdbstub_common.c)
+add_library_ex(ringbuffer.c)

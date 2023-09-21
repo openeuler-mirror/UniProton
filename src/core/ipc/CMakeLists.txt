@@ -11,4 +11,5 @@ add_subdirectory(sem)
 
 if(${CONFIG_OS_OPTION_POSIX})
     add_subdirectory(rwlock)
+    add_subdirectory(signal)
 endif()

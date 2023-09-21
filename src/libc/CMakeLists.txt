@@ -10,9 +10,9 @@ file(GLOB_RECURSE LITELIBC_SOURCE litelibc/src/*.c litelibc/internal/*.c)
 # 需要编译的musl的.c文件
 set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/sleep.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/usleep.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/c_locale.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/__lctrans.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/langinfo.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/libc.c
     )
 
@@ -50,6 +50,29 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
+if (${PLAM_TYPE} STREQUAL "x86_64")
+    list(APPEND  MULS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memcpy.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memmove.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/stpcpy.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcpy.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdlib/strtol.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
+    )
+else()
+    list(REMOVE_ITEM LITELIBC_SOURCE
+        "${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c"
+    )
+endif()
+
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
 file(GLOB MUSL_THREAD_SOURCE musl/src/thread/*.c)
 file(GLOB MUSL_IPC_SOURCE musl/src/ipc/*.c)
@@ -61,6 +84,7 @@ list(REMOVE_ITEM MUSL_TIME_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/utime.c
     # 当前不支持文件系统、环境变量获取
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/getdate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/strftime.c
 )
 list(REMOVE_ITEM MUSL_THREAD_SOURCE
     # 当前不支持syscall、tls、vmclock
@@ -122,13 +146,40 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/internal/floatscan.c
 )
 
-list(APPEND MULS_SOURCE
-    ${MUSL_TIME_SOURCE}
-    ${MUSL_THREAD_SOURCE}
-    ${MUSL_MATH_SOURCE}
-    ${MUSL_FENV_SOURCE}
-    ${MUSL_STDLIB_SOURCE}
-    ${MUSL_IPC_SOURCE}
+# 需要编译的signal相关.c文件
+set(MULS_SIGNAL_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigfillset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigemptyset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigaddset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigdelset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
+    )
+
+    file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
+    list(REMOVE_ITEM MUSL_EXIT_SOURCE
+        # 暂不支持文件系统，删除该接口
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/assert.c
+    )
+    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
+        list(APPEND MUSL_EXIT_SOURCE
+            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/arm/__aeabi_atexit.c
+        )
+    endif()
+    # 临时解决缺少__libc_malloc, 回合主线时如果malloc文件夹已合入则可删除
+    list(APPEND MUSL_EXIT_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
+    )
+    
+    list(APPEND MULS_SOURCE
+        ${MUSL_TIME_SOURCE}
+        ${MUSL_THREAD_SOURCE}
+        ${MULS_SIGNAL_SOURCE}
+        ${MUSL_EXIT_SOURCE}
+        ${MUSL_MATH_SOURCE}
+        ${MUSL_FENV_SOURCE}
+        ${MUSL_STDLIB_SOURCE}
+        ${MUSL_IPC_SOURCE}
     )
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
@@ -144,7 +195,7 @@ target_compile_options(musllibc PUBLIC
         -Wno-float-conversion
         -Wno-unknown-pragmas
         )
-if (${OS_POSIX_SET_TZDST})
+if (${CONFIG_OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)
 endif()
 

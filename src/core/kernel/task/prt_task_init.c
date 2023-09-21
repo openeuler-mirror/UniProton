@@ -15,6 +15,7 @@
 #include "prt_exc_external.h"
 #include "prt_task_internal.h"
 #include "prt_amp_task_internal.h"
+#include "prt_signal_external.h"
 
 /* Unused TCBs and ECBs that can be allocated. */
 OS_SEC_DATA struct TagListObject g_tskCbFreeList = LIST_OBJECT_INIT(g_tskCbFreeList);
@@ -148,7 +149,7 @@ OS_SEC_L4_TEXT U32 OsActivate(void)
  */
 OS_SEC_L4_TEXT void OsTskEntry(TskHandle taskId)
 {
-    struct TagTskCb *taskCb = NULL;
+    struct TagTskCb *taskCb;
     uintptr_t intSave;
 
     (void)taskId;
@@ -169,13 +170,16 @@ OS_SEC_L4_TEXT void OsTskEntry(TskHandle taskId)
     OsTaskExit(taskCb);
 }
 
+OS_SEC_ALW_INLINE INLINE bool OsCheckAddrOffsetOverflow(uintptr_t base, size_t size)
+{
+    return (base + size) < base;
+}
+
 /*
  * 描述：创建任务参数检查
  */
 OS_SEC_L4_TEXT U32 OsTaskCreateParaCheck(const TskHandle *taskPid, struct TskInitParam *initParam)
 {
-    U64 stackAddrLen;
-
     if ((taskPid == NULL) || (initParam == NULL)) {
         return OS_ERRNO_TSK_PTR_NULL;
     }
@@ -201,9 +205,7 @@ OS_SEC_L4_TEXT U32 OsTaskCreateParaCheck(const TskHandle *taskPid, struct TskIni
     }
     /* 使用用户内存，则需要包含OS使用的资源，size最小值要包含OS的消耗 */
     if (initParam->stackAddr != 0) {
-        /* 保证栈空间在4G范围内不溢出 */
-        stackAddrLen = (U64)(initParam->stackAddr) + (U64)(initParam->stackSize);
-        if (stackAddrLen > OS_MAX_U32) {
+        if (OsCheckAddrOffsetOverflow(initParam->stackAddr, initParam->stackSize)) {
             return OS_ERRNO_TSK_STACKADDR_TOO_BIG;
         }
     }
@@ -246,7 +248,7 @@ OS_SEC_L4_TEXT void OsTskStackInit(U32 stackSize, uintptr_t topStack)
     *((U32 *)(topStack)) = OS_TSK_STACK_TOP_MAGIC;
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb,
+OS_SEC_L4_TEXT U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitParam *initParam, struct TagTskCb *taskCb,
                                                   uintptr_t **topStackOut, uintptr_t *curStackSize)
 {
     U32 ret = OS_OK;
@@ -281,7 +283,7 @@ OS_SEC_ALW_INLINE INLINE U32 OsTaskCreateRsrcInit(U32 taskId, struct TskInitPara
     return OS_OK;
 }
 
-OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *initParam,
+OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *initParam,
     uintptr_t topStackAddr, uintptr_t curStackSize, struct TagTskCb *taskCb)
 {
     /* Initialize the task's stack */
@@ -304,6 +306,23 @@ OS_SEC_ALW_INLINE INLINE void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskI
     INIT_LIST_OBJECT(&taskCb->semBList);
     INIT_LIST_OBJECT(&taskCb->pendList);
     INIT_LIST_OBJECT(&taskCb->timerList);
+
+#if defined(OS_OPTION_POSIX)
+    taskCb->tsdUsed = 0;
+    taskCb->state = PTHREAD_CREATE_JOINABLE;
+    taskCb->cancelState = PTHREAD_CANCEL_ENABLE;
+    taskCb->cancelType = PTHREAD_CANCEL_DEFERRED;
+    taskCb->cancelPending = 0;
+    taskCb->cancelBuf = NULL;
+    taskCb->retval = NULL;
+    taskCb->joinCount = 0;
+    taskCb->joinableSem = 0;
+    taskCb->sigMask = 0;
+    taskCb->sigWaitMask = 0;
+    taskCb->sigPending = 0;
+    INIT_LIST_OBJECT(&taskCb->sigInfoList);
+    OsInitSigVectors(taskCb);
+#endif
 
     return;
 }

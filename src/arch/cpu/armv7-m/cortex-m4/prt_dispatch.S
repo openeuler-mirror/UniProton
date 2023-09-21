@@ -26,6 +26,7 @@
     .global  OsRestoreGeneralR
     .global  OsTaskSwtichHook
     .global  OsViSwitchRet
+    .global  OsTskContextLoad
 
     .type PRT_HwiLock, function
     .type PRT_HwiUnLock, function
@@ -49,6 +50,7 @@
     .type OsTaskEnd,function
     .type OsTaskSwtichHook,function
     .type OsViDispatch,function
+    .type OsTskContextLoad, function
 
     .extern  g_runningTask
     .extern  g_highestTask
@@ -325,5 +327,48 @@ OsTaskSwtichHook:
     LDR     R1, [R7, #16]
     LDR     LR, =OsTaskLoad
     BX      R3
+
+OsTskContextLoad:
+    LDR    R0, [R0]
+    @ R0 is stackPointer
+    MOV    SP, R0
+    LDR    R4,  [SP], #4
+    LDR    R5,  [SP], #4
+    LDR    R6,  [SP], #4
+    LDR    R7,  [SP], #4
+    LDR    R8,  [SP], #4
+    LDR    R9,  [SP], #4
+    LDR    R10, [SP], #4
+    LDR    R11, [SP], #4
+
+    @ load basePri
+    LDR    R12, [SP], #4
+    MSR    BASEPRI, R12
+
+    @ skip excReturn
+    ADD    SP,  SP,   #4
+    LDR    R0,  [SP], #4
+    LDR    R1,  [SP], #4
+    LDR    R2,  [SP], #4
+    LDR    R3,  [SP], #4
+
+    @ temporary skip R12
+    ADD    SP,  SP,   #4
+    LDR    LR,  [SP], #4
+    @ temporary skip PC
+    ADD    SP,  SP,   #4
+    @ load xPSR
+    LDR    R12, [SP], #4
+    MSR    xPSR, R12
+
+    @ PC = PC + 1
+    LDR    R12, [SP, #-8]
+    ADD    R12, R12,  #1
+    STR    R12, [SP, #-8]
+
+    @ load R12
+    LDR    R12, [SP, #-16]
+    @ load PC
+    LDR    PC,  [SP, #-8]
     .align
     .end

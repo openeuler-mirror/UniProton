@@ -31,6 +31,12 @@ OS_SEC_L4_TEXT void OsTaskDeleteResInit(struct TagTskCb *taskCb)
         OsTskReadyDel(taskCb);
     }
 
+#if defined(OS_OPTION_LINUX)
+    if ((OS_TSK_WAITQUEUE_PEND & taskCb->taskStatus) != 0) {
+        ListDelete(&taskCb->waitList);
+    }
+#endif
+
     taskCb->taskStatus &= (~(OS_TSK_SUSPEND));
     taskCb->taskStatus |= OS_TSK_UNUSED;
 
@@ -45,6 +51,9 @@ OS_SEC_L4_TEXT U32 OsTaskDelete(TskHandle taskPid)
     U32 ret;
     uintptr_t intSave;
     struct TagTskCb *taskCb = NULL;
+#if defined(OS_OPTION_LINUX)
+    struct task_struct *kthreadTsk = NULL;
+#endif
 
     if (taskPid == IDLE_TASK_ID) {
         return OS_ERRNO_TSK_OPERATE_IDLE;
@@ -57,6 +66,10 @@ OS_SEC_L4_TEXT U32 OsTaskDelete(TskHandle taskPid)
     intSave = OsIntLock();
 
     taskCb = GET_TCB_HANDLE(taskPid);
+#if defined(OS_OPTION_LINUX)
+    kthreadTsk = taskCb->kthreadTsk;
+    taskCb->kthreadTsk = NULL;
+#endif
     if (TSK_IS_UNUSED(taskCb)) {
         OsIntRestore(intSave);
         return OS_ERRNO_TSK_NOT_CREATED;
@@ -85,9 +98,7 @@ OS_SEC_L4_TEXT U32 OsTaskDelete(TskHandle taskPid)
 
         if (OS_INT_INACTIVE) {
             OsTaskTrap();
-            OsIntRestore(intSave);
-
-            return OS_OK;
+            goto release_and_exit;
         }
     } else {
         taskCb->taskStatus = OS_TSK_UNUSED;
@@ -95,8 +106,16 @@ OS_SEC_L4_TEXT U32 OsTaskDelete(TskHandle taskPid)
         OsTskResRecycle(taskCb);
     }
 
+release_and_exit:
     OsIntRestore(intSave);
-
+#if defined(OS_OPTION_LINUX)
+    if (kthreadTsk != NULL) {
+        if (kthreadTsk->name != NULL) {
+            OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthreadTsk->name));
+        }
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthreadTsk));
+    }
+#endif
     /* if deleteing current task this is unreachable. */
     return OS_OK;
 }

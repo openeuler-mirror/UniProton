@@ -13,6 +13,10 @@ file(GLOB ALL_TIME_SRC
     ./interfaces/timer_settime/speculative/[0-9]**.c
     ./interfaces/timer_gettime/[0-9]**.c
     ./interfaces/timer_gettime/speculative/[0-9]**.c
+    ./interfaces/time/[0-9]**.c
+    ./interfaces/gettimeofday/[0-9]**.c
+    ./interfaces/usleep/[0-9]**.c
+    ./interfaces/getpagesize/[0-9]**.c
     
     ./interfaces/asctime/[0-9]**.c
     ./interfaces/clock/[0-9]**.c
@@ -412,10 +416,30 @@ list(REMOVE_ITEM ALL_PTHREAD_SRC
 
 )
 
-list(APPEND OBJS 
-    $<TARGET_OBJECTS:bsp>
-    $<TARGET_OBJECTS:config>
+list(APPEND ALL_SIGNAL_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigwait/sigwait_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigprocmask/sigprocmask_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigaction/sigaction_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigfillset/sigfillset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigaddset/sigaddset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/sigdelset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
 )
+
+list(APPEND ALL_PROXY_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/proxy/1-1.c
+)
+
+file(GLOB_RECURSE ALL_EXIT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/interfaces/exit/*.c)
+
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse")
+    include_directories(../include)
+elseif(${CPU_TYPE} STREQUAL "m4")
+    list(APPEND OBJS 
+        $<TARGET_OBJECTS:bsp>
+        $<TARGET_OBJECTS:config>
+    )
+endif()
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface")
     set(BUILD_APP "UniPorton_test_posix_time_interface")
@@ -429,9 +453,42 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
 elseif (${APP} STREQUAL "UniPorton_test_posix_malloc_interface")
     set(BUILD_APP "UniPorton_test_posix_malloc_interface")
     set(ALL_SRC runMallocTest.c ${ALL_MALLOC_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
+    set(BUILD_APP "UniPorton_test_posix_signal_interface")
+    set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+    set(BUILD_APP "UniPorton_test_proxy_posix_interface")
+    set(ALL_SRC runProxyTest.c ${ALL_PROXY_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_posix_exit_interface")
+    set(BUILD_APP "UniPorton_test_posix_exit_interface")
 else()
     return()
 endif()
 
-add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
-target_link_libraries(${BUILD_APP} PUBLIC testsuite_support)
+if (${APP} STREQUAL "UniPorton_test_posix_exit_interface")
+    set(ALL_EXE "")
+    foreach(EXIT_SRC ${ALL_EXIT_SRC})
+        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/interfaces/exit/" "" FILE_NAME ${EXIT_SRC})
+        string(REPLACE "/" "_" TMP_FILE_NAME1 ${FILE_NAME})
+        string(REPLACE "-" "_" TMP_FILE_NAME2 ${TMP_FILE_NAME1})
+        string(REPLACE ".c" "" RUN_TEST ${TMP_FILE_NAME2})
+        if(${CPU_TYPE} STREQUAL "x86_64")
+            add_library("UniPorton_test_posix_exit_${RUN_TEST}" OBJECT ${ALL_SRC})
+        elseif(${CPU_TYPE} STREQUAL "m4")
+            add_executable("UniPorton_test_posix_exit_${RUN_TEST}" ${EXIT_SRC} runExitTest.c ${CXX_LIB} ${OBJS})
+            target_link_libraries("UniPorton_test_posix_exit_${RUN_TEST}" PUBLIC testsuite_support)
+        endif()
+        string(TOUPPER ${RUN_TEST} DEF_TEST)
+        target_compile_definitions("UniPorton_test_posix_exit_${RUN_TEST}" PRIVATE ${DEF_TEST})
+        list(APPEND ALL_EXE "UniPorton_test_posix_exit_${RUN_TEST}")
+    endforeach()
+
+    add_custom_target(${BUILD_APP} ALL COMMAND echo 'build done' DEPENDS  ${ALL_EXE})
+else()
+    if(${CPU_TYPE} STREQUAL "x86_64")
+        add_library(posixTest OBJECT ${ALL_SRC})
+    elseif(${CPU_TYPE} STREQUAL "m4")
+        add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
+        target_link_libraries(${BUILD_APP} PUBLIC testsuite_support)
+    endif()
+endif()

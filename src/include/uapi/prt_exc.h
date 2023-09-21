@@ -26,6 +26,10 @@
 #include "./hw/armv8/os_exc_armv8.h"
 #endif
 
+#if (OS_HARDWARE_PLATFORM == OS_X86_64)
+#include "./hw/x86_64/os_exc_x86_64.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {

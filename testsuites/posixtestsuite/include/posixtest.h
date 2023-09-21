@@ -15,4 +15,7 @@
 #define PTS_UNSUPPORTED 4
 #define PTS_UNTESTED    5
 
+#include "prt_buildef.h"
+#ifdef OS_ARCH_ARMV7_M
 #include "rtt_viewer.h"
+#endif

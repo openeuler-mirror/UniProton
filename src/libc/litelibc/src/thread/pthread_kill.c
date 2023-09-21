@@ -10,14 +10,23 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Create: 2023-05-29
- * Description: pthread_kill 相关接口实现，暂时不支持该接口
+ * Description: pthread_kill接口实现
  */
 #include <pthread.h>
 #include <errno.h>
+#include <signal.h>
+#include "prt_signal.h"
 
 int pthread_kill(pthread_t t, int sig)
 {
-    (void)t;
-    (void)sig;
-    return ENOTSUP;
+    TskHandle taskId = (TskHandle)t;
+    signalInfo info = {0};
+    info.si_signo = sig;
+    info.si_code = SI_USER;
+    U32 ret = PRT_SignalDeliver(taskId, &info);
+    if (ret != OS_OK) {
+        return -1;
+    }
+
+    return 0;
 }

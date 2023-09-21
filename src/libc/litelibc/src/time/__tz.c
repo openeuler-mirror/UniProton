@@ -34,23 +34,28 @@ weak_alias(__timezone, timezone);
 weak_alias(__daylight, daylight);
 weak_alias(__tzname, tzname);
 
+#ifndef POSIX_SET_TZDST
 static char std_name[TZNAME_MAX+1];
 static char dst_name[TZNAME_MAX+1];
+#endif
 const char __utc[] = "UTC";
 
 static int dst_off;
 static int r0[5], r1[5];
 
 static const unsigned char *zi, *trans, *tz_index, *types, *abbrevs, *abbrevs_end;
+#ifndef POSIX_SET_TZDST
 static size_t map_size;
 
 static char old_tz_buf[32];
 static char *old_tz = old_tz_buf;
 static size_t old_tz_size = sizeof old_tz_buf;
+#endif
 
 static volatile int lock[1];
 volatile int *const __timezone_lockptr = lock;
 
+#ifndef POSIX_SET_TZDST
 static int getint(const char **p)
 {
 	unsigned x;
@@ -116,6 +121,7 @@ static void getname(char *d, const char **p)
 	*p += i;
 	d[i<TZNAME_MAX?i:TZNAME_MAX] = 0;
 }
+#endif
 
 #define VEC(...) ((const unsigned char[]){__VA_ARGS__})
 
@@ -124,6 +130,7 @@ static uint32_t zi_read32(const unsigned char *z)
 	return (unsigned)z[0]<<24 | z[1]<<16 | z[2]<<8 | z[3];
 }
 
+#ifndef POSIX_SET_TZDST
 static size_t zi_dotprod(const unsigned char *z, const unsigned char *v, size_t n)
 {
 	size_t y;
@@ -134,6 +141,7 @@ static size_t zi_dotprod(const unsigned char *z, const unsigned char *v, size_t 
 	}
 	return y;
 }
+#endif
 
 static void do_tzset()
 {

@@ -27,7 +27,7 @@ int main() {
                         SIGURG, SIGVTALRM, SIGXCPU, SIGXFSZ };
 
 	sigset_t signalset;
-	int i, test_failed=0;
+	int i, test_failed = 0;
 
 	if (sigemptyset(&signalset) == -1) {
 		perror("sigemptyset failed -- test aborted");
@@ -39,7 +39,7 @@ int main() {
 			#ifdef DEBUG
 				printf("sigemptyset did not clear set of signal %s\n", siglist[i]);
 			#endif
-			test_failed=1;
+			test_failed = 1;
 		}
 	}
 

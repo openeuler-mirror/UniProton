@@ -43,7 +43,7 @@ enum OsinitPhaseId {
 extern U8 m_aucMemRegion00[OS_MEM_FSC_PT_SIZE] ;   /* 私有静态内存分区(缺省) */
 
 /* UniProton模块注册函数的声明 */
-extern U32 OsFscMemInit(U32 addr, U32 size);
+extern U32 OsFscMemInit(uintptr_t addr, U32 size);
 extern U32 OsSysRegister(struct SysModInfo *modInfo);
 extern U32 OsTickRegister(struct TickModInfo *modInfo);
 extern U32 OsTskRegister(struct TskModInfo *modInfo);

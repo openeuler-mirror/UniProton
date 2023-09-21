@@ -7,12 +7,16 @@ add_subdirectory(security)
 add_subdirectory(utility)
 add_subdirectory(kal)
 add_subdirectory(libc)
+add_subdirectory(driver)
+add_subdirectory(osal)
 
 if(${CONFIG_OS_SUPPORT_FS})
     add_subdirectory(fs)
 endif()
 
-if(${CONFIG_OS_SUPPORT_NET})
-    add_subdirectory(net)
+add_subdirectory(net)
+
+if(${CONFIG_OS_GDB_STUB})
+    add_subdirectory(component/gdbstub)
 endif()
 
