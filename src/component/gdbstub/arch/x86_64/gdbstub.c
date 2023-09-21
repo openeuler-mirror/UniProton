@@ -1,4 +1,3 @@
-#include <string.h>
 #include "prt_typedef.h"
 #include "gdbstub.h"
 #include "gdbstub_common.h"
@@ -136,9 +135,9 @@ INLINE int GdbWriteOneReg(U32 regno, U8 *buf)
         return 2 * g_dbgRegDef[regno].size;
     }
     return 2 * OsGdbHex2Bin(buf,
-                        g_dbgRegDef[regno].size * 2,
-                        &RBUF[g_dbgRegDef[regno].offset],
-                        g_dbgRegDef[regno].size);
+                    g_dbgRegDef[regno].size * 2,
+                    &RBUF[g_dbgRegDef[regno].offset],
+                    g_dbgRegDef[regno].size);
 }
 
 STUB_TEXT int OsGdbArchReadReg(U32 regno, U8 *buf, int buflen)

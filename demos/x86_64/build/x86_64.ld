@@ -15,9 +15,9 @@ SECTIONS
         *(.startup.text)
         *(.text)
         *(.text.*)
-    __os_stub_text_start = .;
+        __os_stub_text_start = .;
         *(.stub.text)
-    __os_stub_text_end = .;
+        __os_stub_text_end = .;
         *(.rodata)
         *(.rodata.*)
     }
@@ -43,9 +43,9 @@ SECTIONS
         *(.data)
         *(.data.*)
         *(.tdata)
-    __os_stub_data_start = .;
+        __os_stub_data_start = .;
         *(.stub.data)
-    __os_stub_data_end = .;
+        __os_stub_data_end = .;
     }
 
     .bss : {

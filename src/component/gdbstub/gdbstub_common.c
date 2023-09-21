@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ * 	http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * See the Mulan PSL v2 for more details.
+ * Create: 2023-09-14
+ * Description: gdbstub通用部分，包括流程控制，软件断点管理等
+ */
+
 #include <stddef.h>
 #include <errno.h>
 #include "prt_typedef.h"
@@ -9,6 +23,8 @@
 #define GDB_EXCEPTION_BREAKPOINT            5
 #define GDB_PACKET_SIZE                     512
 
+#define GDB_ENO_NOT_SUPPORT                 2
+
 /* GDB remote serial protocol does not define errors value properly
  * and handle all error packets as the same the code error is not
  * used. There are informal values used by others gdbstub
@@ -16,7 +32,7 @@
  */
 #define GDB_ERROR_GENERAL   "E01"
 #define GDB_ERROR_MEMORY    "E14"
-#define GDB_ERROR_OVERFLOW  "E22"
+#define GDB_ERROR_INVAL     "E22"
 
 #define CHECK_ERROR(condition) {        \
         if ((condition)) {              \
@@ -41,7 +57,7 @@ static STUB_DATA char g_notFirstStart;
  * Holds information about breakpoints.
  */
 static STUB_DATA struct GdbBkpt g_breaks[GDB_MAX_BREAKPOINTS] = {
-    [0 ... GDB_MAX_BREAKPOINTS-1] = { .state = BP_UNDEFINED }
+    [0 ... GDB_MAX_BREAKPOINTS - 1] = { .state = BP_UNDEFINED }
 };
 
 static STUB_DATA U8 g_serialBuf[GDB_PACKET_SIZE];
@@ -115,7 +131,7 @@ static STUB_TEXT int GdbAddrCheck(uintptr_t addr, int attr)
     struct GdbMemRegion *regions = NULL;
     int cnt = OsGdbConfigGetMemRegions(&regions);
     if (!cnt) {
-        return -1;
+        return -EINVAL;
     }
     for (int i = 0; i < cnt; i++) {
         if (addr >= regions[i].start && 
@@ -124,7 +140,7 @@ static STUB_TEXT int GdbAddrCheck(uintptr_t addr, int attr)
             return 0;
         }
     }
-    return -2;
+    return -EINVAL;
 }
 
 static STUB_TEXT int GdbInvalidReadAddr(uintptr_t addr)
@@ -259,11 +275,10 @@ static STUB_TEXT int GdbResetBkpts(void)
 static STUB_TEXT int GdbAddBkpt(U8 type, uintptr_t addr, U32 kind)
 {
     if (type != BP_BREAKPOINT) {
-        // not support
-        return -2;
+        return -GDB_ENO_NOT_SUPPORT;
     }
     if (GdbInvalidBkptAddr(addr)) {
-        return -1;
+        return -EINVAL;
     }
     return GdbSetSwBkpt(addr);
 }
@@ -271,19 +286,17 @@ static STUB_TEXT int GdbAddBkpt(U8 type, uintptr_t addr, U32 kind)
 static STUB_TEXT int GdbRemoveBkpt(U8 type, uintptr_t addr, U32 kind)
 {
     if (type != BP_BREAKPOINT) {
-        // not support
-        return -2;
+        return -GDB_ENO_NOT_SUPPORT;
     }
     if (GdbInvalidBkptAddr(addr)) {
-        return -1;
+        return -EINVAL;
     }
 
     return GdbRemoveSwBkpt(addr);
 }
 
 /* Read memory byte-by-byte */
-static STUB_TEXT int GdbRawMemRead(U8 *buf, int buf_len,
-                     uintptr_t addr, int len)
+static STUB_TEXT int GdbRawMemRead(U8 *buf, int buf_len, uintptr_t addr, int len)
 {
     U8 data;
     int count = 0;
@@ -299,8 +312,7 @@ static STUB_TEXT int GdbRawMemRead(U8 *buf, int buf_len,
 }
 
 /* Write memory byte-by-byte */
-static STUB_TEXT int GdbRawMemWrite(const U8 *buf, uintptr_t addr,
-                   int len)
+static STUB_TEXT int GdbRawMemWrite(const U8 *buf, uintptr_t addr, int len)
 {
     U8 data;
     int count = 0;
@@ -340,10 +352,10 @@ static STUB_TEXT int GdbCmdMemRead(U8 *ptr)
      */
     if (GdbInvalidReadAddr(addr)) {
         OsGdbSendPacket(GDB_ERROR_MEMORY, 3);
-        return -1;
+        return 0;
     }
     ret = GdbRawMemRead(g_serialBuf, sizeof(g_serialBuf), addr, len);
-    CHECK_ERROR(ret == -1);
+    CHECK_ERROR(!ret);
     OsGdbSendPacket(g_serialBuf, ret);
     return ret;
 }
@@ -365,7 +377,7 @@ static STUB_TEXT int GdbCmdMemWrite(U8 *ptr)
 
     /* Write Memory */
     len = GdbRawMemWrite(ptr, addr, len);
-    CHECK_ERROR(len == -1);
+    CHECK_ERROR(len < 0);
     OsGdbSendPacket("OK", 2);
     return 0;
 }
@@ -389,11 +401,11 @@ static STUB_TEXT int GdbCmdBreak(U8 *ptr)
         ret = GdbRemoveBkpt(type, addr, kind);
     }
 
-    if (ret == -2) {
+    if (ret == -GDB_ENO_NOT_SUPPORT) {
         /* breakpoint/watchpoint not supported */
         OsGdbSendPacket(NULL, 0);
-    } else if (ret == -1) {
-        OsGdbSendPacket(GDB_ERROR_OVERFLOW, 3);
+    } else if (ret < 0) {
+        OsGdbSendPacket(GDB_ERROR_INVAL, 3);
     } else {
         OsGdbSendPacket("OK", 2);
     }
@@ -449,12 +461,10 @@ static STUB_TEXT int GdbSerialStub()
         int ret;
 
         ret = OsGdbGetPacket(g_serialBuf, sizeof(g_serialBuf), &len);
-        if ((ret == -1) || (ret == -2)) {
+        if ((ret == -GDB_RSP_ENO_CHKSUM) || (ret == -GDB_RSP_ENO_2BIG)) {
             /*
              * Send error and wait for next packet.
              *
-             * -1: Checksum error.
-             * -2: Packet too big.
              */
             OsGdbSendPacket(GDB_ERROR_GENERAL, 3);
             continue;

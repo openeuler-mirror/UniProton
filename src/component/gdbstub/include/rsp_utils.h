@@ -2,6 +2,9 @@
 #define _RSP_UTILS_H_
 
 #include "prt_typedef.h"
+
+#define GDB_RSP_ENO_CHKSUM  1
+#define GDB_RSP_ENO_2BIG    2
 /**
  * Add preamble and termination to the given data.
  *

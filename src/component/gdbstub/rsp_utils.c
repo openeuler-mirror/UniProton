@@ -1,3 +1,4 @@
+#include "rsp_utils.h"
 #include "gdbstub_common.h"
 #include "prt_typedef.h"
 
@@ -176,21 +177,21 @@ STUB_TEXT int OsGdbGetPacket(U8 *buf, int buf_len, int *len)
     checksumBuf[1] = OsGdbGetchar();
 
     if (OsGdbHex2Bin(checksumBuf, 2, &expect, 1) == 0) {
-        return -1;
+        return -GDB_RSP_ENO_CHKSUM;
     }
 
     /* Verify checksum */
     if (actual != expect) {
         /* NACK packet */
         OsGdbPutchar('-');
-        return -1;
+        return -GDB_RSP_ENO_CHKSUM;
     }
 
     /* ACK packet */
     OsGdbPutchar('+');
 
     if (*len >= (buf_len - 1)) {
-        return -2;
+        return -GDB_RSP_ENO_2BIG;
     } else {
         return 0;
     }
