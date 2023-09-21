@@ -170,7 +170,7 @@ set(MULS_SIGNAL_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
     )
-    
+
     list(APPEND MULS_SOURCE
         ${MUSL_TIME_SOURCE}
         ${MUSL_THREAD_SOURCE}
@@ -194,6 +194,16 @@ list(APPEND MULS_SOURCE
     )
 endif()
 
+if(${CONFIG_OS_OPTION_PROXY})
+    set(MUSL_FS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/opendir.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/readdir.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/closedir.c
+        )
+    add_compile_options(-DOS_OPTION_PROXY)
+    list(APPEND MULS_SOURCE    ${MUSL_FS_SOURCE})
+endif()
+
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
         -Wno-bad-function-cast
@@ -210,7 +220,6 @@ target_compile_options(musllibc PUBLIC
 if (${CONFIG_OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)
 endif()
-
 target_include_directories(musllibc PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/internal/include
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/include
