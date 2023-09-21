@@ -32,6 +32,9 @@ void TestTaskEntry()
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
+    for (int i = 1; i < 100; i++) {
+        printf("TestTaskEntry=============TestTaskEntry\r\n");
+    }
 }
 
 U32 OsTestInit(void)
@@ -40,7 +43,7 @@ U32 OsTestInit(void)
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
     
-    param.stackAddr = (U32)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = 25;
     param.name = "TestTask";

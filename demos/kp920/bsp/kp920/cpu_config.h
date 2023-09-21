@@ -3,18 +3,18 @@
 
 #include "cache_asm.h"
 
-#define MMU_IMAGE_ADDR             0x93000000ULL
-#define MMU_GIC_ADDR               0x24000000ULL
-#define MMU_UART_ADDR              0x08743000ULL
-#define MMU_OPENAMP_ADDR           0x90000000ULL
+#define MMU_IMAGE_ADDR             0x202783000000ULL
+#define MMU_GIC_ADDR               0xAA000000ULL
+#define MMU_UART_ADDR              0x08743000ULL /* todo */
+#define MMU_OPENAMP_ADDR           0x202780000000ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 
 #define TEST_CLK_INT               30
 
 #define OS_GIC_VER                 3
-#define SICR_ADDR_OFFSET_PER_CORE  0x20000U
-#define GIC_REG_BASE_ADDR          0x24000000ULL
+#define SICR_ADDR_OFFSET_PER_CORE  0x40000U
+#define GIC_REG_BASE_ADDR          0xAA000000ULL
 
 #define GICD_CTLR_S_ADDR           (GIC_REG_BASE_ADDR + 0x0000U)
 #define GICD_IGROUPN_ADDR          (GIC_REG_BASE_ADDR + 0x0080U)
@@ -23,8 +23,8 @@
 #define GICD_IPRIORITYN_ADDR       (GIC_REG_BASE_ADDR + 0x0400U)
 #define GICD_IGRPMODRN_ADDR        (GIC_REG_BASE_ADDR + 0x0D00U)
 
-#define GICR_BASE0                 (GIC_REG_BASE_ADDR + 0x40000U)
-#define GICR_BASE1                 (GIC_REG_BASE_ADDR + 0x50000U)
+#define GICR_BASE0                 (GIC_REG_BASE_ADDR + 0x100000U)
+#define GICR_BASE1                 (GIC_REG_BASE_ADDR + 0x110000U)
 
 #define GICR_CTRL_ADDR             (GICR_BASE0 + 0x0000U)
 #define GICR_WAKER_ADDR            (GICR_BASE0 + 0x0014U)
