@@ -33,9 +33,9 @@ extern "C" {
 #define OS_CPU_TYPE OS_KP920
 #endif
 
-#define OS_MAX_CORE_NUM 4
+#define OS_MAX_CORE_NUM 64
 
-#define OS_THIS_CORE 3
+#define OS_THIS_CORE 30
 
 #ifndef OS_BYTE_ORDER
 #define OS_BYTE_ORDER OS_LITTLE_ENDIAN
