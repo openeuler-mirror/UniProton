@@ -21,7 +21,7 @@
 #include "gdbstub_common.h"
 
 #define GDB_EXCEPTION_BREAKPOINT            5
-#define GDB_PACKET_SIZE                     512
+#define GDB_PACKET_SIZE                     2048
 
 #define GDB_ENO_NOT_SUPPORT                 2
 

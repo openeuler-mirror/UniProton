@@ -14,6 +14,12 @@ set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
 set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ../raspi4.ld")
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ../raspi4.ld")
 
+#set(CONFIG_OS_GDB_STUB y)
+
+if (${CONFIG_OS_GDB_STUB})
+add_compile_options(-DOS_GDB_STUB)
+endif()
+
 include_directories(
     ./include
     ./include/libc/include

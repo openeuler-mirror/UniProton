@@ -11,6 +11,7 @@ MEMORY
 
 SECTIONS
 {
+    __os_section_start = .;
     text_start = .;
     .start_bspinit :
     {
@@ -28,6 +29,9 @@ SECTIONS
         *(.text)
         *(.text.*)
         *(*.text)
+        __os_stub_text_start = .;
+        *(.stub.text)
+        __os_stub_text_end = .;
         . = ALIGN(8);
         __text_end = .;
     } > IMU_SRAM
@@ -85,6 +89,9 @@ SECTIONS
         __data_start = .;
         *(.data)
         *(.data.*)
+        __os_stub_data_start = .;
+        *(.stub.data)
+        __os_stub_data_end = .;
         . = ALIGN(8);
         __os_text_start = .;
         QUAD(__text_start)
@@ -111,6 +118,7 @@ SECTIONS
         . = ALIGN(8);
         __bss_end__ = .;
     } > IMU_SRAM
+    __os_section_end = .;
     
     .mmu.table.base :
     {
