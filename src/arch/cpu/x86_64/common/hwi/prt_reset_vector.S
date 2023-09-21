@@ -1,3 +1,4 @@
+#include "prt_buildef.h"
 .globl OsResetVector
 .globl OsReadCr0
 .globl OsReadCr4
@@ -16,7 +17,9 @@ OsResetVector:
     bts  $10, %rax
     movq %rax, %cr4
     finit
-
+#ifdef OS_GDB_STUB
+    call OsGdbStubInit
+#endif
     call main
 
 loop :

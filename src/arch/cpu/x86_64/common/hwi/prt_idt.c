@@ -4,7 +4,10 @@
 #include "prt_task_external.h"
 #include "prt_irq_external.h"
 #include "prt_idt.h"
-
+#include "prt_buildef.h"
+#ifdef OS_GDB_STUB
+#include "prt_gdbstub_ext.h"
+#endif
 extern void OsMainSchedule(void);
 
 struct IdtEntry g_idtr[VECTOR_MAX_COUNT];
@@ -102,11 +105,23 @@ U64 ReadCr2(void)
     return rax;
 }
 
+#ifdef OS_GDB_STUB
+extern void OsGdbHandleException(void *stk);
+
+STUB_TEXT void OsHwiDbgExcProc(U64 stackFrame)
+{
+    struct StackFrame *frame;
+    frame = (struct StackFrame *)(stackFrame + 0x200);
+    if (frame->intNumber == 1 || frame->intNumber == 3) {
+        OsGdbHandleException(frame);
+    }
+}
+#endif
+
 void OsHwiDispatchProc(U64 stackFrame)
 {
     struct StackFrame *frame;
     frame = (struct StackFrame *)(stackFrame + 0x200);
-
     UNI_FLAG |= OS_FLG_HWI_ACTIVE;
     OS_INT_COUNT++;
 

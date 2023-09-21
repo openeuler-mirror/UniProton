@@ -15,3 +15,7 @@ endif()
 
 add_subdirectory(net)
 
+if(${CONFIG_OS_GDB_STUB})
+    add_subdirectory(component/gdbstub)
+endif()
+
