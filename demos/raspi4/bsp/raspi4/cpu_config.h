@@ -7,7 +7,9 @@
 #define MMU_GIC_ADDR               0xFF800000ULL
 #define MMU_UART_ADDR              0xFE200000ULL
 #define MMU_OPENAMP_ADDR           0x70000000ULL
-
+#ifdef OS_GDB_STUB
+#define MMU_GDB_STUB_ADDR          0x70040000ULL
+#endif
 #define UART_BASE_ADDR             0xFE201000ULL
 
 #define TEST_CLK_INT               30
