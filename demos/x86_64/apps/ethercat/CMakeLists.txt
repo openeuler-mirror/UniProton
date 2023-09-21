@@ -1,4 +1,4 @@
-if (RPC_DEMO_SWITCH)
+if (${RPC_DEMO_SWITCH})
 add_definitions(-DSTATIC_EP)
 set (SRC ethercat_igh.c main.c rpmsg_backend.c rpmsg_service.c example_rpc.c)
 elseif (${APP} STREQUAL "task-switch" OR ${APP} STREQUAL "task-preempt" OR

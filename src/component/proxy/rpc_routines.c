@@ -380,6 +380,17 @@ DEF_CONVERT(getsockopt)
     }
 }
 
+DEF_CONVERT(getdents64)
+{
+    DEFINE_CB_VARS(getdents64)
+    outp->ret = resp->ret;
+    outp->pos = resp->pos;
+
+    if (outp->buf == NULL || resp->ret <= 0) {
+        return;
+    }
+    memcpy_s(outp->buf, outp->bufsize, resp->buf, resp->ret);
+}
 
 void rpmsg_set_default_ept(struct rpmsg_endpoint *ept)
 {
@@ -1371,6 +1382,32 @@ int PRT_ProxyPrintf(const char *format, ...)
     va_end(list);
 
     return len;
+}
+
+int PRT_ProxyGetDents64(int fd, char *buf, int len)
+{
+    DEFINE_COMMON_RPC_VAR(getdents64)
+
+    CHECK_INIT()
+    CHECK_ARG(fd < 0 || buf == NULL || len < 0, EINVAL)
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    RECORD_AT(slot_idx).cb = CONVERT(getdents64);
+    req.func_id = GETDENTS64_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.fd = fd;
+
+    req.count = len;
+    req.pos = -1;
+    outp.buf = buf;
+    outp.bufsize = len;
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+
+    ret = outp.ret;
+    free_slot(slot_idx);
+    return ret;
 }
 
 WEAK_ALIAS(PRT_ProxyOpen, open);

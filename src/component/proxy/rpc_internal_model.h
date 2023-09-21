@@ -25,6 +25,7 @@
 #define FCNTL_ID          6UL
 #define IOCTL_ID          7UL
 #define UNLINK_ID         8UL
+#define GETDENTS64_ID     9UL
 
 #define NCPYWRITE_ID      43UL
 #define NCPYREAD_ID       44UL
@@ -640,4 +641,27 @@ typedef struct rpc_printf_req {
     char buf[MAX_STRING_LEN];
 } rpc_printf_req_t;
 
+/* getdents64*/
+typedef struct rpc_getdents64_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int count;
+    long pos;
+    int fd;
+} rpc_getdents64_req_t;
+
+typedef struct rpc_getdents64_resp {
+    rpc_resp_base_t super;
+    long pos;
+    int ret;
+    char buf[MAX_STRING_LEN];
+} rpc_getdents64_resp_t;
+
+typedef struct rpc_getdents64_outp {
+    rpc_outp_base_t super;
+    long pos;
+    char *buf;
+    int bufsize;
+    int ret;
+} rpc_getdents64_outp_t;
 #endif  /* _RPC_INTERNAL_MODEL_H */
