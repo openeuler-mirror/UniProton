@@ -41,6 +41,17 @@
         </project>
     </projects>
     <projects>
+        <project cpu_type="kp920">
+            <lib_type>SRE</lib_type>
+            <platform plat_name="armv8">
+                <name>armv8</name>
+                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_arm64>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_arm64>
+                <kconf_dir>armv8_kp920</kconf_dir>
+            </platform>
+        </project>
+    </projects>
+    <projects>
         <project cpu_type="x86_64">
             <lib_type>SRE</lib_type>
             <platform plat_name="x86_64">
