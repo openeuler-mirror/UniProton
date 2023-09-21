@@ -7,6 +7,13 @@
 #define MMU_GIC_ADDR               0xAA000000ULL
 #define MMU_UART_ADDR              0x08743000ULL /* todo */
 #define MMU_OPENAMP_ADDR           0x202780000000ULL
+#define MMU_DMA_ADDR               0x202780100000ULL
+
+#define MMU_ECAM_ADDR               0xd0000000ULL
+#define MMU_ECAM_ADDR_LEN           0x10000000ULL /* MMU_ECAM_ADDR_LEN 256Bus * 32Device * 8Fuc * 4KB */
+
+#define MMU_INVALID_ADDR            0x0ULL
+#define MMU_TEST_ADDR                0x202780200000ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 

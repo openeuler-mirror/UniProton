@@ -11,11 +11,20 @@
 extern U64 g_mmu_page_begin;
 extern U64 g_mmu_page_end;
 
+#define MMU_MAP_RESREVED_NUM 8 /* 暂时预留6个mmu页表用于pcie设备io、mem空间的映射 */
+U32 g_mmu_map_reserved_num = MMU_MAP_RESREVED_NUM;
+
 static mmu_mmap_region_s g_mem_map_info[] = {
     {
         .virt      = MMU_OPENAMP_ADDR,
         .phys      = MMU_OPENAMP_ADDR,
         .size      = 0x30000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_DMA_ADDR,
+        .phys      = MMU_DMA_ADDR,
+        .size      = 0x200000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
@@ -30,10 +39,24 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .size      = 0x1000000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
-    }, {    
+    }, {
         .virt      = MMU_UART_ADDR,
         .phys      = MMU_UART_ADDR,
         .size      = 0x2000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_ECAM_ADDR,
+        .phys      = MMU_ECAM_ADDR,
+        .size      = 0x10000000, /* 256Bus * 32Device * 8Fuc * 4KB */
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    },
+    /* 暂时预留N个mmu页表用于pcie设备io、mem空间的映射 */
+    [6 ... (6 + MMU_MAP_RESREVED_NUM)] = {
+        .virt      = MMU_INVALID_ADDR,
+        .phys      = MMU_INVALID_ADDR,
+        .size      = 0x0,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }
@@ -159,7 +182,7 @@ static U64 *mmu_create_table(void)
     }
     
     g_mmu_ctrl.tlb_fillptr += pt_len;
-    
+
     if (g_mmu_ctrl.tlb_fillptr - g_mmu_ctrl.tlb_addr > g_mmu_ctrl.tlb_size) {
         return NULL;
     }
@@ -284,6 +307,9 @@ static U32 mmu_setup_pgtables(mmu_mmap_region_s *mem_map, U32 mem_region_num, U6
     }
     
     for (i = 0; i < mem_region_num; ++i) {
+        if (mem_map[i].phys == MMU_INVALID_ADDR) {
+            continue;
+        }
         ret = mmu_add_map(&mem_map[i]);
         if (ret) {
             return ret;
@@ -326,7 +352,46 @@ S32 mmu_init(void)
     os_asm_invalidate_icache_all();
     os_asm_invalidate_tlb_all();
 
+    /* 启用MMU，数据CACHE, 指令CACHE */
     set_sctlr(get_sctlr() | CR_C | CR_M | CR_I);
 
+    return 0;
+}
+
+// 更新时，中断要关 ？？
+S32 mmu_update(const mmu_mmap_region_s *map, U32 map_num)
+{
+    S32 ret;
+    U32 i, j;
+    uintptr_t intSave;
+    U32 mem_region_num = sizeof(g_mem_map_info) / sizeof(mmu_mmap_region_s);
+
+    if (map_num > g_mmu_map_reserved_num) {
+        return -1; /* 预留的页表不够，需要增大页表预留数量 MMU_MAP_RESREVED_NUM */
+    }
+
+    for (i = 0; i < mem_region_num; i++) {
+        if (g_mem_map_info[i].phys == MMU_INVALID_ADDR)
+            break;
+    }
+    if (i == mem_region_num) {
+        return -4;
+    }
+
+    g_mmu_map_reserved_num -= map_num;
+    for (j = 0; j < map_num; j++) {
+        g_mem_map_info[i + j].virt = map[j].virt;
+        g_mem_map_info[i + j].phys = map[j].phys;
+        g_mem_map_info[i + j].size = map[j].size;
+    }
+
+    intSave = PRT_HwiLock();
+
+    /* 禁用MMU，数据CACHE, 指令CACHE */
+    set_sctlr(get_sctlr() & (~CR_C) & (~CR_M) & (~CR_I));
+
+    mmu_init(); /* 重新建立页表，其中会 启用MMU，数据CACHE, 指令CACHE */
+
+    PRT_HwiRestore(intSave);
     return 0;
 }

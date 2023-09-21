@@ -202,5 +202,6 @@ static inline void set_sctlr(unsigned long val)
 }
 
 extern S32 mmu_init(void);
+extern S32 mmu_update(const mmu_mmap_region_s *map, U32 num);
 
 #endif
