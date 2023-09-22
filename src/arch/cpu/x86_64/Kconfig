@@ -1,0 +1,19 @@
+menu "x86_64 Sepecfic Configuration"
+
+depends on (OS_ARCH_X86_64)
+
+config INTERNAL_OS_PLATFORM_X86_64
+    bool
+    select INTERNAL_OS_BYTE_ORDER_LE
+    select OS_OPTION_SMP if (OS_MAX_CORE_NUM != 1)
+
+choice
+    prompt "Cpu Type"
+
+config INTERNAL_OS_X86_64
+    bool "OS_X86_64"
+    select INTERNAL_OS_PLATFORM_X86_64
+
+endchoice
+
+endmenu

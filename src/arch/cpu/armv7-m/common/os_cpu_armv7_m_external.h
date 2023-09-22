@@ -114,6 +114,7 @@ extern U32 OsIntNumGet(void);
 extern void OsTaskSwitch(void);
 extern void OsHwiSwitch(void);
 extern void OsTickIsr(void);
+extern void OsTskContextLoad(uintptr_t stackPointer);
 
 OS_SEC_ALW_INLINE INLINE void OsTaskTrapFast(void)
 {

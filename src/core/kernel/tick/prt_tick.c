@@ -13,6 +13,9 @@
  * Description: Tick interrupt implementation
  */
 #include "prt_tick_internal.h"
+#if defined(OS_OPTION_LINUX)
+#include <linux/jiffies.h>
+#endif
 
 /* 任务检测Tick中断调用钩子 */
 OS_SEC_BSS TskmonTickHook g_tskMonHook;
@@ -20,6 +23,9 @@ OS_SEC_BSS TskmonTickHook g_tskMonHook;
 OS_SEC_BSS SwitchScanFunc g_swtmrScanHook;
 OS_SEC_BSS TickHandleFunc g_tickUsrHook;
 
+#if defined(OS_OPTION_LINUX)
+unsigned long volatile jiffies;
+#endif
 /*
  * 描述：Tick中断的处理函数。扫描任务超时链表、扫描超时软件定时器、扫描TSKMON等。
  */
@@ -30,6 +36,9 @@ OS_SEC_TEXT void OsTickDispatcher(void)
     intSave = OsIntLock();
 
     g_uniTicks++;
+#if defined(OS_OPTION_LINUX)
+    jiffies = g_uniTicks;
+#endif
 
     OS_TICK_COUNT_UPDATE();
 

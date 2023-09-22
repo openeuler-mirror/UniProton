@@ -19,3 +19,9 @@ void *malloc(size_t n)
 {
     return PRT_MemAlloc(0, OS_MEM_DEFAULT_FSC_PT, n);
 }
+
+// 临时解决缺少__libc_malloc, 回合主线时如果malloc文件夹已合入则可删除
+void *__libc_malloc(size_t n)
+{
+	return malloc(n);
+}

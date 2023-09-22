@@ -5,8 +5,8 @@ set(OBJCOPY_PATH "$ENV{HCC_PATH}" )
 #################################################
 #添加进列表
 foreach(FILE_NAME ${ALL_OBJECT_LIBRARYS})
-	list(FIND exclude "${FILE_NAME}" is_inclide)
-	if(${is_inclide} EQUAL -1)
+	list(FIND exclude "${FILE_NAME}" is_include)
+	if(${is_include} EQUAL -1)
 	list(APPEND GUEST_SRCS
 		$<TARGET_OBJECTS:${FILE_NAME}>
 	)
@@ -139,6 +139,7 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_typedef.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_cpup.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_err.h
+		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_signal.h
 		DESTINATION ${INSTALL_HI3093_ARMV8_INCLUDE_DIR}/
 	)
 endif()

@@ -25,4 +25,8 @@
 #include "../cpu/armv8/common/os_attr_armv8_external.h"
 #endif
 
+#if defined(OS_ARCH_X86_64)
+#include "../cpu/x86_64/common/os_attr_x86_64_external.h"
+#endif
+
 #endif /* PRT_ATTR_EXTERNAL_H */

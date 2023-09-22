@@ -24,7 +24,7 @@
 int main()
 {
 	sigset_t oactl, tempset;
-	int i, j, test_failed=0;
+	int i, j, test_failed = 0;
 
 	int siglist[] = {SIGABRT, SIGALRM, SIGBUS, SIGCHLD, 
 		SIGCONT, SIGFPE, SIGHUP, SIGILL, SIGINT, 
