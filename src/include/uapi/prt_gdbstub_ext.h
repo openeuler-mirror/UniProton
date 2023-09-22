@@ -28,7 +28,10 @@ struct GdbRingBufferCfg {
 #define __weak __attribute__((__weak__))
 #endif
 
+#ifndef BIT
 #define BIT(n)  (1UL << (n))
+#endif
+
 /* Access permissions for memory regions */
 #define GDB_MEM_REGION_NO_ACCESS            0UL
 #define GDB_MEM_REGION_READ                 BIT(0)
