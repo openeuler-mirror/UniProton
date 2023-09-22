@@ -21,11 +21,6 @@ wchar_t *wmemcpy(wchar_t *restrict d, const wchar_t *restrict s, size_t n)
     return a;
 }
 
-unsigned long wcstoul(const wchar_t *restrict s, wchar_t **restrict p, int base)
-{
-    return 0;
-}
-
 char *getenv(const char *name)
 {
     return NULL;

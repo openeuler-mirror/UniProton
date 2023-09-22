@@ -135,7 +135,6 @@ file(GLOB MUSL_STDLIB_SOURCE musl/src/stdlib/*.c)
 list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/stdio/sprintf.c
     musl/src/stdio/vprintf.c
-    musl/src/stdio/vsnprintf.c
     musl/src/stdio/__uflow.c
     musl/src/stdio/__toread.c
     musl/src/stdio/__stdio_exit.c
