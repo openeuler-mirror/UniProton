@@ -40,3 +40,5 @@ add_subdirectory(config)
 add_subdirectory(support)
 
 add_subdirectory(posixtestsuite)
+add_subdirectory(rhealstone)
+add_subdirectory(libc-test)

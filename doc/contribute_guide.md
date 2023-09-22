@@ -18,7 +18,8 @@
 -   [协议](#协议)
 -   [加入我们](#加入我们)
 
-<h2 id="编程规范">编程规范</h2>
+## 编程规范
+
 此编程规范在业界通用的编程规范基础上进行了整理，供开发者参考使用。
 
 ### 总体原则
@@ -41,14 +42,14 @@
     | 内核头文件中防止重复包含的宏变量  |  带'PRT'前缀和'H'后缀，中间为大写模块名，以下划线分割 | PRT_MODULE_H  |
 - 全局函数、全局变量、宏、类型名、枚举名的命名，应当准确描述并全局唯一。
 - 在能够准确表达含义的前提下，局部变量，或结构体、联合体的成员变量，其命名应尽可能简短。
-- UniProton的对外API使用PRT_\<Module\>\<Func\>的方式，如果有动词和宾语，则采用PRT_\<Module\>\<Verb\>\<Object\>，比如：
+- UniProton 的对外 API 使用 `PRT_<Module><Func>`的方式，如果有动词和宾语，则采用 `PRT_<Module><Verb><Object>`，比如：
     ```
     PRT_TaskCreate
     PRT_SemPend
     PRT_TickGetCount
     PRT_TaskGetStatus
     ```
-   kernel目录下内部模块间接口使用Os\<Module\>\<Func\>的方式，比如：
+   kernel 目录下内部模块间接口使用 `Os<Module><Func>` 的方式，比如：
     ```
     OsTaskScan
     OsSwTmrCtrlInit
@@ -58,6 +59,7 @@
 -   程序块采用缩进风格编写，使用空格而不是制表符（'\t'）进行缩进，每级缩进为4个空格。
 -   采用K&R风格作为大括号换行风格，即函数左大括号另起一行放行首，并独占一行，其他左大括号跟随语句放行末，
     右大括号独占一行，除非后面跟着同一语句的剩余部分，如if语句的else/else if或者分号，比如：
+    
     ```c
     struct MyType {   // 左大括号跟随语句放行末，前置1个空格
         ...
@@ -248,7 +250,7 @@
         ...
         return &localVar;  // 错误
     }
-
+    
     void Caller(void)
     {
         int *p = Func();
@@ -264,7 +266,7 @@
         ...
         return localVar;
     }
-
+    
     void Caller(void)
     {
         int x = Func();
@@ -292,8 +294,7 @@
 ### 业界编程规范
 C语言编程规范参考资料较多，大家可以自行了解，本文不再过多赘述。
 
-
-<h2 id="文档写作规范">文档写作规范</h2>
+## 文档写作规范
 
 UniProton欢迎开发者参与到开源社区的贡献中来，本文主要介绍参与UniProton文档贡献的写作规范，如果贡献者提交文档的修改或提交新的文档，请参照此规范。
 
@@ -363,8 +364,7 @@ UniProton欢迎开发者参与到开源社区的贡献中来，本文主要介�
     \```
     </blockquote>
 
-
-<h2 id="Commitmessage规范">Commit message规范</h2>
+## Commit message规范
 
 ### 概要说明
 
@@ -485,10 +485,9 @@ Close #75
 
 ### 更多参考
 
-更详细的commit规则请参考原始的规范说明：<a href="https://github.com/mychaser/docgather/blob/master/GitCommitMessageConventions.pdf" target="_blank">Angular规范</a>。
+更详细的 commit 规则请参考原始的规范说明：[Angular规范](https://github.com/mychaser/docgather/blob/master/GitCommitMessageConventions.pdf)。
 
-
-<h2 id="贡献流程">贡献流程</h2>
+## 贡献流程
 
 UniProton的代码仓托管在gitee上，因此代码贡献者需要在gitee上注册账号才能贡献代码。注册账号可以参考<a href="https://gitee.com/help/articles/4113#article-header0" target="_blank">注册Gitee账号</a>。
 
@@ -576,13 +575,13 @@ $ git config --list
 ![](./images/contribute/gitee_fork4.png)
 **说明：** 图 
 -->
- 
+
 点击上图中红框中的按钮从UniProton官方仓库拉取代码到个人账号fork的仓库，此时会弹出一个对话框以确定同步动作，如下图所示：
 <!-- 
 ![](./images/contribute/gitee_fork5.png)
 **说明：** 图 
 -->
- 
+
 点击确定后，gitee就会开始同步代码，用户无需再做其他操作。
 
 #### **6 提交本地修改到fork的仓库**
@@ -613,25 +612,25 @@ git checkout -b master origin/master
 ![](./images/contribute/gitee_fork6.png)
 **说明：** 图
 -->
-  
+
 2\) 之后gitee会跳转到创建Pull Request的详细页面，并给出对应的源分支和要修改的目标分支，目标分支为UniProton官方主仓库master分支，如下图。
 <!--
 ![](./images/contribute/gitee_fork7.png)
 **说明：** 图
 -->
-  
+
 如果代码没有冲突则会显示下图红框中“可自动合并”的提示，否则需要先解决冲突然后再重新创建Pull Request。在线解决代码冲突可以参考<a href="https://gitee.com/help/articles/4305" target="_blank">在线解决代码冲突</a>。
 <!-- 
 ![](./images/contribute/gitee_fork8.png)
 **说明：** 图
 -->
-  
+
 填入Pull Request的标题和说明，点击“创建”，就可以提交一个Pull Request。右边的审查人员、测试人员、里程碑、标签、优先级是可选项，不选择也不影响Pull Request的创建。
 <!-- 
 >![](public_sys-resources/icon-note.gif)
 **说明：** 图
 -->
-  
+
 **说明：** 
 >-   如果提交的代码是为了解决issue问题，记得将issue和此次代码提交相关联，关联方法请参考<a href="https://gitee.com/help/articles/4141" target="_blank">Commit关联Issue</a>和<a href="https://gitee.com/help/articles/4142" target="_blank">Pull Request关联Issue</a>。
 >-   如果提交的Pull Request中有新增意见，需要在评论里回复，并@提意见的人说明已经解决。
@@ -645,13 +644,12 @@ git checkout -b master origin/master
 ![](./images/contribute/gitee_pr.png)
 **说明：** 图 
 -->
- 
+
 “开启的”表示这个Pull Request的代码还没有合入，“已合并”表示这个Pull Request的代码已经合入，“已关闭”表示这个Pull Request虽然已经关闭但是代码没有被合入。
 
 现在就静候UniProton主仓库管理员review代码吧，验证ok就会合入修改，恭喜您成为Contributor，感谢您为开源社区做出的贡献。
 
-
-<h2 id="协议">协议</h2>
+## 协议
 
 ### 知识共享许可协议
 
@@ -753,8 +751,7 @@ git checkout -b master origin/master
 
     本政策适用中华人民共和国法律。任何因本政策引起或与本政策相关的纠纷应提交到北京中国国际经济贸易仲裁委员会。该仲裁裁决是终局的并对仲裁双方具有法律约束力。
 
-
-<h2 id="联系我们">联系我们</h2>
+## 联系我们
 
 * 技术支持
 

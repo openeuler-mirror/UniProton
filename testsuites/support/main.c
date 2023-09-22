@@ -3,7 +3,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include "securec.h"
+#if defined(_SIM_)
+#include "semihosting_dbg.h"
+#else
 #include "rtt_viewer.h"
+#endif
 #include "prt_config.h"
 #include "prt_config_internal.h"
 #include "prt_clk.h"
@@ -36,8 +40,10 @@ U32 PRT_AppInit(void)
 
 U32 PRT_HardDrvInit(void)
 {
+#if !defined(_SIM_)
     RttViewerInit();
     RttViewerModeSet(0, RTT_VIEWER_MODE_BLOCK_IF_FIFO_FULL);
+#endif
 
     return OS_OK;
 }
@@ -93,7 +99,11 @@ int printf(const char *format, ...)
         return OS_ERROR;
     }
 
+#if defined(_SIM_)
+    SemihostingDbgWrite(buff, count);
+#else
     RttViewerWrite(0, buff, count);
+#endif
 
     return count;
 }

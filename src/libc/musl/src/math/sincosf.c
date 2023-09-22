@@ -14,7 +14,9 @@
  * ====================================================
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include "libm.h"
 
 /* Small multiples of pi/2 rounded to double precision. */

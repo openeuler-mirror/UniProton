@@ -99,6 +99,7 @@ include_directories(
         ./src/libc/musl/src/include
         ./src/libc/musl/include
         ./src/core/ipc/rwlock
+        ./src/kal/include
         ./src/driver/i210
 )
 

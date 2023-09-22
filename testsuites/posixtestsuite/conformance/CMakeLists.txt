@@ -166,6 +166,15 @@ file(GLOB ALL_PTHREAD_SRC
 
 )
 
+file(GLOB ALL_MALLOC_SRC
+    ./interfaces/malloc/malloc_malloc/[0-9]**.c
+    ./interfaces/malloc/malloc_calloc/[0-9]**.c
+    ./interfaces/malloc/malloc_memalign/[0-9]**.c
+    ./interfaces/malloc/malloc_realloc/[0-9]**.c
+    ./interfaces/malloc/malloc_reallocarray/[0-9]**.c
+    ./interfaces/malloc/malloc_usable_size/[0-9]**.c
+)
+
 list(REMOVE_ITEM ALL_TIME_SRC 
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/clock_settime/4-2.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/clock_settime/speculative/4-3.c
@@ -441,6 +450,9 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface")
 elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
     set(BUILD_APP "UniPorton_test_posix_thread_pthread_interface")
     set(ALL_SRC runThreadPthreadTest.c ${ALL_PTHREAD_SRC})
+elseif (${APP} STREQUAL "UniPorton_test_posix_malloc_interface")
+    set(BUILD_APP "UniPorton_test_posix_malloc_interface")
+    set(ALL_SRC runMallocTest.c ${ALL_MALLOC_SRC})
 elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
     set(BUILD_APP "UniPorton_test_posix_signal_interface")
     set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})

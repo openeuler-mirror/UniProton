@@ -1,9 +1,6 @@
 #include "uart_core.h"
 #include "common.h"
 
-#define UART_REG_READ(addr)          (*(volatile U32 *)(((uintptr_t)addr)))
-#define UART_REG_WRITE(value, addr)  (*(volatile U32 *)((uintptr_t)addr) = (U32)value)
-
 /* Get UART register base address */
 static S32 uart_core_base_addr(S32 uartno, U32 *reg_base)
 {

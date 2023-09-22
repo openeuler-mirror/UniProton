@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © Huawei Technologies Co., Ltd. 2010-2020. All rights reserved.
+# Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
 
 set -e 
 if [ $# != 3 ] ; then 

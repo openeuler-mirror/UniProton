@@ -1,12 +1,12 @@
-## 系统架构
-UniProton系统由Mem、Arch、Kernel、IPC、OM五大子系统构成，Mem、Arch是整个系统的基石。
+# 系统架构
+UniProton 系统由 Mem、Arch、Kernel、IPC、OM 五大子系统构成，Mem、Arch 是整个系统的基石。
 
 各子系统的职责如下：
 - Mem：实现内存分区的创建，内存块的申请和释放等功能。
 - Arch：实现和芯片强相关的硬件特性功能，如硬中断、异常接管等。
 - Kernel：实现任务、软中断、TICK中断、软件定时器等功能。
 - IPC：实现事件、队列、信号量等功能。
-- OM：实现cpup、hook等调测功能。
+- OM：实现 cpup、hook 等调测功能。
 
 ## 代码目录结构说明
 
