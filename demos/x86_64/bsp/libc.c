@@ -11,27 +11,6 @@ extern "C" {
 #endif
 #endif
 
-double fabs(double x)
-{
-    double ret;
-    asm volatile("fabs" : "=t"(ret) : "0"(x));
-    return ret;
-}
-
-double modf(double x, double *iptr)
-{
-    if (fabs(x) >= 4503599627370496.0) {
-        *iptr = x;
-        return 0.0;
-    } else if (fabs(x) < 1.0) {
-        *iptr = 0.0;
-        return x;
-    } else {
-        *iptr = (double)(int64_t)x;
-        return (x - *iptr);
-    }
-}
-
 char *PRT_exponent(char *ptr, int exp, unsigned char fmtch)
 {
     register char *temp;
