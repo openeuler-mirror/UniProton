@@ -84,6 +84,8 @@
 #define TIOCGICOUNT	0x545D
 #define FIOQSIZE	0x5460
 
+#define TCDRN 0x54A1
+
 #define TIOCM_LE        0x001
 #define TIOCM_DTR       0x002
 #define TIOCM_RTS       0x004

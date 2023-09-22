@@ -36,6 +36,12 @@ extern "C" {
 #define S_IFLNK 0120000
 #define S_IFSOCK 0140000
 
+/* From Nuttx stat.h */
+#define S_IFSEM 0030000
+#define S_IFMQ  0050000
+#define S_IFSHM 0070000
+#define S_IFMTD 0110000
+
 #define S_TYPEISMQ(buf)  0
 #define S_TYPEISSEM(buf) 0
 #define S_TYPEISSHM(buf) 0
@@ -90,6 +96,11 @@ int mknodat(int, const char *, mode_t, dev_t);
 
 int futimens(int, const struct timespec [2]);
 int utimensat(int, const char *, const struct timespec [2], int);
+
+/* From Nuttx stat.h */
+int utimens(const char *path, const struct timespec times[2]);
+int lutimens(const char *path, const struct timespec times[2]);
+mode_t getumask(void);
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int lchmod(const char *, mode_t);

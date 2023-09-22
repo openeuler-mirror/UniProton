@@ -10,7 +10,7 @@ static struct l_l t[] = {
 #endif
 };
 
-int sinhl_test(void)
+int sinhl_part3_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	long double y;

@@ -103,6 +103,11 @@ int printf(const char *format, ...)
     SemihostingDbgWrite(buff, count);
 #else
     RttViewerWrite(0, buff, count);
+#if defined(PRINT_USE_UART)
+    int fd = open(SHELL_PATH, O_RDWR | O_NOCTTY | O_NDELAY);
+    write(fd, buff, count);
+    close(fd);
+#endif
 #endif
 
     return count;

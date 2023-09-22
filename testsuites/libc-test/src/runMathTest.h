@@ -595,6 +595,678 @@ extern int yn_test();
 #ifdef YNF_TEST
 extern int ynf_test();
 #endif
+#ifdef ASINL_PART0_TEST
+extern int asinl_part0_test();
+#endif
+#ifdef ASINL_PART1_TEST
+extern int asinl_part1_test();
+#endif
+#ifdef ASINL_PART2_TEST
+extern int asinl_part2_test();
+#endif
+#ifdef ASINL_PART3_TEST
+extern int asinl_part3_test();
+#endif
+#ifdef ASINL_PART4_TEST
+extern int asinl_part4_test();
+#endif
+#ifdef ASIN_PART0_TEST
+extern int asin_part0_test();
+#endif
+#ifdef ASIN_PART1_TEST
+extern int asin_part1_test();
+#endif
+#ifdef ASIN_PART2_TEST
+extern int asin_part2_test();
+#endif
+#ifdef ASIN_PART3_TEST
+extern int asin_part3_test();
+#endif
+#ifdef ASIN_PART4_TEST
+extern int asin_part4_test();
+#endif
+#ifdef ATANL_PART0_TEST
+extern int atanl_part0_test();
+#endif
+#ifdef ATANL_PART1_TEST
+extern int atanl_part1_test();
+#endif
+#ifdef ATANL_PART10_TEST
+extern int atanl_part10_test();
+#endif
+#ifdef ATANL_PART2_TEST
+extern int atanl_part2_test();
+#endif
+#ifdef ATANL_PART3_TEST
+extern int atanl_part3_test();
+#endif
+#ifdef ATANL_PART4_TEST
+extern int atanl_part4_test();
+#endif
+#ifdef ATANL_PART5_TEST
+extern int atanl_part5_test();
+#endif
+#ifdef ATANL_PART6_TEST
+extern int atanl_part6_test();
+#endif
+#ifdef ATANL_PART7_TEST
+extern int atanl_part7_test();
+#endif
+#ifdef ATANL_PART8_TEST
+extern int atanl_part8_test();
+#endif
+#ifdef ATANL_PART9_TEST
+extern int atanl_part9_test();
+#endif
+#ifdef ATAN_PART0_TEST
+extern int atan_part0_test();
+#endif
+#ifdef ATAN_PART1_TEST
+extern int atan_part1_test();
+#endif
+#ifdef ATAN_PART10_TEST
+extern int atan_part10_test();
+#endif
+#ifdef ATAN_PART2_TEST
+extern int atan_part2_test();
+#endif
+#ifdef ATAN_PART3_TEST
+extern int atan_part3_test();
+#endif
+#ifdef ATAN_PART4_TEST
+extern int atan_part4_test();
+#endif
+#ifdef ATAN_PART5_TEST
+extern int atan_part5_test();
+#endif
+#ifdef ATAN_PART6_TEST
+extern int atan_part6_test();
+#endif
+#ifdef ATAN_PART7_TEST
+extern int atan_part7_test();
+#endif
+#ifdef ATAN_PART8_TEST
+extern int atan_part8_test();
+#endif
+#ifdef ATAN_PART9_TEST
+extern int atan_part9_test();
+#endif
+#ifdef COSHL_PART0_TEST
+extern int coshl_part0_test();
+#endif
+#ifdef COSHL_PART1_TEST
+extern int coshl_part1_test();
+#endif
+#ifdef COSHL_PART2_TEST
+extern int coshl_part2_test();
+#endif
+#ifdef COSHL_PART3_TEST
+extern int coshl_part3_test();
+#endif
+#ifdef COSHL_PART4_TEST
+extern int coshl_part4_test();
+#endif
+#ifdef COSH_PART0_TEST
+extern int cosh_part0_test();
+#endif
+#ifdef COSH_PART1_TEST
+extern int cosh_part1_test();
+#endif
+#ifdef COSH_PART2_TEST
+extern int cosh_part2_test();
+#endif
+#ifdef COSH_PART3_TEST
+extern int cosh_part3_test();
+#endif
+#ifdef COSH_PART4_TEST
+extern int cosh_part4_test();
+#endif
+#ifdef COSL_PART0_TEST
+extern int cosl_part0_test();
+#endif
+#ifdef COSL_PART1_TEST
+extern int cosl_part1_test();
+#endif
+#ifdef COSL_PART10_TEST
+extern int cosl_part10_test();
+#endif
+#ifdef COSL_PART11_TEST
+extern int cosl_part11_test();
+#endif
+#ifdef COSL_PART12_TEST
+extern int cosl_part12_test();
+#endif
+#ifdef COSL_PART13_TEST
+extern int cosl_part13_test();
+#endif
+#ifdef COSL_PART14_TEST
+extern int cosl_part14_test();
+#endif
+#ifdef COSL_PART15_TEST
+extern int cosl_part15_test();
+#endif
+#ifdef COSL_PART16_TEST
+extern int cosl_part16_test();
+#endif
+#ifdef COSL_PART17_TEST
+extern int cosl_part17_test();
+#endif
+#ifdef COSL_PART18_TEST
+extern int cosl_part18_test();
+#endif
+#ifdef COSL_PART2_TEST
+extern int cosl_part2_test();
+#endif
+#ifdef COSL_PART3_TEST
+extern int cosl_part3_test();
+#endif
+#ifdef COSL_PART4_TEST
+extern int cosl_part4_test();
+#endif
+#ifdef COSL_PART5_TEST
+extern int cosl_part5_test();
+#endif
+#ifdef COSL_PART6_TEST
+extern int cosl_part6_test();
+#endif
+#ifdef COSL_PART7_TEST
+extern int cosl_part7_test();
+#endif
+#ifdef COSL_PART8_TEST
+extern int cosl_part8_test();
+#endif
+#ifdef COSL_PART9_TEST
+extern int cosl_part9_test();
+#endif
+#ifdef COS_PART0_TEST
+extern int cos_part0_test();
+#endif
+#ifdef COS_PART1_TEST
+extern int cos_part1_test();
+#endif
+#ifdef COS_PART10_TEST
+extern int cos_part10_test();
+#endif
+#ifdef COS_PART11_TEST
+extern int cos_part11_test();
+#endif
+#ifdef COS_PART12_TEST
+extern int cos_part12_test();
+#endif
+#ifdef COS_PART13_TEST
+extern int cos_part13_test();
+#endif
+#ifdef COS_PART14_TEST
+extern int cos_part14_test();
+#endif
+#ifdef COS_PART15_TEST
+extern int cos_part15_test();
+#endif
+#ifdef COS_PART16_TEST
+extern int cos_part16_test();
+#endif
+#ifdef COS_PART17_TEST
+extern int cos_part17_test();
+#endif
+#ifdef COS_PART18_TEST
+extern int cos_part18_test();
+#endif
+#ifdef COS_PART2_TEST
+extern int cos_part2_test();
+#endif
+#ifdef COS_PART3_TEST
+extern int cos_part3_test();
+#endif
+#ifdef COS_PART4_TEST
+extern int cos_part4_test();
+#endif
+#ifdef COS_PART5_TEST
+extern int cos_part5_test();
+#endif
+#ifdef COS_PART6_TEST
+extern int cos_part6_test();
+#endif
+#ifdef COS_PART7_TEST
+extern int cos_part7_test();
+#endif
+#ifdef COS_PART8_TEST
+extern int cos_part8_test();
+#endif
+#ifdef COS_PART9_TEST
+extern int cos_part9_test();
+#endif
+#ifdef EXPL_PART0_TEST
+extern int expl_part0_test();
+#endif
+#ifdef EXPL_PART1_TEST
+extern int expl_part1_test();
+#endif
+#ifdef EXPL_PART2_TEST
+extern int expl_part2_test();
+#endif
+#ifdef EXPL_PART3_TEST
+extern int expl_part3_test();
+#endif
+#ifdef EXPL_PART4_TEST
+extern int expl_part4_test();
+#endif
+#ifdef EXPL_PART5_TEST
+extern int expl_part5_test();
+#endif
+#ifdef EXPL_PART6_TEST
+extern int expl_part6_test();
+#endif
+#ifdef EXPL_PART7_TEST
+extern int expl_part7_test();
+#endif
+#ifdef EXPL_PART8_TEST
+extern int expl_part8_test();
+#endif
+#ifdef EXPL_PART9_TEST
+extern int expl_part9_test();
+#endif
+#ifdef EXP_PART0_TEST
+extern int exp_part0_test();
+#endif
+#ifdef EXP_PART1_TEST
+extern int exp_part1_test();
+#endif
+#ifdef EXP_PART2_TEST
+extern int exp_part2_test();
+#endif
+#ifdef EXP_PART3_TEST
+extern int exp_part3_test();
+#endif
+#ifdef EXP_PART4_TEST
+extern int exp_part4_test();
+#endif
+#ifdef EXP_PART5_TEST
+extern int exp_part5_test();
+#endif
+#ifdef EXP_PART6_TEST
+extern int exp_part6_test();
+#endif
+#ifdef EXP_PART7_TEST
+extern int exp_part7_test();
+#endif
+#ifdef EXP_PART8_TEST
+extern int exp_part8_test();
+#endif
+#ifdef EXP_PART9_TEST
+extern int exp_part9_test();
+#endif
+#ifdef FMAL_PART0_TEST
+extern int fmal_part0_test();
+#endif
+#ifdef FMAL_PART1_TEST
+extern int fmal_part1_test();
+#endif
+#ifdef FMAL_PART2_TEST
+extern int fmal_part2_test();
+#endif
+#ifdef FMA_PART0_TEST
+extern int fma_part0_test();
+#endif
+#ifdef FMA_PART1_TEST
+extern int fma_part1_test();
+#endif
+#ifdef FMA_PART2_TEST
+extern int fma_part2_test();
+#endif
+#ifdef FMODL_PART0_TEST
+extern int fmodl_part0_test();
+#endif
+#ifdef FMODL_PART1_TEST
+extern int fmodl_part1_test();
+#endif
+#ifdef FMODL_PART2_TEST
+extern int fmodl_part2_test();
+#endif
+#ifdef FMOD_PART0_TEST
+extern int fmod_part0_test();
+#endif
+#ifdef FMOD_PART1_TEST
+extern int fmod_part1_test();
+#endif
+#ifdef FMOD_PART2_TEST
+extern int fmod_part2_test();
+#endif
+#ifdef LOGL_PART0_TEST
+extern int logl_part0_test();
+#endif
+#ifdef LOGL_PART1_TEST
+extern int logl_part1_test();
+#endif
+#ifdef LOGL_PART2_TEST
+extern int logl_part2_test();
+#endif
+#ifdef LOG_PART0_TEST
+extern int log_part0_test();
+#endif
+#ifdef LOG_PART1_TEST
+extern int log_part1_test();
+#endif
+#ifdef LOG_PART2_TEST
+extern int log_part2_test();
+#endif
+#ifdef POWF_PART0_TEST
+extern int powf_part0_test();
+#endif
+#ifdef POWF_PART1_TEST
+extern int powf_part1_test();
+#endif
+#ifdef POWF_PART2_TEST
+extern int powf_part2_test();
+#endif
+#ifdef POWF_PART3_TEST
+extern int powf_part3_test();
+#endif
+#ifdef POWL_PART0_TEST
+extern int powl_part0_test();
+#endif
+#ifdef POWL_PART1_TEST
+extern int powl_part1_test();
+#endif
+#ifdef POWL_PART10_TEST
+extern int powl_part10_test();
+#endif
+#ifdef POWL_PART11_TEST
+extern int powl_part11_test();
+#endif
+#ifdef POWL_PART12_TEST
+extern int powl_part12_test();
+#endif
+#ifdef POWL_PART13_TEST
+extern int powl_part13_test();
+#endif
+#ifdef POWL_PART14_TEST
+extern int powl_part14_test();
+#endif
+#ifdef POWL_PART15_TEST
+extern int powl_part15_test();
+#endif
+#ifdef POWL_PART16_TEST
+extern int powl_part16_test();
+#endif
+#ifdef POWL_PART17_TEST
+extern int powl_part17_test();
+#endif
+#ifdef POWL_PART18_TEST
+extern int powl_part18_test();
+#endif
+#ifdef POWL_PART2_TEST
+extern int powl_part2_test();
+#endif
+#ifdef POWL_PART3_TEST
+extern int powl_part3_test();
+#endif
+#ifdef POWL_PART4_TEST
+extern int powl_part4_test();
+#endif
+#ifdef POWL_PART5_TEST
+extern int powl_part5_test();
+#endif
+#ifdef POWL_PART6_TEST
+extern int powl_part6_test();
+#endif
+#ifdef POWL_PART7_TEST
+extern int powl_part7_test();
+#endif
+#ifdef POWL_PART8_TEST
+extern int powl_part8_test();
+#endif
+#ifdef POWL_PART9_TEST
+extern int powl_part9_test();
+#endif
+#ifdef POW_PART0_TEST
+extern int pow_part0_test();
+#endif
+#ifdef POW_PART1_TEST
+extern int pow_part1_test();
+#endif
+#ifdef POW_PART10_TEST
+extern int pow_part10_test();
+#endif
+#ifdef POW_PART11_TEST
+extern int pow_part11_test();
+#endif
+#ifdef POW_PART12_TEST
+extern int pow_part12_test();
+#endif
+#ifdef POW_PART13_TEST
+extern int pow_part13_test();
+#endif
+#ifdef POW_PART14_TEST
+extern int pow_part14_test();
+#endif
+#ifdef POW_PART15_TEST
+extern int pow_part15_test();
+#endif
+#ifdef POW_PART16_TEST
+extern int pow_part16_test();
+#endif
+#ifdef POW_PART17_TEST
+extern int pow_part17_test();
+#endif
+#ifdef POW_PART18_TEST
+extern int pow_part18_test();
+#endif
+#ifdef POW_PART2_TEST
+extern int pow_part2_test();
+#endif
+#ifdef POW_PART3_TEST
+extern int pow_part3_test();
+#endif
+#ifdef POW_PART4_TEST
+extern int pow_part4_test();
+#endif
+#ifdef POW_PART5_TEST
+extern int pow_part5_test();
+#endif
+#ifdef POW_PART6_TEST
+extern int pow_part6_test();
+#endif
+#ifdef POW_PART7_TEST
+extern int pow_part7_test();
+#endif
+#ifdef POW_PART8_TEST
+extern int pow_part8_test();
+#endif
+#ifdef POW_PART9_TEST
+extern int pow_part9_test();
+#endif
+#ifdef SINHL_PART0_TEST
+extern int sinhl_part0_test();
+#endif
+#ifdef SINHL_PART1_TEST
+extern int sinhl_part1_test();
+#endif
+#ifdef SINHL_PART2_TEST
+extern int sinhl_part2_test();
+#endif
+#ifdef SINHL_PART3_TEST
+extern int sinhl_part3_test();
+#endif
+#ifdef SINH_PART0_TEST
+extern int sinh_part0_test();
+#endif
+#ifdef SINH_PART1_TEST
+extern int sinh_part1_test();
+#endif
+#ifdef SINH_PART2_TEST
+extern int sinh_part2_test();
+#endif
+#ifdef SINH_PART3_TEST
+extern int sinh_part3_test();
+#endif
+#ifdef SINL_PART0_TEST
+extern int sinl_part0_test();
+#endif
+#ifdef SINL_PART1_TEST
+extern int sinl_part1_test();
+#endif
+#ifdef SINL_PART10_TEST
+extern int sinl_part10_test();
+#endif
+#ifdef SINL_PART11_TEST
+extern int sinl_part11_test();
+#endif
+#ifdef SINL_PART12_TEST
+extern int sinl_part12_test();
+#endif
+#ifdef SINL_PART13_TEST
+extern int sinl_part13_test();
+#endif
+#ifdef SINL_PART14_TEST
+extern int sinl_part14_test();
+#endif
+#ifdef SINL_PART15_TEST
+extern int sinl_part15_test();
+#endif
+#ifdef SINL_PART16_TEST
+extern int sinl_part16_test();
+#endif
+#ifdef SINL_PART2_TEST
+extern int sinl_part2_test();
+#endif
+#ifdef SINL_PART3_TEST
+extern int sinl_part3_test();
+#endif
+#ifdef SINL_PART4_TEST
+extern int sinl_part4_test();
+#endif
+#ifdef SINL_PART5_TEST
+extern int sinl_part5_test();
+#endif
+#ifdef SINL_PART6_TEST
+extern int sinl_part6_test();
+#endif
+#ifdef SINL_PART7_TEST
+extern int sinl_part7_test();
+#endif
+#ifdef SINL_PART8_TEST
+extern int sinl_part8_test();
+#endif
+#ifdef SINL_PART9_TEST
+extern int sinl_part9_test();
+#endif
+#ifdef SIN_PART0_TEST
+extern int sin_part0_test();
+#endif
+#ifdef SIN_PART1_TEST
+extern int sin_part1_test();
+#endif
+#ifdef SIN_PART10_TEST
+extern int sin_part10_test();
+#endif
+#ifdef SIN_PART11_TEST
+extern int sin_part11_test();
+#endif
+#ifdef SIN_PART12_TEST
+extern int sin_part12_test();
+#endif
+#ifdef SIN_PART13_TEST
+extern int sin_part13_test();
+#endif
+#ifdef SIN_PART14_TEST
+extern int sin_part14_test();
+#endif
+#ifdef SIN_PART15_TEST
+extern int sin_part15_test();
+#endif
+#ifdef SIN_PART16_TEST
+extern int sin_part16_test();
+#endif
+#ifdef SIN_PART2_TEST
+extern int sin_part2_test();
+#endif
+#ifdef SIN_PART3_TEST
+extern int sin_part3_test();
+#endif
+#ifdef SIN_PART4_TEST
+extern int sin_part4_test();
+#endif
+#ifdef SIN_PART5_TEST
+extern int sin_part5_test();
+#endif
+#ifdef SIN_PART6_TEST
+extern int sin_part6_test();
+#endif
+#ifdef SIN_PART7_TEST
+extern int sin_part7_test();
+#endif
+#ifdef SIN_PART8_TEST
+extern int sin_part8_test();
+#endif
+#ifdef SIN_PART9_TEST
+extern int sin_part9_test();
+#endif
+#ifdef TANL_PART0_TEST
+extern int tanl_part0_test();
+#endif
+#ifdef TANL_PART1_TEST
+extern int tanl_part1_test();
+#endif
+#ifdef TANL_PART10_TEST
+extern int tanl_part10_test();
+#endif
+#ifdef TANL_PART2_TEST
+extern int tanl_part2_test();
+#endif
+#ifdef TANL_PART3_TEST
+extern int tanl_part3_test();
+#endif
+#ifdef TANL_PART4_TEST
+extern int tanl_part4_test();
+#endif
+#ifdef TANL_PART5_TEST
+extern int tanl_part5_test();
+#endif
+#ifdef TANL_PART6_TEST
+extern int tanl_part6_test();
+#endif
+#ifdef TANL_PART7_TEST
+extern int tanl_part7_test();
+#endif
+#ifdef TANL_PART8_TEST
+extern int tanl_part8_test();
+#endif
+#ifdef TANL_PART9_TEST
+extern int tanl_part9_test();
+#endif
+#ifdef TAN_PART0_TEST
+extern int tan_part0_test();
+#endif
+#ifdef TAN_PART1_TEST
+extern int tan_part1_test();
+#endif
+#ifdef TAN_PART10_TEST
+extern int tan_part10_test();
+#endif
+#ifdef TAN_PART2_TEST
+extern int tan_part2_test();
+#endif
+#ifdef TAN_PART3_TEST
+extern int tan_part3_test();
+#endif
+#ifdef TAN_PART4_TEST
+extern int tan_part4_test();
+#endif
+#ifdef TAN_PART5_TEST
+extern int tan_part5_test();
+#endif
+#ifdef TAN_PART6_TEST
+extern int tan_part6_test();
+#endif
+#ifdef TAN_PART7_TEST
+extern int tan_part7_test();
+#endif
+#ifdef TAN_PART8_TEST
+extern int tan_part8_test();
+#endif
+#ifdef TAN_PART9_TEST
+extern int tan_part9_test();
+#endif
 
 typedef int test_run_main();
 
@@ -1193,6 +1865,678 @@ test_run_main *run_test_arry_1[] = {
 #ifdef YNF_TEST
     ynf_test,
 #endif
+#ifdef ASINL_PART0_TEST
+    asinl_part0_test,  
+#endif
+#ifdef ASINL_PART1_TEST
+    asinl_part1_test,  
+#endif
+#ifdef ASINL_PART2_TEST
+    asinl_part2_test,  
+#endif
+#ifdef ASINL_PART3_TEST
+    asinl_part3_test,  
+#endif
+#ifdef ASINL_PART4_TEST
+    asinl_part4_test,  
+#endif
+#ifdef ASIN_PART0_TEST 
+    asin_part0_test,   
+#endif
+#ifdef ASIN_PART1_TEST 
+    asin_part1_test,   
+#endif
+#ifdef ASIN_PART2_TEST 
+    asin_part2_test,   
+#endif
+#ifdef ASIN_PART3_TEST 
+    asin_part3_test,   
+#endif
+#ifdef ASIN_PART4_TEST 
+    asin_part4_test,
+#endif
+#ifdef ATANL_PART0_TEST
+    atanl_part0_test,
+#endif
+#ifdef ATANL_PART1_TEST
+    atanl_part1_test,
+#endif
+#ifdef ATANL_PART10_TEST
+    atanl_part10_test,
+#endif
+#ifdef ATANL_PART2_TEST
+    atanl_part2_test,
+#endif
+#ifdef ATANL_PART3_TEST
+    atanl_part3_test,
+#endif
+#ifdef ATANL_PART4_TEST
+    atanl_part4_test,
+#endif
+#ifdef ATANL_PART5_TEST
+    atanl_part5_test,
+#endif
+#ifdef ATANL_PART6_TEST
+    atanl_part6_test,
+#endif
+#ifdef ATANL_PART7_TEST
+    atanl_part7_test,
+#endif
+#ifdef ATANL_PART8_TEST
+    atanl_part8_test,
+#endif
+#ifdef ATANL_PART9_TEST
+    atanl_part9_test,
+#endif
+#ifdef ATAN_PART0_TEST
+    atan_part0_test,
+#endif
+#ifdef ATAN_PART1_TEST
+    atan_part1_test,
+#endif
+#ifdef ATAN_PART10_TEST
+    atan_part10_test,
+#endif
+#ifdef ATAN_PART2_TEST
+    atan_part2_test,
+#endif
+#ifdef ATAN_PART3_TEST
+    atan_part3_test,
+#endif
+#ifdef ATAN_PART4_TEST
+    atan_part4_test,
+#endif
+#ifdef ATAN_PART5_TEST
+    atan_part5_test,
+#endif
+#ifdef ATAN_PART6_TEST
+    atan_part6_test,
+#endif
+#ifdef ATAN_PART7_TEST
+    atan_part7_test,
+#endif
+#ifdef ATAN_PART8_TEST
+    atan_part8_test,
+#endif
+#ifdef ATAN_PART9_TEST
+    atan_part9_test,
+#endif
+#ifdef COSHL_PART0_TEST
+    coshl_part0_test,
+#endif
+#ifdef COSHL_PART1_TEST
+    coshl_part1_test,
+#endif
+#ifdef COSHL_PART2_TEST
+    coshl_part2_test,
+#endif
+#ifdef COSHL_PART3_TEST
+    coshl_part3_test,
+#endif
+#ifdef COSHL_PART4_TEST
+    coshl_part4_test,
+#endif
+#ifdef COSH_PART0_TEST
+    cosh_part0_test,
+#endif
+#ifdef COSH_PART1_TEST
+    cosh_part1_test,
+#endif
+#ifdef COSH_PART2_TEST
+    cosh_part2_test,
+#endif
+#ifdef COSH_PART3_TEST
+    cosh_part3_test,
+#endif
+#ifdef COSH_PART4_TEST
+    cosh_part4_test,
+#endif
+#ifdef COSL_PART0_TEST
+    cosl_part0_test,
+#endif
+#ifdef COSL_PART1_TEST
+    cosl_part1_test,
+#endif
+#ifdef COSL_PART10_TEST
+    cosl_part10_test,
+#endif
+#ifdef COSL_PART11_TEST
+    cosl_part11_test,
+#endif
+#ifdef COSL_PART12_TEST
+    cosl_part12_test,
+#endif
+#ifdef COSL_PART13_TEST
+    cosl_part13_test,
+#endif
+#ifdef COSL_PART14_TEST
+    cosl_part14_test,
+#endif
+#ifdef COSL_PART15_TEST
+    cosl_part15_test,
+#endif
+#ifdef COSL_PART16_TEST
+    cosl_part16_test,
+#endif
+#ifdef COSL_PART17_TEST
+    cosl_part17_test,
+#endif
+#ifdef COSL_PART18_TEST
+    cosl_part18_test,
+#endif
+#ifdef COSL_PART2_TEST
+    cosl_part2_test,
+#endif
+#ifdef COSL_PART3_TEST
+    cosl_part3_test,
+#endif
+#ifdef COSL_PART4_TEST
+    cosl_part4_test,
+#endif
+#ifdef COSL_PART5_TEST
+    cosl_part5_test,
+#endif
+#ifdef COSL_PART6_TEST
+    cosl_part6_test,
+#endif
+#ifdef COSL_PART7_TEST
+    cosl_part7_test,
+#endif
+#ifdef COSL_PART8_TEST
+    cosl_part8_test,
+#endif
+#ifdef COSL_PART9_TEST
+    cosl_part9_test,
+#endif
+#ifdef COS_PART0_TEST
+    cos_part0_test,
+#endif
+#ifdef COS_PART1_TEST
+    cos_part1_test,
+#endif
+#ifdef COS_PART10_TEST
+    cos_part10_test,
+#endif
+#ifdef COS_PART11_TEST
+    cos_part11_test,
+#endif
+#ifdef COS_PART12_TEST
+    cos_part12_test,
+#endif
+#ifdef COS_PART13_TEST
+    cos_part13_test,
+#endif
+#ifdef COS_PART14_TEST
+    cos_part14_test,
+#endif
+#ifdef COS_PART15_TEST
+    cos_part15_test,
+#endif
+#ifdef COS_PART16_TEST
+    cos_part16_test,
+#endif
+#ifdef COS_PART17_TEST
+    cos_part17_test,
+#endif
+#ifdef COS_PART18_TEST
+    cos_part18_test,
+#endif
+#ifdef COS_PART2_TEST
+    cos_part2_test,
+#endif
+#ifdef COS_PART3_TEST
+    cos_part3_test,
+#endif
+#ifdef COS_PART4_TEST
+    cos_part4_test,
+#endif
+#ifdef COS_PART5_TEST
+    cos_part5_test,
+#endif
+#ifdef COS_PART6_TEST
+    cos_part6_test,
+#endif
+#ifdef COS_PART7_TEST
+    cos_part7_test,
+#endif
+#ifdef COS_PART8_TEST
+    cos_part8_test,
+#endif
+#ifdef COS_PART9_TEST
+    cos_part9_test,
+#endif
+#ifdef EXPL_PART0_TEST
+    expl_part0_test,
+#endif
+#ifdef EXPL_PART1_TEST
+    expl_part1_test,
+#endif
+#ifdef EXPL_PART2_TEST
+    expl_part2_test,
+#endif
+#ifdef EXPL_PART3_TEST
+    expl_part3_test,
+#endif
+#ifdef EXPL_PART4_TEST
+    expl_part4_test,
+#endif
+#ifdef EXPL_PART5_TEST
+    expl_part5_test,
+#endif
+#ifdef EXPL_PART6_TEST
+    expl_part6_test,
+#endif
+#ifdef EXPL_PART7_TEST
+    expl_part7_test,
+#endif
+#ifdef EXPL_PART8_TEST
+    expl_part8_test,
+#endif
+#ifdef EXPL_PART9_TEST
+    expl_part9_test,
+#endif
+#ifdef EXP_PART0_TEST
+    exp_part0_test,
+#endif
+#ifdef EXP_PART1_TEST
+    exp_part1_test,
+#endif
+#ifdef EXP_PART2_TEST
+    exp_part2_test,
+#endif
+#ifdef EXP_PART3_TEST
+    exp_part3_test,
+#endif
+#ifdef EXP_PART4_TEST
+    exp_part4_test,
+#endif
+#ifdef EXP_PART5_TEST
+    exp_part5_test,
+#endif
+#ifdef EXP_PART6_TEST
+    exp_part6_test,
+#endif
+#ifdef EXP_PART7_TEST
+    exp_part7_test,
+#endif
+#ifdef EXP_PART8_TEST
+    exp_part8_test,
+#endif
+#ifdef EXP_PART9_TEST
+    exp_part9_test,
+#endif
+#ifdef FMAL_PART0_TEST
+    fmal_part0_test,
+#endif
+#ifdef FMAL_PART1_TEST
+    fmal_part1_test,
+#endif
+#ifdef FMAL_PART2_TEST
+    fmal_part2_test,
+#endif
+#ifdef FMA_PART0_TEST
+    fma_part0_test,
+#endif
+#ifdef FMA_PART1_TEST
+    fma_part1_test,
+#endif
+#ifdef FMA_PART2_TEST
+    fma_part2_test,
+#endif
+#ifdef FMODL_PART0_TEST
+    fmodl_part0_test,
+#endif
+#ifdef FMODL_PART1_TEST
+    fmodl_part1_test,
+#endif
+#ifdef FMODL_PART2_TEST
+    fmodl_part2_test,
+#endif
+#ifdef FMOD_PART0_TEST
+    fmod_part0_test,
+#endif
+#ifdef FMOD_PART1_TEST
+    fmod_part1_test,
+#endif
+#ifdef FMOD_PART2_TEST
+    fmod_part2_test,
+#endif
+#ifdef LOGL_PART0_TEST
+    logl_part0_test,
+#endif
+#ifdef LOGL_PART1_TEST
+    logl_part1_test,
+#endif
+#ifdef LOGL_PART2_TEST
+    logl_part2_test,
+#endif
+#ifdef LOG_PART0_TEST
+    log_part0_test,
+#endif
+#ifdef LOG_PART1_TEST
+    log_part1_test,
+#endif
+#ifdef LOG_PART2_TEST
+    log_part2_test,
+#endif
+#ifdef POWF_PART0_TEST
+    powf_part0_test,
+#endif
+#ifdef POWF_PART1_TEST
+    powf_part1_test,
+#endif
+#ifdef POWF_PART2_TEST
+    powf_part2_test,
+#endif
+#ifdef POWF_PART3_TEST
+    powf_part3_test,
+#endif
+#ifdef POWL_PART0_TEST
+    powl_part0_test,
+#endif
+#ifdef POWL_PART1_TEST
+    powl_part1_test,
+#endif
+#ifdef POWL_PART10_TEST
+    powl_part10_test,
+#endif
+#ifdef POWL_PART11_TEST
+    powl_part11_test,
+#endif
+#ifdef POWL_PART12_TEST
+    powl_part12_test,
+#endif
+#ifdef POWL_PART13_TEST
+    powl_part13_test,
+#endif
+#ifdef POWL_PART14_TEST
+    powl_part14_test,
+#endif
+#ifdef POWL_PART15_TEST
+    powl_part15_test,
+#endif
+#ifdef POWL_PART16_TEST
+    powl_part16_test,
+#endif
+#ifdef POWL_PART17_TEST
+    powl_part17_test,
+#endif
+#ifdef POWL_PART18_TEST
+    powl_part18_test,
+#endif
+#ifdef POWL_PART2_TEST
+    powl_part2_test,
+#endif
+#ifdef POWL_PART3_TEST
+    powl_part3_test,
+#endif
+#ifdef POWL_PART4_TEST
+    powl_part4_test,
+#endif
+#ifdef POWL_PART5_TEST
+    powl_part5_test,
+#endif
+#ifdef POWL_PART6_TEST
+    powl_part6_test,
+#endif
+#ifdef POWL_PART7_TEST
+    powl_part7_test,
+#endif
+#ifdef POWL_PART8_TEST
+    powl_part8_test,
+#endif
+#ifdef POWL_PART9_TEST
+    powl_part9_test,
+#endif
+#ifdef POW_PART0_TEST
+    pow_part0_test,
+#endif
+#ifdef POW_PART1_TEST
+    pow_part1_test,
+#endif
+#ifdef POW_PART10_TEST
+    pow_part10_test,
+#endif
+#ifdef POW_PART11_TEST
+    pow_part11_test,
+#endif
+#ifdef POW_PART12_TEST
+    pow_part12_test,
+#endif
+#ifdef POW_PART13_TEST
+    pow_part13_test,
+#endif
+#ifdef POW_PART14_TEST
+    pow_part14_test,
+#endif
+#ifdef POW_PART15_TEST
+    pow_part15_test,
+#endif
+#ifdef POW_PART16_TEST
+    pow_part16_test,
+#endif
+#ifdef POW_PART17_TEST
+    pow_part17_test,
+#endif
+#ifdef POW_PART18_TEST
+    pow_part18_test,
+#endif
+#ifdef POW_PART2_TEST
+    pow_part2_test,
+#endif
+#ifdef POW_PART3_TEST
+    pow_part3_test,
+#endif
+#ifdef POW_PART4_TEST
+    pow_part4_test,
+#endif
+#ifdef POW_PART5_TEST
+    pow_part5_test,
+#endif
+#ifdef POW_PART6_TEST
+    pow_part6_test,
+#endif
+#ifdef POW_PART7_TEST
+    pow_part7_test,
+#endif
+#ifdef POW_PART8_TEST
+    pow_part8_test,
+#endif
+#ifdef POW_PART9_TEST
+    pow_part9_test,
+#endif
+#ifdef SINHL_PART0_TEST
+    sinhl_part0_test,
+#endif
+#ifdef SINHL_PART1_TEST
+    sinhl_part1_test,
+#endif
+#ifdef SINHL_PART2_TEST
+    sinhl_part2_test,
+#endif
+#ifdef SINHL_PART3_TEST
+    sinhl_part3_test,
+#endif
+#ifdef SINH_PART0_TEST
+    sinh_part0_test,
+#endif
+#ifdef SINH_PART1_TEST
+    sinh_part1_test,
+#endif
+#ifdef SINH_PART2_TEST
+    sinh_part2_test,
+#endif
+#ifdef SINH_PART3_TEST
+    sinh_part3_test,
+#endif
+#ifdef SINL_PART0_TEST
+    sinl_part0_test,
+#endif
+#ifdef SINL_PART1_TEST
+    sinl_part1_test,
+#endif
+#ifdef SINL_PART10_TEST
+    sinl_part10_test,
+#endif
+#ifdef SINL_PART11_TEST
+    sinl_part11_test,
+#endif
+#ifdef SINL_PART12_TEST
+    sinl_part12_test,
+#endif
+#ifdef SINL_PART13_TEST
+    sinl_part13_test,
+#endif
+#ifdef SINL_PART14_TEST
+    sinl_part14_test,
+#endif
+#ifdef SINL_PART15_TEST
+    sinl_part15_test,
+#endif
+#ifdef SINL_PART16_TEST
+    sinl_part16_test,
+#endif
+#ifdef SINL_PART2_TEST
+    sinl_part2_test,
+#endif
+#ifdef SINL_PART3_TEST
+    sinl_part3_test,
+#endif
+#ifdef SINL_PART4_TEST
+    sinl_part4_test,
+#endif
+#ifdef SINL_PART5_TEST
+    sinl_part5_test,
+#endif
+#ifdef SINL_PART6_TEST
+    sinl_part6_test,
+#endif
+#ifdef SINL_PART7_TEST
+    sinl_part7_test,
+#endif
+#ifdef SINL_PART8_TEST
+    sinl_part8_test,
+#endif
+#ifdef SINL_PART9_TEST
+    sinl_part9_test,
+#endif
+#ifdef SIN_PART0_TEST
+    sin_part0_test,
+#endif
+#ifdef SIN_PART1_TEST
+    sin_part1_test,
+#endif
+#ifdef SIN_PART10_TEST
+    sin_part10_test,
+#endif
+#ifdef SIN_PART11_TEST
+    sin_part11_test,
+#endif
+#ifdef SIN_PART12_TEST
+    sin_part12_test,
+#endif
+#ifdef SIN_PART13_TEST
+    sin_part13_test,
+#endif
+#ifdef SIN_PART14_TEST
+    sin_part14_test,
+#endif
+#ifdef SIN_PART15_TEST
+    sin_part15_test,
+#endif
+#ifdef SIN_PART16_TEST
+    sin_part16_test,
+#endif
+#ifdef SIN_PART2_TEST
+    sin_part2_test,
+#endif
+#ifdef SIN_PART3_TEST
+    sin_part3_test,
+#endif
+#ifdef SIN_PART4_TEST
+    sin_part4_test,
+#endif
+#ifdef SIN_PART5_TEST
+    sin_part5_test,
+#endif
+#ifdef SIN_PART6_TEST
+    sin_part6_test,
+#endif
+#ifdef SIN_PART7_TEST
+    sin_part7_test,
+#endif
+#ifdef SIN_PART8_TEST
+    sin_part8_test,
+#endif
+#ifdef SIN_PART9_TEST
+    sin_part9_test,
+#endif
+#ifdef TANL_PART0_TEST
+    tanl_part0_test,
+#endif
+#ifdef TANL_PART1_TEST
+    tanl_part1_test,
+#endif
+#ifdef TANL_PART10_TEST
+    tanl_part10_test,
+#endif
+#ifdef TANL_PART2_TEST
+    tanl_part2_test,
+#endif
+#ifdef TANL_PART3_TEST
+    tanl_part3_test,
+#endif
+#ifdef TANL_PART4_TEST
+    tanl_part4_test,
+#endif
+#ifdef TANL_PART5_TEST
+    tanl_part5_test,
+#endif
+#ifdef TANL_PART6_TEST
+    tanl_part6_test,
+#endif
+#ifdef TANL_PART7_TEST
+    tanl_part7_test,
+#endif
+#ifdef TANL_PART8_TEST
+    tanl_part8_test,
+#endif
+#ifdef TANL_PART9_TEST
+    tanl_part9_test,
+#endif
+#ifdef TAN_PART0_TEST
+    tan_part0_test,
+#endif
+#ifdef TAN_PART1_TEST
+    tan_part1_test,
+#endif
+#ifdef TAN_PART10_TEST
+    tan_part10_test,
+#endif
+#ifdef TAN_PART2_TEST
+    tan_part2_test,
+#endif
+#ifdef TAN_PART3_TEST
+    tan_part3_test,
+#endif
+#ifdef TAN_PART4_TEST
+    tan_part4_test,
+#endif
+#ifdef TAN_PART5_TEST
+    tan_part5_test,
+#endif
+#ifdef TAN_PART6_TEST
+    tan_part6_test,
+#endif
+#ifdef TAN_PART7_TEST
+    tan_part7_test,
+#endif
+#ifdef TAN_PART8_TEST
+    tan_part8_test,
+#endif
+#ifdef TAN_PART9_TEST
+    tan_part9_test,
+#endif
 };
 
 char run_test_name_1[][50] = {
@@ -1789,6 +3133,678 @@ char run_test_name_1[][50] = {
 #endif
 #ifdef YNF_TEST
     "ynf_test",
+#endif
+#ifdef ASINL_PART0_TEST
+    "asinl_part0_test",
+#endif
+#ifdef ASINL_PART1_TEST
+    "asinl_part1_test",
+#endif
+#ifdef ASINL_PART2_TEST
+    "asinl_part2_test",
+#endif
+#ifdef ASINL_PART3_TEST
+    "asinl_part3_test",
+#endif
+#ifdef ASINL_PART4_TEST
+    "asinl_part4_test",
+#endif
+#ifdef ASIN_PART0_TEST
+    "asin_part0_test",
+#endif
+#ifdef ASIN_PART1_TEST
+    "asin_part1_test",
+#endif
+#ifdef ASIN_PART2_TEST
+    "asin_part2_test",
+#endif
+#ifdef ASIN_PART3_TEST
+    "asin_part3_test",
+#endif
+#ifdef ASIN_PART4_TEST
+    "asin_part4_test",
+#endif
+#ifdef ATANL_PART0_TEST
+    "atanl_part0_test",
+#endif
+#ifdef ATANL_PART1_TEST
+    "atanl_part1_test",
+#endif
+#ifdef ATANL_PART10_TEST
+    "atanl_part10_test",
+#endif
+#ifdef ATANL_PART2_TEST
+    "atanl_part2_test",
+#endif
+#ifdef ATANL_PART3_TEST
+    "atanl_part3_test",
+#endif
+#ifdef ATANL_PART4_TEST
+    "atanl_part4_test",
+#endif
+#ifdef ATANL_PART5_TEST
+    "atanl_part5_test",
+#endif
+#ifdef ATANL_PART6_TEST
+    "atanl_part6_test",
+#endif
+#ifdef ATANL_PART7_TEST
+    "atanl_part7_test",
+#endif
+#ifdef ATANL_PART8_TEST
+    "atanl_part8_test",
+#endif
+#ifdef ATANL_PART9_TEST
+    "atanl_part9_test",
+#endif
+#ifdef ATAN_PART0_TEST
+    "atan_part0_test",
+#endif
+#ifdef ATAN_PART1_TEST
+    "atan_part1_test",
+#endif
+#ifdef ATAN_PART10_TEST
+    "atan_part10_test",
+#endif
+#ifdef ATAN_PART2_TEST
+    "atan_part2_test",
+#endif
+#ifdef ATAN_PART3_TEST
+    "atan_part3_test",
+#endif
+#ifdef ATAN_PART4_TEST
+    "atan_part4_test",
+#endif
+#ifdef ATAN_PART5_TEST
+    "atan_part5_test",
+#endif
+#ifdef ATAN_PART6_TEST
+    "atan_part6_test",
+#endif
+#ifdef ATAN_PART7_TEST
+    "atan_part7_test",
+#endif
+#ifdef ATAN_PART8_TEST
+    "atan_part8_test",
+#endif
+#ifdef ATAN_PART9_TEST
+    "atan_part9_test",
+#endif
+#ifdef COSHL_PART0_TEST
+    "coshl_part0_test",
+#endif
+#ifdef COSHL_PART1_TEST
+    "coshl_part1_test",
+#endif
+#ifdef COSHL_PART2_TEST
+    "coshl_part2_test",
+#endif
+#ifdef COSHL_PART3_TEST
+    "coshl_part3_test",
+#endif
+#ifdef COSHL_PART4_TEST
+    "coshl_part4_test",
+#endif
+#ifdef COSH_PART0_TEST
+    "cosh_part0_test",
+#endif
+#ifdef COSH_PART1_TEST
+    "cosh_part1_test",
+#endif
+#ifdef COSH_PART2_TEST
+    "cosh_part2_test",
+#endif
+#ifdef COSH_PART3_TEST
+    "cosh_part3_test",
+#endif
+#ifdef COSH_PART4_TEST
+    "cosh_part4_test",
+#endif
+#ifdef COSL_PART0_TEST
+    "cosl_part0_test",
+#endif
+#ifdef COSL_PART1_TEST
+    "cosl_part1_test",
+#endif
+#ifdef COSL_PART10_TEST
+    "cosl_part10_test",
+#endif
+#ifdef COSL_PART11_TEST
+    "cosl_part11_test",
+#endif
+#ifdef COSL_PART12_TEST
+    "cosl_part12_test",
+#endif
+#ifdef COSL_PART13_TEST
+    "cosl_part13_test",
+#endif
+#ifdef COSL_PART14_TEST
+    "cosl_part14_test",
+#endif
+#ifdef COSL_PART15_TEST
+    "cosl_part15_test",
+#endif
+#ifdef COSL_PART16_TEST
+    "cosl_part16_test",
+#endif
+#ifdef COSL_PART17_TEST
+    "cosl_part17_test",
+#endif
+#ifdef COSL_PART18_TEST
+    "cosl_part18_test",
+#endif
+#ifdef COSL_PART2_TEST
+    "cosl_part2_test",
+#endif
+#ifdef COSL_PART3_TEST
+    "cosl_part3_test",
+#endif
+#ifdef COSL_PART4_TEST
+    "cosl_part4_test",
+#endif
+#ifdef COSL_PART5_TEST
+    "cosl_part5_test",
+#endif
+#ifdef COSL_PART6_TEST
+    "cosl_part6_test",
+#endif
+#ifdef COSL_PART7_TEST
+    "cosl_part7_test",
+#endif
+#ifdef COSL_PART8_TEST
+    "cosl_part8_test",
+#endif
+#ifdef COSL_PART9_TEST
+    "cosl_part9_test",
+#endif
+#ifdef COS_PART0_TEST
+    "cos_part0_test",
+#endif
+#ifdef COS_PART1_TEST
+    "cos_part1_test",
+#endif
+#ifdef COS_PART10_TEST
+    "cos_part10_test",
+#endif
+#ifdef COS_PART11_TEST
+    "cos_part11_test",
+#endif
+#ifdef COS_PART12_TEST
+    "cos_part12_test",
+#endif
+#ifdef COS_PART13_TEST
+    "cos_part13_test",
+#endif
+#ifdef COS_PART14_TEST
+    "cos_part14_test",
+#endif
+#ifdef COS_PART15_TEST
+    "cos_part15_test",
+#endif
+#ifdef COS_PART16_TEST
+    "cos_part16_test",
+#endif
+#ifdef COS_PART17_TEST
+    "cos_part17_test",
+#endif
+#ifdef COS_PART18_TEST
+    "cos_part18_test",
+#endif
+#ifdef COS_PART2_TEST
+    "cos_part2_test",
+#endif
+#ifdef COS_PART3_TEST
+    "cos_part3_test",
+#endif
+#ifdef COS_PART4_TEST
+    "cos_part4_test",
+#endif
+#ifdef COS_PART5_TEST
+    "cos_part5_test",
+#endif
+#ifdef COS_PART6_TEST
+    "cos_part6_test",
+#endif
+#ifdef COS_PART7_TEST
+    "cos_part7_test",
+#endif
+#ifdef COS_PART8_TEST
+    "cos_part8_test",
+#endif
+#ifdef COS_PART9_TEST
+    "cos_part9_test",
+#endif
+#ifdef EXPL_PART0_TEST
+    "expl_part0_test",
+#endif
+#ifdef EXPL_PART1_TEST
+    "expl_part1_test",
+#endif
+#ifdef EXPL_PART2_TEST
+    "expl_part2_test",
+#endif
+#ifdef EXPL_PART3_TEST
+    "expl_part3_test",
+#endif
+#ifdef EXPL_PART4_TEST
+    "expl_part4_test",
+#endif
+#ifdef EXPL_PART5_TEST
+    "expl_part5_test",
+#endif
+#ifdef EXPL_PART6_TEST
+    "expl_part6_test",
+#endif
+#ifdef EXPL_PART7_TEST
+    "expl_part7_test",
+#endif
+#ifdef EXPL_PART8_TEST
+    "expl_part8_test",
+#endif
+#ifdef EXPL_PART9_TEST
+    "expl_part9_test",
+#endif
+#ifdef EXP_PART0_TEST
+    "exp_part0_test",
+#endif
+#ifdef EXP_PART1_TEST
+    "exp_part1_test",
+#endif
+#ifdef EXP_PART2_TEST
+    "exp_part2_test",
+#endif
+#ifdef EXP_PART3_TEST
+    "exp_part3_test",
+#endif
+#ifdef EXP_PART4_TEST
+    "exp_part4_test",
+#endif
+#ifdef EXP_PART5_TEST
+    "exp_part5_test",
+#endif
+#ifdef EXP_PART6_TEST
+    "exp_part6_test",
+#endif
+#ifdef EXP_PART7_TEST
+    "exp_part7_test",
+#endif
+#ifdef EXP_PART8_TEST
+    "exp_part8_test",
+#endif
+#ifdef EXP_PART9_TEST
+    "exp_part9_test",
+#endif
+#ifdef FMAL_PART0_TEST
+    "fmal_part0_test",
+#endif
+#ifdef FMAL_PART1_TEST
+    "fmal_part1_test",
+#endif
+#ifdef FMAL_PART2_TEST
+    "fmal_part2_test",
+#endif
+#ifdef FMA_PART0_TEST
+    "fma_part0_test",
+#endif
+#ifdef FMA_PART1_TEST
+    "fma_part1_test",
+#endif
+#ifdef FMA_PART2_TEST
+    "fma_part2_test",
+#endif
+#ifdef FMODL_PART0_TEST
+    "fmodl_part0_test",
+#endif
+#ifdef FMODL_PART1_TEST
+    "fmodl_part1_test",
+#endif
+#ifdef FMODL_PART2_TEST
+    "fmodl_part2_test",
+#endif
+#ifdef FMOD_PART0_TEST
+    "fmod_part0_test",
+#endif
+#ifdef FMOD_PART1_TEST
+    "fmod_part1_test",
+#endif
+#ifdef FMOD_PART2_TEST
+    "fmod_part2_test",
+#endif
+#ifdef LOGL_PART0_TEST
+    "logl_part0_test",
+#endif
+#ifdef LOGL_PART1_TEST
+    "logl_part1_test",
+#endif
+#ifdef LOGL_PART2_TEST
+    "logl_part2_test",
+#endif
+#ifdef LOG_PART0_TEST
+    "log_part0_test",
+#endif
+#ifdef LOG_PART1_TEST
+    "log_part1_test",
+#endif
+#ifdef LOG_PART2_TEST
+    "log_part2_test",
+#endif
+#ifdef POWF_PART0_TEST
+    "powf_part0_test",
+#endif
+#ifdef POWF_PART1_TEST
+    "powf_part1_test",
+#endif
+#ifdef POWF_PART2_TEST
+    "powf_part2_test",
+#endif
+#ifdef POWF_PART3_TEST
+    "powf_part3_test",
+#endif
+#ifdef POWL_PART0_TEST
+    "powl_part0_test",
+#endif
+#ifdef POWL_PART1_TEST
+    "powl_part1_test",
+#endif
+#ifdef POWL_PART10_TEST
+    "powl_part10_test",
+#endif
+#ifdef POWL_PART11_TEST
+    "powl_part11_test",
+#endif
+#ifdef POWL_PART12_TEST
+    "powl_part12_test",
+#endif
+#ifdef POWL_PART13_TEST
+    "powl_part13_test",
+#endif
+#ifdef POWL_PART14_TEST
+    "powl_part14_test",
+#endif
+#ifdef POWL_PART15_TEST
+    "powl_part15_test",
+#endif
+#ifdef POWL_PART16_TEST
+    "powl_part16_test",
+#endif
+#ifdef POWL_PART17_TEST
+    "powl_part17_test",
+#endif
+#ifdef POWL_PART18_TEST
+    "powl_part18_test",
+#endif
+#ifdef POWL_PART2_TEST
+    "powl_part2_test",
+#endif
+#ifdef POWL_PART3_TEST
+    "powl_part3_test",
+#endif
+#ifdef POWL_PART4_TEST
+    "powl_part4_test",
+#endif
+#ifdef POWL_PART5_TEST
+    "powl_part5_test",
+#endif
+#ifdef POWL_PART6_TEST
+    "powl_part6_test",
+#endif
+#ifdef POWL_PART7_TEST
+    "powl_part7_test",
+#endif
+#ifdef POWL_PART8_TEST
+    "powl_part8_test",
+#endif
+#ifdef POWL_PART9_TEST
+    "powl_part9_test",
+#endif
+#ifdef POW_PART0_TEST
+    "pow_part0_test",
+#endif
+#ifdef POW_PART1_TEST
+    "pow_part1_test",
+#endif
+#ifdef POW_PART10_TEST
+    "pow_part10_test",
+#endif
+#ifdef POW_PART11_TEST
+    "pow_part11_test",
+#endif
+#ifdef POW_PART12_TEST
+    "pow_part12_test",
+#endif
+#ifdef POW_PART13_TEST
+    "pow_part13_test",
+#endif
+#ifdef POW_PART14_TEST
+    "pow_part14_test",
+#endif
+#ifdef POW_PART15_TEST
+    "pow_part15_test",
+#endif
+#ifdef POW_PART16_TEST
+    "pow_part16_test",
+#endif
+#ifdef POW_PART17_TEST
+    "pow_part17_test",
+#endif
+#ifdef POW_PART18_TEST
+    "pow_part18_test",
+#endif
+#ifdef POW_PART2_TEST
+    "pow_part2_test",
+#endif
+#ifdef POW_PART3_TEST
+    "pow_part3_test",
+#endif
+#ifdef POW_PART4_TEST
+    "pow_part4_test",
+#endif
+#ifdef POW_PART5_TEST
+    "pow_part5_test",
+#endif
+#ifdef POW_PART6_TEST
+    "pow_part6_test",
+#endif
+#ifdef POW_PART7_TEST
+    "pow_part7_test",
+#endif
+#ifdef POW_PART8_TEST
+    "pow_part8_test",
+#endif
+#ifdef POW_PART9_TEST
+    "pow_part9_test",
+#endif
+#ifdef SINHL_PART0_TEST
+    "sinhl_part0_test",
+#endif
+#ifdef SINHL_PART1_TEST
+    "sinhl_part1_test",
+#endif
+#ifdef SINHL_PART2_TEST
+    "sinhl_part2_test",
+#endif
+#ifdef SINHL_PART3_TEST
+    "sinhl_part3_test",
+#endif
+#ifdef SINH_PART0_TEST
+    "sinh_part0_test",
+#endif
+#ifdef SINH_PART1_TEST
+    "sinh_part1_test",
+#endif
+#ifdef SINH_PART2_TEST
+    "sinh_part2_test",
+#endif
+#ifdef SINH_PART3_TEST
+    "sinh_part3_test",
+#endif
+#ifdef SINL_PART0_TEST
+    "sinl_part0_test",
+#endif
+#ifdef SINL_PART1_TEST
+    "sinl_part1_test",
+#endif
+#ifdef SINL_PART10_TEST
+    "sinl_part10_test",
+#endif
+#ifdef SINL_PART11_TEST
+    "sinl_part11_test",
+#endif
+#ifdef SINL_PART12_TEST
+    "sinl_part12_test",
+#endif
+#ifdef SINL_PART13_TEST
+    "sinl_part13_test",
+#endif
+#ifdef SINL_PART14_TEST
+    "sinl_part14_test",
+#endif
+#ifdef SINL_PART15_TEST
+    "sinl_part15_test",
+#endif
+#ifdef SINL_PART16_TEST
+    "sinl_part16_test",
+#endif
+#ifdef SINL_PART2_TEST
+    "sinl_part2_test",
+#endif
+#ifdef SINL_PART3_TEST
+    "sinl_part3_test",
+#endif
+#ifdef SINL_PART4_TEST
+    "sinl_part4_test",
+#endif
+#ifdef SINL_PART5_TEST
+    "sinl_part5_test",
+#endif
+#ifdef SINL_PART6_TEST
+    "sinl_part6_test",
+#endif
+#ifdef SINL_PART7_TEST
+    "sinl_part7_test",
+#endif
+#ifdef SINL_PART8_TEST
+    "sinl_part8_test",
+#endif
+#ifdef SINL_PART9_TEST
+    "sinl_part9_test",
+#endif
+#ifdef SIN_PART0_TEST
+    "sin_part0_test",
+#endif
+#ifdef SIN_PART1_TEST
+    "sin_part1_test",
+#endif
+#ifdef SIN_PART10_TEST
+    "sin_part10_test",
+#endif
+#ifdef SIN_PART11_TEST
+    "sin_part11_test",
+#endif
+#ifdef SIN_PART12_TEST
+    "sin_part12_test",
+#endif
+#ifdef SIN_PART13_TEST
+    "sin_part13_test",
+#endif
+#ifdef SIN_PART14_TEST
+    "sin_part14_test",
+#endif
+#ifdef SIN_PART15_TEST
+    "sin_part15_test",
+#endif
+#ifdef SIN_PART16_TEST
+    "sin_part16_test",
+#endif
+#ifdef SIN_PART2_TEST
+    "sin_part2_test",
+#endif
+#ifdef SIN_PART3_TEST
+    "sin_part3_test",
+#endif
+#ifdef SIN_PART4_TEST
+    "sin_part4_test",
+#endif
+#ifdef SIN_PART5_TEST
+    "sin_part5_test",
+#endif
+#ifdef SIN_PART6_TEST
+    "sin_part6_test",
+#endif
+#ifdef SIN_PART7_TEST
+    "sin_part7_test",
+#endif
+#ifdef SIN_PART8_TEST
+    "sin_part8_test",
+#endif
+#ifdef SIN_PART9_TEST
+    "sin_part9_test",
+#endif
+#ifdef TANL_PART0_TEST
+    "tanl_part0_test",
+#endif
+#ifdef TANL_PART1_TEST
+    "tanl_part1_test",
+#endif
+#ifdef TANL_PART10_TEST
+    "tanl_part10_test",
+#endif
+#ifdef TANL_PART2_TEST
+    "tanl_part2_test",
+#endif
+#ifdef TANL_PART3_TEST
+    "tanl_part3_test",
+#endif
+#ifdef TANL_PART4_TEST
+    "tanl_part4_test",
+#endif
+#ifdef TANL_PART5_TEST
+    "tanl_part5_test",
+#endif
+#ifdef TANL_PART6_TEST
+    "tanl_part6_test",
+#endif
+#ifdef TANL_PART7_TEST
+    "tanl_part7_test",
+#endif
+#ifdef TANL_PART8_TEST
+    "tanl_part8_test",
+#endif
+#ifdef TANL_PART9_TEST
+    "tanl_part9_test",
+#endif
+#ifdef TAN_PART0_TEST
+    "tan_part0_test",
+#endif
+#ifdef TAN_PART1_TEST
+    "tan_part1_test",
+#endif
+#ifdef TAN_PART10_TEST
+    "tan_part10_test",
+#endif
+#ifdef TAN_PART2_TEST
+    "tan_part2_test",
+#endif
+#ifdef TAN_PART3_TEST
+    "tan_part3_test",
+#endif
+#ifdef TAN_PART4_TEST
+    "tan_part4_test",
+#endif
+#ifdef TAN_PART5_TEST
+    "tan_part5_test",
+#endif
+#ifdef TAN_PART6_TEST
+    "tan_part6_test",
+#endif
+#ifdef TAN_PART7_TEST
+    "tan_part7_test",
+#endif
+#ifdef TAN_PART8_TEST
+    "tan_part8_test",
+#endif
+#ifdef TAN_PART9_TEST
+    "tan_part9_test",
 #endif
 };
 

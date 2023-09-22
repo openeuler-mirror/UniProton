@@ -38,15 +38,42 @@ long           telldir(DIR *);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+
+/**
+ * Importing some definitions from Nuttx
+ * */
 #define DT_UNKNOWN 0
 #define DT_FIFO 1
 #define DT_CHR 2
+#define DT_SEM 3
 #define DT_DIR 4
+#define DT_MQ 5
 #define DT_BLK 6
+#define DT_SHM 7
 #define DT_REG 8
+#define DT_MTD 9
 #define DT_LNK 10
 #define DT_SOCK 12
 #define DT_WHT 14
+
+/* File type code for the d_type field in dirent structure.
+ * Note that because of the simplified filesystem organization of the NuttX,
+ * top-level, pseudo-file system, an inode can be BOTH a file and a directory
+ */
+
+#define DTYPE_UNKNOWN             DT_UNKNOWN
+#define DTYPE_FIFO                DT_FIFO
+#define DTYPE_CHR                 DT_CHR
+#define DTYPE_SEM                 DT_SEM
+#define DTYPE_DIRECTORY           DT_DIR
+#define DTYPE_MQ                  DT_MQ
+#define DTYPE_BLK                 DT_BLK
+#define DTYPE_SHM                 DT_SHM
+#define DTYPE_FILE                DT_REG
+#define DTYPE_MTD                 DT_MTD
+#define DTYPE_LINK                DT_LNK
+#define DTYPE_SOCK                DT_SOCK
+
 #define IFTODT(x) ((x)>>12 & 017)
 #define DTTOIF(x) ((x)<<12)
 int getdents(int, struct dirent *, size_t);

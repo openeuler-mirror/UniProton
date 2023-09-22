@@ -1,0 +1,12 @@
+file(GLOB_RECURSE STDIO_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+
+add_library(base_libs_libc OBJECT ${STDIO_SOURCE})
+
+target_include_directories(base_libs_libc PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${DRIVERS_BASE_DIR}/include
+    ${DRIVERS_BASE_DIR}/base
+)
+
+list(APPEND ALL_OBJECT_LIBRARYS base_libs_libc)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)

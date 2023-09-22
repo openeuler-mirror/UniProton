@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 #include <features.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include <bits/poll.h>
 
@@ -27,14 +29,30 @@ extern "C" {
 #endif
 
 typedef unsigned long nfds_t;
+typedef uint32_t pollevent_t;
 
+struct pollfd;
+typedef void (*pollcb_t)(struct pollfd *fds);
 struct pollfd {
 	int fd;
 	short events;
 	short revents;
+
+    /* Non-standard fields used internally by NuttX. */
+
+    void        *arg;       /* The poll callback function argument */
+    pollcb_t    cb;         /* The poll callback function */
+    void        *priv;      /* For use by drivers */
 };
 
 int poll (struct pollfd *, nfds_t, int);
+
+/**
+ *  From Nuttx sys/poll.h
+ * */
+int poll_fdsetup(int fd, struct pollfd *fds, bool setup);
+void poll_default_cb(struct pollfd *fds);
+void poll_notify(struct pollfd **afds, int nfds, pollevent_t eventset);
 
 #ifdef _GNU_SOURCE
 #define __NEED_time_t

@@ -182,6 +182,18 @@ set(MULS_SIGNAL_SOURCE
         ${MUSL_IPC_SOURCE}
     )
 
+if(${CONFIG_OS_OPTION_NUTTX_UART})
+list(APPEND MULS_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c)
+endif()
+
+if(${CONFIG_OS_OPTION_STM32F407_UART})
+list(APPEND MULS_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/termios/cfgetospeed.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/termios/cfsetospeed.c
+    )
+endif()
+
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
         -Wno-bad-function-cast
