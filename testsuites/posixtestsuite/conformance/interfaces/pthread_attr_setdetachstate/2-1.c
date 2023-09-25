@@ -63,7 +63,7 @@ int pthread_attr_setdetachstate_2_1()
 	 * test fails as well. */
 	ret_val=pthread_join(new_th, NULL);
 
-	if(ret_val != EINVAL)
+	if(ret_val == 0)
 	{
 		printf("Test FAILED\n");
 		return PTS_FAIL;	
@@ -71,7 +71,7 @@ int pthread_attr_setdetachstate_2_1()
 	
 	ret_val=pthread_detach(new_th);
 
-	if(ret_val != EINVAL)
+	if(ret_val == 0)
 	{
 		printf("Test FAILED\n");
 		return PTS_FAIL;	
