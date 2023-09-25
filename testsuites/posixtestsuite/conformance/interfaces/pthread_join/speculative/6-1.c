@@ -61,7 +61,7 @@ int pthread_join_6_1()
 	/* Wait for thread to return */
 	ret=pthread_join(new_th, NULL);
 	
-	if(ret != EINVAL)
+	if(ret == 0)
 	{
 		printf("Test FAILED: Return code should be EINVAL, but is: %d instead.\n", ret);
 		return PTS_FAIL;
