@@ -3,6 +3,7 @@
 #include <string.h>
 #include "prt_typedef.h"
 #include "prt_mem.h"
+#include "securec.h"
 
 /**
  * alloc_netdev_mqs - allocate network device
@@ -37,10 +38,12 @@ struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
     /* ensure 32-byte alignment of whole construct */
     alloc_size += NETDEV_ALIGN - 1;
 
-    p = PRT_MemAlloc(OS_MID_APP, OS_MEM_DEFAULT_FSC_PT, sizeof(struct net_device));
+    p = PRT_MemAlloc(OS_MID_APP, OS_MEM_DEFAULT_FSC_PT, alloc_size);
     if (!p) {
         return NULL;
     }
+    memset_s(p, alloc_size, 0, alloc_size);
+
     dev = (struct net_device *)ALIGN(p, NETDEV_ALIGN);
     dev->padded = (char *)dev - (char *)p;
 
