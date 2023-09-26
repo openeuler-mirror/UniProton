@@ -163,11 +163,6 @@ size_t __ctype_get_mb_cur_max(void)
     return 0;
 }
 
-size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
-{
-    return 0;
-}
-
 size_t mbrtowc(wchar_t *restrict wc, const char *restrict src, size_t n, mbstate_t *restrict st)
 {
     return 0;

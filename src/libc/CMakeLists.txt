@@ -14,7 +14,11 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/c_locale.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/__lctrans.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/libc.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strlen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctomb.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
     )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/${CMAKE_SYSTEM_PROCESSOR}/arch.mak)

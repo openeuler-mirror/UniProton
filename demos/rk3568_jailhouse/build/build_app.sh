@@ -1,5 +1,6 @@
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
-export ALL="rk3568_jailhouse"
+# export ALL="task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency"
+export ALL="rk3568_jailhouse task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency"
 
 sh ./build_static.sh rk3568_jailhouse
 
@@ -12,13 +13,9 @@ function build()
     pushd $TMP_DIR
     make $APP
     popd
-    if [ "$APP" == "task-switch" ] || [ "$APP" == "task-preempt" ] || [ "$APP" == "semaphore-shuffle" ] ||
-        [ "$APP" == "interrupt-latency" ] || [ "$APP" == "deadlock-break" ] || [ "$APP" == "message-latency" ]
-    then
-        cp ./$TMP_DIR/testsuites/$APP $APP.elf
-    else
-        cp ./$TMP_DIR/$APP $APP.elf
-    fi
+
+    cp ./$TMP_DIR/$APP $APP.elf
+
     $TOOLCHAIN_PATH/bin/aarch64-none-elf-objcopy -O binary ./$APP.elf $APP.bin
     $TOOLCHAIN_PATH/bin/aarch64-none-elf-objdump -D ./$APP.elf > $APP.asm
     rm -rf $TMP_DIR

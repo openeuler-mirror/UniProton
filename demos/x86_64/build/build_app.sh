@@ -18,13 +18,9 @@ function build()
     pushd $TMP_DIR
     make $APP
     popd
-    if [ "$APP" == "task-switch" ] || [ "$APP" == "task-preempt" ] || [ "$APP" == "semaphore-shuffle" ] ||
-        [ "$APP" == "interrupt-latency" ] || [ "$APP" == "deadlock-break" ] || [ "$APP" == "message-latency" ]
-    then
-        cp ./$TMP_DIR/testsuites/$APP $APP.elf
-    else
-        cp ./$TMP_DIR/$APP $APP.elf
-    fi
+
+    cp ./$TMP_DIR/$APP $APP.elf
+
     $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objcopy -O binary ./$APP.elf $APP.bin
     $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objdump -S ./$APP.elf > $APP.asm
     rm -rf $TMP_DIR
