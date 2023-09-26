@@ -7,6 +7,7 @@ set(CMAKE_C_FLAGS "-g -O2 -mthumb -mcpu=cortex-m4 -std=gnu11 -fno-common -fomit-
 set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builtin -DEIGEN_NO_IO=1")
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
+set(UNIPROTON_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/${APP})
 
@@ -41,4 +42,6 @@ add_subdirectory(support)
 
 add_subdirectory(posixtestsuite)
 add_subdirectory(rhealstone)
+add_subdirectory(drivers)
+add_subdirectory(shell-test)
 add_subdirectory(libc-test)

@@ -61,6 +61,8 @@ int epoll_ctl(int, int, int, struct epoll_event *);
 int epoll_wait(int, struct epoll_event *, int, int);
 int epoll_pwait(int, struct epoll_event *, int, int, const sigset_t *);
 
+/* From Nuttx sys/epoll.h */
+void epoll_close(int epfd);
 
 #ifdef __cplusplus
 }

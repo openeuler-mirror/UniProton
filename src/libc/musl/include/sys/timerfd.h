@@ -7,12 +7,20 @@ extern "C" {
 
 #include <time.h>
 #include <fcntl.h>
+#include <stdint.h>
 
 #define TFD_NONBLOCK O_NONBLOCK
 #define TFD_CLOEXEC O_CLOEXEC
 
 #define TFD_TIMER_ABSTIME 1
 #define TFD_TIMER_CANCEL_ON_SET (1 << 1)
+
+/* From Nuttx timerfd.h */
+#ifdef __INT64_DEFINED
+typedef uint64_t timerfd_t;
+#else
+typedef uint32_t timerfd_t;
+#endif
 
 struct itimerspec;
 

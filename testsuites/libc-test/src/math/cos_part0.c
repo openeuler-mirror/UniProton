@@ -9,7 +9,7 @@ static struct d_d t[] = {
 
 };
 
-int cos_test(void)
+int cos_part0_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	double y;

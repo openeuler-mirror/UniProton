@@ -8,7 +8,7 @@ static struct ff_f t[] = {
 
 };
 
-int powf_test(void)
+int powf_part3_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	float y;

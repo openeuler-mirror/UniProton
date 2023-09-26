@@ -10,7 +10,7 @@ static struct l_l t[] = {
 #endif
 };
 
-int coshl_test(void)
+int coshl_part2_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	long double y;

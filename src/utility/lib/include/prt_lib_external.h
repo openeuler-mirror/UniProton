@@ -69,8 +69,12 @@
 #define OS_IS_VISIBLE_CHAR(word) ((((word) >= 'a') && ((word) <= 'z')) || (((word) >= 'A') && ((word) <= 'Z')) || \
                                   ((word) == '_') || (((word) <= '9') && ((word) >= '0')))
 
+#ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+#ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 #define OS_DECIMAL    10
 #define OS_OCTAL      8

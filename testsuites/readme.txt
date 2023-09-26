@@ -11,7 +11,7 @@
 qemu使用:
 cd build
 sh build_app.sh sim 
-qemu-system-arm -M mps2-an386 -cpu cortex-m4 --semihosting -kernel Uniproton_xxx_test.bin 
+qemu-system-arm -M mps2-an386 -cpu cortex-m4 --semihosting -kernel UniPorton_test_xxx.bin 
 
 注意: qemu不支持rhealstone测试, 默认不编译
 

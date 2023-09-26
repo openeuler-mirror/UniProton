@@ -140,6 +140,12 @@ include_directories(
 )
 endif()
 
+if (${CONFIG_OS_OPTION_NUTTX_VFS})
+include_directories(
+  ./src/drivers/include
+)
+endif()
+
 if (NOT ${COMPILE_OPTION} STREQUAL "UniProton")
 ###添加安全库的cmakelists
 add_subdirectory(platform)

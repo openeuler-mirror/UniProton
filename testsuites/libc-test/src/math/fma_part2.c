@@ -7,7 +7,7 @@ static struct ddd_d t[] = {
 #include "special/fma.h"
 };
 
-int fma_test(void)
+int fma_part2_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	double y;

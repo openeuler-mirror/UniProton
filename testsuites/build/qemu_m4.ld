@@ -40,6 +40,7 @@ SECTIONS
         KEEP(*(VECTOR))
         *(vtable)
         *(.data*)
+        KEEP(*( SORT (.uniproton.table.*)));
         . = ALIGN(4);
         __data_end__ = .;
     } > SRAM

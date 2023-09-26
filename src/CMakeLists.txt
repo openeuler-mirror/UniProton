@@ -10,6 +10,9 @@ add_subdirectory(libc)
 add_subdirectory(driver)
 add_subdirectory(osal)
 
+set(UNIPROTON_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(drivers)
+
 if(${CONFIG_OS_SUPPORT_FS})
     add_subdirectory(fs)
 endif()
@@ -20,3 +23,6 @@ if(${CONFIG_OS_GDB_STUB})
     add_subdirectory(component/gdbstub)
 endif()
 
+if(${CONFIG_LOSCFG_SHELL})
+    add_subdirectory(shell)
+endif()
