@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 void benchmark_timer_initialize(void);
-uint32_t benchmark_timer_read(void);
+uintptr_t benchmark_timer_read(void);
 
 #define FOREVER 1                  /* infinite loop */
 
