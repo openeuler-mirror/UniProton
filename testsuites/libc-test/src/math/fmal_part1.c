@@ -10,7 +10,7 @@ static struct lll_l t[] = {
 #endif
 };
 
-int fmal_test(void)
+int fmal_part1_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	long double y;

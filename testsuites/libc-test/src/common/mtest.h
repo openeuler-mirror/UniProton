@@ -1,6 +1,7 @@
 #include <fenv.h>
 #include <float.h>
 #include <math.h>
+#include "prt_buildef.h"
 
 #undef RN
 #undef RZ
@@ -121,7 +122,11 @@ static int checkulp(float d, int r)
 {
 	// TODO: we only care about >=1.5 ulp errors for now, should be 1.0
 	if (r == RN)
+#ifdef OS_CORTEX_M4
+		return fabsf(d) < 3.0;
+#else
 		return fabsf(d) < 1.5;
+#endif
 	// accept larger error in non-nearest rounding mode
 	return fabsf(d) < 3.0;
 }

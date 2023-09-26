@@ -74,7 +74,11 @@ extern "C" {
 /* 私有FSC内存分区起始地址 */
 #define OS_MEM_FSC_PT_ADDR                              (U32)&m_aucMemRegion00[0]
 /* 私有FSC内存分区大小 */
+#ifdef SMALL_MEM
 #define OS_MEM_FSC_PT_SIZE                              0x00010000
+#else
+#define OS_MEM_FSC_PT_SIZE                              0x00015000
+#endif
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */

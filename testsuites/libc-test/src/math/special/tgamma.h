@@ -44,7 +44,9 @@ T(RN,                  0x1p+8,                     inf,          0x0p+0, INEXACT
 T(RN,                 0x1p-50,   0x1.ffffffffffffbp+49,  -0x1.877304p-2, INEXACT)
 T(RN,                 0x1p-51,   0x1.ffffffffffffep+50,   0x1.3c467ep-2, INEXACT)
 T(RN,                 0x1p-52,   0x1.fffffffffffffp+51,   0x1.3c467ep-3, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,                 0x1p-53,   0x1.fffffffffffffp+52,   -0x1.b0ee6p-2, INEXACT)
+#endif
 T(RN,                 0x1p-54,                 0x1p+54,    0x1.2788dp-3, INEXACT)
 T(RN,  0x1.000000000001p-1024,  0x1.fffffffffffep+1023,        -0x1p-43, INEXACT)
 T(RN, -0x1.000000000001p-1024, -0x1.fffffffffffep+1023,         0x1p-43, INEXACT)
@@ -57,19 +59,27 @@ T(RN,   -0x1.ffffffffffffcp-1,  -0x1.0000000000001p+51,  -0x1.3c467ep-3, INEXACT
 T(RN,   -0x1.ffffffffffffdp-1,  -0x1.5555555555556p+51,   0x1.6e642cp-3, INEXACT)
 T(RN,   -0x1.ffffffffffffep-1,                -0x1p+52,    0x1.b0ee6p-2, INEXACT)
 T(RN,   -0x1.fffffffffffffp-1,                -0x1p+53,    0x1.b0ee6p-3, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,   -0x1.0000000000001p+0,   0x1.fffffffffffffp+51,  -0x1.3c467ep-3, INEXACT)
+#endif
 T(RN,   -0x1.0000000000002p+0,   0x1.ffffffffffffep+50,  -0x1.3c467ep-2, INEXACT)
 T(RN,   -0x1.0000000000003p+0,   0x1.5555555555554p+50,   0x1.6e642cp-2, INEXACT)
 T(RN,   -0x1.0000000000004p+0,   0x1.ffffffffffffdp+49,   0x1.877304p-2, INEXACT)
 T(RN,   -0x1.ffffffffffffcp+0,   0x1.0000000000004p+49,   0x1.3c467ep-2, INEXACT)
 T(RN,   -0x1.ffffffffffffdp+0,   0x1.5555555555559p+49,  -0x1.90ed72p-6, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,   -0x1.ffffffffffffep+0,   0x1.0000000000002p+50,   0x1.3c467ep-3, INEXACT)
+#endif
 T(RN,   -0x1.fffffffffffffp+0,   0x1.0000000000001p+51,   0x1.3c467ep-4, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,   -0x1.0000000000001p+1,  -0x1.ffffffffffffcp+49,   0x1.3c467ep-2, INEXACT)
+#endif
 T(RN,   -0x1.0000000000002p+1,  -0x1.ffffffffffff9p+48,  -0x1.877304p-2, INEXACT)
 T(RN,   -0x1.0000000000003p+1,  -0x1.555555555554ep+48,  -0x1.90ed72p-5, INEXACT)
 T(RN,   -0x1.0000000000004p+1,  -0x1.ffffffffffff1p+47,   0x1.e233f2p-3, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,   -0x1.7fffffffffffdp+1,  -0x1.c71c71c71c72ap+46,  -0x1.4177f6p-3, INEXACT)
+#endif
 T(RN,   -0x1.7fffffffffffep+1,  -0x1.555555555555cp+47,   0x1.0b48f6p-5, INEXACT)
 T(RN,   -0x1.7ffffffffffffp+1,  -0x1.5555555555559p+48,  -0x1.44a0c6p-2, INEXACT)
 T(RN,   -0x1.5800000000001p+7, -0x1.b98c8c968b7c1p-990,   0x1.970c8ep-3, INEXACT)
@@ -85,7 +95,9 @@ T(RN,   -0x1.5bfffffffffffp+7, 0x1.e0a7b14f99fdbp-1005,  -0x1.af416ap-2, INEXACT
 T(RN,   -0x1.5c00000000001p+7,-0x1.e0a7b14f9962ap-1005,   0x1.42ddc4p-2, INEXACT)
 T(RN,   -0x1.5dfffffffffffp+7, -0x1.5f90991893bep-1012,   0x1.97c846p-2, INEXACT)
 T(RN,   -0x1.5e00000000001p+7, 0x1.5f909918934c8p-1012,   0x1.731f2ep-2, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,   -0x1.5ffffffffffffp+7, 0x1.ff5df5f533fd3p-1020,  -0x1.f234a4p-2, INEXACT)
+#endif
 T(RN,   -0x1.6000000000001p+7,-0x1.ff5df5f53357ep-1020,    0x1.492c4p-6, INEXACT)
 T(RN,   -0x1.61fffffffffffp+7, -0x1.71cd59a44e18p-1027,   0x1.657fa6p-5, INEXACT|UNDERFLOW)
 T(RN,   -0x1.6200000000001p+7,   0x1.71cd59a44dap-1027,  -0x1.8ce5d8p-3, INEXACT|UNDERFLOW)

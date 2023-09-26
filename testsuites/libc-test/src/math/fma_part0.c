@@ -6,7 +6,7 @@ static struct ddd_d t[] = {
 #include "sanity/fma.h"
 };
 
-int fma_test(void)
+int fma_part0_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	double y;

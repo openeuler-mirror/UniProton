@@ -1,0 +1,5 @@
+if(APP STREQUAL "helloworld")
+    add_subdirectory(helloworld)
+elseif(APP STREQUAL "shell")
+    add_subdirectory(shell)
+endif()

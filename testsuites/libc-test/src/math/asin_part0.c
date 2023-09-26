@@ -9,7 +9,7 @@ static struct d_d t[] = {
 
 };
 
-int asin_test(void)
+int asin_part0_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	double y;

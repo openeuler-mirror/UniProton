@@ -24,6 +24,13 @@
 #include "prt_cpu_external.h"
 #include "prt_mem_external.h"
 
+#if defined(OS_OPTION_NUTTX_VFS)
+#include "nuttx/fs/fs.h"
+#if defined(CONFIG_FILE_STREAM)
+#include "nuttx/tls.h"
+#endif
+#endif
+
 #if defined(OS_OPTION_POSIX)
 #include "pthread.h"
 #ifndef PTHREAD_KEYS_MAX
@@ -131,6 +138,12 @@ struct TagTskCb {
     int holdSignal;
 #if defined(OS_OPTION_LINUX)
     struct task_struct *kthreadTsk;
+#endif
+#endif
+#if defined(OS_OPTION_NUTTX_VFS)
+    struct filelist tskFileList;
+#if defined(CONFIG_FILE_STREAM)
+    struct streamlist ta_streamlist;
 #endif
 #endif
 };

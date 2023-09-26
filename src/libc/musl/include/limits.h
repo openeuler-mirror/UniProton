@@ -41,10 +41,10 @@
 
 #define PIPE_BUF 4096
 #define FILESIZEBITS 64
-#ifndef NAME_MAX
-#define NAME_MAX 255
-#endif
-#define PATH_MAX 4096
+// #ifndef NAME_MAX
+// #define NAME_MAX 255
+// #endif
+// #define PATH_MAX 4096
 #define NGROUPS_MAX 32
 #define ARG_MAX 131072
 #define IOV_MAX 1024
@@ -63,7 +63,7 @@
 
 /* Implementation choices... */
 
-#define PTHREAD_KEYS_MAX 128
+#define PTHREAD_KEYS_MAX 32
 #define PTHREAD_STACK_MIN 2048
 #define PTHREAD_DESTRUCTOR_ITERATIONS 4
 #define SEM_VALUE_MAX 0x7fffffff
@@ -124,10 +124,10 @@
 #define _POSIX_MAX_INPUT        255
 #define _POSIX_MQ_OPEN_MAX      8
 #define _POSIX_MQ_PRIO_MAX      32
-#define _POSIX_NAME_MAX         14
+// #define _POSIX_NAME_MAX         14
 #define _POSIX_NGROUPS_MAX      8
 #define _POSIX_OPEN_MAX         20
-#define _POSIX_PATH_MAX         256
+// #define _POSIX_PATH_MAX         256
 #define _POSIX_PIPE_BUF         512
 #define _POSIX_RE_DUP_MAX       255
 #define _POSIX_RTSIG_MAX        8
@@ -162,5 +162,26 @@
 #define _XOPEN_IOV_MAX          16
 #define _XOPEN_NAME_MAX         255
 #define _XOPEN_PATH_MAX         1024
+
+#define OPEN_MAX _POSIX_OPEN_MAX
+
+/**
+ * From Nuttx definitions
+ */
+#ifndef CONFIG_NAME_MAX
+#  define CONFIG_NAME_MAX 32
+#endif
+#define _POSIX_NAME_MAX         CONFIG_NAME_MAX
+#define NAME_MAX                _POSIX_NAME_MAX
+
+#ifndef CONFIG_PATH_MAX
+#  if CONFIG_NAME_MAX < 64
+#    define CONFIG_PATH_MAX (4*CONFIG_NAME_MAX + 1)
+#  else
+#    define CONFIG_PATH_MAX 256
+#  endif
+#endif
+#define _POSIX_PATH_MAX         CONFIG_PATH_MAX
+#define PATH_MAX                _POSIX_PATH_MAX
 
 #endif

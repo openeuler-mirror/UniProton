@@ -8,7 +8,7 @@ static struct d_d t[] = {
 
 };
 
-int log_test(void)
+int log_part1_test(void)
 {
 	#pragma STDC FENV_ACCESS ON
 	double y;

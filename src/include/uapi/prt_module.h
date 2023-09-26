@@ -39,6 +39,7 @@ enum MoudleId {
     OS_MID_HARDDRV = 0xe,
     OS_MID_APP = 0xf,
     OS_MID_SIGNAL = 0x10,
+    OS_MID_SHELL = 0x11,
     OS_MID_BUTT
 };
 

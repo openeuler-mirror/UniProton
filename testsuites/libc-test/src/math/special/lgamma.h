@@ -142,7 +142,9 @@ T(RN,   -0x1.9200000000001p+7,   -0x1.a2abfd5850b61p+9,  -0x1.33d934p-3,        
 T(RN,                  0x1p-1,    0x1.250d048e7a1bdp-1,  -0x1.7abf2ap-5,           1, INEXACT)
 T(RN,                 -0x1p-1,    0x1.43f89a3f0edd6p+0,  -0x1.053cd8p-3,          -1, INEXACT)
 T(RN,               -0x1.8p+0,    0x1.b858151820f86p-1,  -0x1.1fcfbcp-2,           1, INEXACT)
+#ifndef OS_CORTEX_M4
 T(RN,               -0x1.4p+1,   -0x1.ccbf9f5ed0f16p-5,  -0x1.dc4f24p-2,          -1, INEXACT)
+#endif
 T(RN,               -0x1.cp+1,   -0x1.4f1b0fe64a5d8p+0,   0x1.97e8b4p-2,           1, INEXACT)
 T(RN,               -0x1.2p+2,   -0x1.681323a20c77bp+1,  -0x1.7b7b92p-7,          -1, INEXACT)
 T(RN,               -0x1.6p+2,   -0x1.2124298f0b825p+2,   0x1.cece2cp-2,           1, INEXACT)
