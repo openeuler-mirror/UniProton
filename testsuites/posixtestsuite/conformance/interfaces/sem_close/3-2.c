@@ -151,7 +151,7 @@ int sem_close_3_2( int argc, char * argv[] )
 
 	if ( value != 1 )
 	{
-		sem_close_output( "Got value: %d\n", value );
+		printf( "Got value: %d\n", value );
 		FAILED( "The semaphore count has changed after sem_close" );
 	}
 
@@ -172,7 +172,7 @@ int sem_close_3_2( int argc, char * argv[] )
 
 	/* Test passed */
 #if VERBOSE > 0
-	sem_close_output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 	PASSED;

@@ -32,7 +32,7 @@ CONFIG_OS_OPTION_CPU64=y
 #
 # Event feature configuration
 #
-# CONFIG_OS_OPTION_EVENT is not set
+CONFIG_OS_OPTION_EVENT=y
 
 #
 # Queue feature configuration

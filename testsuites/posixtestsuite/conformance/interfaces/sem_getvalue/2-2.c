@@ -141,7 +141,7 @@ int sem_getvalue_2_2( int argc, char * argv[] )
 
 	if ( ( val != 0 ) && ( val != -1 ) )
 	{
-		sem_getvalue_output( "Val: %d\n", val );
+		printf( "Val: %d\n", val );
 		FAILED( "Semaphore count is neither 0 nor # of waiting processes" );
 	}
 
@@ -173,7 +173,7 @@ int sem_getvalue_2_2( int argc, char * argv[] )
 	/* Test passed */
 #if VERBOSE > 0
 
-	sem_getvalue_output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 

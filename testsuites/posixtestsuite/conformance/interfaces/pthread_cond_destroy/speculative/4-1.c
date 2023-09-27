@@ -76,7 +76,7 @@ int pthread_cond_destroy_4_1()
 
 	/* Try to destroy the cond var. This should return an error */
 	rc = pthread_cond_destroy(&cond);
-    RttViewerPrintf(0, "--- pthread_cond_destroy_4_1 --- rc = %d, EBUSY = %d ----- \n", rc, EBUSY);
+    printf("--- pthread_cond_destroy_4_1 --- rc = %d, EBUSY = %d ----- \n", rc, EBUSY);
 	if(rc != EBUSY) {
 		printf(ERROR_PREFIX "Test PASS: Expected %d(EBUSY) got %d, "
 			"though the standard states 'may' fail\n", EBUSY, rc);

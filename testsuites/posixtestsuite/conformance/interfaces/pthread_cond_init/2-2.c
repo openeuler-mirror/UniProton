@@ -68,9 +68,9 @@
   * 
   * The other file defines the functions
   * void output_init()
-  * void output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -212,12 +212,12 @@ int pthread_cond_init_2_2_do_cs_test(void)
 	dtN.rc   = 0;
 	
 	#if VERBOSE > 1
-	output("Data initialized successfully for CS test.\n");
+	printf("Data initialized successfully for CS test.\n");
 	#endif
 	
 	monotonic_clk = sysconf(_SC_MONOTONIC_CLOCK);
 	#if VERBOSE > 1
-	output("Sysconf for monotonix clock: %li\n", monotonic_clk);
+	printf("Sysconf for monotonix clock: %li\n", monotonic_clk);
 	#endif
 	
 	/* Get the default clock ID */
@@ -233,7 +233,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		ret = clock_gettime(CLOCK_MONOTONIC, &diff);
 		if (ret != 0)
 		{
-			output("Clock_gettime(CLOCK_MONOTONIC) failed when the system claims to support this option\n");
+			printf("Clock_gettime(CLOCK_MONOTONIC) failed when the system claims to support this option\n");
 			monotonic_clk = -1L;
 		}
 	}
@@ -246,22 +246,22 @@ int pthread_cond_init_2_2_do_cs_test(void)
 	if (ret != 0)
 	{
 		#if VERBOSE > 1
-		output("clock_settime failed (%s)\n", strerror(errno));
-		output("We cannot test if both cond uses the same clock then...\n");
+		printf("clock_settime failed (%s)\n", strerror(errno));
+		printf("We cannot test if both cond uses the same clock then...\n");
 		#endif
 		UNTESTED("Was unable to set the default clock time. Need more privileges?");
 	}
 	else /* We can do the test */
 	{
 		#if VERBOSE > 1
-		output("clock_settime succeeded\n");
+		printf("clock_settime succeeded\n");
 		#endif
 		
 		if (monotonic_clk != -1L)
 		{
 			#if VERBOSE > 2
-			output("Monotonic clock : %10i.%09li\n", diff.tv_sec, diff.tv_nsec);
-			output("Default clock   : %10i.%09li\n", ts.tv_sec, ts.tv_nsec);
+			printf("Monotonic clock : %10i.%09li\n", diff.tv_sec, diff.tv_nsec);
+			printf("Default clock   : %10i.%09li\n", ts.tv_sec, ts.tv_nsec);
 			#endif
 			/* Save the decay between default clock and clock MONOTONIC */
 			if (diff.tv_sec > ts.tv_sec)
@@ -311,8 +311,8 @@ int pthread_cond_init_2_2_do_cs_test(void)
 			}
 						
 			#if VERBOSE > 2
-			output("Computed diff   : %10i.%09li\n", diff.tv_sec, diff.tv_nsec);
-			output("With monotonic %s than default\n", sens>0?"smaller":"bigger");
+			printf("Computed diff   : %10i.%09li\n", diff.tv_sec, diff.tv_nsec);
+			printf("With monotonic %s than default\n", sens>0?"smaller":"bigger");
 			#endif
 		}
 		
@@ -354,8 +354,8 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		
 		/* Now both threads are in the timed wait */
 		#if VERBOSE > 1
-		output("Two threads are created and waiting.\n");
-		output("About to change the default clock value.\n");
+		printf("Two threads are created and waiting.\n");
+		printf("About to change the default clock value.\n");
 		#endif
 		
 		/* We re-read the default clock time, to introduce minimal error on the clock */
@@ -378,7 +378,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		sched_yield();
 		
 		#if VERBOSE > 1
-		output("Checking that both threads have timedout...\n");
+		printf("Checking that both threads have timedout...\n");
 		#endif
 		
 		/* Relock the mutexs */
@@ -391,8 +391,8 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		if (dtI.rc == 0)
 		{
 			#if VERBOSE > 0
-			output("The thread was not woken when the clock was changed so as the timeout expired\n");
-			output("Going to simulate this POSIX behavior...\n");
+			printf("The thread was not woken when the clock was changed so as the timeout expired\n");
+			printf("Going to simulate this POSIX behavior...\n");
 			#endif
 			ret = pthread_cond_signal(&cndN);
 			if (ret != 0)  {  UNRESOLVED(ret, "Unable to signal the Null attribute condition");  }
@@ -412,7 +412,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 			sched_yield();
 			
 			#if VERBOSE > 1
-			output("Rechecking that both threads have timedout...\n");
+			printf("Rechecking that both threads have timedout...\n");
 			#endif
 			
 			/* Relock the mutexs */
@@ -427,7 +427,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		if ((dtN.ctrl & FLAG_TIMEDOUT) != 0)
 		{
 			#if VERBOSE > 1
-			output("Null attribute cond var timed out\n");
+			printf("Null attribute cond var timed out\n");
 			#endif
 			/* Join the thread */
 			ret = pthread_join(thN, NULL);
@@ -439,7 +439,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		else
 		{
 			#if VERBOSE > 1
-			output("Null attribute cond var did not time out\n");
+			printf("Null attribute cond var did not time out\n");
 			#endif
 			/* Signal the condition */
 			dtN.ctrl |= FLAG_CONDWAKE;
@@ -457,7 +457,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		if ((dtI.ctrl & FLAG_TIMEDOUT) != 0)
 		{
 			#if VERBOSE > 1
-			output("Default attribute cond var timed out\n");
+			printf("Default attribute cond var timed out\n");
 			#endif
 			/* Join the thread */
 			ret = pthread_join(thD, NULL);
@@ -469,7 +469,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 		else
 		{
 			#if VERBOSE > 1
-			output("Default attribute cond var did not time out\n");
+			printf("Default attribute cond var did not time out\n");
 			#endif
 			/* Signal the condition */
 			dtI.ctrl |= FLAG_CONDWAKE;
@@ -495,7 +495,7 @@ int pthread_cond_init_2_2_do_cs_test(void)
 			ret = clock_settime(cid, &ts);
 			if (ret != 0)  {  UNRESOLVED(errno, "Unable to set clock time (3rd time)");  }
 			#if VERBOSE > 1
-			output("Default clock was set back\n");
+			printf("Default clock was set back\n");
 			#endif
 		}
 		else
@@ -534,28 +534,28 @@ int pthread_cond_init_2_2_do_cs_test(void)
 			if (ret != 0)  {  UNRESOLVED(errno, "Unable to set clock time (3rd time)");  }
 			
 			#if VERBOSE > 1
-			output("Default clock was set back using monotonic clock as a reference\n");
+			printf("Default clock was set back using monotonic clock as a reference\n");
 			#endif
 		}
 		
 		/* Compare the two cond vars */
 		#if VERBOSE > 2
-		output("Default attribute cond var timedwait return value: %d\n", dtI.rc);
-		output("Default attribute cond var exited with a timeout : %s\n", (dtI.ctrl & FLAG_TIMEDOUT)?"yes":"no");
-		output("Default attribute cond var had to be signaled    : %s\n", (dtI.ctrl & FLAG_CONDWAKE)?"yes":"no");
-		output("Default attribute cond var exited as signaled    : %s\n", (dtI.ctrl & FLAG_AWAKEN)?"yes":"no");
-		output("Default attribute cond var spurious wakeups      : %d\n", (dtI.ctrl & MASK_COUNTER) - 1);
-		output(" Null   attribute cond var timedwait return value: %d\n", dtN.rc);
-		output(" Null   attribute cond var exited with a timeout : %s\n", (dtN.ctrl & FLAG_TIMEDOUT)?"yes":"no");
-		output(" Null   attribute cond var had to be signaled    : %s\n", (dtN.ctrl & FLAG_CONDWAKE)?"yes":"no");
-		output(" Null   attribute cond var exited as signaled    : %s\n", (dtN.ctrl & FLAG_AWAKEN)?"yes":"no");
-		output(" Null   attribute cond var spurious wakeups      : %d\n", (dtN.ctrl & MASK_COUNTER) - 1);
+		printf("Default attribute cond var timedwait return value: %d\n", dtI.rc);
+		printf("Default attribute cond var exited with a timeout : %s\n", (dtI.ctrl & FLAG_TIMEDOUT)?"yes":"no");
+		printf("Default attribute cond var had to be signaled    : %s\n", (dtI.ctrl & FLAG_CONDWAKE)?"yes":"no");
+		printf("Default attribute cond var exited as signaled    : %s\n", (dtI.ctrl & FLAG_AWAKEN)?"yes":"no");
+		printf("Default attribute cond var spurious wakeups      : %d\n", (dtI.ctrl & MASK_COUNTER) - 1);
+		printf(" Null   attribute cond var timedwait return value: %d\n", dtN.rc);
+		printf(" Null   attribute cond var exited with a timeout : %s\n", (dtN.ctrl & FLAG_TIMEDOUT)?"yes":"no");
+		printf(" Null   attribute cond var had to be signaled    : %s\n", (dtN.ctrl & FLAG_CONDWAKE)?"yes":"no");
+		printf(" Null   attribute cond var exited as signaled    : %s\n", (dtN.ctrl & FLAG_AWAKEN)?"yes":"no");
+		printf(" Null   attribute cond var spurious wakeups      : %d\n", (dtN.ctrl & MASK_COUNTER) - 1);
 		#endif
 		if ((dtN.ctrl == dtI.ctrl) && (dtN.rc == dtI.rc))
 		{
 			result = 0;
 			#if VERBOSE > 1
-			output("The two cond vars behaved exactly in the same maneer\n");
+			printf("The two cond vars behaved exactly in the same maneer\n");
 			#endif
 		}
 		else
@@ -568,13 +568,13 @@ int pthread_cond_init_2_2_do_cs_test(void)
 			{
 				if (dtN.rc != dtI.rc)
 				{
-					output("Error codes were different: N:%d D:%d\n",dtN.rc, dtI.rc);
+					printf("Error codes were different: N:%d D:%d\n",dtN.rc, dtI.rc);
 					UNRESOLVED(dtN.rc>dtI.rc?dtN.rc:dtI.rc, "Different error codes?");
 				}
 				if ((dtN.ctrl & FLAG_AWAKEN) == (dtI.ctrl & FLAG_AWAKEN))
 				{
 					/* The number of spurious wakeups is different */
-					output("Different spurious wakeups: N:%d D:%d\n", 
+					printf("Different spurious wakeups: N:%d D:%d\n", 
 						(dtN.ctrl & MASK_COUNTER) - 1, 
 						(dtI.ctrl & MASK_COUNTER) - 1);
 					
@@ -612,21 +612,21 @@ int pthread_cond_init_2_2(int argc, char * argv[])
 	output_init();
 	
 	#if VERBOSE > 1
-	output("Test starting...\n");
+	printf("Test starting...\n");
 	#endif
 
 	opt_TMR=sysconf(_SC_TIMERS);
 	opt_CS =sysconf(_SC_CLOCK_SELECTION);
 	
 	#if VERBOSE > 1
-	output("Timers option : %li\n", opt_TMR);
-	output("Clock Selection option : %li\n", opt_CS);
+	printf("Timers option : %li\n", opt_TMR);
+	printf("Clock Selection option : %li\n", opt_CS);
 	#endif
-	RttViewerPrintf(0, "-----pthread_cond_init_2_2 opt_TMR =%d, opt_CS=%d ---\n ", opt_TMR, opt_CS);
+	printf("-----pthread_cond_init_2_2 opt_TMR =%d, opt_CS=%d ---\n ", opt_TMR, opt_CS);
 	if ((opt_TMR != -1L) && (opt_CS != -1L))
 	{
 		#if VERBOSE > 0
-		output("Starting clock test\n");
+		printf("Starting clock test\n");
 		#endif
 		ret = pthread_cond_init_2_2_do_cs_test();
 	}

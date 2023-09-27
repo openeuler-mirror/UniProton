@@ -143,7 +143,7 @@ int sem_unlink_9_1( int argc, char * argv[] )
 
 	/* Unlink */
 	ret = sem_unlink( SEM_NAME );
-    RttViewerPrintf(0, "-- sem_unlink_9_1 -- 4 ret = %d\n", ret);
+    printf("-- sem_unlink_9_1 -- 4 ret = %d\n", ret);
 	if ( ret != 0 )
 	{
 		UNRESOLVED( errno, "Failed to unlink the semaphore" );
@@ -180,7 +180,7 @@ int sem_unlink_9_1( int argc, char * argv[] )
 
 	/* Test passed */
 #if VERBOSE > 0
-	output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 	PASSED;

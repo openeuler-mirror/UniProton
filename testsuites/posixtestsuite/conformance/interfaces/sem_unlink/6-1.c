@@ -119,7 +119,7 @@ int sem_unlink_6_1( int argc, char * argv[] )
 	}
     if ( errno != ENOENT )
 	{
-		output( "Error %d: %s\n", errno, strerror( errno ) );
+		printf( "Error %d: %s\n", errno, strerror( errno ) );
 		FAILED( "Reconnecting the unlinked semaphore failed with a wrong error" );
 	}
 
@@ -127,7 +127,7 @@ int sem_unlink_6_1( int argc, char * argv[] )
 	sem2 = sem_open( SEM_NAME, O_CREAT | O_EXCL, 0777, 3 );
     if ( sem2 == SEM_FAILED )
 	{
-		output( "Gor error %d: %s\n", errno, strerror( errno ) );
+		printf( "Gor error %d: %s\n", errno, strerror( errno ) );
 		FAILED( "Failed to recreate the semaphore" );
 	}
 
@@ -137,10 +137,10 @@ int sem_unlink_6_1( int argc, char * argv[] )
 	{
 		UNRESOLVED( errno, "Failed to read sem1 value" );
 	}
-    RttViewerPrintf(0, "-- sem_unlink_6_1 -- 10 value = %d\n", value);
+    printf("-- sem_unlink_6_1 -- 10 value = %d\n", value);
 	if ( value != 1 )
 	{
-		output( "Read: %d\n", value );
+		printf( "Read: %d\n", value );
 		FAILED( "Semaphore value is not as expected" );
 	}
 
@@ -152,7 +152,7 @@ int sem_unlink_6_1( int argc, char * argv[] )
 
 	if ( value != 3 )
 	{
-		output( "Read: %d\n", value );
+		printf( "Read: %d\n", value );
 		FAILED( "Semaphore value is not as expected" );
 	}
 
@@ -179,7 +179,7 @@ int sem_unlink_6_1( int argc, char * argv[] )
 
 	/* Test passed */
 #if VERBOSE > 0
-	output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 	PASSED;

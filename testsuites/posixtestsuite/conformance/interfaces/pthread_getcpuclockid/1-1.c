@@ -49,14 +49,14 @@ int pthread_getcpuclockid_1_1()
 	pthread_t new_th;
 
 	rc = pthread_create(&new_th, NULL, pthread_getcpuclockid_1_1_thread_func, NULL);
-    RttViewerPrintf(0, "--- pthread_getcpuclockid_1_1 --- 1 rc = %d \n", rc);
+    printf("--- pthread_getcpuclockid_1_1 --- 1 rc = %d \n", rc);
         if (rc !=0 ) {
                 perror(ERROR_PREFIX "failed to create a thread");
                 return (PTS_UNRESOLVED);
         }
     
 	rc = pthread_join(new_th, NULL);
-    RttViewerPrintf(0, "--- pthread_getcpuclockid_1_1 --- 2 rc = %d \n", rc);
+    printf("--- pthread_getcpuclockid_1_1 --- 2 rc = %d \n", rc);
         if(rc != 0)
         {
                 perror(ERROR_PREFIX "pthread_join");
