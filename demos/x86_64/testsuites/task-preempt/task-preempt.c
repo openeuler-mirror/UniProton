@@ -10,24 +10,26 @@
 #include "timesys.h"
 
 #define BENCHMARKS 50000
+#define WARMUP_TIMES 100
 
 TskHandle taskIds[2];
 U64 telapsed;
 U64 tloop;
 U64 tswitch;
-U32 count;
+U32 count, count1;
 U32 status;
 
 void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-    status = PRT_TaskResume(taskIds[1]);
-    directive_failed(status, "PRT_TaskResume of TA02");
-
-    tswitch = benchmark_timer_read();
+    for (count = 0; count < WARMUP_TIMES; count++) {
+        status = PRT_TaskResume(taskIds[1]);
+        tswitch = benchmark_timer_read();
+        directive_failed(status, "PRT_TaskResume of TA02");
+    }
 
     benchmark_timer_initialize();
 
-    for(count = 0; count < BENCHMARKS; count++) {
+    for (count = 0; count < BENCHMARKS; count++) {
         PRT_TaskResume(taskIds[1]);
     }
 
@@ -36,10 +38,12 @@ void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
 
 void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
-    benchmark_timer_initialize();
-    PRT_TaskSuspend(taskIds[1]);
+    for (count1 = 0; count1 < WARMUP_TIMES; count1++) {
+        benchmark_timer_initialize();
+        PRT_TaskSuspend(taskIds[1]);
+    }
 
-    for(; count < BENCHMARKS - 1;) {
+    for (; count < BENCHMARKS - 1;) {
         PRT_TaskSuspend(taskIds[1]);
     }
 
