@@ -10,7 +10,7 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
-#ifdef POSIX_TESTCASE
+#if (defined POSIX_TESTCASE) || (defined RHEALSTONE_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -72,7 +72,7 @@ void TestTaskEntry()
     schedTest();
     waitTest();
 #endif
-#ifdef POSIX_TESTCASE
+#if (defined POSIX_TESTCASE) || (defined RHEALSTONE_TESTCASE)
     Init(0, 0, 0, 0);
 #endif
 }

@@ -13,7 +13,7 @@
 #include "ivshmem_demo.h"
 #include "cpu_config.h"
 
-#ifdef POSIX_TESTCASE
+#ifdef TESTSUITE_CASE
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -26,7 +26,7 @@ int irqCounter;
 
 void TestTask1()
 {
-#ifdef POSIX_TESTCASE
+#ifdef TESTSUITE_CASE
     Init(0, 0, 0, 0);
 #endif
 

@@ -20,9 +20,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "prt_buildef.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if defined(OS_ARCH_ARMV8)
+#include "prt_typedef.h"
+extern U32 PRT_Printf(const char *format, ...);
+#define printf PRT_Printf
 #endif
 
 void benchmark_timer_initialize(void);

@@ -3,6 +3,7 @@
  */
 #include <stdint.h>
 #include <prt_tick.h>
+#include "prt_buildef.h"
 
 uintptr_t g_cycle = 0;
 U64 g_tick = 0;

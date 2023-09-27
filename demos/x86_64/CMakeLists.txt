@@ -95,6 +95,14 @@ endif()
 if (${APP} MATCHES "x86_64")
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
     add_executable(${APP} ${OBJS})
-else()
-    add_subdirectory(testsuites)
+elseif(${APP} STREQUAL "task-switch" OR
+        ${APP} STREQUAL "task-preempt" OR
+        ${APP} STREQUAL "semaphore-shuffle" OR
+        ${APP} STREQUAL "interrupt-latency" OR
+        ${APP} STREQUAL "deadlock-break" OR
+        ${APP} STREQUAL "message-latency")
+    add_subdirectory(../../testsuites/rhealstone tmp)
+    target_compile_options(ethercat PUBLIC -DRHEALSTONE_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
+    add_executable(${APP} ${OBJS})
 endif()
