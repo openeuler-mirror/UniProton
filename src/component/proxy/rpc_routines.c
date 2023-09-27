@@ -11,7 +11,7 @@
  * Create: 2023-06-30
  * Description: 代理接口客户端实现
  */
-
+#include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -1351,6 +1351,24 @@ int PRT_ProxySocket(int domain, int type, int protocol)
     ret = outp.ret;
     free_slot(slot_idx);
     return ret;
+}
+
+int PRT_ProxyWriteStdOut(const char *buf, int len)
+{
+    rpc_printf_req_t req;
+    int ret = 0;
+    int hlen = offsetof(rpc_printf_req_t, buf);
+    if (len <= 0) {
+        return len;
+    }
+    memcpy_s(req.buf, sizeof(req.buf), buf, len);
+    len = MIN(len, sizeof(req.buf));
+    req.func_id = PRINTF_ID;
+    req.len = len;
+
+    ret = rpmsg_send(g_ept, &req, len + hlen);
+
+    return ret - hlen;
 }
 
 static int __printf(const char *format, va_list list)
