@@ -31,7 +31,7 @@ int pthread_condattr_init_1_1()
 	/* Initialize a cond attributes object */
 	if((rc=pthread_condattr_init(&condattr)) != 0)
 	{
-		fprintf(stderr,"Error at pthread_condattr_init(), rc=%d\n",rc);
+		printf("Error at pthread_condattr_init(), rc=%d\n",rc);
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}
@@ -42,7 +42,7 @@ int pthread_condattr_init_1_1()
 	 * PTHREAD_PROCESS_PRIVATE  */
 	if(pthread_condattr_getpshared(&condattr, &pshared) != 0)
 	{
-		fprintf(stderr,"Error obtaining the attribute process-shared\n");
+		printf("Error obtaining the attribute process-shared\n");
 		return PTS_UNRESOLVED;
 	}
 	
@@ -58,6 +58,6 @@ int pthread_condattr_init_1_1()
 	}
 #endif	
 	
-	fprintf(stderr,"process-shared attribute is not available for testing\n");
+	printf("process-shared attribute is not available for testing\n");
 	return PTS_UNRESOLVED;	
 }

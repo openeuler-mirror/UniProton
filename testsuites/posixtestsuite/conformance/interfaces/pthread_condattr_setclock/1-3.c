@@ -47,7 +47,7 @@ int pthread_condattr_setclock_1_3()
 	/* Initialize a cond attributes object */
 	if((rc=pthread_condattr_init(&condattr)) != 0)
 	{
-		fprintf(stderr,"Error at pthread_condattr_init(), rc=%d\n",rc);
+		printf("Error at pthread_condattr_init(), rc=%d\n",rc);
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}

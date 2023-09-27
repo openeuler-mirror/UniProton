@@ -162,7 +162,7 @@ int sem_unlink_7_1( int argc, char * argv[] )
 
 	/* Test passed */
 #if VERBOSE > 0
-	output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 	PASSED;

@@ -101,13 +101,13 @@ int sem_unlink_4_2( int argc, char * argv[] )
 
     if ( errno != ENOENT )
 	{
-		output( "Error %d: %s\n", errno, strerror( errno ) );
+		printf( "Error %d: %s\n", errno, strerror( errno ) );
 		FAILED( "The error was not ENOENT" );
 	}
 
 	/* Test passed */
 #if VERBOSE > 0
-	output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 	PASSED;

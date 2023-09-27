@@ -34,7 +34,7 @@ int pthread_condattr_init_3_1()
 	/* Insufficient memory exists to initialize the condition variable attributes object */
 	else if(rc == ENOMEM)
 	{
-		fprintf(stderr,"pthread_condattr_init() returns ENOMEM\n");
+		printf("pthread_condattr_init() returns ENOMEM\n");
 		return PTS_UNRESOLVED;
 	}
 

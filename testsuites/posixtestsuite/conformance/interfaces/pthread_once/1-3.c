@@ -167,7 +167,7 @@ int pthread_once_1_3( int argc, char * argv[] )
 
 	if ( control != 1 )
 	{
-		output( "Control: %d\n", control );
+		printf( "Control: %d\n", control );
 		FAILED( "The initializer function did not execute once" );
 	}
 
