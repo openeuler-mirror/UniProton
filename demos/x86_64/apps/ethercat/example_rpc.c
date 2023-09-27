@@ -1,4 +1,5 @@
 #include "openamp/open_amp.h"
+#include "prt_proxy_ext.h"
 
 #define RPMSG_RPC_SERVICE_NAME "rpmsg-rpc"
 #define ADDR                    0xFE
@@ -14,7 +15,7 @@ extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
 
 int send_message(unsigned char *message, int len) 
 {
-    return 0;
+    return PRT_ProxyWriteStdOut(message, len);
 }
 
 int rpmsg_endpoint_init(struct rpmsg_device *rdev)
