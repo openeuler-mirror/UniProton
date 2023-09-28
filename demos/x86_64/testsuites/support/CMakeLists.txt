@@ -1,1 +1,0 @@
-add_library(rhealstone_support OBJECT banchmark_support.c main.c)
