@@ -40,6 +40,5 @@ int exit_1_2()
 
     printf("exit_1_2 sleep 2s\n");
     sleep(2);
-    printf("exit_1_2 can't run here\n");
     return 0;
 }

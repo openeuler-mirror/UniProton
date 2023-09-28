@@ -64,7 +64,9 @@ add_subdirectory(cplusplus)
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
-    ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
+    ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_signal_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_exit_interface")
         add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
         target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)

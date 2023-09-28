@@ -41,14 +41,14 @@ int pthread_mutexattr_gettype_1_5()
 	/* Set the mutex attribute 'type' to PTHREAD_MUTEX_RECURSIVE. */
 	if(pthread_mutexattr_settype(&mta, PTHREAD_MUTEX_RECURSIVE) != 0)
 	{
-		fprintf(stderr,"pthread_mutexattr_settype(): Error setting the attribute 'type'\n");
+		printf("pthread_mutexattr_settype(): Error setting the attribute 'type'\n");
 		return PTS_UNRESOLVED;
 	}
 	
 	 /* The 'type' attribute should be PTHREAD_MUTEX_RECURSIVE  */
 	if(pthread_mutexattr_gettype(&mta, &type) != 0)
 	{
-		fprintf(stderr,"pthread_mutexattr_gettype(): Error obtaining the attribute 'type'\n");
+		printf("pthread_mutexattr_gettype(): Error obtaining the attribute 'type'\n");
 		return PTS_UNRESOLVED;
 	}
 	

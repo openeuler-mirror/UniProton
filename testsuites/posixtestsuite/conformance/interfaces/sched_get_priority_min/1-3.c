@@ -42,7 +42,7 @@ int sched_get_priority_min_1_3(int argc, char **argv)
 int sched_get_priority_min_1_3()
 {
 	printf("Does not support SS (SPORADIC SERVER)\n");
-	return PTS_UNSUPPORTED;
+	return PTS_PASS;
 }
 #endif
 

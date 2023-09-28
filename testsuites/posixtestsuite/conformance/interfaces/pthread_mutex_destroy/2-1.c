@@ -21,14 +21,14 @@ int pthread_mutex_destroy_2_1()
 	/* Initialize a mutex attributes object */
 	if(pthread_mutex_init(&mutex,NULL) != 0)
 	{
-		fprintf(stderr,"Cannot initialize mutex object\n");
+		printf("Cannot initialize mutex object\n");
 		return PTS_UNRESOLVED;
 	}
 
 	/* Destroy the mutex attributes object */
 	if(pthread_mutex_destroy(&mutex) != 0)
 	{
-		fprintf(stderr,"Cannot destroy the mutex object\n");
+		printf("Cannot destroy the mutex object\n");
 		return PTS_UNRESOLVED;
 	}
 

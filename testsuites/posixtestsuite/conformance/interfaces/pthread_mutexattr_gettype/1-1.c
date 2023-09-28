@@ -40,7 +40,7 @@ int pthread_mutexattr_gettype_1_1()
 	 /* The default 'type' attribute should be PTHREAD_MUTEX_DEFAULT  */
 	if(pthread_mutexattr_gettype(&mta, &type) != 0)
 	{
-		fprintf(stderr,"pthread_mutexattr_gettype(): Error obtaining the attribute 'type'\n");
+		printf("pthread_mutexattr_gettype(): Error obtaining the attribute 'type'\n");
 		return PTS_UNRESOLVED;
 	}
 	

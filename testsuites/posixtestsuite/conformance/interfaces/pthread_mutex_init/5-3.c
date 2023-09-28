@@ -72,9 +72,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_init_output_init()
-  * void pthread_mutex_init_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_init_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -189,11 +189,11 @@ void * pthread_mutex_init_5_3_threaded(void * arg)
 		if ((ret = pthread_mutexattr_settype(pma[3], PTHREAD_MUTEX_DEFAULT)))
 		{ UNRESOLVED(ret, "pthread_mutexattr_settype (default)"); }
 		#if VERBOSE >1
-		pthread_mutex_init_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
 		#endif
 	#else
 		#if VERBOSE > 0
-		pthread_mutex_init_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
 		#endif
 	#endif
 	
@@ -297,10 +297,10 @@ int pthread_mutex_init_5_3 (int argc, char * argv[])
 	{ UNRESOLVED(ret, "Worker thread join failed"); }
 
 	#if VERBOSE > 0
-	pthread_mutex_init_output("Test executed successfully.\n");
-	pthread_mutex_init_output("  %d mutex initialization and destruction were done.\n", pthread_mutex_init_5_3_count_ope);
+	printf("Test executed successfully.\n");
+	printf("  %d mutex initialization and destruction were done.\n", pthread_mutex_init_5_3_count_ope);
 	#ifdef WITH_SYNCHRO
-	pthread_mutex_init_output("  %d signals were sent meanwhile.\n", pthread_mutex_init_5_3_count_sig);
+	printf("  %d signals were sent meanwhile.\n", pthread_mutex_init_5_3_count_sig);
 	#endif 
 	#endif
 	printf("Test PASS\n");

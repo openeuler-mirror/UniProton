@@ -66,7 +66,7 @@ int pthread_attr_setscope_1_1()
         }
 
 	if (cscope != CONSCOPE) {
-		fprintf(stderr, ERROR_PREFIX "The contentionscope is not "
+		printf(ERROR_PREFIX "The contentionscope is not "
 		       "correct \n");
 		return (PTS_FAIL);
 	}		

@@ -34,7 +34,7 @@ int pthread_mutexattr_init_3_1()
 	/* Insufficient memory exists to initialize the mutex attributes object */
 	else if(rc == ENOMEM)
 	{
-		fprintf(stderr,"pthread_mutexattr_init() returns ENOMEM\n");
+		printf("pthread_mutexattr_init() returns ENOMEM\n");
 		return PTS_UNRESOLVED;
 	}
 

@@ -50,7 +50,7 @@ int pthread_mutexattr_getprotocol_1_2()
 		/* Get the protocol mutex attr. */
 		if(pthread_mutexattr_getprotocol(&mta, &protocol) != 0)
 		{
-			fprintf(stderr,"Error obtaining the protocol attribute.\n");
+			printf("Error obtaining the protocol attribute.\n");
 			return PTS_UNRESOLVED;
 		}
 

@@ -48,7 +48,7 @@ int pthread_mutex_trylock_1_1()
 	/* Trylock the pthread_mutex_trylock_1_1_mutex and expect it returns EBUSY */
    	rc = pthread_mutex_trylock(&pthread_mutex_trylock_1_1_mutex);
       	if(rc!=EBUSY) {
-        	fprintf(stderr,"Expected %d(EBUSY), got %d\n",EBUSY,rc);
+        	printf("Expected %d(EBUSY), got %d\n",EBUSY,rc);
         	printf("Test FAILED\n");
 		return PTS_FAIL;
       	}
@@ -68,7 +68,7 @@ int pthread_mutex_trylock_1_1()
 			continue;
 		}
 		else {
-			fprintf(stderr,"Unexpected error code(%d) for pthread_mutex_lock()\n", rc);
+			printf("Unexpected error code(%d) for pthread_mutex_lock()\n", rc);
 			return PTS_UNRESOLVED;
 		}
 	}
@@ -78,7 +78,7 @@ int pthread_mutex_trylock_1_1()
   	pthread_mutex_destroy(&pthread_mutex_trylock_1_1_mutex);
 
 	if(i>=5) {
-		fprintf(stderr,"Have tried %d times but failed to get the pthread_mutex_trylock_1_1_mutex\n", i);
+		printf("Have tried %d times but failed to get the pthread_mutex_trylock_1_1_mutex\n", i);
 		return PTS_UNRESOLVED;
 	}
 	printf("Test PASSED\n");
@@ -90,7 +90,7 @@ void *pthread_mutex_trylock_1_1_func(void *parm)
   	int rc;
 
 	if((rc=pthread_mutex_lock(&pthread_mutex_trylock_1_1_mutex))!=0) {
-		fprintf(stderr,"Error at pthread_mutex_lock(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_lock(), rc=%d\n",rc);
 		pthread_exit((void*)PTS_UNRESOLVED);
 	}
 	pthread_mutex_trylock_1_1_t1_start=1;
@@ -99,7 +99,7 @@ void *pthread_mutex_trylock_1_1_func(void *parm)
 		sleep(1);
 
 	if((rc=pthread_mutex_unlock(&pthread_mutex_trylock_1_1_mutex))!=0) {
-		fprintf(stderr,"Error at pthread_mutex_unlock(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_unlock(), rc=%d\n",rc);
 		pthread_exit((void*)PTS_UNRESOLVED);
 	}
 
