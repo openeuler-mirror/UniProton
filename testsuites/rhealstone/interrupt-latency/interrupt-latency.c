@@ -17,43 +17,7 @@
 
 #define BENCHMARKS 50000
 
-void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
-
-uint32_t Interrupt_nest;
-uint32_t Timer_overhead;
-uint32_t Interrupt_enter_time;
-
-void Isr_handler(U32 intNum);
-
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
-{
-    U32 status;
-    TskHandle taskId;
-    struct TskInitParam taskParam;
-
-    taskParam.taskEntry = (TskEntryFunc)Task_1;
-    taskParam.stackSize = 0x800;
-    taskParam.name = "TA1";
-    taskParam.taskPrio = OS_TSK_PRIORITY_10;
-    taskParam.stackAddr = 0;
-    
-    status = PRT_TaskCreate(&taskId, &taskParam);
-    directive_failed(status, "PRT_TaskCreate of Task_1");
-
-    status = PRT_TaskResume(taskId);
-    directive_failed(status, "PRT_TaskResume of Task_1");
-
-    benchmark_timer_initialize();
-    benchmark_timer_read();
-    benchmark_timer_initialize();
-    Timer_overhead = benchmark_timer_read();
-
-    TskHandle selfTaskId;
-    PRT_TaskSelf(&selfTaskId);
-    status = PRT_TaskDelete(selfTaskId);
-    directive_failed(status, "PRT_TaskDelete of self");
-}
-
+#if defined(OS_ARCH_ARMV7_M)
 #define INTERRUPT_LATENCY_TEST_INT 30
 /* ** 中断设置悬起寄存器(SETPEND) 0xE000_E200 -0xE000_E21C */
 #define OS_NVIC_SETPEND_BASE 0xE000E200UL
@@ -61,39 +25,110 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
     do {                                                                                                            \
         *(volatile U32 *)((uintptr_t)OS_NVIC_SETPEND_BASE + (((hwiNum) >> 5) << 2)) = 1UL << ((hwiNum) & 0x1FUL);   \
     } while (0)
+#endif
 
-void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
-{
-    U32 ret;
-    U32 tickPriority = 1;
-    U32 i;
-    ret = PRT_HwiSetAttr(INTERRUPT_LATENCY_TEST_INT, tickPriority, OS_HWI_MODE_ENGROSS);
-    if (OS_OK != ret) {
-        printf("Test_HwTmrFunEnable PRT_HwiSetAttr error: %x", ret);
-        return;
-    } 
-    ret = PRT_HwiCreate(INTERRUPT_LATENCY_TEST_INT, (HwiProcFunc)Isr_handler, (U32)INTERRUPT_LATENCY_TEST_INT);
-    Interrupt_nest = 0;
+#if defined(OS_ARCH_X86_64)
+#define INTERRUPT_LATENCY_TEST_INT 0xfd
+#endif
 
-    PRT_HwiEnable(INTERRUPT_LATENCY_TEST_INT);
-    /* Benchmark code */
-    benchmark_timer_initialize();
-    /* goes to Isr_handler */
-    NVIC_SET_IRQ_PEND(INTERRUPT_LATENCY_TEST_INT);
-    PRT_HwiDisable(INTERRUPT_LATENCY_TEST_INT);
-    put_time(
-        "Rhealstone: Interrupt Latency",
-        Interrupt_enter_time,
-        1,                              /* Only Rhealstone that isn't an anverage */
-        Timer_overhead,
-        0
-    );
-    PRT_SysReboot();
-}
+#if defined(OS_ARCH_ARMV8)
+#define INTERRUPT_LATENCY_TEST_INT 15
+#endif
+
+uintptr_t timerOverhead;
+uintptr_t interruptTime;
 
 void Isr_handler(U32 intNum)
 {
     /* See how long it took system to recognize interrupt */
-    Interrupt_enter_time = benchmark_timer_read();
+    interruptTime = benchmark_timer_read();
+#if !defined(OS_ARCH_ARMV8)
     PRT_HwiClearPendingBit(intNum);
+#endif
+}
+
+void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    U32 ret;
+    U32 prio = 0;
+    uintptr_t intSave;
+
+    ret = PRT_HwiSetAttr(INTERRUPT_LATENCY_TEST_INT, prio, OS_HWI_MODE_ENGROSS);
+    if (ret != OS_OK) {
+        printf("PRT_HwiSetAttr error: %x\n", ret);
+        return;
+    }
+    ret = PRT_HwiCreate(INTERRUPT_LATENCY_TEST_INT, (HwiProcFunc)Isr_handler, (U32)INTERRUPT_LATENCY_TEST_INT);
+    if (ret != OS_OK) {
+        printf("PRT_HwiCreate error: %x\n", ret);
+        return;
+    }
+
+    PRT_HwiEnable(INTERRUPT_LATENCY_TEST_INT);
+#if defined(OS_ARCH_X86_64)
+    intSave = PRT_HwiLock();
+    OsTrigerHwi(INTERRUPT_LATENCY_TEST_INT);
+    /* Benchmark code */
+    benchmark_timer_initialize();
+    /* goes to Isr_handler */
+    PRT_HwiRestore(intSave);
+#endif
+
+#if defined(OS_ARCH_ARMV7_M)
+    /* Benchmark code */
+    benchmark_timer_initialize();
+    /* goes to Isr_handler */
+    NVIC_SET_IRQ_PEND(INTERRUPT_LATENCY_TEST_INT);
+#endif
+
+#if defined(OS_ARCH_ARMV8)
+    intSave = PRT_HwiLock();
+    OsHwiMcTrigger(0xf, INTERRUPT_LATENCY_TEST_INT);
+    /* Benchmark code */
+    benchmark_timer_initialize();
+    /* goes to Isr_handler */
+    PRT_HwiRestore(intSave);
+    __asm__ __volatile__("dsb sy":::"memory", "cc");
+#endif
+    PRT_HwiDisable(INTERRUPT_LATENCY_TEST_INT);
+    put_time(
+        "Rhealstone: Interrupt Latency",
+        interruptTime,
+        1,                              /* Only Rhealstone that isn't an anverage */
+        timerOverhead,
+        0
+    );
+
+    PRT_SysReboot();
+}
+
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    U32 status;
+    TskHandle taskId;
+    struct TskInitParam taskParam = { 0 };
+
+    taskParam.taskEntry = (TskEntryFunc)Task_1;
+    taskParam.stackSize = 0x800;
+    taskParam.name = "TA1";
+    taskParam.taskPrio = OS_TSK_PRIORITY_10;
+    taskParam.stackAddr = 0;
+
+    status = PRT_TaskCreate(&taskId, &taskParam);
+    directive_failed(status, "PRT_TaskCreate of Task_1");
+
+    status = PRT_TaskResume(taskId);
+    directive_failed(status, "PRT_TaskResume of Task_1");
+
+    benchmark_timer_initialize();
+#if defined(OS_ARCH_ARMV7_M)
+    benchmark_timer_read();
+    benchmark_timer_initialize();
+#endif
+    timerOverhead = benchmark_timer_read();
+
+    TskHandle selfTaskId;
+    PRT_TaskSelf(&selfTaskId);
+    status = PRT_TaskDelete(selfTaskId);
+    directive_failed(status, "PRT_TaskDelete of SELF");
 }

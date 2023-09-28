@@ -22,6 +22,7 @@ else()
     return()
 endif()
 
+if (${CPU_TYPE} STREQUAL "m4")
 list(APPEND OBJS 
     $<TARGET_OBJECTS:bsp>
     $<TARGET_OBJECTS:config>
@@ -29,3 +30,9 @@ list(APPEND OBJS
 
 add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
 target_link_libraries(${BUILD_APP} PUBLIC testsuite_support rhealstone_support)
+endif()
+
+if (${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "x86_64")
+    add_library(rhealstoneTest OBJECT ${ALL_SRC} ./support/banchmark_support.c)
+    target_include_directories(rhealstoneTest PUBLIC ./support)
+endif()
