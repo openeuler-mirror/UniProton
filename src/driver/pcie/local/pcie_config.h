@@ -85,11 +85,32 @@
 #define  PCI_BASE_ADDRESS_IO_MASK	(~0x03UL)
 /* bit 1 is reserved if address_space = 1 */
 
+/* Header type 0 (normal devices) */
+#define PCI_CARDBUS_CIS		0x28
+#define PCI_SUBSYSTEM_VENDOR_ID	0x2c
+#define PCI_SUBSYSTEM_ID	0x2e
+#define PCI_ROM_ADDRESS		0x30	/* Bits 31..11 are address, 10..1 reserved */
+#define  PCI_ROM_ADDRESS_ENABLE	0x01
+#define PCI_ROM_ADDRESS_MASK	(~0x7ffU)
+
+#ifndef MMU_ECAM_ADDR
+#define MMU_ECAM_ADDR 0xd0000000ULL
+#endif
 void pcie_config_base_addr_register(uintptr_t base_addr);
 
-#define PCI_ECAM_ADDRESS(Bus, Device, Function, Offset) \
+#define PCI_CFG_ADDRESS(Bus, Device, Function, Offset) \
   (((Offset) & 0xfff) | (((Function) & 0x07) << 12) | (((Device) & 0x1f) << 15) | (((Bus) & 0xff) << 20))
 
+#define PCI_CFG_ADDRESS_BY_BDF(bdf, offset) \
+  (((offset) & 0xfff) | (((bdf) & 0xffff) << 12) )
 
+int pcie_device_cfg_write(uint32_t bdf, uint32_t offset, uint32_t val);
+int pcie_device_cfg_read(uint32_t bdf, uint32_t offset, uint32_t *val);
+
+int pcie_device_cfg_write_byte(uint32_t bdf, uint32_t offset, uint8_t val);
+int pcie_device_cfg_read_byte(uint32_t bdf, uint32_t offset, uint8_t *val);
+
+int pcie_device_cfg_write_word(uint32_t bdf, uint32_t offset, uint16_t val);
+int pcie_device_cfg_read_word(uint32_t bdf, uint32_t offset, uint16_t *val);
 
 #endif /* _PCIE_H_ */
