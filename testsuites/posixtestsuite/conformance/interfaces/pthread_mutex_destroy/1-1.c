@@ -25,45 +25,45 @@ int pthread_mutex_destroy_1_1()
 
 	/* Initialize a mutex attributes object */
 	if((rc=pthread_mutexattr_init(&mta)) != 0) {
-		fprintf(stderr,"Error at pthread_mutexattr_init(), rc=%d\n",rc);
+		printf("Error at pthread_mutexattr_init(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	
 	/* Initialize pthread_mutex_destroy_1_1_mutex1 with the default mutex attributes */
 	if((rc=pthread_mutex_init(&pthread_mutex_destroy_1_1_mutex1,&mta)) != 0) {
-		fprintf(stderr,"Fail to initialize pthread_mutex_destroy_1_1_mutex1, rc=%d\n",rc);
+		printf("Fail to initialize pthread_mutex_destroy_1_1_mutex1, rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 
 	/* Initialize pthread_mutex_destroy_1_1_mutex2 with NULL attributes */
 	if((rc=pthread_mutex_init(&pthread_mutex_destroy_1_1_mutex2,NULL)) != 0) {
-		fprintf(stderr,"Fail to initialize pthread_mutex_destroy_1_1_mutex2, rc=%d\n",rc);
+		printf("Fail to initialize pthread_mutex_destroy_1_1_mutex2, rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 
 	/* Destroy the mutex attributes object */
 	if((rc=pthread_mutexattr_destroy(&mta)) != 0) {
-		fprintf(stderr,"Error at pthread_mutexattr_destroy(), rc=%d\n",rc);
+		printf("Error at pthread_mutexattr_destroy(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 
 	/* Destroy pthread_mutex_destroy_1_1_mutex1 */
 	if((rc=pthread_mutex_destroy(&pthread_mutex_destroy_1_1_mutex1)) != 0) {
-		fprintf(stderr,"Fail to destroy pthread_mutex_destroy_1_1_mutex1, rc=%d\n",rc);
+		printf("Fail to destroy pthread_mutex_destroy_1_1_mutex1, rc=%d\n",rc);
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}
 
 	/* Destroy pthread_mutex_destroy_1_1_mutex2 */
 	if((rc=pthread_mutex_destroy(&pthread_mutex_destroy_1_1_mutex2)) != 0) {
-		fprintf(stderr,"Fail to destroy pthread_mutex_destroy_1_1_mutex2, rc=%d\n",rc);
+		printf("Fail to destroy pthread_mutex_destroy_1_1_mutex2, rc=%d\n",rc);
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}
 
 	/* Destroy pthread_mutex_destroy_1_1_mutex3 */
 	if((rc=pthread_mutex_destroy(&pthread_mutex_destroy_1_1_mutex3)) != 0) {
-		fprintf(stderr,"Fail to destroy pthread_mutex_destroy_1_1_mutex3, rc=%d\n",rc);
+		printf("Fail to destroy pthread_mutex_destroy_1_1_mutex3, rc=%d\n",rc);
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}

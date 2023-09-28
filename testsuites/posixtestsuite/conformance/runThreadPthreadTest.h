@@ -258,7 +258,8 @@ test_run_main *run_test_arry_1[] = {
     pthread_join_6_2,
     pthread_join_5_1,
     pthread_join_6_1,
-    pthread_join_3_1,
+    // 子线程优先级更高，sched_yield不会触发任务切换，此用例不适用
+    // pthread_join_3_1,
     pthread_join_2_1,
     pthread_join_1_1,
     pthread_detach_4_2,
@@ -444,7 +445,8 @@ char run_test_name_1[][50] = {
     "pthread_join_6_2",
     "pthread_join_5_1",
     "pthread_join_6_1",
-    "pthread_join_3_1",
+    // 子线程优先级更高，sched_yield不会触发任务切换，此用例不适用
+    // "pthread_join_3_1",
     "pthread_join_2_1",
     "pthread_join_1_1",
     "pthread_detach_4_2",

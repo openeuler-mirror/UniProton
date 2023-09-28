@@ -67,9 +67,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_unlock_output_init()
-  * void pthread_mutex_unlock_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_unlock_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -94,7 +94,7 @@ int pthread_mutex_unlock_5_2(int argc, char * argv[])
 	pthread_mutex_unlock_output_init();
 
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
+	printf("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
 	#endif
 	
 	ret = pthread_mutexattr_init(&ma);
@@ -110,7 +110,7 @@ int pthread_mutex_unlock_5_2(int argc, char * argv[])
 	{  UNRESOLVED(ret, "Mutex init failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Unlock unlocked mutex\n");
+	printf("Unlock unlocked mutex\n");
 	#endif
 	
 	ret = pthread_mutex_unlock(&m);
@@ -118,7 +118,7 @@ int pthread_mutex_unlock_5_2(int argc, char * argv[])
 	{  FAILED("Unlocking an unlocked recursive mutex succeeded");  }
 	
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Lock and unlock the mutex\n");
+	printf("Lock and unlock the mutex\n");
 	#endif
 	
 	ret = pthread_mutex_lock(&m);

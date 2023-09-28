@@ -129,7 +129,7 @@ int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*t
 {
     TskHandle *thread = (TskHandle *)newthread;
     U32 ret;
-    U32 taskId;
+    TskHandle taskId;
     uintptr_t intSave;
     void *stackPtr = NULL;
     uintptr_t *topStack = NULL;
@@ -182,7 +182,7 @@ int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*t
         }
         return EAGAIN;
     }
-    *thread = taskId;
+    *newthread = (pthread_t)taskId;
 
     return OS_OK;
 }

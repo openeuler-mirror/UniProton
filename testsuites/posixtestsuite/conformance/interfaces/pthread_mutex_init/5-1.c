@@ -69,9 +69,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_init_output_init()
-  * void pthread_mutex_init_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_init_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -160,7 +160,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 
 
 	#if VERBOSE > 1
-	pthread_mutex_init_output("Ready to take over memory. Page size is %d\n", sz);
+	printf("Ready to take over memory. Page size is %d\n", sz);
 	#endif
 	
 	/* Allocate all available memory */
@@ -176,7 +176,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 		ptr_prev = ptr;
 	}
 	#if VERBOSE > 1
-	pthread_mutex_init_output("%d pages were allocated before failure\n", ret);
+	printf("%d pages were allocated before failure\n", ret);
 	ret = 0;
 	#endif
 	
@@ -192,7 +192,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 		ptr_prev = ptr;
 	}
 	#if VERBOSE > 1
-	pthread_mutex_init_output("%d additional spaces were allocated before failure\n", ret);
+	printf("%d additional spaces were allocated before failure\n", ret);
 	ret = 0;
 	#endif
 	if (errno != ENOMEM)
@@ -215,7 +215,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 	}
 
 	#if VERBOSE > 1
-	pthread_mutex_init_output("Memory is released\n");
+	printf("Memory is released\n");
 	#endif
 	
 	for (i=0; i<4; i++)
@@ -230,7 +230,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 		if (retini[i] == 0)
 		{
 			#if VERBOSE > 0
-			pthread_mutex_init_output("Mutex initialization for attribute %d succeeds when memory is full\n", i);
+			printf("Mutex initialization for attribute %d succeeds when memory is full\n", i);
 			#endif
 			if (retdtr[i] != 0)
 			{  UNRESOLVED( retdtr[i],  "Mutex destroy failed on mutex inilialized under heavy loaded memory"); }
@@ -238,7 +238,7 @@ int pthread_mutex_init_5_1(int argc, char * argv[])
 		#if VERBOSE > 0
 		else
 		{
-			pthread_mutex_init_output("Mutex initialization for attribute %d fails with ENOMEM when memory is full\n", i);
+			printf("Mutex initialization for attribute %d fails with ENOMEM when memory is full\n", i);
 		}
 		#endif
 	}

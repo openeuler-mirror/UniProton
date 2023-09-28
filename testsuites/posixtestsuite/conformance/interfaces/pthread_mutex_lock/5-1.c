@@ -81,9 +81,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_lock_output_init()
-  * void pthread_mutex_lock_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_lock_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -165,11 +165,11 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 		if ((ret = pthread_mutexattr_settype(pma[3], PTHREAD_MUTEX_DEFAULT)))
 		{ UNRESOLVED(ret, "pthread_mutexattr_settype (default)"); }
 		#if VERBOSE >1
-		pthread_mutex_lock_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
 		#endif
 	#else
 		#if VERBOSE > 0
-		pthread_mutex_lock_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
 		#endif
 	#endif
 
@@ -183,7 +183,7 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 	}
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Mutex objects are initialized\n");
+	printf("Mutex objects are initialized\n");
 	#endif
 
 	/* We don't need the mutex attribute objects anymore */
@@ -201,13 +201,13 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 
 	
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Going to create the child thread\n");
+	printf("Going to create the child thread\n");
 	#endif
 	/* Start the child */
 	if ((ret = pthread_create(&th, NULL, pthread_mutex_lock_5_1_threaded, NULL)))
 	{ UNRESOLVED(ret, "Unable to create the thread"); }
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Child created\n");
+	printf("Child created\n");
 	#endif
 
 
@@ -218,7 +218,7 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 		{ UNRESOLVED(errno, "Unable to wait for the child"); }
 
 		#if VERBOSE >1
-		pthread_mutex_lock_output("Child is ready for iteration %i\n", i+1);
+		printf("Child is ready for iteration %i\n", i+1);
 		#endif
 
 
@@ -236,7 +236,7 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 			{ UNRESOLVED(ret, "Pthread_kill failed"); }
 		}
 		#if VERBOSE >1
-		pthread_mutex_lock_output("Child was killed 10 times\n");
+		printf("Child was killed 10 times\n");
 		#endif
 		
 		/* Now check the thread is still waiting for the mutex */
@@ -246,7 +246,7 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 		}
 		
 		#if VERBOSE >1
-		pthread_mutex_lock_output("Control was OK\n");
+		printf("Control was OK\n");
 		#endif
 		
 		/* Unlock the mutex so the thread can proceed to the next one */
@@ -255,7 +255,7 @@ int pthread_mutex_lock_5_1 (int argc, char * argv[])
 	}
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("The test has passed, we are now going to clean up everything.\n");
+	printf("The test has passed, we are now going to clean up everything.\n");
 	#endif
 
 	/* Clean everything: the test has passed */

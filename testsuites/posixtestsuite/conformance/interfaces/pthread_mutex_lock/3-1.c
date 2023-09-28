@@ -73,9 +73,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_lock_output_init()
-  * void pthread_mutex_lock_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_lock_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -190,11 +190,11 @@ void * pthread_mutex_lock_3_1_threaded(void * arg)
 		if ((ret = pthread_mutexattr_settype(pma[3], PTHREAD_MUTEX_DEFAULT)))
 		{ UNRESOLVED(ret, "pthread_mutexattr_settype (default)"); }
 		#if VERBOSE >1
-		pthread_mutex_lock_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT initialized\n");
 		#endif
 	#else
 		#if VERBOSE > 0
-		pthread_mutex_lock_output("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
+		printf("Mutex attributes NORMAL,ERRORCHECK,RECURSIVE,DEFAULT unavailable\n");
 		#endif
 	#endif
 
@@ -295,7 +295,7 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 
 	#ifdef WITH_SYNCHRO
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Running in synchronized mode\n");
+	printf("Running in synchronized mode\n");
 	#endif
 	if ((sem_init(&pthread_mutex_lock_3_1_semsig1, 0, 1)))
 	{ UNRESOLVED(errno, "Semsig1  init"); }
@@ -307,7 +307,7 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 	{ UNRESOLVED(errno, "pthread_mutex_lock_3_1_semsync init"); }
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Starting the worker thread\n");
+	printf("Starting the worker thread\n");
 	#endif
 	if ((ret = pthread_create(&th_work, NULL, pthread_mutex_lock_3_1_threaded, NULL)))
 	{ UNRESOLVED(ret, "Worker thread creation failed"); }
@@ -322,7 +322,7 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 #endif
 	
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Starting the signal sources\n");
+	printf("Starting the signal sources\n");
 	#endif
 	if ((ret = pthread_create(&th_sig1, NULL, pthread_mutex_lock_3_1_sendsig, (void *)&arg1)))
 	{ UNRESOLVED(ret, "Signal 1 sender thread creation failed"); }
@@ -331,13 +331,13 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 	
 	/* Let's wait for a while now */
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Let the worker be killed for a second\n");
+	printf("Let the worker be killed for a second\n");
 	#endif
 	sleep(1);
 	
 	/* Now stop the threads and join them */
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Stop everybody\n");
+	printf("Stop everybody\n");
 	#endif
 	do { pthread_mutex_lock_3_1_do_it=0; }
 	while (pthread_mutex_lock_3_1_do_it);
@@ -348,7 +348,7 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 	{ UNRESOLVED(ret, "Signal 2 sender thread join failed"); }
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Signal sources are stopped, we can stop the worker\n");
+	printf("Signal sources are stopped, we can stop the worker\n");
 	#endif
 	if ((sem_post(&pthread_mutex_lock_3_1_semsync)))
 	{ UNRESOLVED(errno, "could not post pthread_mutex_lock_3_1_semsync"); }
@@ -357,10 +357,10 @@ int pthread_mutex_lock_3_1 (int argc, char * argv[])
 	{ UNRESOLVED(ret, "Worker thread join failed"); }
 
 	#if VERBOSE > 0
-	pthread_mutex_lock_output("Test executed successfully.\n");
-	pthread_mutex_lock_output("  %d mutex lock and unlock were done.\n", pthread_mutex_lock_3_1_count_ope);
+	printf("Test executed successfully.\n");
+	printf("  %d mutex lock and unlock were done.\n", pthread_mutex_lock_3_1_count_ope);
 	#ifdef WITH_SYNCHRO
-	pthread_mutex_lock_output("  %d signals were sent meanwhile.\n", pthread_mutex_lock_3_1_count_sig);
+	printf("  %d signals were sent meanwhile.\n", pthread_mutex_lock_3_1_count_sig);
 	#endif 
 	#endif	
 	PASSED;
