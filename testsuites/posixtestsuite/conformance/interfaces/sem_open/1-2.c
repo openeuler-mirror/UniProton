@@ -36,7 +36,7 @@ int sem_open_1_2()
 
 	/* Checking if mysemp has a value returned. From sem_open */
 
-	if ( &mysemp != NULL)
+	if (mysemp != NULL)
 	{
 		puts("TEST PASSED");
 		sem_close(mysemp);

@@ -49,23 +49,23 @@ void *pthread_cond_signal_4_1_thr_func(void *arg)
 	pthread_t self = pthread_self();
 	
 	if (pthread_mutex_lock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] failed to acquire the mutex\n", (void*)self);
+		printf("[Thread 0x%p] failed to acquire the mutex\n", (void*)self);
 		exit(PTS_UNRESOLVED);
 	}
-	fprintf(stderr,"[Thread 0x%p] started\n", (void*)self);
+	printf("[Thread 0x%p] started\n", (void*)self);
 	start_num ++;
 	
-	fprintf(stderr,"[Thread 0x%p] is waiting for the cond\n", (void*)self);
+	printf("[Thread 0x%p] is waiting for the cond\n", (void*)self);
 	rc = pthread_cond_wait(&td.cond, &td.mutex);
 	if(rc != 0) {
-		fprintf(stderr,"pthread_cond_wait return %d\n", rc);
+		printf("pthread_cond_wait return %d\n", rc);
                 exit(PTS_UNRESOLVED);
 	}
-	fprintf(stderr,"[Thread 0x%p] was wakened\n", (void*)self);
+	printf("[Thread 0x%p] was wakened\n", (void*)self);
 	waken_num ++;
 
 	if (pthread_mutex_unlock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] failed to release the mutex\n", (void*)self);
+		printf("[Thread 0x%p] failed to release the mutex\n", (void*)self);
 		exit(PTS_UNRESOLVED);
 	}
 	return NULL;
@@ -77,17 +77,17 @@ int pthread_cond_signal_4_1()
 	struct sigaction act;
 
 	if (pthread_mutex_init(&td.mutex, NULL) != 0) {
-		fprintf(stderr,"Fail to initialize mutex\n");
+		printf("Fail to initialize mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_cond_init(&td.cond, NULL) != 0) {
-		fprintf(stderr,"Fail to initialize cond\n");
+		printf("Fail to initialize cond\n");
 		return PTS_UNRESOLVED;
 	}
 
 	for (i=0; i<THREAD_NUM; i++) {
 	    	if (pthread_create(&thread[i], NULL, pthread_cond_signal_4_1_thr_func, NULL) != 0) {
-			fprintf(stderr,"Fail to create thread[%d]\n", i);
+			printf("Fail to create thread[%d]\n", i);
 			return (PTS_UNRESOLVED);
 		}
 	}
@@ -102,14 +102,14 @@ int pthread_cond_signal_4_1()
 	// alarm(5);
 
 	while (waken_num < THREAD_NUM) { /* loop to wake up all waiter threads */
-		fprintf(stderr,"[Main thread] signals a condition\n");
+		printf("[Main thread] signals a condition\n");
 		rc = pthread_cond_signal(&td.cond);
 		if (rc == EINVAL) {
-			fprintf(stderr,"pthread_cond_signal returns EINVAL\n");
+			printf("pthread_cond_signal returns EINVAL\n");
 			return (PTS_UNRESOLVED);
 		}
 		else if (rc != 0) {
-			fprintf(stderr,"pthread_cond_signal returns %d\n",rc);
+			printf("pthread_cond_signal returns %d\n",rc);
   	              	printf("Test FAILED\n");
 			return (PTS_FAIL);
 		}
@@ -118,7 +118,7 @@ int pthread_cond_signal_4_1()
 	
 	for (i=0; i<THREAD_NUM; i++) {
 	    	if (pthread_join(thread[i], NULL) != 0) {
-			fprintf(stderr,"Fail to join thread[%d]\n", i);
+			printf("Fail to join thread[%d]\n", i);
 			return (PTS_UNRESOLVED);
 		}
 	}

@@ -22,7 +22,12 @@
 #include <string.h>
 #include "posixtest.h"
 
+/* 不同架构配置信号量总数不同，且前面有用例申请后未释放。每申请一个pthread barrier占用两个信号量，此处配置为可实际申请到的值 */
+#if defined(OS_ARCH_X86_64)
+#define BARRIER_NUM 20
+#else
 #define BARRIER_NUM 100
+#endif
 
 int pthread_barrierattr_init_2_1()
 {
