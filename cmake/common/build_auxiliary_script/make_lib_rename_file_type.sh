@@ -16,7 +16,7 @@ file=lib"${CK_LIB_SUFFIX}"
 
 if [ "${CPU_TYPE}" = "m4" ] ; then
     ARNAME=arm-none-eabi-ar ; OBJCOPYNAME=arm-none-eabi-objcopy;
-elif [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ;
+elif [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ];
     then ARNAME=aarch64-none-elf-ar; OBJCOPYNAME=aarch64-none-elf-objcopy;
 elif [ "${CPU_TYPE}" = "x86_64" ];
     then ARNAME=x86_64-openeuler-linux-gnu-ar; OBJCOPYNAME=x86_64-openeuler-linux-gnu-objcopy;
