@@ -21,30 +21,6 @@
 #define SICR_ADDR_OFFSET_PER_CORE   0x200U
 #define OS_GICR_STRIDE              0x40000U            // GICR核间偏移量配置
 
-#if defined(GUEST_OS)
-#define UART_BASE_ADDR              0x7FFE000000ULL
-#define UART_CLK_INPUT              150000000U  /* 150M */
-#define GPIO_UTXD2_ADDR             0x82320040U
-#define GPIO_URXD2_ADDR             0x82320044U
-#define TEST_CLK_INT                27
-#define OS_GIC_BASE_ADDR            0x7FFF000000ULL     // GICD_BASE_ADDR
-#define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
-#else
-#define UART_BASE_ADDR              0xC4010000ULL
-#define TEST_CLK_INT                30
-#define OS_GIC_BASE_ADDR            0xd0000000ULL        // GICD_BASE_ADDR
-#define OS_GICR_OFFSET              0x100000U            // GICR相对于GIC基地址偏移量配置
-#endif
-
-#define SICR_ADDR_OFFSET_PER_CORE   0x200U
-
-/* GIC基地址配置 */
-#define OS_GIC_BASE_ADDR            0x7FFF000000ULL // GICD_BASE_ADDR
-/* GICR相对于GIC基地址偏移量配置 */
-#define OS_GICR_OFFSET              0x40000U
-/* GICR核间偏移量配置 */
-#define OS_GICR_STRIDE              0x40000U
-
 #define GICD_CTLR_S_ADDR            (OS_GIC_BASE_ADDR + 0x0000U)
 #define GICD_IGROUPN_ADDR           (OS_GIC_BASE_ADDR + 0x0080U)
 #define GICD_ISENABLER0_ADDR        (OS_GIC_BASE_ADDR + 0x0100U)
