@@ -4,7 +4,7 @@
 #include "cache_asm.h"
 
 #if defined(GUEST_OS)
-#define UART_BASE_ADDR              0x7FFE000000ULL
+#define UART_BASE_ADDR              0x82230000U
 #define UART_CLK_INPUT              150000000U  /* 150M */
 #define GPIO_UTXD2_ADDR             0x82320040U
 #define GPIO_URXD2_ADDR             0x82320044U

@@ -55,7 +55,6 @@ U32 OsTestInit(void)
 U32 PRT_AppInit(void)
 {
     U32 ret;
-
     ret = OsTestInit();
     if (ret) {
         return ret;
@@ -64,6 +63,8 @@ U32 PRT_AppInit(void)
     ret = TestShmStart();
     if (ret) {
         PRT_Printf("[uniproton] TestShmStart error!\n");
+    } else {
+        PRT_Printf("[uniproton] TestShmStart success!\n");
     }
 
     ret = TestClkStart();
