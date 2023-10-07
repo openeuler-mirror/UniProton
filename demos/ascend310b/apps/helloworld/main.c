@@ -10,8 +10,7 @@
 #include "timer.h"
 #include "hwi_init.h"
 #include "prt_config.h"
-
-extern U32 TestShmStart(void);
+#include "uniproton_shm_demo.h"
 
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
