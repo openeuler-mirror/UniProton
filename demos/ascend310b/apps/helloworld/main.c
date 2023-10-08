@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "hwi_init.h"
 #include "prt_config.h"
+#include "uniproton_shm_demo.h"
 
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
@@ -20,7 +21,7 @@ void TestTaskEntry()
     while (1) {
         PRT_Printf("[uniproton] test [%llu]\n", n);
         n++;
-        PRT_TaskDelay(1000);
+        PRT_TaskDelay(10000);
     }
     return;
 }
@@ -53,10 +54,16 @@ U32 OsTestInit(void)
 U32 PRT_AppInit(void)
 {
     U32 ret;
-
     ret = OsTestInit();
     if (ret) {
         return ret;
+    }
+
+    ret = TestShmStart();
+    if (ret) {
+        PRT_Printf("[uniproton] TestShmStart error!\n");
+    } else {
+        PRT_Printf("[uniproton] TestShmStart success!\n");
     }
 
     ret = TestClkStart();
