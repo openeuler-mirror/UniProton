@@ -80,9 +80,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_lock_output_init()
-  * void pthread_mutex_lock_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_lock_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -107,7 +107,7 @@ void * pthread_mutex_lock_4_1_threaded(void * arg)
 	if (ret == 0)
 	{  FAILED("Child first trylock succeeded");  }
 	#if VERBOSE >1
-	pthread_mutex_lock_output("[thrd] Try to lock the mutex.... failed (normal)\n");
+	printf("[thrd] Try to lock the mutex.... failed (normal)\n");
 	#endif
 	
 	/* Free the parent thread and lock the mutex (must success)*/
@@ -117,7 +117,7 @@ void * pthread_mutex_lock_4_1_threaded(void * arg)
 	if ((ret = pthread_mutex_lock(&pthread_mutex_lock_4_1_mtx)))
 	{  UNRESOLVED(ret, "Child lock failed");  }
 	#if VERBOSE >1
-	pthread_mutex_lock_output("[thrd] Successfully locked the mutex\n");
+	printf("[thrd] Successfully locked the mutex\n");
 	#endif
 	
 	/* Wait for the parent to let us go on */
@@ -129,7 +129,7 @@ void * pthread_mutex_lock_4_1_threaded(void * arg)
 	{  UNRESOLVED(ret, "Unlock in child failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("[thrd] Unlocked the mutex, ready to terminate.\n");
+	printf("[thrd] Unlocked the mutex, ready to terminate.\n");
 	#endif
 	
 	return NULL;
@@ -146,7 +146,7 @@ int pthread_mutex_lock_4_1(int argc, char * argv[])
 	pthread_mutex_lock_output_init();
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
+	printf("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
 	#endif
 	
 	/* Initialize the semaphore */
@@ -181,7 +181,7 @@ int pthread_mutex_lock_4_1(int argc, char * argv[])
 	{ FAILED("First unlock failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("The mutex has been locked twice and unlocked once, start the thread now.\n");
+	printf("The mutex has been locked twice and unlocked once, start the thread now.\n");
 	#endif
 	
 	/* Here this thread owns the mutex and the internal count is "1" */
@@ -195,7 +195,7 @@ int pthread_mutex_lock_4_1(int argc, char * argv[])
 	{  UNRESOLVED(errno, "Wait pthread_mutex_lock_4_1_sem in child failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_lock_output("[main] unlock the mutex.\n");
+	printf("[main] unlock the mutex.\n");
 	#endif
 	
 	/* We can now unlock the mutex */
@@ -217,8 +217,8 @@ int pthread_mutex_lock_4_1(int argc, char * argv[])
 	
 	/* Simple loop to double-check */
 	#if VERBOSE >1
-	pthread_mutex_lock_output("[main] joined the thread.\n");
-	pthread_mutex_lock_output("Lock & unlock the mutex 50 times.\n");
+	printf("[main] joined the thread.\n");
+	printf("Lock & unlock the mutex 50 times.\n");
 	#endif
 
 	for (i=0; i<50; i++)
@@ -237,7 +237,7 @@ int pthread_mutex_lock_4_1(int argc, char * argv[])
 	{  FAILED("Unlock succeeds after the loop");  }
 	
 	#if VERBOSE >1
-	pthread_mutex_lock_output("Everything went OK; destroy the mutex.\n");
+	printf("Everything went OK; destroy the mutex.\n");
 	#endif
 	/* The test passed, we destroy the mutex */
 	if ((ret = pthread_mutex_destroy(&pthread_mutex_lock_4_1_mtx)))

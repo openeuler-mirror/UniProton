@@ -30,27 +30,27 @@ int pthread_mutex_unlock_1_1()
 
 	/* Get the pthread_mutex_unlock_1_1_mutex using pthread_mutex_lock() */
 	if((rc=pthread_mutex_lock(&pthread_mutex_unlock_1_1_mutex)) != 0) {
-		fprintf(stderr,"Error at pthread_mutex_lock(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_lock(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 
 	/* Release the pthread_mutex_unlock_1_1_mutex using pthread_mutex_unlock() */
 	if((rc=pthread_mutex_unlock(&pthread_mutex_unlock_1_1_mutex)) != 0) {
-        	fprintf(stderr,"pthread_mutex_unlock 1 failed!\n");
+        	printf("pthread_mutex_unlock 1 failed!\n");
         	printf("Test FAILED\n");
 		return PTS_FAIL;
 	}
     		
 	/* Get the pthread_mutex_unlock_1_1_mutex using pthread_mutex_trylock() */
 	if((rc=pthread_mutex_trylock(&pthread_mutex_unlock_1_1_mutex)) != 0) {
-        	fprintf(stderr,"pthread_mutex_trylock failed!\n");
+        	printf("pthread_mutex_trylock failed!\n");
         	printf("Test FAILED\n");
 		return PTS_FAIL;
 	}
 
 	/* Release the pthread_mutex_unlock_1_1_mutex using pthread_mutex_unlock() */
 	if((rc=pthread_mutex_unlock(&pthread_mutex_unlock_1_1_mutex)) != 0) {
-        	fprintf(stderr,"pthread_mutex_unlock 2 failed!\n");
+        	printf("pthread_mutex_unlock 2 failed!\n");
         	printf("Test FAILED\n");
 		return PTS_FAIL;
 	}

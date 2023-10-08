@@ -17,7 +17,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include "securec.h"
-#include "rtt_viewer.h"
 #include "prt_config.h"
 #include "prt_config_internal.h"
 #include "prt_clk.h"

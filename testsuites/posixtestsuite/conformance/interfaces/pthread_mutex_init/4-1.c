@@ -23,7 +23,7 @@ int pthread_mutex_init_4_1()
 
 	/* Initialize a mutex attributes object */
 	if((rc=pthread_mutexattr_init(&mta)) != 0) {
-		fprintf(stderr,"Error at pthread_mutexattr_init(), rc=%d\n",rc);
+		printf("Error at pthread_mutexattr_init(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	
@@ -35,19 +35,19 @@ int pthread_mutex_init_4_1()
 	
 	/* Check if returned values are tolerable */
 	else if(rc == ENOMEM) {
-		fprintf(stderr,"Insufficient memory to initialize the mutex\n");
+		printf("Insufficient memory to initialize the mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	else if(rc == EAGAIN) {
-		fprintf(stderr,"Lack of the necessary resources to initilize the mutex\n");
+		printf("Lack of the necessary resources to initilize the mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	else if(rc == EPERM) {
-		fprintf(stderr,"Permission denied\n");
+		printf("Permission denied\n");
 		return PTS_UNRESOLVED;
 	}
 	else if(rc == EBUSY) {
-		fprintf(stderr,"Detected an attemp to reinitilize a previously initilized mutex\n");
+		printf("Detected an attemp to reinitilize a previously initilized mutex\n");
 		return PTS_UNRESOLVED;
 	}
 

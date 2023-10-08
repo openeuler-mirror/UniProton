@@ -77,9 +77,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_init_output_init()
-  * void pthread_mutex_init_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_init_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -120,7 +120,7 @@ void * pthread_mutex_init_3_2_deadlk_issue(void * arg)
 	if ((ret = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &tmp)))
 	{ UNRESOLVED(ret, "Set cancel state in pthread_mutex_init_3_2_deadlk_issue"); }
 	#if VERBOSE >1
-	pthread_mutex_init_output("Thread releases the semaphore...\n");
+	printf("Thread releases the semaphore...\n");
 	#endif
 	if ((ret = sem_post(&pthread_mutex_init_3_2_semA)))
 	{ UNRESOLVED(errno, "Sem_post in pthread_mutex_init_3_2_deadlk_issue"); }
@@ -140,7 +140,7 @@ void * pthread_mutex_init_3_2_unlock_issue(void * arg)
 	int ret;
 	
 	#if VERBOSE >1
-	pthread_mutex_init_output("Locking in child...\n");
+	printf("Locking in child...\n");
 	#endif
 	if ((ret=pthread_mutex_lock(pthread_mutex_init_3_2_p_mtx)))
 	{ UNRESOLVED(ret, "First mutex lock in pthread_mutex_init_3_2_unlock_issue"); }
@@ -154,7 +154,7 @@ void * pthread_mutex_init_3_2_unlock_issue(void * arg)
 	if (pthread_mutex_init_3_2_retval != 0) /* parent thread failed to unlock the mutex) */
 	{
 		#if VERBOSE >1
-		pthread_mutex_init_output("Unlocking in child...\n");
+		printf("Unlocking in child...\n");
 		#endif
 		if ((ret=pthread_mutex_unlock(pthread_mutex_init_3_2_p_mtx)))
 		{ FAILED("Mutex unlock pthread_mutex_init_3_2_returned an error but mutex is unlocked."); }
@@ -181,7 +181,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 	
 	pthread_mutex_init_output_init();
 	#if VERBOSE >1
-	pthread_mutex_init_output("Test starting...\n");
+	printf("Test starting...\n");
 	#endif
 	
 	/* We first initialize the two mutexes. */
@@ -195,7 +195,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 	{ UNRESOLVED(errno, "Sem B init"); }
 
 	#if VERBOSE >1
-	pthread_mutex_init_output("Data initialized...\n");
+	printf("Data initialized...\n");
 	#endif
 	
 	
@@ -205,7 +205,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 	pthread_mutex_init_3_2_retval = pthread_mutex_unlock(tab_mutex[0]);
 	ret = pthread_mutex_unlock(tab_mutex[1]);
 	#if VERBOSE >0
-	pthread_mutex_init_output("Results for unlock issue #1:\n mutex 1 unlocking pthread_mutex_init_3_2_returned %i\n mutex 2 unlocking pthread_mutex_init_3_2_returned %i\n",
+	printf("Results for unlock issue #1:\n mutex 1 unlocking pthread_mutex_init_3_2_returned %i\n mutex 2 unlocking pthread_mutex_init_3_2_returned %i\n",
 				pthread_mutex_init_3_2_retval, ret);
 	#endif
 	if (ret != pthread_mutex_init_3_2_retval)
@@ -222,7 +222,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 		tab_res[i][2]=0;
 				
 		#if VERBOSE >1
-		pthread_mutex_init_output("Creating thread (unlock)...\n");
+		printf("Creating thread (unlock)...\n");
 		#endif
 
 		if ((ret = pthread_create(&thr, NULL, pthread_mutex_init_3_2_unlock_issue, NULL)))
@@ -235,7 +235,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 		{ UNRESOLVED(errno, "Sem A wait failed for unlock issue."); }
 	
 		#if VERBOSE >1
-		pthread_mutex_init_output("Unlocking in parent...\n");
+		printf("Unlocking in parent...\n");
 		#endif
 		pthread_mutex_init_3_2_retval = pthread_mutex_unlock(pthread_mutex_init_3_2_p_mtx);
 		
@@ -246,13 +246,13 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 		{ UNRESOLVED(ret, "Join thread"); }
 
 		#if VERBOSE >1
-		pthread_mutex_init_output("Thread joined successfully...\n");
+		printf("Thread joined successfully...\n");
 		#endif
 		
 		tab_res[i][0] = pthread_mutex_init_3_2_retval;
 	}
 	#if VERBOSE >0
-	pthread_mutex_init_output("Results for unlock issue #2:\n mutex 1 pthread_mutex_init_3_2_returned %i\n mutex 2 pthread_mutex_init_3_2_returned %i\n",
+	printf("Results for unlock issue #2:\n mutex 1 pthread_mutex_init_3_2_returned %i\n mutex 2 pthread_mutex_init_3_2_returned %i\n",
 				tab_res[0][0],tab_res[1][0]);
 	#endif
 	
@@ -274,7 +274,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 		tab_res[i][2]=0;
 				
 		#if VERBOSE >1
-		pthread_mutex_init_output("Creating thread (deadlk)...\n");
+		printf("Creating thread (deadlk)...\n");
 		#endif
 
 		if ((ret = pthread_create(&thr, NULL, pthread_mutex_init_3_2_deadlk_issue, NULL)))
@@ -293,21 +293,21 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 		/* OK, now we cancel the thread */
 		pthread_mutex_init_3_2_canceled=0;
 		#if VERBOSE >1
-		pthread_mutex_init_output("Cancel thread...\n");
+		printf("Cancel thread...\n");
 		#endif
 		if (pthread_mutex_init_3_2_returned ==0)
 			if ((ret=pthread_cancel(thr)))
 			{ UNRESOLVED(ret, "Cancel thread (pthread_mutex_init_3_2_deadlk_issue)"); }
 
 		#if VERBOSE >1
-		pthread_mutex_init_output("Thread pthread_mutex_init_3_2_canceled...\n");
+		printf("Thread pthread_mutex_init_3_2_canceled...\n");
 		#endif
 		
 		if ((ret=pthread_join(thr, &th_ret)))
 		{ UNRESOLVED(ret, "Join thread"); }
 
 		#if VERBOSE >1
-		pthread_mutex_init_output("Thread joined successfully...\n");
+		printf("Thread joined successfully...\n");
 		#endif
 		
 		tab_res[i][2] = pthread_mutex_init_3_2_retval;
@@ -317,7 +317,7 @@ int pthread_mutex_init_3_2(int argc, char *argv[])
 	
 	/* Now we parse the results */
 	#if VERBOSE >0
-	pthread_mutex_init_output("Results for deadlock issue:\n mutex 1 \t%s\t%s%i\n mutex 2 \t%s\t%s%i\n",
+	printf("Results for deadlock issue:\n mutex 1 \t%s\t%s%i\n mutex 2 \t%s\t%s%i\n",
 				tab_res[0][0]?"deadlock" : "no deadlock",
 				tab_res[0][1]?"pthread_mutex_init_3_2_returned " : "did not return ",
 				tab_res[0][2],

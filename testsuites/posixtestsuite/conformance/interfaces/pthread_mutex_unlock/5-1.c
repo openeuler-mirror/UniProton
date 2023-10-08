@@ -68,9 +68,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_unlock_output_init()
-  * void pthread_mutex_unlock_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_unlock_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -95,7 +95,7 @@ void * pthread_mutex_unlock_5_1_threaded(void * arg)
 	{  UNRESOLVED(ret, "Unlocking a not owned recursive mutex succeeded");  }
 
 	if (ret != EPERM) /* This is a "may" assertion */
-		pthread_mutex_unlock_output("Unlocking a not owned recursive mutex did not return EPERM\n");
+		printf("Unlocking a not owned recursive mutex did not return EPERM\n");
 	
 	return NULL;
 }
@@ -110,7 +110,7 @@ int pthread_mutex_unlock_5_1(int argc, char * argv[])
 	pthread_mutex_unlock_output_init();
 
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
+	printf("Initialize the PTHREAD_MUTEX_RECURSIVE mutex\n");
 	#endif
 	
 	ret = pthread_mutexattr_init(&ma);
@@ -126,7 +126,7 @@ int pthread_mutex_unlock_5_1(int argc, char * argv[])
 	{  UNRESOLVED(ret, "Mutex init failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Lock the mutex\n");
+	printf("Lock the mutex\n");
 	#endif
 	
 	ret = pthread_mutex_lock(&pthread_mutex_unlock_5_1_m);
@@ -139,7 +139,7 @@ int pthread_mutex_unlock_5_1(int argc, char * argv[])
 	{  UNRESOLVED(ret, "Mutex attribute destroy failed");  }
 
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Create the thread\n");
+	printf("Create the thread\n");
 	#endif
 	
 	ret = pthread_create(&th, NULL, pthread_mutex_unlock_5_1_threaded, NULL);
@@ -152,7 +152,7 @@ int pthread_mutex_unlock_5_1(int argc, char * argv[])
 	{  UNRESOLVED(ret, "Thread join failed");  }
 	
 	#if VERBOSE >1
-	pthread_mutex_unlock_output("Joined the thread\n");
+	printf("Joined the thread\n");
 	#endif
 	
 	/* We can clean everything and exit */
