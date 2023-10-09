@@ -73,6 +73,15 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
         add_executable(${APP} ${OBJS})
 endif()
 
+if (${APP} STREQUAL "UniPorton_test_posix_math_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_stdlib_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_ipc_interface")
+        add_subdirectory(../../testsuites/libc-test tmp)
+        target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest> $<TARGET_OBJECTS:common_mtest>)
+        add_executable(${APP} ${OBJS})
+endif()
+
 if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
     add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
     add_subdirectory(../../src/component/proxy proxy)
