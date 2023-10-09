@@ -8,7 +8,8 @@
 struct pci_driver;
 
 #define PCI_BDF(b, d, f) ((((b) & 0xff) << 8) | (((d) & 0x1f) << 3) | ((f) & 0x7))
-#define PCI_BUS(bdf) (((devfn) >> 8) & 0xff)
+#define PCI_BUS(bdf) (((bdf) >> 8) & 0xff)
+#define PCI_DEVFN_FROM_BDF(bdf) ((bdf) & 0xff)
 
 #define PCI_DEVFN(slot, func)   ((((slot) & 0x1f) << 3) | ((func) & 0x07))
 #define PCI_SLOT(devfn) (((devfn) >> 3) & 0x1f)
@@ -21,6 +22,24 @@ struct pci_driver;
 #define	PCI_DEVICE(_vendor, _device)                        \
         .vendor = (_vendor), .device = (_device),           \
         .subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID
+
+/* For PCI devices, the region numbers are assigned this way: */
+enum {
+    /* #0-5: standard PCI resources */
+    PCI_STD_RESOURCES,
+    PCI_STD_RESOURCE_END = 5,
+
+    /* Total resources associated with a PCI device */
+    PCI_NUM_RESOURCES,
+    /* Preserve this for compatibility */
+    DEVICE_COUNT_RESOURCE = PCI_NUM_RESOURCES,
+};
+
+struct resource {
+    uint64_t start;
+    uint64_t end;
+    uint32_t flags;
+};
 
 // pci设备结构体
 struct pci_dev {
@@ -38,7 +57,7 @@ struct pci_dev {
     uint32_t class;
     uint8_t revision;
     bool msi_enabled;
-    // TAILQ_HEAD(, pci_mmio_region) mmio;
+    struct resource resource[DEVICE_COUNT_RESOURCE]; /* I/O and memory regions */
 };
 
 struct pci_device_id {
@@ -58,46 +77,10 @@ struct pci_driver {
     const struct pci_device_id *id_table;
     int (*probe)(struct pci_dev *dev, const struct pci_device_id *id);
     void (*remove)(struct pci_dev *dev);
-    // int (*suspend) (struct pci_dev *dev, pm_message_t state); /* Device suspended */
-    // int (*resume) (struct pci_dev *dev); /* Device woken up */
-    // void (*shutdown) (struct pci_dev *dev); /* Device shutdown */
-    // driver_t bsddriver;
-    // devclass_t bsdclass;
-    // struct device_driver driver;
-    // const struct pci_error_handlers *err_handler;
-    // bool isdrm;
-    // int (*bsd_iov_init)(device_t dev, uint16_t num_vfs, const nvlist_t *pf_config);
-    // void (*bsd_iov_uninit)(device_t dev);
-    // int (*bsd_iov_add_vf)(device_t dev, uint16_t vfnum, const nvlist_t *vf_config);
 };
 
 int pci_frame_init(void);
 
 int pci_driver_register(struct pci_driver *pci_drv);
-
-#if 0
-
-typedef union {
-    struct {
-        U32 function : 3;
-        U32 device : 5;
-        U32 bus : 8;
-    } bdf;
-    U16 value;
-} BDF_U;
-
-#define BDF_GET_FROM_DD(dd) (BDF_U)((U16)(dd))
-
-#define BAR_NUM 6
-typedef struct tagPCI_DEVICE {
-    U16 bdf;
-    uintptr_t bar_phy[BAR_NUM];
-    uintptr_t bar_virt[BAR_NUM];
-    U32 bar_size[BAR_NUM];
-    void *pci_data;
-    struct tagPCI_DEVICE *prev;
-    struct tagPCI_DEVICE *next;
-} pci_device_t;
-#endif
 
 #endif

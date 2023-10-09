@@ -81,7 +81,11 @@ extern "C" {
 
 #define OS_POSIX_TYPE_NEWLIB
 
+#define OS_POSIX_SET_TZDST
+
 #define OS_OPTION_OPENAMP
+
+#define OS_OPTION_PCIE
 
 #ifdef __cplusplus
 #if __cplusplus

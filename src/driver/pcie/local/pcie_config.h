@@ -24,6 +24,7 @@
 #define  PCI_COMMAND_SERR	0x100	/* Enable SERR */
 #define  PCI_COMMAND_FAST_BACK	0x200	/* Enable back-to-back writes */
 #define  PCI_COMMAND_INTX_DISABLE 0x400 /* INTx Emulation Disable */
+#define PCI_COMMAND_DECODE_ENABLE	(PCI_COMMAND_MEMORY | PCI_COMMAND_IO)
 
 #define PCI_STATUS		0x06	/* 16 bits */
 #define  PCI_STATUS_IMM_READY	0x01	/* Immediate Readiness */
@@ -85,6 +86,17 @@
 #define  PCI_BASE_ADDRESS_IO_MASK	(~0x03UL)
 /* bit 1 is reserved if address_space = 1 */
 
+#define PCI_REG_BAR(bar) (PCI_BASE_ADDRESS_0 + (4 * (bar)))
+
+#define IORESOURCE_BITS		0x000000ff	/* Bus-specific bits */
+#define IORESOURCE_IO		0x00000100	/* PCI/ISA I/O ports */
+#define IORESOURCE_MEM		0x00000200
+#define IORESOURCE_PREFETCH	0x00002000	/* No side effects */
+#define IORESOURCE_MEM_64	0x00100000
+
+#define IORESOURCE_SIZEALIGN	0x00040000	/* size indicates alignment */
+#define IO_SPACE_LIMIT		0xffffff
+
 /* Header type 0 (normal devices) */
 #define PCI_CARDBUS_CIS		0x28
 #define PCI_SUBSYSTEM_VENDOR_ID	0x2c
@@ -106,6 +118,9 @@ void pcie_config_base_addr_register(uintptr_t base_addr);
 
 int pcie_device_cfg_write(uint32_t bdf, uint32_t offset, uint32_t val);
 int pcie_device_cfg_read(uint32_t bdf, uint32_t offset, uint32_t *val);
+
+#define pcie_device_cfg_write_dword pcie_device_cfg_write
+#define pcie_device_cfg_read_dword pcie_device_cfg_read
 
 int pcie_device_cfg_write_byte(uint32_t bdf, uint32_t offset, uint8_t val);
 int pcie_device_cfg_read_byte(uint32_t bdf, uint32_t offset, uint8_t *val);

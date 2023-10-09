@@ -1,2 +1,6 @@
 add_subdirectory(i210)
-## add_subdirectory(pcie)
+if (${CONFIG_OS_OPTION_PCIE})
+    add_subdirectory(pcie)
+else()
+    add_subdirectory(pcie222)
+endif()

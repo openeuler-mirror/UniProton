@@ -52,6 +52,9 @@ static void test_pcie_ecam(void)
     }
 }
 
+#if defined(OS_OPTION_PCIE)
+extern void test_pcie(void);
+#endif
 // extern int pci_msg_send(void *data, size_t len);
 
 // struct pci_rpmsg_s {
@@ -93,7 +96,9 @@ void TestTaskEntry()
     for (int i = 1; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
     }
+#if defined(OS_OPTION_PCIE)
     test_pcie();
+#endif
 }
 
 U32 OsTestInit(void)

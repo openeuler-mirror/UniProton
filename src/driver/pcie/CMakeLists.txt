@@ -1,2 +1,2 @@
 add_subdirectory(local)
-add_subdirectory(proxy)
+## add_subdirectory(proxy)

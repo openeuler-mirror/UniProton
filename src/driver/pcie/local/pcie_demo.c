@@ -19,6 +19,9 @@ static struct pci_device_id g_hpm_pci_dev_tbl[] = {
 
 int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
+    
+
+
     return 0;
 }
 
