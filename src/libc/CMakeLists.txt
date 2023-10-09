@@ -65,10 +65,11 @@ if (${PLAM_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcpy.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strspn.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcspn.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdlib/strtol.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
     )
@@ -147,6 +148,9 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/internal/shgetc.c
     musl/src/internal/intscan.c
     musl/src/internal/floatscan.c
+    musl/src/ctype/iswspace.c
+    musl/src/string/wcschr.c
+    musl/src/string/wcslen.c
 )
 
 # 需要编译的signal相关.c文件

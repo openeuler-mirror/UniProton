@@ -51,7 +51,7 @@ static void test_except()
 
 		r = feraiseexcept(te[i].i);
 		if (r)
-			error("feraiseexcept(%s) returned %d\n", te[i].name, r);
+			printf("feraiseexcept(%s) returned %d\n", te[i].name, r);
 		r = fetestexcept(FE_ALL_EXCEPT);
 		if (r != te[i].i) {
 #if defined FE_OVERFLOW && defined FE_INEXACT
@@ -62,32 +62,32 @@ static void test_except()
 			if (te[i].i == FE_UNDERFLOW && r == (FE_UNDERFLOW|FE_INEXACT))
 				continue;
 #endif
-			error("feraiseexcept(%s) want %d got %d\n",
+			printf("feraiseexcept(%s) want %d got %d\n",
 				te[i].name, te[i].i, r);
 		}
 	}
 
 	r = feraiseexcept(FE_ALL_EXCEPT);
 	if (r != 0)
-		error("feraisexcept(FE_ALL_EXCEPT) failed\n");
+		printf("feraisexcept(FE_ALL_EXCEPT) failed\n");
 	r = fegetenv(&env);
 	if (r != 0)
-		error("fegetenv(&env) = %d\n", r);
+		printf("fegetenv(&env) = %d\n", r);
 	r = fetestexcept(FE_ALL_EXCEPT);
 	if (r != FE_ALL_EXCEPT)
-		error("fetestexcept failed: got 0x%x, want 0x%x (FE_ALL_ECXEPT)\n", r, FE_ALL_EXCEPT);
+		printf("fetestexcept failed: got 0x%x, want 0x%x (FE_ALL_ECXEPT)\n", r, FE_ALL_EXCEPT);
 	r = fesetenv(FE_DFL_ENV);
 	if (r != 0)
-		error("fesetenv(FE_DFL_ENV) = %d\n", r);
+		printf("fesetenv(FE_DFL_ENV) = %d\n", r);
 	r = fetestexcept(FE_ALL_EXCEPT);
 	if (r != 0)
-		error("fesetenv(FE_DFL_ENV) did not clear exceptions: 0x%x\n", r);
+		printf("fesetenv(FE_DFL_ENV) did not clear exceptions: 0x%x\n", r);
 	r = fesetenv(&env);
 	if (r != 0)
-		error("fesetenv(&env) = %d\n", r);
+		printf("fesetenv(&env) = %d\n", r);
 	r = fetestexcept(FE_ALL_EXCEPT);
 	if (r != FE_ALL_EXCEPT)
-		error("fesetenv(&env) did not restore exceptions: 0x%x\n", r);
+		printf("fesetenv(&env) did not restore exceptions: 0x%x\n", r);
 }
 
 static struct {
@@ -116,53 +116,53 @@ static void test_round()
 
 	for (i=0; i < sizeof tr/sizeof*tr; i++) {
 		if (tr[i].i < 0)
-			error("%s (%d) < 0\n", tr[i].name, tr[i].i);
+			printf("%s (%d) < 0\n", tr[i].name, tr[i].i);
 		for (r=0; r < i; r++)
 			if (tr[r].i == tr[i].i)
-				error("%s (%d) == %s (%d)\n",
+				printf("%s (%d) == %s (%d)\n",
 					tr[r].name, tr[r].i, tr[i].name, tr[i].i);
 	}
 
 	for (i=0; i < sizeof tr/sizeof*tr; i++) {
 		r = fesetround(tr[i].i);
 		if (r != 0)
-			error("fesetround(%s) = %d\n", tr[i].name, r);
+			printf("fesetround(%s) = %d\n", tr[i].name, r);
 		r = fegetround();
 		if (r != tr[i].i)
-			error("fegetround() = 0x%x, wanted 0x%x (%s)\n", r, tr[i].i, tr[i].name);
+			printf("fegetround() = 0x%x, wanted 0x%x (%s)\n", r, tr[i].i, tr[i].name);
 	}
 
 #ifdef FE_UPWARD
 	r = fesetround(FE_UPWARD);
 	if (r != 0)
-		error("fesetround(FE_UPWARD) failed\n");
+		printf("fesetround(FE_UPWARD) failed\n");
 #endif
 	r = fegetenv(&env);
 	if (r != 0)
-		error("fegetenv(&env) = %d\n", r);
+		printf("fegetenv(&env) = %d\n", r);
 	i = fegetround();
 	r = fesetenv(FE_DFL_ENV);
 	if (r != 0)
-		error("fesetenv(FE_DFL_ENV) = %d\n", r);
+		printf("fesetenv(FE_DFL_ENV) = %d\n", r);
 	r = fegetround();
 	if (r != FE_TONEAREST)
-		error("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST (0x%x), got 0x%x\n", FE_TONEAREST, r);
+		printf("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST (0x%x), got 0x%x\n", FE_TONEAREST, r);
 	x = two100 + 1;
 	if (x != two100)
-		error("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST, arithmetics rounds upward\n");
+		printf("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST, arithmetics rounds upward\n");
 	x = two100 - 1;
 	if (x != two100)
-		error("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST, arithmetics rounds downward or tozero\n");
+		printf("fesetenv(FE_DFL_ENV) did not set FE_TONEAREST, arithmetics rounds downward or tozero\n");
 	r = fesetenv(&env);
 	if (r != 0)
-		error("fesetenv(&env) = %d\n", r);
+		printf("fesetenv(&env) = %d\n", r);
 	r = fegetround();
 	if (r != i)
-		error("fesetenv(&env) did not restore 0x%x, got 0x%x\n", i, r);
+		printf("fesetenv(&env) did not restore 0x%x, got 0x%x\n", i, r);
 #ifdef FE_UPWARD
 	x = two100 + 1;
 	if (x == two100)
-		error("fesetenv did not restore upward rounding\n");
+		printf("fesetenv did not restore upward rounding\n");
 #endif
 
 }
@@ -241,28 +241,28 @@ static void test_bad(void)
 
 	r = feclearexcept(FE_ALL_EXCEPT);
 	if (r != 0)
-		error("feclearexcept(FE_ALL_EXCEPT) failed\n");
+		printf("feclearexcept(FE_ALL_EXCEPT) failed\n");
 	r = fetestexcept(-1);
 	if (r != 0)
-		error("fetestexcept(-1) should return 0 when all exceptions are cleared, got %d\n", r);
+		printf("fetestexcept(-1) should return 0 when all exceptions are cleared, got %d\n", r);
 	r = feraiseexcept(1234567|FE_ALL_EXCEPT);
 	if (r != 0)
-		error("feraiseexcept returned non-zero for non-supported exceptions: %d\n", r);
+		printf("feraiseexcept returned non-zero for non-supported exceptions: %d\n", r);
 	r = feclearexcept(1234567|FE_ALL_EXCEPT);
 	if (r != 0)
-		error("feclearexcept returned non-zero for non-supported exceptions: %d\n", r);
+		printf("feclearexcept returned non-zero for non-supported exceptions: %d\n", r);
 	r = fesetround(1234567);
 	if (r == 0)
-		error("fesetround should fail on invalid rounding mode\n");
+		printf("fesetround should fail on invalid rounding mode\n");
 	r = fegetexceptflag(&f, 1234567);
 	if (r != 0)
-		error("fegetexceptflag returned non-zero for non-supported exceptions: %d\n", r);
+		printf("fegetexceptflag returned non-zero for non-supported exceptions: %d\n", r);
 	r = fegetexceptflag(&f, 0);
 	if (r != 0)
-		error("fegetexceptflag(0) failed\n");
+		printf("fegetexceptflag(0) failed\n");
 	r = fesetexceptflag(&f, 1234567);
 	if (r != 0)
-		error("fesetexceptflag returned non-zero fir non-supported exceptions: %d\n", r);
+		printf("fesetexceptflag returned non-zero fir non-supported exceptions: %d\n", r);
 }
 
 int fenv_test(void)

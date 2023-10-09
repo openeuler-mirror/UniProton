@@ -104,7 +104,7 @@ int lldiv_test(void)
         }
         if (resultValue.rem != t[i].mod)
         {
-            t_printf("umod %lld%%%lld want %lld got %lld\n", x, y, t[i].mod, resultValue.rem);
+            printf("umod %lld%%%lld want %lld got %lld\n", x, y, t[i].mod, resultValue.rem);
             t_status = 1;
         }
     }

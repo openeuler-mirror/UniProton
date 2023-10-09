@@ -36,11 +36,6 @@ size_t mbsrtowcs(wchar_t *restrict ws, const char **restrict src, size_t wn, mbs
     return 0;
 }
 
-size_t wcslen(const wchar_t *a)
-{
-    return 0;
-}
-
 int wcscmp(const wchar_t *a, const wchar_t *b)
 {
     return 0;
