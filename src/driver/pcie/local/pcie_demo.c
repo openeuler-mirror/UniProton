@@ -37,12 +37,16 @@ static struct pci_driver hpm_driver = {
     .remove     = hpm_remove,
 };
 
+#ifndef MMU_ECAM_ADDR
+#define MMU_ECAM_ADDR 0xd0000000ULL
+#endif
+
 void test_pcie(void)
 {
     int ret;
 
     // 由系统初始化调用
-    ret = pci_frame_init();
+    ret = pci_frame_init(MMU_ECAM_ADDR);
     if (ret != ok) {
         return;
     }

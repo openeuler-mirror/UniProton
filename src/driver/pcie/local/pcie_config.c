@@ -1,4 +1,3 @@
-#include "cpu_config.h"
 #include "prt_typedef.h"
 #include "pcie.h"
 #include "pcie_config.h"

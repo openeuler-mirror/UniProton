@@ -1,5 +1,4 @@
 
-#include "cpu_config.h"
 #include "prt_typedef.h"
 #include "pcie.h"
 #include "pcie_config.h"
@@ -14,9 +13,9 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf);
 int pci_dev_add(struct pci_dev *pdev);
 
 /* 全局变量的初始化， 供后期用户注册驱动程序 */
-int pci_frame_init(void)
+int pci_frame_init(uint64_t pci_cfg_base)
 {
-    pcie_config_base_addr_register(MMU_ECAM_ADDR);
+    pcie_config_base_addr_register(pci_cfg_base);
     return 0;
 }
 

@@ -79,7 +79,7 @@ struct pci_driver {
     void (*remove)(struct pci_dev *dev);
 };
 
-int pci_frame_init(void);
+int pci_frame_init(uint64_t pci_cfg_base);
 
 int pci_driver_register(struct pci_driver *pci_drv);
 

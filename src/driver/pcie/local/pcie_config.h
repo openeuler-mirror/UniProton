@@ -1,7 +1,6 @@
 #ifndef _PCIE_H_
 #define _PCIE_H_
 
-#include "cpu_config.h"
 #include "prt_typedef.h"
 
 #define PCI_BUS_NUM_MAX 0x100
