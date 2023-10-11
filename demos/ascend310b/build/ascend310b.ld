@@ -5,7 +5,7 @@ _heap_size = 0x10000;
 
 MEMORY
 {
-    IMU_SRAM (rwx) : ORIGIN = 0x2BB00000, LENGTH = 0x300000
+    IMU_SRAM (rwx) : ORIGIN = 0x2BA00000, LENGTH = 0x300000
 }
 
 SECTIONS

@@ -5,33 +5,35 @@
 #include "uniproton_shm_demo.h"
 
 #define SHM_IPI_NUM 10
+#define SHM_RD_ADDR 0x2BE00000
+#define SHM_WR_ADDR 0x2BF00000
 
 void ReadAndWrite(void)
 {
     PRT_Printf("[uniproton] shm single test\n");
-    shm_info_s *shm_read = (shm_info_s *)0x2BF00000;
-    shm_info_s *shm_write = (shm_info_s *)0x2C000000;
+    shm_info_s *shm_rd = (shm_info_s *)SHM_RD_ADDR;
+    shm_info_s *shm_wr= (shm_info_s *)SHM_WR_ADDR;
     int num = 9999;
 
-    PRT_Printf("[uniproton] read from shm: %d\n", *(int *)shm_read->data);
-    shm_read->op_type = SHM_OP_READ_END;
+    PRT_Printf("[uniproton] read from shm: %d\n", *(int *)shm_rd->data);
+    shm_rd->op_type = SHM_OP_READ_END;
 
-    *(int *)shm_write->data = num--;
+    *(int *)shm_wr->data = num--;
     PRT_Printf("[uniproton] write to shm: %d\n", num + 1);
-    shm_write->op_type = SHM_OP_READY_TO_READ;
+    shm_wr->op_type = SHM_OP_READY_TO_READ;
 }
 
 char buf[0x2100] = {0};
 void IpiHandle(uintptr_t para)
 {
-    shm_info_s *shm = (shm_info_s *)0x2BF00000;
-    PRT_Printf("[uniproton] IPI interupt. len = %u, ord = %d\n", shm->used_size, shm->resevered);
+    shm_info_s *shm_rd = (shm_info_s *)SHM_RD_ADDR;
+    PRT_Printf("[uniproton] IPI interupt. len = %u, ord = %d\n", shm_rd->used_size, shm_rd->resevered);
     memset(buf, 0, sizeof(buf));
-    shm_read(shm, buf, 0x2100);
-    if (shm->resevered == 0) {
+    shm_read(shm_rd, buf, 0x2100);
+    if (shm_rd->resevered == 0) {
         PRT_Printf("[uniproton]read from shm: %d\n", *(int *)buf);
     } else {
-        PRT_Printf("[uniproton]read len: 0x%lx, st: %s, ed %s\n", shm->used_size, buf, buf + shm->used_size - 32);
+        PRT_Printf("[uniproton]read len: 0x%lx, st: %s, ed %s\n", shm_rd->used_size, buf, buf + shm_rd->used_size - 32);
     }
 }
 
