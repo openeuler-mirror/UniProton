@@ -39,5 +39,6 @@ struct __pollfd {
 int poll_fdsetup(int fd, struct __pollfd *fds, bool setup);
 void poll_default_cb(struct __pollfd *fds);
 void poll_notify(struct __pollfd **afds, int nfds, pollevent_t eventset);
+int fs_poll(struct pollfd *fds, nfds_t nfds, int timeout);
 
 #endif /* __INCLUDE_FS_POLL_H */
