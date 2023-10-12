@@ -51,7 +51,7 @@ struct epoll_node_s
 {
   struct list_node      node;
   epoll_data_t          data;
-  struct pollfd         pfd;
+  struct __pollfd         pfd;
 };
 
 typedef struct epoll_node_s epoll_node_t;
@@ -94,7 +94,7 @@ typedef struct epoll_head_s epoll_head_t;
 static int epoll_do_open(FAR struct file *filep);
 static int epoll_do_close(FAR struct file *filep);
 static int epoll_do_poll(FAR struct file *filep,
-                         FAR struct pollfd *fds, bool setup);
+                         FAR struct __pollfd *fds, bool setup);
 static int epoll_setup(FAR epoll_head_t *eph);
 static int epoll_teardown(FAR epoll_head_t *eph, FAR struct epoll_event *evs,
                           int maxevents);
@@ -193,7 +193,7 @@ static int epoll_do_close(FAR struct file *filep)
       nxmutex_destroy(&eph->lock);
       list_for_every_entry(&eph->setup, epn, epoll_node_t, node)
         {
-          poll_fdsetup(epn->pfd.fd, &epn->pfd, false);
+          poll_fdsetup(epn->pfd.pollfd.fd, &epn->pfd, false);
         }
 
       list_for_every_entry_safe(&eph->extend, epn, tmp, epoll_node_t, node)
@@ -209,7 +209,7 @@ static int epoll_do_close(FAR struct file *filep)
 }
 
 static int epoll_do_poll(FAR struct file *filep,
-                         FAR struct pollfd *fds, bool setup)
+                         FAR struct __pollfd *fds, bool setup)
 {
   return OK;
 }
@@ -279,12 +279,12 @@ static int epoll_setup(FAR epoll_head_t *eph)
        * cover the situation several poll event pending on one fd.
        */
 
-      epn->pfd.revents = 0;
-      ret = poll_fdsetup(epn->pfd.fd, &epn->pfd, true);
+      epn->pfd.pollfd.revents = 0;
+      ret = poll_fdsetup(epn->pfd.pollfd.fd, &epn->pfd, true);
       if (ret < 0)
         {
           ferr("epoll setup failed, fd=%d, events=%08" PRIx32 ", ret=%d\n",
-               epn->pfd.fd, epn->pfd.events, ret);
+               epn->pfd.pollfd.fd, epn->pfd.pollfd.events, ret);
           break;
         }
 
@@ -307,13 +307,13 @@ static int epoll_teardown(FAR epoll_head_t *eph, FAR struct epoll_event *evs,
 
   list_for_every_entry_safe(&eph->setup, epn, tepn, epoll_node_t, node)
     {
-      if (epn->pfd.revents != 0 && i < maxevents)
+      if (epn->pfd.pollfd.revents != 0 && i < maxevents)
         {
           evs[i].data     = epn->data;
-          evs[i++].events = epn->pfd.revents;
-          poll_fdsetup(epn->pfd.fd, &epn->pfd, false);
+          evs[i++].events = epn->pfd.pollfd.revents;
+          poll_fdsetup(epn->pfd.pollfd.fd, &epn->pfd, false);
           list_delete(&epn->node);
-          if ((epn->pfd.events & EPOLLONESHOT) != 0)
+          if ((epn->pfd.pollfd.events & EPOLLONESHOT) != 0)
             {
               list_add_tail(&eph->oneshot, &epn->node);
             }
@@ -420,7 +420,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->setup, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 ret = -EEXIST;
                 goto err;
@@ -429,7 +429,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->teardown, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 ret = -EEXIST;
                 goto err;
@@ -438,7 +438,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->oneshot, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 ret = -EEXIST;
                 goto err;
@@ -472,11 +472,11 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
         struct list_node *lrh = list_remove_head(&eph->free);
         epn = container_of(lrh, epoll_node_t, node);
         epn->data        = ev->data;
-        epn->pfd.events  = ev->events;
-        epn->pfd.fd      = fd;
+        epn->pfd.pollfd.events  = ev->events;
+        epn->pfd.pollfd.fd      = fd;
         epn->pfd.arg     = &eph->sem;
         epn->pfd.cb      = poll_default_cb;
-        epn->pfd.revents = 0;
+        epn->pfd.pollfd.revents = 0;
 
         ret = poll_fdsetup(fd, &epn->pfd, true);
         if (ret < 0)
@@ -492,7 +492,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
         finfo("%p CTL DEL: fd=%d\n", eph, fd);
         list_for_every_entry(&eph->setup, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 poll_fdsetup(fd, &epn->pfd, false);
                 list_delete(&epn->node);
@@ -503,7 +503,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->teardown, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 list_delete(&epn->node);
                 list_add_tail(&eph->free, &epn->node);
@@ -513,7 +513,7 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->oneshot, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 list_delete(&epn->node);
                 list_add_tail(&eph->free, &epn->node);
@@ -527,16 +527,16 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
         finfo("%p CTL MOD: fd=%d ev=%08" PRIx32 "\n", eph, fd, ev->events);
         list_for_every_entry(&eph->setup, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
-                if (epn->pfd.events != ev->events)
+                if (epn->pfd.pollfd.events != ev->events)
                   {
                     poll_fdsetup(fd, &epn->pfd, false);
 
                     epn->data        = ev->data;
-                    epn->pfd.events  = ev->events;
-                    epn->pfd.fd      = fd;
-                    epn->pfd.revents = 0;
+                    epn->pfd.pollfd.events  = ev->events;
+                    epn->pfd.pollfd.fd      = fd;
+                    epn->pfd.pollfd.revents = 0;
 
                     ret = poll_fdsetup(fd, &epn->pfd, true);
                     if (ret < 0)
@@ -551,14 +551,14 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->teardown, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
-                if (epn->pfd.events != ev->events)
+                if (epn->pfd.pollfd.events != ev->events)
                   {
                     epn->data        = ev->data;
-                    epn->pfd.events  = ev->events;
-                    epn->pfd.fd      = fd;
-                    epn->pfd.revents = 0;
+                    epn->pfd.pollfd.events  = ev->events;
+                    epn->pfd.pollfd.fd      = fd;
+                    epn->pfd.pollfd.revents = 0;
 
                     ret = poll_fdsetup(fd, &epn->pfd, true);
                     if (ret < 0)
@@ -576,12 +576,12 @@ int epoll_ctl(int epfd, int op, int fd, FAR struct epoll_event *ev)
 
         list_for_every_entry(&eph->oneshot, epn, epoll_node_t, node)
           {
-            if (epn->pfd.fd == fd)
+            if (epn->pfd.pollfd.fd == fd)
               {
                 epn->data        = ev->data;
-                epn->pfd.events  = ev->events;
-                epn->pfd.fd      = fd;
-                epn->pfd.revents = 0;
+                epn->pfd.pollfd.events  = ev->events;
+                epn->pfd.pollfd.fd      = fd;
+                epn->pfd.pollfd.revents = 0;
 
                 ret = poll_fdsetup(fd, &epn->pfd, true);
                 if (ret < 0)

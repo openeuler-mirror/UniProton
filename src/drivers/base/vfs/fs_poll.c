@@ -51,7 +51,7 @@
  *
  ****************************************************************************/
 
-static inline int poll_setup(FAR struct pollfd *fds, nfds_t nfds,
+static inline int poll_setup(FAR struct __pollfd *fds, nfds_t nfds,
                              FAR sem_t *sem)
 {
   unsigned int i;
@@ -73,7 +73,7 @@ static inline int poll_setup(FAR struct pollfd *fds, nfds_t nfds,
 
       fds[i].arg     = sem;
       fds[i].cb      = poll_default_cb;
-      fds[i].revents = 0;
+      fds[i].pollfd.revents = 0;
       fds[i].priv    = NULL;
 
       /* Check for invalid descriptors. "If the value of fd is less than 0,
@@ -85,9 +85,9 @@ static inline int poll_setup(FAR struct pollfd *fds, nfds_t nfds,
        * spec, that appears to be the correct behavior.
        */
 
-      if (fds[i].fd >= 0)
+      if (fds[i].pollfd.fd >= 0)
         {
-          ret = poll_fdsetup(fds[i].fd, &fds[i], true);
+          ret = poll_fdsetup(fds[i].pollfd.fd, &fds[i], true);
         }
 
       if (ret < 0)
@@ -100,12 +100,12 @@ static inline int poll_setup(FAR struct pollfd *fds, nfds_t nfds,
 
           for (j = 0; j < i; j++)
             {
-              poll_fdsetup(fds[j].fd, &fds[j], false);
+              poll_fdsetup(fds[j].pollfd.fd, &fds[j], false);
             }
 
           /* Indicate an error on the file descriptor */
 
-          fds[i].revents |= POLLERR;
+          fds[i].pollfd.revents |= POLLERR;
           return ret;
         }
     }
@@ -122,7 +122,7 @@ static inline int poll_setup(FAR struct pollfd *fds, nfds_t nfds,
  *
  ****************************************************************************/
 
-static inline int poll_teardown(FAR struct pollfd *fds, nfds_t nfds,
+static inline int poll_teardown(FAR struct __pollfd *fds, nfds_t nfds,
                                 FAR int *count, int ret)
 {
   unsigned int i;
@@ -133,9 +133,9 @@ static inline int poll_teardown(FAR struct pollfd *fds, nfds_t nfds,
   *count = 0;
   for (i = 0; i < nfds; i++)
     {
-      if (fds[i].fd >= 0)
+      if (fds[i].pollfd.fd >= 0)
         {
-          status = poll_fdsetup(fds[i].fd, &fds[i], false);
+          status = poll_fdsetup(fds[i].pollfd.fd, &fds[i], false);
         }
 
       if (status < 0)
@@ -145,7 +145,7 @@ static inline int poll_teardown(FAR struct pollfd *fds, nfds_t nfds,
 
       /* Check if any events were posted */
 
-      if (fds[i].revents != 0)
+      if (fds[i].pollfd.revents != 0)
         {
           (*count)++;
         }
@@ -173,7 +173,7 @@ static inline int poll_teardown(FAR struct pollfd *fds, nfds_t nfds,
  *
  ****************************************************************************/
 
-int poll_fdsetup(int fd, FAR struct pollfd *fds, bool setup)
+int poll_fdsetup(int fd, FAR struct __pollfd *fds, bool setup)
 {
   FAR struct file *filep;
   int ret;
@@ -208,7 +208,7 @@ int poll_fdsetup(int fd, FAR struct pollfd *fds, bool setup)
  *
  ****************************************************************************/
 
-void poll_default_cb(FAR struct pollfd *fds)
+void poll_default_cb(FAR struct __pollfd *fds)
 {
   int semcount = 0;
   FAR sem_t *pollsem;
@@ -241,10 +241,10 @@ void poll_default_cb(FAR struct pollfd *fds)
  *
  ****************************************************************************/
 
-void poll_notify(FAR struct pollfd **afds, int nfds, pollevent_t eventset)
+void poll_notify(FAR struct __pollfd **afds, int nfds, pollevent_t eventset)
 {
   int i;
-  FAR struct pollfd *fds;
+  FAR struct __pollfd *fds;
 
   DEBUGASSERT(afds != NULL && nfds >= 1);
 
@@ -255,17 +255,17 @@ void poll_notify(FAR struct pollfd **afds, int nfds, pollevent_t eventset)
         {
           /* The error event must be set in fds->revents */
 
-          fds->revents |= eventset & (fds->events | POLLERR | POLLHUP);
-          if ((fds->revents & (POLLERR | POLLHUP)) != 0)
+          fds->pollfd.revents |= eventset & (fds->pollfd.events | POLLERR | POLLHUP);
+          if ((fds->pollfd.revents & (POLLERR | POLLHUP)) != 0)
             {
               /* Error or Hung up, clear POLLOUT event */
 
-              fds->revents &= ~POLLOUT;
+              fds->pollfd.revents &= ~POLLOUT;
             }
 
-          if (fds->revents != 0 && fds->cb != NULL)
+          if (fds->pollfd.revents != 0 && fds->cb != NULL)
             {
-              finfo("Report events: %08" PRIx32 "\n", fds->revents);
+              finfo("Report events: %08" PRIx32 "\n", fds->pollfd.revents);
               fds->cb(fds);
             }
         }
@@ -291,7 +291,7 @@ void poll_notify(FAR struct pollfd **afds, int nfds, pollevent_t eventset)
  *
  ****************************************************************************/
 
-int file_poll(FAR struct file *filep, FAR struct pollfd *fds, bool setup)
+int file_poll(FAR struct file *filep, FAR struct __pollfd *fds, bool setup)
 {
   FAR struct inode *inode;
   int ret = -ENOSYS;
@@ -370,13 +370,14 @@ int file_poll(FAR struct file *filep, FAR struct pollfd *fds, bool setup)
  *
  ****************************************************************************/
 
-int poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
+int fs_poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
 {
-  FAR struct pollfd *kfds;
+  FAR struct __pollfd *kfds;
   sem_t sem;
   int count = 0;
   int ret2;
   int ret;
+  int i;
 
   DEBUGASSERT(nfds == 0 || fds != NULL);
 
@@ -384,10 +385,7 @@ int poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
 
   (void)enter_cancellation_point();
 
-#ifdef CONFIG_BUILD_KERNEL
-  /* Allocate kernel memory for the fds */
-
-  kfds = kmm_malloc(nfds * sizeof(struct pollfd));
+  kfds = calloc(nfds, sizeof(struct __pollfd));
   if (!kfds)
     {
       /* Out of memory */
@@ -396,14 +394,9 @@ int poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
       goto out_with_cancelpt;
     }
 
-  /* Copy the user fds to neutral kernel memory */
-
-  memcpy(kfds, fds, nfds * sizeof(struct pollfd));
-#else
-  /* Can use the user fds directly */
-
-  kfds = fds;
-#endif
+  for (i = 0; i < nfds; i++) {
+    memcpy(&kfds[i].pollfd, fds, sizeof(struct pollfd));
+  }
 
   nxsem_init(&sem, 0, 0);
   ret = poll_setup(kfds, nfds, &sem);
@@ -481,24 +474,20 @@ int poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
 
   nxsem_destroy(&sem);
 
-#ifdef CONFIG_BUILD_KERNEL
-  /* Copy the events back to user */
-
   if (ret == OK)
     {
       int i;
       for (i = 0; i < nfds; i++)
         {
-          fds[i].revents = kfds[i].revents;
+          fds[i].revents = kfds[i].pollfd.revents;
         }
     }
 
   /* Free the temporary buffer */
 
-  kmm_free(kfds);
+  free(kfds);
 
 out_with_cancelpt:
-#endif
 
   leave_cancellation_point();
 

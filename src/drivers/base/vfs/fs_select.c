@@ -207,7 +207,7 @@ int select(int nfds, FAR fd_set *readfds, FAR fd_set *writefds,
 
   /* Then let poll do all of the real work. */
 
-  ret = poll(pollset, npfds, msec);
+  ret = fs_poll(pollset, npfds, msec);
 
   /* Now set up the return values */
 
