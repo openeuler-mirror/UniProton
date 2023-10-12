@@ -60,7 +60,7 @@ struct uart_bth4_s
   size_t                  sendlen;
   mutex_t                 sendlock;
 
-  FAR struct pollfd      *fds[CONFIG_UART_BTH4_NPOLLWAITERS];
+  FAR struct __pollfd      *fds[CONFIG_UART_BTH4_NPOLLWAITERS];
 };
 
 /****************************************************************************

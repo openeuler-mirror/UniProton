@@ -1703,7 +1703,7 @@ static int uart_poll(FAR struct file *filep,
     {
       /* This is a request to tear down the poll. */
 
-      FAR struct pollfd **slot = (FAR struct pollfd **)fds->priv;
+      FAR struct __pollfd **slot = (FAR struct __pollfd **)fds->priv;
 
 #ifdef CONFIG_DEBUG_FEATURES
       if (!slot)
