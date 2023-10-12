@@ -553,8 +553,11 @@ rflag:
             case 'g':
             case 'G':
             {
-                double _double;        /* int precision arguments %[eEfgG] */
-                _double = va_arg(argp, double);
+                union {
+                    double _double; /* int precision arguments %[eEfgG] */
+                    uint64_t _uint64; /* avoid strict aliasing warning */
+                } doubleValue;
+                doubleValue._double = va_arg(argp, double);
                 /*
                  * don't do unrealistic precision; just pad it with
                  * zeroes later, so buffer size stays rational.
@@ -575,9 +578,11 @@ rflag:
                  * softsign avoids negative 0 if _double is < 0 and
                  * no significant digits will be shown
                  */
-                if (_double < 0) {
+                if (doubleValue._double < 0 ||
+                    ((doubleValue._double == 0) &&
+                     (doubleValue._uint64 & ((uint64_t)1 << 63)) != 0)) {
                     softSign = '-';
-                    _double = -_double;
+                    doubleValue._double = -doubleValue._double;
                 } else {
                     softSign = 0;
                 }
@@ -588,7 +593,7 @@ rflag:
                  */
                 *buf = 0;
 
-                size = PRT_cvt(_double, precValue, flags, *strfmt, &softSign, buf, buf + sizeof(buf));
+                size = PRT_cvt(doubleValue._double, precValue, flags, *strfmt, &softSign, buf, buf + sizeof(buf));
                 if (softSign) {
                     sign = '-';
                 }
