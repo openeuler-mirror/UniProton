@@ -370,7 +370,7 @@ int file_poll(FAR struct file *filep, FAR struct __pollfd *fds, bool setup)
  *
  ****************************************************************************/
 
-int poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
+int fs_poll(FAR struct pollfd *fds, nfds_t nfds, int timeout)
 {
   FAR struct __pollfd *kfds;
   sem_t sem;
