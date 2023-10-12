@@ -110,7 +110,7 @@ static ssize_t uart_write(FAR struct file *filep,
 static int     uart_ioctl(FAR struct file *filep,
                           int cmd, unsigned long arg);
 static int     uart_poll(FAR struct file *filep,
-                         FAR struct pollfd *fds, bool setup);
+                         FAR struct __pollfd *fds, bool setup);
 
 /****************************************************************************
  * Public Function Prototypes
@@ -1592,7 +1592,7 @@ static int uart_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
  ****************************************************************************/
 
 static int uart_poll(FAR struct file *filep,
-                     FAR struct pollfd *fds, bool setup)
+                     FAR struct __pollfd *fds, bool setup)
 {
   FAR struct inode *inode = filep->f_inode;
   FAR uart_dev_t   *dev   = inode->i_private;
@@ -1703,7 +1703,7 @@ static int uart_poll(FAR struct file *filep,
     {
       /* This is a request to tear down the poll. */
 
-      FAR struct pollfd **slot = (FAR struct pollfd **)fds->priv;
+      FAR struct __pollfd **slot = (FAR struct __pollfd **)fds->priv;
 
 #ifdef CONFIG_DEBUG_FEATURES
       if (!slot)

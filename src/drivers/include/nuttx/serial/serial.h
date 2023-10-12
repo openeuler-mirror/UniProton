@@ -325,7 +325,7 @@ struct uart_dev_s
   uint8_t timeout;                   /* c_cc[VTIME] */
 #endif
 
-  struct pollfd *fds[CONFIG_SERIAL_NPOLLWAITERS];
+  struct __pollfd *fds[CONFIG_SERIAL_NPOLLWAITERS];
 };
 
 typedef struct uart_dev_s uart_dev_t;

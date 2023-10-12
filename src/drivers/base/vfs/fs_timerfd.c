@@ -73,7 +73,7 @@ struct timerfd_priv_s
    */
 
 #ifdef CONFIG_TIMER_FD_POLL
-  FAR struct pollfd *fds[CONFIG_TIMER_FD_NPOLLWAITERS];
+  FAR struct __pollfd *fds[CONFIG_TIMER_FD_NPOLLWAITERS];
 #endif
 };
 
@@ -87,7 +87,7 @@ static int timerfd_close(FAR struct file *filep);
 static ssize_t timerfd_read(FAR struct file *filep, FAR char *buffer,
                             size_t len);
 #ifdef CONFIG_TIMER_FD_POLL
-static int timerfd_poll(FAR struct file *filep, FAR struct pollfd *fds,
+static int timerfd_poll(FAR struct file *filep, FAR struct __pollfd *fds,
                         bool setup);
 #endif
 
@@ -318,7 +318,7 @@ static ssize_t timerfd_read(FAR struct file *filep, FAR char *buffer,
 }
 
 #ifdef CONFIG_TIMER_FD_POLL
-static int timerfd_poll(FAR struct file *filep, FAR struct pollfd *fds,
+static int timerfd_poll(FAR struct file *filep, FAR struct __pollfd *fds,
                         bool setup)
 {
   FAR struct timerfd_priv_s *dev = filep->f_priv;
@@ -331,7 +331,7 @@ static int timerfd_poll(FAR struct file *filep, FAR struct pollfd *fds,
     {
       /* This is a request to tear down the poll. */
 
-      FAR struct pollfd **slot = (FAR struct pollfd **)fds->priv;
+      FAR struct __pollfd **slot = (FAR struct __pollfd **)fds->priv;
 
       /* Remove all memory of the poll setup */
 
