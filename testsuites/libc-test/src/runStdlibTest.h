@@ -26,14 +26,14 @@ extern int bsearch_test();
 typedef int test_run_main();
 
 test_run_main *run_test_arry_1[] = {
-    // qsort_test,
+    qsort_test,
     wcstol_test,
     strtol_test,
-    // strtod_test,
+    strtod_test,
     div_test,
-    // fcvt_test,
+    fcvt_test,
     llabs_test,
-    // atof_test,
+    atof_test,
     imaxabs_test,
     lldiv_test,
     ldiv_test,
@@ -44,20 +44,20 @@ test_run_main *run_test_arry_1[] = {
     atoi_test,
     atol_test,
     labs_test,
-    // ecvt_test,
-    // gcvt_test,
+    ecvt_test,
+    gcvt_test,
     bsearch_test,
 };
 
 char run_test_name_1[][50] = {
-    // "qsort_test",
+    "qsort_test",
     "wcstol_test",
     "strtol_test",
-    // "strtod_test", 
+    "strtod_test", 
     "div_test", 
-    // "fcvt_test", 
+    "fcvt_test", 
     "llabs_test",
-    // "atof_test",
+    "atof_test",
     "imaxabs_test",
     "lldiv_test",
     "ldiv_test",
@@ -68,8 +68,8 @@ char run_test_name_1[][50] = {
     "atoi_test",
     "atol_test",
     "labs_test",
-    // "ecvt_test", 
-    // "gcvt_test",
+    "ecvt_test", 
+    "gcvt_test",
     "bsearch_test",
 };
 
