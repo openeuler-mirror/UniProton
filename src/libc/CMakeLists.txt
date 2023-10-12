@@ -19,6 +19,7 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c
     )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/${CMAKE_SYSTEM_PROCESSOR}/arch.mak)
