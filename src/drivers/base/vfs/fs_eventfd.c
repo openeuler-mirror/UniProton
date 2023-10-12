@@ -61,7 +61,7 @@ struct eventfd_priv_s
    */
 
 #ifdef CONFIG_EVENT_FD_POLL
-  FAR struct pollfd *fds[CONFIG_EVENT_FD_NPOLLWAITERS];
+  FAR struct __pollfd *fds[CONFIG_EVENT_FD_NPOLLWAITERS];
 #endif
 };
 
@@ -77,7 +77,7 @@ static ssize_t eventfd_do_read(FAR struct file *filep, FAR char *buffer,
 static ssize_t eventfd_do_write(FAR struct file *filep,
                                 FAR const char *buffer, size_t len);
 #ifdef CONFIG_EVENT_FD_POLL
-static int eventfd_do_poll(FAR struct file *filep, FAR struct pollfd *fds,
+static int eventfd_do_poll(FAR struct file *filep, FAR struct __pollfd *fds,
                        bool setup);
 #endif
 
@@ -417,7 +417,7 @@ static ssize_t eventfd_do_write(FAR struct file *filep,
 }
 
 #ifdef CONFIG_EVENT_FD_POLL
-static int eventfd_do_poll(FAR struct file *filep, FAR struct pollfd *fds,
+static int eventfd_do_poll(FAR struct file *filep, FAR struct __pollfd *fds,
                            bool setup)
 {
   FAR struct eventfd_priv_s *dev = filep->f_priv;
@@ -437,7 +437,7 @@ static int eventfd_do_poll(FAR struct file *filep, FAR struct pollfd *fds,
     {
       /* This is a request to tear down the poll. */
 
-      FAR struct pollfd **slot = (FAR struct pollfd **)fds->priv;
+      FAR struct __pollfd **slot = (FAR struct __pollfd **)fds->priv;
 
       /* Remove all memory of the poll setup */
 

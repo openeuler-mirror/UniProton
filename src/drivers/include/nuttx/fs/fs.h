@@ -36,6 +36,7 @@
 #include <time.h>
 #include <dirent.h>
 #include <limits.h>
+#include <nuttx/fs/fs_poll.h>
 
 #include <nuttx/mutex.h>
 #include <nuttx/semaphore.h>
@@ -170,7 +171,6 @@ struct file;
 struct inode;
 struct stat;
 struct statfs;
-struct pollfd;
 struct mtd_dev_s;
 struct TagTskCb;
 
@@ -223,7 +223,7 @@ struct file_operations
 
   /* The two structures need not be common after this point */
 
-  CODE int     (*poll)(FAR struct file *filep, FAR struct pollfd *fds,
+  CODE int     (*poll)(FAR struct file *filep, FAR struct __pollfd *fds,
                        bool setup);
 #ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
   CODE int     (*unlink)(FAR struct inode *inode);
@@ -1433,7 +1433,7 @@ int file_fcntl(FAR struct file *filep, int cmd, ...);
  *
  ****************************************************************************/
 
-int file_poll(FAR struct file *filep, FAR struct pollfd *fds, bool setup);
+int file_poll(FAR struct file *filep, FAR struct __pollfd *fds, bool setup);
 
 /****************************************************************************
  * Name: file_fstat
