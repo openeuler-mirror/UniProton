@@ -30,6 +30,7 @@ link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRK3568_JAILHOUSE.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblua.a"
     -Wl,--end-group
 )
 

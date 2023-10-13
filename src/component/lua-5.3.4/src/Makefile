@@ -6,10 +6,11 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= gcc -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
-LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
-LIBS= -lm $(SYSLIBS) $(MYLIBS)
+CC= $(TOOLCHAIN_GCC_PATH) -std=gnu99
+CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -nostdinc -nostdlib $(SYSCFLAGS) $(MYCFLAGS) -I../../../../output/libc/include
+LDFLAGS= -nostdinc -nostdlib $(SYSLDFLAGS) $(MYLDFLAGS)
+LIBS= $(SYSLIBS) $(MYLIBS)
+LIBS += -L. -lRK3568_JAILHOUSE # 临时用于分析依赖
 
 AR= ar rcu
 RANLIB= ranlib
@@ -36,11 +37,11 @@ LIB_O=	lauxlib.o lbaselib.o lbitlib.o lcorolib.o ldblib.o liolib.o \
 	lmathlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o loadlib.o linit.o
 BASE_O= $(CORE_O) $(LIB_O) $(MYOBJS)
 
-LUA_T=	lua
-LUA_O=	lua.o
+LUA_T= lua # 临时用于分析依赖
+LUA_O= lua.o # 临时用于分析依赖，依赖解决后不再编译lua可执行文件
 
-LUAC_T=	luac
-LUAC_O=	luac.o
+LUAC_T=
+LUAC_O=
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
 ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)

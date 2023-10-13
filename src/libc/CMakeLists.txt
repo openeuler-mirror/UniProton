@@ -75,10 +75,6 @@ if (${PLAM_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
     )
-else()
-    list(REMOVE_ITEM LITELIBC_SOURCE
-        "${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c"
-    )
 endif()
 
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
@@ -183,6 +179,36 @@ set(MULS_SIGNAL_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigdelset.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
     )
+
+# lua依赖的相关.c文件
+if(${CPU_TYPE} STREQUAL "rk3568_jailhouse")
+list(APPEND MULS_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memmove.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strpbrk.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcpy.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strspn.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strcoll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strstr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isalnum.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/toupper.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isxdigit.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/random.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/tolower.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/ispunct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/localeconv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/setjmp.s
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/longjmp.s
+    )
+endif()
 
     file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
     list(REMOVE_ITEM MUSL_EXIT_SOURCE

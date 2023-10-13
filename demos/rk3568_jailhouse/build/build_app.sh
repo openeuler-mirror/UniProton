@@ -1,8 +1,19 @@
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
+export TOOLCHAIN_GCC_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin/aarch64-none-elf-gcc
 # export ALL="task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency"
-export ALL="rk3568_jailhouse task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency"
+export ALL="rk3568_jailhouse"
 
 sh ./build_static.sh rk3568_jailhouse
+
+# 临时拷贝到lua目录，用于分析依赖
+cp ./../libs/libRK3568_JAILHOUSE.a ./../../../src/component/lua-5.3.4/src
+cp ./../libs/libCortexMXsec_c.lib ./../../../src/component/lua-5.3.4/src
+
+pushd ./../../../src/component/lua-5.3.4/src
+    make posix
+    make echo
+    cp ./liblua.a ./../../../../demos/rk3568_jailhouse/libs/
+popd
 
 function build()
 {
