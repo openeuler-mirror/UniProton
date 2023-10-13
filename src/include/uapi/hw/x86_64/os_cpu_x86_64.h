@@ -16,6 +16,7 @@
 #define OS_CPU_X86_64
 
 #include "prt_typedef.h"
+#include "prt_hwi.h"
 
 /*
  * 任务上下文的结构体定义。
@@ -46,5 +47,7 @@ OS_SEC_ALW_INLINE INLINE U32 PRT_GetCoreID(void)
 
 #define DIV64(a, b) ((a) / (b))
 #define DIV64_REMAIN(a, b) ((a) % (b))
+#define OsIntEnable()     PRT_HwiLock()
+#define OsIntDisable()    PRT_HwiUnLock()
 
 #endif /* OS_CPU_X86_64 */
