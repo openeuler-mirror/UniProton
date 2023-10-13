@@ -63,7 +63,7 @@ set(ALL_STDLIB_SRC
     functional/bsearch.c
 )
 
-file(GLOB ALL_IPC_SRC functional/ipc_msg.c functional/ipc_sem.c)
+file(GLOB ALL_IPC_SRC functional/ipc_msg.c functional/ipc_sem.c functional/ipc_shm.c)
 
 if(${APP} STREQUAL "UniPorton_test_posix_math_interface")
     set(BUILD_APP "UniPorton_test_posix_math_interface")
