@@ -18,6 +18,8 @@
 
 void *shmat(int shmid, const void *shmaddr, int shmflg)
 {
-    errno = ENOTSUP;
-    return NULL;
+    void *addr;
+    int ret = OsShmAt(shmid, shmaddr, shmflg, &addr);
+    errno = ret;
+    return (ret == 0) ? addr : ((void *)-1);
 }

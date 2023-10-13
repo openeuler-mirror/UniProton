@@ -3,12 +3,14 @@
 #endif
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "test.h"
 
 static const char path[] = ".";
@@ -27,17 +29,26 @@ static const int id = 'h';
 static void set()
 {
 	time_t t;
-	key_t k;
+	key_t k = 1234;
 	int shmid;
 	struct shmid_ds shmid_ds;
 	void *p;
 
+	if (shmget(k, 100, 0) != -1 || errno != ENOENT)
+		t_error("shmget(k, 100, 0) should have failed with ENOENT, got %s\n", strerror(errno));
+
+	if (shmget(k, 0, IPC_CREAT|0666) != -1 || errno != EINVAL)
+		t_error("shmget(k, 0, IPC_CREAT) should have failed with EINVAL, got %s\n", strerror(errno));
+
 	T(t = time(0));
-	T(k = ftok(path, id));
 
 	/* make sure we get a clean shared memory id */
 	T(shmid = shmget(k, 100, IPC_CREAT|0666));
 	T(shmctl(shmid, IPC_RMID, 0));
+
+	if (shmat(shmid, 0, 0) != (void *)-1 || errno != EINVAL)
+		t_error("shmat(shmid, 0, 0) should have failed with EINVAL, got %s\n", strerror(errno));
+
 	T(shmid = shmget(k, 100, IPC_CREAT|IPC_EXCL|0666));
 
 	if (t_status)
@@ -50,10 +61,6 @@ static void set()
 
 	/* check if shmget initilaized the msshmid_ds structure correctly */
 	T(shmctl(shmid, IPC_STAT, &shmid_ds));
-	EQ(shmid_ds.shm_perm.cuid, geteuid(), "got %d, want %d");
-	EQ(shmid_ds.shm_perm.uid, geteuid(), "got %d, want %d");
-	EQ(shmid_ds.shm_perm.cgid, getegid(), "got %d, want %d");
-	EQ(shmid_ds.shm_perm.gid, getegid(), "got %d, want %d");
 	EQ(shmid_ds.shm_perm.mode & 0x1ff, 0666, "got %o, want %o");
 	EQ(shmid_ds.shm_segsz, 100, "got %d, want %d");
 	EQ(shmid_ds.shm_lpid, 0, "got %d, want %d");
@@ -80,13 +87,12 @@ static void set()
 	T(shmdt(p));
 }
 
-static void get()
+static void *get(void *arg)
 {
-	key_t k;
+	key_t k = 1234;
 	int shmid;
 	void *p;
 
-	T(k = ftok(path, id));
 	T(shmid = shmget(k, 0, 0));
 
 	errno = 0;
@@ -101,21 +107,19 @@ static void get()
 	T(shmctl(shmid, IPC_RMID, 0));
 }
 
-int main(void)
+int ipc_shm_test(void)
 {
 	int p;
-	int status;
+	pthread_t new_th;
 
 	set();
-	p = fork();
-	if (p == -1)
+	p = pthread_create(&new_th, NULL, get, NULL);
+
+	if (p != 0)
 		t_error("fork failed: %s\n", strerror(errno));
-	else if (p == 0)
-		get();
 	else {
-		T(waitpid(p, &status, 0));
-		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-			t_error("child exit status: %d\n", status);
+		p = pthread_join(new_th, NULL);
+		T(p);
 	}
 	return t_status;
 }

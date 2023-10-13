@@ -18,6 +18,40 @@
 
 int shmctl(int shmid, int cmd, struct shmid_ds *buf)
 {
-    errno = ENOTSUP;
-    return -1;
+    int ret;
+    switch (cmd) {
+        case IPC_RMID:
+            ret = OsShmDelete(shmid);
+            break;
+        case IPC_SET:
+            ret = 0;
+            break;
+        case IPC_STAT:
+            ret = OsShmGetStat(shmid, buf);
+            break;
+        case IPC_INFO:
+            ret = OsShmGetIpcInfo((struct shminfo *)buf);
+            if (ret == 0) {
+                return SHMSEG_MAX_SHM_LIMIT;
+            }
+            break;
+        case SHM_INFO:
+            ret = OsShmGetShmInfo((struct shm_info *)buf);
+            break;
+        case SHM_STAT:
+        case SHM_STAT_ANY:
+            ret = OsShmGetStat(OS_IPC_ID(shmid), buf);
+            if (ret == 0) {
+                return OS_IPC_ID(shmid);
+            }
+            break;
+        case SHM_LOCK:
+        case SHM_UNLOCK:
+            ret = 0;
+            break;
+        default:
+            ret = EINVAL;
+    }
+    errno = ret;
+    return (ret == 0) ? 0 : (-1);
 }
