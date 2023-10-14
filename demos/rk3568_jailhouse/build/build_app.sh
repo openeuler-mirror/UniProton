@@ -5,14 +5,19 @@ export ALL="rk3568_jailhouse"
 
 sh ./build_static.sh rk3568_jailhouse
 
-# 临时拷贝到lua目录，用于分析依赖
-cp ./../libs/libRK3568_JAILHOUSE.a ./../../../src/component/lua-5.3.4/src
-cp ./../libs/libCortexMXsec_c.lib ./../../../src/component/lua-5.3.4/src
-
 pushd ./../../../src/component/lua-5.3.4/src
     make posix
     make echo
     cp ./liblua.a ./../../../../demos/rk3568_jailhouse/libs/
+    cp ./lua.h ./../../../../demos/rk3568_jailhouse/include/
+    cp ./luaconf.h ./../../../../demos/rk3568_jailhouse/include/
+    cp ./lualib.h ./../../../../demos/rk3568_jailhouse/include/
+    cp ./lauxlib.h ./../../../../demos/rk3568_jailhouse/include/
+    cp ./lua.hpp ./../../../../demos/rk3568_jailhouse/include/
+
+    # 临时拷贝，用于排查lua依赖
+    cp ./lprefix.h ./../../../../demos/rk3568_jailhouse/include/
+    cp ./lua.c ./../../../../demos/rk3568_jailhouse/apps/ivshmem/
 popd
 
 function build()

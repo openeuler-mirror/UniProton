@@ -207,6 +207,8 @@ list(APPEND MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/localeconv.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/setjmp.s
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/longjmp.s
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strncmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcspn.c
     )
 endif()
 
