@@ -51,7 +51,7 @@ static void test_value(int c)
 		}
 }
 
-int main(void)
+int string_memset_test(void)
 {
 	int i,j,k;
 

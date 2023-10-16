@@ -21,7 +21,7 @@
 		t_error("memmem(%s,%s) returned str+%d, wanted str+%d\n", #s, #sub, q-p, n); \
 }
 
-int main(void)
+int string_memmem_test(void)
 {
 	N("","a", "a")
 	N("a","a", "aa")
