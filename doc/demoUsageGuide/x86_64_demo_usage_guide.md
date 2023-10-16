@@ -1,5 +1,5 @@
 ## 前置条件
-原生 ubuntu 22.04.1
+原生 ubuntu 22.04
 
 ## oebuild安装
 参考 "运行环境准备"，安装python3 pip oebuild
@@ -49,10 +49,10 @@ https://gitee.com/openeuler/mcs/tree/uniproton_dev/ （注意要使用uniproton_
 cd demos/x86_64/ap_boot
 make
 ```
-把当前目录下生成的ap_boot文件拷贝到deploy目录
+把当前目录下生成的ap_boot文件拷贝到运行环境的/lib/firmware目录下
 
 ## 预留CPU及内存
-按需给uniproton预留要使用的CPU及内存，如四核CPU可预留一核，16G物理内存可预留4G。可通过修改boot分区的grub.cfg配置内核启动参数，新增maxcpus及mem参数，参考如下：
+按需给uniproton预留要使用的CPU及内存，如四核CPU建议预留一个核，内存建议预留256M， 可通过修改boot分区的grub.cfg配置内核启动参数，新增 maxcpus=3 memmap=256M\$0x110000000 参数，参考如下：
 ```sh
 openEuler-Embedded ~ # mount /dev/sda1 /boot
 openEuler-Embedded ~ # cat /boot/efi/boot/grub.cfg
@@ -62,34 +62,23 @@ default=boot
 timeout=10
 
 menuentry 'boot'{
-linux /bzImage  root=*** rw rootwait quiet  console=ttyS0,115200 console=tty0 maxcpus=3 mem=12G
+linux /bzImage  root=*** rw rootwait quiet maxcpus=3 memmap=256M\$0x110000000 console=ttyS0,115200 console=tty0
 }
 ```
 
 ## 部署 uniproton
-```sh
-#插入ko
-# load_addr        指定二进制文件的加载地址
-# 对8G内存环境加载地址为0x1c0000000
-insmod mcs_km.ko load_addr=0x1c0000000
-# 对16G内存环境加载地址为0x400000000
-insmod mcs_km.ko load_addr=0x400000000
-
-# 执行rpmsg_main
-# -c cpu           指定在哪个cpu拉起二进制文件
-# -t x86_64.bin    可执行二进制文件
-# -a address       指定二进制文件的加载地址
-# 对8G内存环境加载地址为0x1c0000000
-./rpmsg_main -c 3 -t x86_64.bin -a 0x1c0000000
-# 对16G内存环境加载地址为0x400000000
-./rpmsg_main -c 3 -t x86_64.bin -a 0x400000000
-```
+  - 启动 UniProton：
+     运行 `mica start x86_64.bin`
+  - 为Uniproton分配第id个I210网卡，并启动Uniproton（默认最后一张id为-1）：
+     运行 `mica start x86_64.bin [-x id]`
+  - 停止 UniProton：
+     运行 `mica stop`
+mica命令中封装了所需要的ko以及ko加载参数，如无定制诉求，使用默认即可。
 
 运行后，根据提示使用对应的pty设备和UniProton进行通信：
 ```sh
 openEuler-Embedded ~ # cd ~/deploy
-openEuler-Embedded ~/deploy # insmod mcs_km.ko load_addr=0x1c0000000
-openEuler-Embedded ~/deploy # ./rpmsg_main -c 3 -b ap_boot -t x86_64.bin -a 0x1c0000000
+openEuler-Embedded ~/deploy # mica start x86_64.bin
 cpu:3, ld:1c0000000, entry:1c0000000, path:x86_64.bin share_mem:1bde00000
 
 Initialize the virtio, virtqueue and rpmsg device
