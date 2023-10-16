@@ -11,7 +11,7 @@
 extern U64 g_mmu_page_begin;
 extern U64 g_mmu_page_end;
 
-#define MMU_MAP_RESREVED_NUM 8 /* 暂时预留6个mmu页表用于pcie设备io、mem空间的映射 */
+#define MMU_MAP_RESREVED_NUM 8 /* 暂时预留8个mmu页表用于pcie设备io、mem空间的映射 */
 U32 g_mmu_map_reserved_num = MMU_MAP_RESREVED_NUM;
 
 static mmu_mmap_region_s g_mem_map_info[] = {
@@ -53,7 +53,7 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
     /* 暂时预留N个mmu页表用于pcie设备io、mem空间的映射 */
-    [6 ... (6 + MMU_MAP_RESREVED_NUM)] = {
+    [6 ... (6 + MMU_MAP_RESREVED_NUM - 1)] = {
         .virt      = MMU_INVALID_ADDR,
         .phys      = MMU_INVALID_ADDR,
         .size      = 0x0,
@@ -61,6 +61,9 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }
 };
+
+#define MMU_MAP_NUM (sizeof(g_mem_map_info) / sizeof(g_mem_map_info[0]))
+#define MMU_MAP_RESERVE_SID (MMU_MAP_NUM - MMU_MAP_RESREVED_NUM)
 
 static mmu_ctrl_s g_mmu_ctrl = { 0 };
 
@@ -359,32 +362,9 @@ S32 mmu_init(void)
 }
 
 // 更新时，中断要关 ？？
-S32 mmu_update(const mmu_mmap_region_s *map, U32 map_num)
+S32 mmu_update(void)
 {
-    S32 ret;
-    U32 i, j;
     uintptr_t intSave;
-    U32 mem_region_num = sizeof(g_mem_map_info) / sizeof(mmu_mmap_region_s);
-
-    if (map_num > g_mmu_map_reserved_num) {
-        return -1; /* 预留的页表不够，需要增大页表预留数量 MMU_MAP_RESREVED_NUM */
-    }
-
-    for (i = 0; i < mem_region_num; i++) {
-        if (g_mem_map_info[i].phys == MMU_INVALID_ADDR)
-            break;
-    }
-    if (i == mem_region_num) {
-        return -4;
-    }
-
-    g_mmu_map_reserved_num -= map_num;
-    for (j = 0; j < map_num; j++) {
-        g_mem_map_info[i + j].virt = map[j].virt;
-        g_mem_map_info[i + j].phys = map[j].phys;
-        g_mem_map_info[i + j].size = map[j].size;
-    }
-
     intSave = PRT_HwiLock();
 
     /* 禁用MMU，数据CACHE, 指令CACHE */
@@ -394,4 +374,49 @@ S32 mmu_update(const mmu_mmap_region_s *map, U32 map_num)
 
     PRT_HwiRestore(intSave);
     return 0;
+}
+
+/* attr max_level 这里先不支持配置， request之后， 需要调用 mmu_update 使生效 */
+S32 mmu_request_no_lock(U64 phy_addr, U64 length)
+{
+    U32 i;
+    if (g_mmu_map_reserved_num == 0) {
+        return -1; /* 预留的页表不够，需要增大页表预留数量 MMU_MAP_RESREVED_NUM */
+    }
+
+    for (i = MMU_MAP_RESERVE_SID; i < MMU_MAP_NUM; i++) {
+        if (g_mem_map_info[i].phys == MMU_INVALID_ADDR)
+            break;
+    }
+    if (i == MMU_MAP_NUM) {
+        return -4;
+    }
+    g_mem_map_info[i].virt = phy_addr;
+    g_mem_map_info[i].phys = phy_addr;
+    g_mem_map_info[i].size = length;
+    g_mmu_map_reserved_num--;
+    return 0;
+}
+
+/* release之后， 需要调用 mmu_update 使生效 */
+void mmu_release_no_lock(U64 virt_addr)
+{
+    U32 i;
+    if (g_mmu_map_reserved_num == MMU_MAP_RESREVED_NUM) {
+        return; /* 没有找到virt_addr，不需要释放 */
+    }
+
+    for (i = MMU_MAP_RESERVE_SID; i < MMU_MAP_NUM; i++) {
+        if (g_mem_map_info[i].phys == virt_addr)
+            break;
+    }
+    if (i == MMU_MAP_NUM) {
+        return; /* 没有找到virt_addr，不需要释放 */
+    }
+
+    g_mem_map_info[i].phys = MMU_INVALID_ADDR;
+    g_mem_map_info[i].virt = MMU_INVALID_ADDR;
+    g_mem_map_info[i].size = 0;
+    g_mmu_map_reserved_num++;
+    return;
 }

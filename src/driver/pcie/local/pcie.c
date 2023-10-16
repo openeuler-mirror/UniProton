@@ -1,5 +1,7 @@
 
 #include "prt_typedef.h"
+#include "prt_module.h"
+#include "prt_mem.h"
 #include "pcie.h"
 #include "pcie_config.h"
 
@@ -34,21 +36,27 @@ int pci_driver_register(struct pci_driver *pci_drv)
     }
 
     pci_dev_id_tbl = pci_drv->id_table;
-    for (b = 0; b < PCI_BUS_NUM_MAX; b++) {
+    for (b = 0xbd; b < 0xbe; b++) {
         for (d = 0; d < PCI_DEIVCE_NUM_MAX; d++) {
             for (f = 0; f < PCI_FUNCTION_NUM_MAX; f++) {
                 bdf = PCI_BDF(b, d, f);
+                printf("bdf:0x%x matching....\n", bdf);
                 ret = pci_match_dev(pci_dev_id_tbl, bdf, &pci_dev_id);
                 if (ret == 0) {
                     continue;
                 }
+                printf("bdf:0x%x matched!\n", bdf);
                 pci_device = pci_dev_create_by_bdf(bdf);
                 if (pci_device == NULL) {
+                    printf("bdf:0x%x created fail!\n", bdf);
                     return OS_FAIL;
                 }
+                printf("bdf:0x%x created success!\n", bdf);
                 pci_device->pdrv = pci_drv;
                 ret = pci_dev_add(pci_device);
+                printf("bdf:0x%x created success!\n", bdf);
                 ret = pci_drv->probe(pci_device, pci_dev_id);
+                printf("bdf:0x%x probe success!\n", bdf);
             }
         }
     }
@@ -209,6 +217,10 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
     return (res->flags & IORESOURCE_MEM_64) ? 1 : 0;
 }
 
+#define PCI_DEV_MAX_NUM 10
+static int g_pdev_num = 0;
+struct pci_dev g_pdev[PCI_DEV_MAX_NUM];
+
 // malloc and init pci_dev
 struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
 {
@@ -216,22 +228,37 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     struct pci_dev *pdev;
     uint32_t class_revision, bar_value, orig_cmd;
 
-    pdev = (struct pci_dev*)malloc(sizeof(struct pci_dev));
+    if (g_pdev_num >= PCI_DEV_MAX_NUM) {
+        return NULL;
+    }
+    printf("pci dev create %u\n", __LINE__);
+    // pdev = (struct pci_dev*)OsMemAlloc(OS_MID_HARDDRV, OS_MEM_DEFAULT_FSC_PT,
+    //     sizeof(struct pci_dev));
+    pdev = &(g_pdev[g_pdev_num]);
+    g_pdev_num++;
+    printf("pci dev create %u\n", __LINE__);
     if (pdev == NULL) {
+        printf("pci dev create malloc fail\n");
         return NULL;
     }
 
+    printf("pci dev create %u pdev = 0x%llx\n", __LINE__, pdev);
     pcie_device_cfg_read_word(bdf, PCI_VENDOR_ID, &(pdev->vendor));
     pcie_device_cfg_read_word(bdf, PCI_DEVICE_ID, &(pdev->device));
+    printf("pci dev create %u\n", __LINE__);
     pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_VENDOR_ID, &(pdev->subsystem_vendor));
     pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_ID, &(pdev->subsystem_device));
+    printf("pci dev create %u\n", __LINE__);
     pcie_device_cfg_read_word(bdf, PCI_CLASS_REVISION, &class_revision);
+    printf("pci dev create %u\n", __LINE__);
     pdev->class = class_revision & 0xff;
     pdev->revision = class_revision >> 8;
 
+    pdev->bdf = bdf;
     pdev->bus_no = PCI_BUS(bdf);
     pdev->devfn = PCI_DEVFN_FROM_BDF(bdf);
 
+    printf("pci dev create %u\n", __LINE__);
     /* 这里需要配置 PCI_COMMAND 关闭 io 和 mem 空间访问，因为需要读写bar */
     pcie_device_cfg_read_word(bdf, PCI_COMMAND, &orig_cmd);
     if (orig_cmd & PCI_COMMAND_DECODE_ENABLE) {
@@ -239,13 +266,17 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
             orig_cmd & ~PCI_COMMAND_DECODE_ENABLE);
     }
 
+    printf("pci dev create %u\n", __LINE__);
     for (bar = 0; bar < DEVICE_COUNT_RESOURCE; bar++) {
         /* 如果地址为64bit, 会占用2个bar寄存器, 此时返回1, 否则返回0 */
         bar += pci_read_base(pdev, &(pdev->resource[bar]), bar);
     }
 
+    printf("pci dev create %u\n", __LINE__);
     if (orig_cmd & PCI_COMMAND_DECODE_ENABLE)
         pcie_device_cfg_write_word(bdf, PCI_COMMAND, orig_cmd);
+    else /* 这里强制开启 io & mem */
+        pcie_device_cfg_write_word(bdf, PCI_COMMAND, orig_cmd | PCI_COMMAND_DECODE_ENABLE);
 
     return pdev;
 }

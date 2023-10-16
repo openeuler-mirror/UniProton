@@ -4,7 +4,7 @@
 #include "prt_typedef.h"
 
 #define PCI_BUS_NUM_MAX 0x100
-#define PCI_DEIVCE_NUM_MAX 0x40
+#define PCI_DEIVCE_NUM_MAX 0x20
 #define PCI_FUNCTION_NUM_MAX 0x8
 #define PCI_CFG_ADDR_OFFSET_MAX 0x1000
 

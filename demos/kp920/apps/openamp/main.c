@@ -19,14 +19,14 @@ static void test_pcie_mmu(void)
 {
     S32 ret;
     U32 i;
-    mmu_mmap_region_s mmu_map;
     unsigned long* ptr = MMU_TEST_ADDR;
 
-    mmu_map.phys = MMU_TEST_ADDR;
-    mmu_map.virt = MMU_TEST_ADDR;
-    mmu_map.size = 0x10000;
-
-    ret = mmu_update(&mmu_map, 1);
+    ret = mmu_request_no_lock(ptr, 0x10000);
+    if (ret != 0) {
+        printf("mmu_request_no_lock error!! ret = %d\r\n", ret);
+        return;
+    }
+    ret = mmu_update();
     if (ret != 0) {
         printf("mmu_update error!! ret = %d\r\n", ret);
         return;

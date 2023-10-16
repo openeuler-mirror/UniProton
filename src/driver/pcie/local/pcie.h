@@ -52,6 +52,7 @@ struct pci_dev {
     uint16_t subsystem_vendor;
     uint16_t subsystem_device;
     unsigned int irq;
+    unsigned int bdf;
     unsigned int bus_no;
     unsigned int devfn;
     uint32_t class;

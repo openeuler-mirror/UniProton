@@ -45,8 +45,10 @@ int pcie_device_cfg_write_byte(uint32_t bdf, uint32_t offset, uint8_t val)
 int pcie_device_cfg_read_word(uint32_t bdf, uint32_t offset, uint16_t *val)
 {
     uint32_t addr = PCI_CFG_ADDRESS_BY_BDF(bdf, offset);
+ 
+    printf("pci cfg read 0x%x\n", addr);
     *val = *(uint16_t *)(g_pcie_config_base_addr + addr);
-
+    printf("pci cfg read val 0x%x\n", *val);
     return 0;
 }
 
