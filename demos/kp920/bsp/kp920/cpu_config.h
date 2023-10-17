@@ -13,7 +13,6 @@
 #define MMU_ECAM_ADDR_LEN           0x10000000ULL /* MMU_ECAM_ADDR_LEN 256Bus * 32Device * 8Fuc * 4KB */
 
 #define MMU_INVALID_ADDR            0x0ULL
-#define MMU_TEST_ADDR                0x202780200000ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 

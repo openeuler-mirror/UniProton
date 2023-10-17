@@ -7,72 +7,15 @@
 #include "prt_config_internal.h"
 #include "prt_task.h"
 #include "test.h"
-#include "mmu.h"
-#include "cpu_config.h"
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
 
-static void test_pcie_mmu(void)
-{
-    S32 ret;
-    U32 i;
-    unsigned long* ptr = MMU_TEST_ADDR;
-
-    ret = mmu_request_no_lock(ptr, 0x10000);
-    if (ret != 0) {
-        printf("mmu_request_no_lock error!! ret = %d\r\n", ret);
-        return;
-    }
-    ret = mmu_update();
-    if (ret != 0) {
-        printf("mmu_update error!! ret = %d\r\n", ret);
-        return;
-    }
-
-    for (i = 0; i < 100; i++) {
-        ptr[i] = 0xaa550000aa550000 + i;
-    }
-}
-
-#define PCI_ECAM_ADDRESS(Bus, Device, Function, Offset) \
-  (((Offset) & 0xfff) | (((Function) & 0x07) << 12) | (((Device) & 0x1f) << 15) | (((Bus) & 0xff) << 20))
-
-static void test_pcie_ecam(void)
-{
-    U32 *ptr;
-    U32 i;
-
-    ptr = (U32*)MMU_ECAM_ADDR;
-    printf("\r\necam_dump_200:\r\n");
-    for (i = 0; i < 0x200; i++) {
-        printf("0x%08x ", ptr[i], (i % 0x10 == 0) ? "\r\n" : "");
-    }
-}
-
 #if defined(OS_OPTION_PCIE)
 extern void test_pcie(void);
 #endif
-// extern int pci_msg_send(void *data, size_t len);
-
-// struct pci_rpmsg_s {
-//     int cmd;
-//     char data[100];
-// };
-
-// void test_pcie_msg(void)
-// {
-//     struct pci_rpmsg_s rpmsg = {
-//         .cmd = 10,
-//         .data = {
-//             [0 ... 99] = 0xa5,
-//         },
-//     };
-//     printf("client send msg!\r\n");
-//     pci_msg_send(&rpmsg, sizeof(rpmsg));
-// }
 
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()

@@ -52,7 +52,7 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
-    /* 暂时预留N个mmu页表用于pcie设备io、mem空间的映射 */
+    /* 这里预留MMU_MAP_RESREVED_NUM个mmu页表用于pcie设备io、mem空间的映射 */
     [6 ... (6 + MMU_MAP_RESREVED_NUM - 1)] = {
         .virt      = MMU_INVALID_ADDR,
         .phys      = MMU_INVALID_ADDR,
@@ -361,7 +361,7 @@ S32 mmu_init(void)
     return 0;
 }
 
-// 更新时，中断要关 ？？
+/* 更新MMU时，关闭和恢复中断 */
 S32 mmu_update(void)
 {
     uintptr_t intSave;
@@ -377,7 +377,7 @@ S32 mmu_update(void)
 }
 
 /* attr max_level 这里先不支持配置， request之后， 需要调用 mmu_update 使生效 */
-S32 mmu_request_no_lock(U64 phy_addr, U64 length)
+S32 mmu_request(U64 phy_addr, U64 length)
 {
     U32 i;
     if (g_mmu_map_reserved_num == 0) {
@@ -399,7 +399,7 @@ S32 mmu_request_no_lock(U64 phy_addr, U64 length)
 }
 
 /* release之后， 需要调用 mmu_update 使生效 */
-void mmu_release_no_lock(U64 virt_addr)
+void mmu_release(U64 virt_addr)
 {
     U32 i;
     if (g_mmu_map_reserved_num == MMU_MAP_RESREVED_NUM) {

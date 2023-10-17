@@ -204,8 +204,8 @@ static inline void set_sctlr(unsigned long val)
 extern S32 mmu_init(void);
 
 /* 页表的申请和释放， mmu_update执行之后才能生效， 此步骤操作全局变量，待实现加锁接口 */
-extern S32 mmu_request_no_lock(U64 phy_addr, U64 length);
-extern void mmu_release_no_lock(U64 virt_addr);
+extern S32 mmu_request(U64 phy_addr, U64 length);
+extern void mmu_release(U64 virt_addr);
 extern S32 mmu_update(void);
 
 #endif

@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * Create: 2023-10-17
+ * Description: PCIE功能
+ */
 
 #include "prt_typedef.h"
 #include "prt_module.h"
@@ -6,25 +20,31 @@
 #include "pcie_config.h"
 
 LIST_HEAD(g_pcie_device_list_head);
-
 LIST_HEAD(g_pcie_driver_list_head);
 
 int pci_match_dev(struct pci_device_id *pci_dev_id_tbl, uint32_t bdf,
     struct pci_device_id **pci_dev_id);
 struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf);
-int pci_dev_add(struct pci_dev *pdev);
+void pci_dev_add(struct pci_dev *pdev);
 
-/* 全局变量的初始化， 供后期用户注册驱动程序 */
 int pci_frame_init(uint64_t pci_cfg_base)
 {
     pcie_config_base_addr_register(pci_cfg_base);
     return 0;
 }
 
+uint32_t __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
+{
+    if (bus_no >= PCI_BUS_NUM_MAX) {
+        return 0;
+    }
+    return 1;
+}
+
 /* 根据 pci_drv 中的 pci_device_id 匹配所有pci设备，若果能匹配到，则执行挂接probe函数 */
 int pci_driver_register(struct pci_driver *pci_drv)
 {
-    int ret;
+    int ret = OS_OK;
     int b, d, f;
     uint32_t bdf;
     struct pci_device_id *pci_dev_id_tbl;
@@ -36,27 +56,25 @@ int pci_driver_register(struct pci_driver *pci_drv)
     }
 
     pci_dev_id_tbl = pci_drv->id_table;
-    for (b = 0xbd; b < 0xbe; b++) {
+    for (b = 0; b < PCI_BUS_NUM_MAX; b++) {
+        if (pci_bus_accessible(b) == 0) {
+            continue;
+        }
         for (d = 0; d < PCI_DEIVCE_NUM_MAX; d++) {
             for (f = 0; f < PCI_FUNCTION_NUM_MAX; f++) {
                 bdf = PCI_BDF(b, d, f);
-                printf("bdf:0x%x matching....\n", bdf);
                 ret = pci_match_dev(pci_dev_id_tbl, bdf, &pci_dev_id);
-                if (ret == 0) {
+                if (ret == FALSE) {
                     continue;
                 }
-                printf("bdf:0x%x matched!\n", bdf);
                 pci_device = pci_dev_create_by_bdf(bdf);
                 if (pci_device == NULL) {
-                    printf("bdf:0x%x created fail!\n", bdf);
                     return OS_FAIL;
                 }
-                printf("bdf:0x%x created success!\n", bdf);
                 pci_device->pdrv = pci_drv;
-                ret = pci_dev_add(pci_device);
-                printf("bdf:0x%x created success!\n", bdf);
+                pci_dev_add(pci_device);
                 ret = pci_drv->probe(pci_device, pci_dev_id);
-                printf("bdf:0x%x probe success!\n", bdf);
+                printf("bdf:0x%x probe ret 0x%x!\n", bdf, ret);
             }
         }
     }
@@ -71,19 +89,19 @@ int pci_match_dev(struct pci_device_id *pci_dev_id_tbl, uint32_t bdf,
     uint32_t vendor, device, subvendor, subdevice, headertype;
     struct pci_device_id *pdid;
 
-    ret = pcie_device_cfg_read_byte(bdf, PCI_HEADER_TYPE, &headertype);
-    if ((headertype & PCI_HEADER_TYPE_MASK) != PCI_HEADER_TYPE_NORMAL) {
-        return FALSE; /* 非终端设备， 桥设备或者cardbus */
-    }
-
-    ret = pcie_device_cfg_read_word(bdf, PCI_VENDOR_ID, &vendor);
-    ret = pcie_device_cfg_read_word(bdf, PCI_DEVICE_ID, &device);
+    pcie_device_cfg_read_halfword(bdf, PCI_VENDOR_ID, &vendor);
+    pcie_device_cfg_read_halfword(bdf, PCI_DEVICE_ID, &device);
     if (vendor == 0xffff && device == 0xffff) {
         return FALSE; /* 该槽位没有设备 */
     }
 
-    ret = pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_VENDOR_ID, &subvendor);
-    ret = pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_ID, &subdevice);
+    pcie_device_cfg_read_byte(bdf, PCI_HEADER_TYPE, &headertype);
+    if ((headertype & PCI_HEADER_TYPE_MASK) != PCI_HEADER_TYPE_NORMAL) {
+        return FALSE; /* 非终端设备， 桥设备或者cardbus */
+    }
+
+    pcie_device_cfg_read_halfword(bdf, PCI_SUBSYSTEM_VENDOR_ID, &subvendor);
+    pcie_device_cfg_read_halfword(bdf, PCI_SUBSYSTEM_ID, &subdevice);
 
     for (pdid = pci_dev_id_tbl; (pdid->vendor | pdid->device) != 0; pdid++) {
         if ( (pdid->device == PCI_ANY_ID || pdid->device == device) &&
@@ -161,10 +179,10 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
 
     bdf = (pdev->bus_no << 8) | pdev->devfn;
 
-    pcie_device_cfg_read_dword(bdf, PCI_REG_BAR(bar), &l);
-    pcie_device_cfg_write_dword(bdf, PCI_REG_BAR(bar), mask);
-    pcie_device_cfg_read_dword(bdf, PCI_REG_BAR(bar), &sz);
-    pcie_device_cfg_write_dword(bdf, PCI_REG_BAR(bar), l);
+    pcie_device_cfg_read(bdf, PCI_REG_BAR(bar), &l);
+    pcie_device_cfg_write(bdf, PCI_REG_BAR(bar), mask);
+    pcie_device_cfg_read(bdf, PCI_REG_BAR(bar), &sz);
+    pcie_device_cfg_write(bdf, PCI_REG_BAR(bar), l);
 
     /*
     * All bits set in sz means the device isn't working properly.
@@ -195,10 +213,10 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
     }
 
     if (res->flags & IORESOURCE_MEM_64) {
-        pcie_device_cfg_read_dword(bdf, PCI_REG_BAR(bar + 1), &l);
-        pcie_device_cfg_write_dword(bdf, PCI_REG_BAR(bar + 1), ~0);
-        pcie_device_cfg_read_dword(bdf, PCI_REG_BAR(bar + 1), &sz);
-        pcie_device_cfg_write_dword(bdf, PCI_REG_BAR(bar + 1), l);
+        pcie_device_cfg_read(bdf, PCI_REG_BAR(bar + 1), &l);
+        pcie_device_cfg_write(bdf, PCI_REG_BAR(bar + 1), ~0);
+        pcie_device_cfg_read(bdf, PCI_REG_BAR(bar + 1), &sz);
+        pcie_device_cfg_write(bdf, PCI_REG_BAR(bar + 1), l);
 
         l64 |= ((uint64_t)l << 32);
         sz64 |= ((uint64_t)sz << 32);
@@ -221,7 +239,7 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
 static int g_pdev_num = 0;
 struct pci_dev g_pdev[PCI_DEV_MAX_NUM];
 
-// malloc and init pci_dev
+/*  malloc and init pci_dev  */
 struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
 {
     int bar;
@@ -231,26 +249,23 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     if (g_pdev_num >= PCI_DEV_MAX_NUM) {
         return NULL;
     }
-    printf("pci dev create %u\n", __LINE__);
-    // pdev = (struct pci_dev*)OsMemAlloc(OS_MID_HARDDRV, OS_MEM_DEFAULT_FSC_PT,
-    //     sizeof(struct pci_dev));
+
+    /* 这里malloc的问题待修复
+    pdev = (struct pci_dev*)OsMemAlloc(OS_MID_HARDDRV, OS_MEM_DEFAULT_FSC_PT,
+        sizeof(struct pci_dev));
+    */
     pdev = &(g_pdev[g_pdev_num]);
     g_pdev_num++;
-    printf("pci dev create %u\n", __LINE__);
     if (pdev == NULL) {
         printf("pci dev create malloc fail\n");
         return NULL;
     }
 
-    printf("pci dev create %u pdev = 0x%llx\n", __LINE__, pdev);
-    pcie_device_cfg_read_word(bdf, PCI_VENDOR_ID, &(pdev->vendor));
-    pcie_device_cfg_read_word(bdf, PCI_DEVICE_ID, &(pdev->device));
-    printf("pci dev create %u\n", __LINE__);
-    pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_VENDOR_ID, &(pdev->subsystem_vendor));
-    pcie_device_cfg_read_word(bdf, PCI_SUBSYSTEM_ID, &(pdev->subsystem_device));
-    printf("pci dev create %u\n", __LINE__);
-    pcie_device_cfg_read_word(bdf, PCI_CLASS_REVISION, &class_revision);
-    printf("pci dev create %u\n", __LINE__);
+    pcie_device_cfg_read_halfword(bdf, PCI_VENDOR_ID, &(pdev->vendor));
+    pcie_device_cfg_read_halfword(bdf, PCI_DEVICE_ID, &(pdev->device));
+    pcie_device_cfg_read_halfword(bdf, PCI_SUBSYSTEM_VENDOR_ID, &(pdev->subsystem_vendor));
+    pcie_device_cfg_read_halfword(bdf, PCI_SUBSYSTEM_ID, &(pdev->subsystem_device));
+    pcie_device_cfg_read_halfword(bdf, PCI_CLASS_REVISION, &class_revision);
     pdev->class = class_revision & 0xff;
     pdev->revision = class_revision >> 8;
 
@@ -258,34 +273,30 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     pdev->bus_no = PCI_BUS(bdf);
     pdev->devfn = PCI_DEVFN_FROM_BDF(bdf);
 
-    printf("pci dev create %u\n", __LINE__);
     /* 这里需要配置 PCI_COMMAND 关闭 io 和 mem 空间访问，因为需要读写bar */
-    pcie_device_cfg_read_word(bdf, PCI_COMMAND, &orig_cmd);
+    pcie_device_cfg_read_halfword(bdf, PCI_COMMAND, &orig_cmd);
     if (orig_cmd & PCI_COMMAND_DECODE_ENABLE) {
-        pcie_device_cfg_write_word(bdf, PCI_COMMAND,
+        pcie_device_cfg_write_halfword(bdf, PCI_COMMAND,
             orig_cmd & ~PCI_COMMAND_DECODE_ENABLE);
     }
 
-    printf("pci dev create %u\n", __LINE__);
     for (bar = 0; bar < DEVICE_COUNT_RESOURCE; bar++) {
         /* 如果地址为64bit, 会占用2个bar寄存器, 此时返回1, 否则返回0 */
         bar += pci_read_base(pdev, &(pdev->resource[bar]), bar);
     }
 
-    printf("pci dev create %u\n", __LINE__);
     if (orig_cmd & PCI_COMMAND_DECODE_ENABLE)
-        pcie_device_cfg_write_word(bdf, PCI_COMMAND, orig_cmd);
+        pcie_device_cfg_write_halfword(bdf, PCI_COMMAND, orig_cmd);
     else /* 这里强制开启 io & mem */
-        pcie_device_cfg_write_word(bdf, PCI_COMMAND, orig_cmd | PCI_COMMAND_DECODE_ENABLE);
+        pcie_device_cfg_write_halfword(bdf, PCI_COMMAND, orig_cmd | PCI_COMMAND_DECODE_ENABLE);
 
     return pdev;
 }
 
-int pci_dev_add(struct pci_dev *pdev)
+void pci_dev_add(struct pci_dev *pdev)
 {
     list_add_tail(&(pdev->links), &g_pcie_device_list_head);
     if (pdev->pdrv->links.prev == NULL) { /* 避免重复push同一driver */
         list_add_tail(&(pdev->pdrv->links), &g_pcie_driver_list_head);
     }
-    return OS_OK;
 }

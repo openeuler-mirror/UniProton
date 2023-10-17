@@ -1,2 +1,3 @@
-add_subdirectory(local)
-## add_subdirectory(proxy)
+add_library_ex(pcie_config.c)
+add_library_ex(pcie.c)
+add_library_ex(pcie_demo.c)

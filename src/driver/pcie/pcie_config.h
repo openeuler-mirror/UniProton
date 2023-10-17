@@ -1,5 +1,20 @@
-#ifndef _PCIE_H_
-#define _PCIE_H_
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * Create: 2023-10-17
+ * Description: PCIE功能
+ */
+
+#ifndef _PCIE_CONFIG_H_
+#define _PCIE_CONFIG_H_
 
 #include "prt_typedef.h"
 
@@ -115,16 +130,13 @@ void pcie_config_base_addr_register(uintptr_t base_addr);
 #define PCI_CFG_ADDRESS_BY_BDF(bdf, offset) \
   (((offset) & 0xfff) | (((bdf) & 0xffff) << 12) )
 
-int pcie_device_cfg_write(uint32_t bdf, uint32_t offset, uint32_t val);
-int pcie_device_cfg_read(uint32_t bdf, uint32_t offset, uint32_t *val);
+void pcie_device_cfg_write(uint32_t bdf, uint32_t offset, uint32_t val);
+void pcie_device_cfg_read(uint32_t bdf, uint32_t offset, uint32_t *val);
 
-#define pcie_device_cfg_write_dword pcie_device_cfg_write
-#define pcie_device_cfg_read_dword pcie_device_cfg_read
+void pcie_device_cfg_write_byte(uint32_t bdf, uint32_t offset, uint8_t val);
+void pcie_device_cfg_read_byte(uint32_t bdf, uint32_t offset, uint8_t *val);
 
-int pcie_device_cfg_write_byte(uint32_t bdf, uint32_t offset, uint8_t val);
-int pcie_device_cfg_read_byte(uint32_t bdf, uint32_t offset, uint8_t *val);
-
-int pcie_device_cfg_write_word(uint32_t bdf, uint32_t offset, uint16_t val);
-int pcie_device_cfg_read_word(uint32_t bdf, uint32_t offset, uint16_t *val);
+void pcie_device_cfg_write_halfword(uint32_t bdf, uint32_t offset, uint16_t val);
+void pcie_device_cfg_read_halfword(uint32_t bdf, uint32_t offset, uint16_t *val);
 
 #endif /* _PCIE_H_ */
