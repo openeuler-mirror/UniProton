@@ -3,7 +3,7 @@
 #include <regex.h>
 #include "test.h"
 
-int main(void)
+int regexec_nosub(void)
 {
 	regex_t re;
 	int r;

@@ -3,7 +3,7 @@
 #include <regex.h>
 #include "test.h"
 
-int main(void)
+int regex_backref_test(void)
 {
 	char buf[200];
 	char pat[] = "a\\0";

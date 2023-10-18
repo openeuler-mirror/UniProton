@@ -17,7 +17,7 @@
 		t_error("strstr(%s,%s) returned str+%d, wanted str+%d\n", #s, #sub, q-p, n); \
 }
 
-int main(void)
+int string_strstr_test(void)
 {
 	N("", "a")
 	N("a", "aa")
