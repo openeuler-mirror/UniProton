@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM CXX)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/arm-none-eabi-g++)
 set(CMAKE_C_FLAGS "-g -O2 -mthumb -mcpu=cortex-m4 -std=gnu11 -fno-common -fomit-frame-pointer -mthumb -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -Wa,-mimplicit-it=thumb  -fstack-protector-strong  -funsigned-char -fdata-sections -ffunction-sections -fshort-enums")
 set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builtin -DEIGEN_NO_IO=1")
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
+
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_m4/defconfig)
 
 set(CXX_LIB ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crti.o
             ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crtbegin.o
@@ -30,12 +35,14 @@ endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${ldfile}")
 
-set(OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../output)
+set(OUTPUT_PATH ${HOME_PATH}/output)
 include_directories(
                     ${OUTPUT_PATH}/libc/include
                     ${OUTPUT_PATH}/UniProton/include
                     ${OUTPUT_PATH}/libboundscheck/include
-                    ./config ./bsp)
+                    ${CMAKE_CURRENT_SOURCE_DIR}/config
+                    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include)
 if(${APP} STREQUAL "shell")
 include_directories(
                     ${OUTPUT_PATH}/drivers/include/
@@ -43,7 +50,7 @@ include_directories(
                     ${OUTPUT_PATH}/shell/adapter/include
                     )
 endif()
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries("${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib")
 link_libraries(-lm -lc_nano -lnosys -lgcc)
 
