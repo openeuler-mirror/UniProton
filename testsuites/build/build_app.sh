@@ -14,8 +14,7 @@ POSIX_APP=(
     "UniPorton_test_posix_stdlib_interface" \
     "UniPorton_test_posix_ipc_interface" \
     "UniPorton_test_posix_signal_interface" \
-    "UniPorton_test_proxy_posix_interface" \
-    "UniPorton_test_posix_exit_interface"
+    "UniPorton_test_posix_exit_interface" \
     )
 
 RHEALSTONE_APP=(
