@@ -22,15 +22,21 @@ git clone https://gitee.com/openeuler/UniProton.git
 ### 4、运行
 
 [树莓派4B混合部署示例](./doc/demoUsageGuide/raspi4_demo_usage_guide.md)
+
 [x86_64混合部署示例](./doc/demoUsageGuide/x86_64_demo_usage_guide.md)
 
 ### 5、相关文档
 
 [UniProton用户指南](https://docs.openeuler.org/zh/docs/23.09/docs/Embedded/UniProton/UniProton%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-%E6%A6%82%E8%BF%B0.html)
+
 [UniProton接口说明文档](https://docs.openeuler.org/zh/docs/23.09/docs/Embedded/UniProton/UniProton%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E.html)
+
 [yocto构建系统介绍](https://openeuler.gitee.io/yocto-meta-openeuler/master/yocto/index.html)
+
 [oebuild容器指导](https://openeuler.gitee.io/yocto-meta-openeuler/master/oebuild/intro.html)
+
 [混合部署mcs仓库](https://gitee.com/openeuler/mcs)
+
 [git commit提交规范](https://openeuler.gitee.io/yocto-meta-openeuler/master/develop_help/commit.html)
 
 二、功能介绍
