@@ -57,18 +57,14 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
-if (${PLAM_TYPE} STREQUAL "x86_64")
+if (${CPU_TYPE} STREQUAL "m4")
+    list(REMOVE_ITEM LITELIBC_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c
+    )
+endif()
+
+if (${CPU_TYPE} STREQUAL "x86_64")
     list(APPEND  MULS_SOURCE
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memcpy.s
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/x86_64/memmove.s
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/stpcpy.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcpy.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strspn.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcspn.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
@@ -145,7 +141,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/${CMAKE_SYSTEM_PROCESSOR})
         string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}" "" tmp_replace_source ${tmp_one_source})
         string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
         string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
-        list(FIND MUSL_STRING_ARCH_SOURCE ${tmp_replace_source} tmp_find_result)
+        list(FIND MUSL_STRING_SOURCE ${tmp_replace_source} tmp_find_result)
         if(${tmp_find_result} GREATER_EQUAL 0)
             list(REMOVE_ITEM MUSL_STRING_SOURCE ${tmp_replace_source})
         endif()

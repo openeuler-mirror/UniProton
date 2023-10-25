@@ -1,10 +1,20 @@
-export TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64
-
 # Allowed compilation APP:
 # x86_64 UniPorton_test_posix_time_interface UniPorton_test_proxy_posix_interface
 # task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency
 # linuxTest ethercatTest
 export ALL="linuxTest ethercatTest x86_64"
+
+gcc_file=/opt/buildtools/openeuler_gcc_x86_64/bin/x86_64-openeuler-linux-gnu-gcc
+if test -f "$gcc_file"; then
+    export TOOLCHAIN_PATH=/opt/buildtools/openeuler_gcc_x86_64
+else
+    export TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64
+    # oebuild environment
+    cp x86_64-patch-for-oebuild.patch ./../../../
+    pushd ./../../../
+    patch -N -p1 -d . < x86_64-patch-for-oebuild.patch
+    popd
+fi
 
 sh ./build_static.sh x86_64
 sh ./build_openamp.sh $TOOLCHAIN_PATH

@@ -12,15 +12,6 @@ const char *__strftime_fmt_1(char (*a)[100], size_t *b, int c, const struct tm *
     return NULL;
 }
 
-wchar_t *wmemcpy(wchar_t *restrict d, const wchar_t *restrict s, size_t n)
-{
-    wchar_t *a = d;
-    while (n--) {
-        *d++ = *s++;
-    }
-    return a;
-}
-
 char *getenv(const char *name)
 {
     return NULL;
@@ -32,11 +23,6 @@ locale_t __uselocale(locale_t a)
 }
 
 size_t mbsrtowcs(wchar_t *restrict ws, const char **restrict src, size_t wn, mbstate_t *restrict st)
-{
-    return 0;
-}
-
-int wcscmp(const wchar_t *a, const wchar_t *b)
 {
     return 0;
 }
@@ -57,16 +43,6 @@ int iconv_close(iconv_t a)
     return 0;
 }
 
-wchar_t *wmemchr(const wchar_t *s, wchar_t c, size_t n)
-{
-    return NULL;
-}
-
-wchar_t *wmemset(wchar_t *a, wchar_t b, size_t c)
-{
-    return NULL;
-}
-
 float __strtof_l(const char *restrict s, char **restrict p, locale_t l)
 {
     return 0;
@@ -80,11 +56,6 @@ double __strtod_l(const char *restrict s, char **restrict p, locale_t l)
 long double __strtold_l(const char *restrict s, char **restrict p, locale_t l)
 {
     return 0;
-}
-
-wchar_t *wmemmove(wchar_t *d, const wchar_t *s, size_t n)
-{
-    return NULL;
 }
 
 wctype_t __wctype_l(const char *s, locale_t l)
@@ -136,11 +107,6 @@ wint_t btowc(int c)
 long double strtold_l(const char *restrict s, char **restrict p, locale_t l)
 {
     return 0;
-}
-
-char *strdup(const char *s)
-{
-    return NULL;
 }
 
 size_t wcsnrtombs(char *restrict dst, const wchar_t **restrict wcs, size_t wn, size_t n, mbstate_t *restrict st)
