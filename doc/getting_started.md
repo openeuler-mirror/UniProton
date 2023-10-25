@@ -8,16 +8,16 @@
 - 集成开发环境：UniProton-docker
 
 ## 实现过程
-以 helloworld demo 为例：[demo目录结构](../demos/helloworld/readme.txt)
+以 helloworld demo 为例：[demo目录结构](../demos/m4/readme.txt)
 
 1. 进入到用户的工作目录，这里假设为 /workspace/UniProton。
 2. 将 UniProton 的源码放在 /workspace/UniProton 目录下。
 3. 参考[编译指导](./UniProton_build.md) 准备编译环境以及 libboundscheck 库下载。
-4. 编译生成的 libCortexM4.a 文件在 UniProton/output/UniProton/lib/cortex_m4/ 目录下，生成的 libCortexMXsec_c.lib 在 UniProton/output/libboundscheck/lib/cortex_m4/ 目录下。将这两个静态库文件拷贝到 demos/helloworld/libs 目录下。
-5. 将 UniProton/src/include 目录下的头文件拷贝到 demos/helloworld/include 目录下。
-6. 将 UniProton/src/config 目录和 UniProton/build/uniproton_config/config_m4 目录下的文件拷贝到 demos/helloworld/config 目录下，并修改 prt_config.c 以及 prt_config.h 以适配用户功能，prt_config.h 可配置 os 功能开关，按需裁剪。
-7. demos/helloworld/bsp 目录下可以新增板级驱动代码，demos/helloworld/build 目录下配置编译构建相关内容，examples.ld 为链接文件，根据单板内存地址等修改适配。
-8. 代码修改完成后，适配 cmake，最后在 build 目录下运行 `sh build.sh` 即可在同级目录下生成 helloworld 可执行二进制文件。
+4. 编译生成的 libCortexM4.a 文件在 UniProton/output/UniProton/lib/cortex_m4/ 目录下，生成的 libCortexMXsec_c.lib 在 UniProton/output/libboundscheck/lib/cortex_m4/ 目录下。将这两个静态库文件拷贝到 demos/m4/libs 目录下(build_app.sh会自动拷贝)。
+5. 将 UniProton/src/include 目录下的头文件拷贝到 demos/m4/include 目录下(build_app.sh会自动拷贝)。
+6. 将 UniProton/src/config 目录和 UniProton/build/uniproton_config/config_m4 目录下的文件拷贝到 demos/m4/config 目录下(build_app.sh会自动拷贝)，并修改 prt_config.c 以及 prt_config.h 以适配用户功能，prt_config.h 可配置 os 功能开关，按需裁剪。
+7. demos/m4/bsp 目录下可以新增板级驱动代码，demos/m4/build 目录下配置编译构建相关内容，examples.ld 为链接文件，根据单板内存地址等修改适配。build_app.sh用于编译构建demo生成对应二进制镜像文件，build_static.sh用于自动下载、拷贝依赖文件并编译OS内核，build_app.sh会自动调用build_static.sh。
+8. 代码修改完成后，适配 cmake，最后在 build 目录下运行 `sh build_app.sh` 即可在同级目录下生成 helloworld 可执行二进制文件。
 9. 加载到单板上运行可执行文件 helloworld。
 
 ## Hello World 示例程序

@@ -1,4 +1,4 @@
-# Uniproton gdbstub使用指南
+# UniProton gdbstub使用指南
 
 ## 1 编译时使能gdbstub功能：
 * defconfig 设置CONFIG_OS_GDB_STUB=y
