@@ -4,7 +4,7 @@
 #include <regex.h>
 #include "test.h"
 
-int main(void)
+int regex_escaped_high_byte(void)
 {
 	char buf[200];
 	regex_t r;

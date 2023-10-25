@@ -54,7 +54,7 @@ void checkseed(unsigned seed, long *x)
 		t_error("weak seed %d, or pattern: 0x%08x\n", seed, orx);
 }
 
-int main()
+int random_test()
 {
 	long x[100];
 	long y,z;

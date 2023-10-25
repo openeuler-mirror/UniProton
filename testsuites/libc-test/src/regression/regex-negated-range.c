@@ -3,7 +3,7 @@
 #include <regex.h>
 #include "test.h"
 
-int main(void)
+int regex_negated_range(void)
 {
 	char buf[200];
 	regex_t r;

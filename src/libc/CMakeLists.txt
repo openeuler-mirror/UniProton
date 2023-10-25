@@ -137,6 +137,26 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
     list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
 endif()
 
+# 查找regex编译文件
+file(GLOB MUSL_REGEX_SOURCE musl/src/regex/*.c)
+# 查找prng编译文件
+file(GLOB MUSL_PRNG_SOURCE musl/src/prng/*.c)
+# 查找string编译文件
+file(GLOB MUSL_STRING_SOURCE musl/src/string/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/${CMAKE_SYSTEM_PROCESSOR})
+    file(GLOB MUSL_STRING_ARCH_SOURCE musl/src/string/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_STRING_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}" "" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_STRING_ARCH_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_STRING_SOURCE ${tmp_replace_source})
+        endif()
+    endforeach()
+    list(APPEND MUSL_STRING_SOURCE ${MUSL_STRING_ARCH_SOURCE})
+endif()
+
 # 适配stdlib
 file(GLOB MUSL_STDLIB_SOURCE musl/src/stdlib/*.c)
 # stdlib 依赖
@@ -189,6 +209,9 @@ set(MULS_SIGNAL_SOURCE
         ${MUSL_FENV_SOURCE}
         ${MUSL_STDLIB_SOURCE}
         ${MUSL_IPC_SOURCE}
+        ${MUSL_REGEX_SOURCE}
+        ${MUSL_STRING_SOURCE}
+        ${MUSL_PRNG_SOURCE}
     )
 
 if(${CONFIG_OS_OPTION_NUTTX_UART})

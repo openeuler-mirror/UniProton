@@ -40,7 +40,7 @@ static void test_align(int dalign, int salign, int len)
 		}
 }
 
-int main(void)
+int string_memcpy_test(void)
 {
 	int i,j,k;
 
