@@ -45,51 +45,51 @@ void *pthread_cond_timedwait_2_1_t1_func(void *arg)
 	struct timeval  curtime;
 	
 	if (pthread_mutex_lock(&td.mutex) != 0) {
-		fprintf(stderr,"Thread1 failed to acquire the mutex\n");
+		printf("Thread1 failed to acquire the mutex\n");
 		exit(PTS_UNRESOLVED);
 	}
-	fprintf(stderr,"Thread1 started\n");
+	printf("Thread1 started\n");
 	t1_start = 1;	/* let main thread continue */
 	
 	if (gettimeofday(&curtime, NULL) !=0 ) {
-		fprintf(stderr,"Fail to get current time\n");
+		printf("Fail to get current time\n");
 		exit(PTS_UNRESOLVED);
 	}
 	timeout.tv_sec = curtime.tv_sec + TIMEOUT;
 	timeout.tv_nsec = curtime.tv_usec * 1000;
 
-	fprintf(stderr,"Thread1 is waiting for the cond\n");
+	printf("Thread1 is waiting for the cond\n");
 	rc = pthread_cond_timedwait(&td.cond, &td.mutex, &timeout);
 	if(rc != 0) {
 		if (rc == ETIMEDOUT) {
-			fprintf(stderr,"Thread1 stops waiting when time is out\n");
+			printf("Thread1 stops waiting when time is out\n");
 			exit(PTS_UNRESOLVED);
 		}
 		else {
-			fprintf(stderr,"pthread_cond_timedwait return %d\n", rc);
+			printf("pthread_cond_timedwait return %d\n", rc);
                 	exit(PTS_UNRESOLVED);
                 }
 	}
 	
-	fprintf(stderr,"Thread1 wakened\n");
+	printf("Thread1 wakened\n");
 	if(signaled == 0) {
-		fprintf(stderr,"Thread1 did not block on the cond at all\n");
+		printf("Thread1 did not block on the cond at all\n");
                 exit(PTS_UNRESOLVED);
 	}
 	
 	if (pthread_mutex_trylock(&td.mutex) == 0) {
-		fprintf(stderr,"Thread1 should not be able to lock the mutex again\n");
+		printf("Thread1 should not be able to lock the mutex again\n");
                 printf("Test FAILED\n");
 		exit(PTS_FAIL);
 	}
-	fprintf(stderr,"Thread1 failed to trylock the mutex (as expected)\n");
+	printf("Thread1 failed to trylock the mutex (as expected)\n");
 
 	if (pthread_mutex_unlock(&td.mutex) != 0) {
-		fprintf(stderr,"Thread1 failed to release the mutex\n");
+		printf("Thread1 failed to release the mutex\n");
                 printf("Test FAILED\n");
 		exit(PTS_FAIL);
 	}
-	fprintf(stderr,"Thread1 released the mutex\n");
+	printf("Thread1 released the mutex\n");
 	return NULL;
 }
 
@@ -98,16 +98,16 @@ int pthread_cond_timedwait_2_1()
 	pthread_t  thread1;
 
 	if (pthread_mutex_init(&td.mutex, NULL) != 0) {
-		fprintf(stderr,"Fail to initialize mutex\n");
+		printf("Fail to initialize mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_cond_init(&td.cond, NULL) != 0) {
-		fprintf(stderr,"Fail to initialize cond\n");
+		printf("Fail to initialize cond\n");
 		return PTS_UNRESOLVED;
 	}
 
 	if (pthread_create(&thread1, NULL, pthread_cond_timedwait_2_1_t1_func, NULL) != 0) {
-		fprintf(stderr,"Fail to create thread 1\n");
+		printf("Fail to create thread 1\n");
 		return PTS_UNRESOLVED;
 	}
 	while(!t1_start)	/* wait for thread1 started */
@@ -115,19 +115,19 @@ int pthread_cond_timedwait_2_1()
 	
 	/* acquire the mutex released by pthread_cond_wait() within thread 1 */
 	if (pthread_mutex_lock(&td.mutex) != 0) {	
-		fprintf(stderr,"Main failed to acquire mutex\n");
+		printf("Main failed to acquire mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_mutex_unlock(&td.mutex) != 0) {
-		fprintf(stderr,"Main failed to release mutex\n");
+		printf("Main failed to release mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	sleep(INTERVAL);
 	
-	fprintf(stderr,"Time to wake up thread1 by signaling a condition\n");
+	printf("Time to wake up thread1 by signaling a condition\n");
 	signaled = 1;
 	if (pthread_cond_signal(&td.cond) != 0) {
-		fprintf(stderr,"Main failed to signal the condition\n");
+		printf("Main failed to signal the condition\n");
 		return PTS_UNRESOLVED;
 	}
 	

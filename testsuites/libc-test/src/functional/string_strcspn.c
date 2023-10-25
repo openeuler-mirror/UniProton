@@ -10,7 +10,7 @@
 		t_error("strcspn(%s,%s) returned %lu, wanted %lu\n", #s, #c, (unsigned long)r, (unsigned long)(n)); \
 }
 
-int main(void)
+int string_strcspn_test(void)
 {
 	int i;
 	char a[128];

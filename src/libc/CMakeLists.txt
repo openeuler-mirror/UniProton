@@ -14,7 +14,13 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/c_locale.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/__lctrans.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/libc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strlen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctomb.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/rand_r.c
     )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/${CMAKE_SYSTEM_PROCESSOR}/arch.mak)
@@ -61,16 +67,13 @@ if (${PLAM_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcpy.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strspn.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcspn.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdlib/strtol.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
-    )
-else()
-    list(REMOVE_ITEM LITELIBC_SOURCE
-        "${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c"
     )
 endif()
 
@@ -130,12 +133,31 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
     list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
 endif()
 
+# 查找regex编译文件
+file(GLOB MUSL_REGEX_SOURCE musl/src/regex/*.c)
+# 查找prng编译文件
+file(GLOB MUSL_PRNG_SOURCE musl/src/prng/*.c)
+# 查找string编译文件
+file(GLOB MUSL_STRING_SOURCE musl/src/string/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/${CMAKE_SYSTEM_PROCESSOR})
+    file(GLOB MUSL_STRING_ARCH_SOURCE musl/src/string/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_STRING_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}" "" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_STRING_ARCH_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_STRING_SOURCE ${tmp_replace_source})
+        endif()
+    endforeach()
+    list(APPEND MUSL_STRING_SOURCE ${MUSL_STRING_ARCH_SOURCE})
+endif()
+
 # 适配stdlib
 file(GLOB MUSL_STDLIB_SOURCE musl/src/stdlib/*.c)
 # stdlib 依赖
 list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/stdio/sprintf.c
-    musl/src/stdio/vprintf.c
     musl/src/stdio/__uflow.c
     musl/src/stdio/__toread.c
     musl/src/stdio/__stdio_exit.c
@@ -144,6 +166,9 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/internal/shgetc.c
     musl/src/internal/intscan.c
     musl/src/internal/floatscan.c
+    musl/src/ctype/iswspace.c
+    musl/src/string/wcschr.c
+    musl/src/string/wcslen.c
 )
 
 # 需要编译的signal相关.c文件
@@ -154,6 +179,38 @@ set(MULS_SIGNAL_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigdelset.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
     )
+
+# lua依赖的相关.c文件
+if(${CPU_TYPE} STREQUAL "rk3568_jailhouse")
+list(APPEND MULS_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memmove.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memset.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strpbrk.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcpy.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strspn.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strcoll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strstr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isalnum.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/toupper.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isxdigit.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/random.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/tolower.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/ispunct.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/localeconv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/setjmp.s
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/aarch64/longjmp.s
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strncmp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcspn.c
+    )
+endif()
 
     file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
     list(REMOVE_ITEM MUSL_EXIT_SOURCE
@@ -170,7 +227,7 @@ set(MULS_SIGNAL_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
     )
-    
+
     list(APPEND MULS_SOURCE
         ${MUSL_TIME_SOURCE}
         ${MUSL_THREAD_SOURCE}
@@ -180,6 +237,9 @@ set(MULS_SIGNAL_SOURCE
         ${MUSL_FENV_SOURCE}
         ${MUSL_STDLIB_SOURCE}
         ${MUSL_IPC_SOURCE}
+        ${MUSL_REGEX_SOURCE}
+        ${MUSL_STRING_SOURCE}
+        ${MUSL_PRNG_SOURCE}
     )
 
 if(${CONFIG_OS_OPTION_NUTTX_UART})
@@ -192,6 +252,16 @@ list(APPEND MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/termios/cfgetospeed.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/termios/cfsetospeed.c
     )
+endif()
+
+if(${CONFIG_OS_OPTION_PROXY})
+    set(MUSL_FS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/opendir.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/readdir.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/closedir.c
+        )
+    add_compile_options(-DOS_OPTION_PROXY)
+    list(APPEND MULS_SOURCE    ${MUSL_FS_SOURCE})
 endif()
 
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
@@ -210,7 +280,6 @@ target_compile_options(musllibc PUBLIC
 if (${CONFIG_OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)
 endif()
-
 target_include_directories(musllibc PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/internal/include
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/include

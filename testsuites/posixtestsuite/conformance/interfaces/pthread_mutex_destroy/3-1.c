@@ -22,7 +22,7 @@ int pthread_mutex_destroy_3_1()
 
 	/* Initialize a mutex object */
 	if((rc=pthread_mutex_init(&mutex,NULL)) != 0) {
-		fprintf(stderr,"Fail to initialize mutex, rc=%d\n",rc);
+		printf("Fail to initialize mutex, rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	
@@ -33,10 +33,10 @@ int pthread_mutex_destroy_3_1()
 
 	/* The following error codes are possible, but against assertion 5 */
 	else if(rc == EBUSY) {
-		fprintf(stderr,"Detected an attempt to destroy a mutex in use\n");
+		printf("Detected an attempt to destroy a mutex in use\n");
 	}
 	else if(rc == EINVAL) {
-		fprintf(stderr,"The value specified by 'mutex' is invalid\n");
+		printf("The value specified by 'mutex' is invalid\n");
 	}
 
 	/* Any other returned value means the test failed */

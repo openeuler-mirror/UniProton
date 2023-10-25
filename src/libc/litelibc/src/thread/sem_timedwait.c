@@ -24,10 +24,6 @@ int sem_timedwait(sem_t *__restrict sem, const struct timespec *__restrict at)
         errno = EINVAL;
         return PTHREAD_OP_FAIL;
     }
-    if ((at->tv_sec < 0) || (at->tv_nsec < 0) || (at->tv_nsec > OS_SYS_NS_PER_SECOND)) {
-        errno = EINVAL;
-        return PTHREAD_OP_FAIL;
-    }
 
     ret = OsTimeOut2Ticks(at, &ticks);
     if (ret != OS_OK) {

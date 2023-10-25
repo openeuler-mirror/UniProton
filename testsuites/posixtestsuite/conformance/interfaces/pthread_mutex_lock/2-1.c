@@ -22,7 +22,7 @@ int pthread_mutex_lock_2_1()
 
 	/* Initialize a mutex object with the default mutex attributes */
 	if((rc=pthread_mutex_init(&mutex,NULL)) != 0) {
-		fprintf(stderr,"Error at pthread_mutex_init(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_init(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	
@@ -35,15 +35,15 @@ int pthread_mutex_lock_2_1()
 	
 	/* Check if returned values are tolerable */
 	else if(rc == EINVAL) {
-		fprintf(stderr,"Invalid mutex object\n");
+		printf("Invalid mutex object\n");
 		return PTS_UNRESOLVED;
 	}
 	else if(rc == EAGAIN) {
-		fprintf(stderr,"The maximum number of recursive locks has been exceeded\n");
+		printf("The maximum number of recursive locks has been exceeded\n");
 		return PTS_UNRESOLVED;
 	}
 	else if(rc == EDEADLK) {
-		fprintf(stderr,"The current thread already owns the mutex\n");
+		printf("The current thread already owns the mutex\n");
 		return PTS_UNRESOLVED;
 	}
 

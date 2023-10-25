@@ -50,39 +50,39 @@ void *pthread_cond_signal_2_1_thr_func(void *arg)
 	pthread_t self = pthread_self();
 	
 	if (pthread_mutex_lock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] failed to acquire the mutex\n", (void*)self);
+		printf("[Thread 0x%p] failed to acquire the mutex\n", (void*)self);
 		exit(PTS_UNRESOLVED);
 	}
-	fprintf(stderr,"[Thread 0x%p] started and locked the mutex\n", (void*)self);
+	printf("[Thread 0x%p] started and locked the mutex\n", (void*)self);
 	start_num ++;
 	
-	fprintf(stderr,"[Thread 0x%p] is waiting for the cond\n", (void*)self);
+	printf("[Thread 0x%p] is waiting for the cond\n", (void*)self);
 	rc = pthread_cond_wait(&td.cond, &td.mutex);
 	if(rc != 0) {
-		fprintf(stderr,"pthread_cond_wait return %d\n", rc);
+		printf("pthread_cond_wait return %d\n", rc);
                 exit(PTS_UNRESOLVED);
 	}
 	
 	if (pthread_mutex_trylock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] should be able to lock the recursive mutex again\n",
+		printf("[Thread 0x%p] should be able to lock the recursive mutex again\n",
 				(void*)self);
                 printf("Test FAILED\n");
 		exit(PTS_FAIL);
 	}
-	fprintf(stderr,"[Thread 0x%p] was wakened and acquired the mutex again\n", (void*)self);
+	printf("[Thread 0x%p] was wakened and acquired the mutex again\n", (void*)self);
 	waken_num ++;
 
 	if (pthread_mutex_unlock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] failed to release the mutex\n", (void*)self);
+		printf("[Thread 0x%p] failed to release the mutex\n", (void*)self);
                 printf("Test FAILED\n");
 		exit(PTS_FAIL);
 	}
 	if (pthread_mutex_unlock(&td.mutex) != 0) {
-		fprintf(stderr,"[Thread 0x%p] did not owned the mutex after the cond wait\n", (void*)self);
+		printf("[Thread 0x%p] did not owned the mutex after the cond wait\n", (void*)self);
                 printf("Test FAILED\n");
 		exit(PTS_FAIL);
 	}
-	fprintf(stderr,"[Thread 0x%p] released the mutex\n", (void*)self);
+	printf("[Thread 0x%p] released the mutex\n", (void*)self);
 	return NULL;
 }
 
@@ -93,26 +93,26 @@ int pthread_cond_signal_2_1()
 	pthread_mutexattr_t ma;
 	
 	if (pthread_mutexattr_init(&ma) != 0) {
-		fprintf(stderr,"Fail to initialize mutex attribute\n");
+		printf("Fail to initialize mutex attribute\n");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_mutexattr_settype(&ma, PTHREAD_MUTEX_RECURSIVE) != 0) {
-		fprintf(stderr,"Fail to set the mutex attribute\n");
+		printf("Fail to set the mutex attribute\n");
 		return PTS_UNRESOLVED;
 	}
 
 	if (pthread_mutex_init(&td.mutex, &ma) != 0) {
-		fprintf(stderr,"Fail to initialize mutex\n");
+		printf("Fail to initialize mutex\n");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_cond_init(&td.cond, NULL) != 0) {
-		fprintf(stderr,"Fail to initialize cond\n");
+		printf("Fail to initialize cond\n");
 		return PTS_UNRESOLVED;
 	}
 
 	for (i=0; i<THREAD_NUM; i++) {
 	    	if (pthread_create(&thread[i], NULL, pthread_cond_signal_2_1_thr_func, NULL) != 0) {
-			fprintf(stderr,"Fail to create thread[%d]\n", i);
+			printf("Fail to create thread[%d]\n", i);
 			return PTS_UNRESOLVED;
 		}
 	}
@@ -129,9 +129,9 @@ int pthread_cond_signal_2_1()
 	// alarm(5);
 
 	while (waken_num < THREAD_NUM) { /* waiting for all threads wakened */
-		fprintf(stderr,"[Main thread] signals a condition\n");
+		printf("[Main thread] signals a condition\n");
 		if (pthread_cond_signal(&td.cond) != 0) {
-			fprintf(stderr,"Main failed to signal the condition\n");
+			printf("Main failed to signal the condition\n");
 			return PTS_UNRESOLVED;
 		}
 		sleep(1);
@@ -139,7 +139,7 @@ int pthread_cond_signal_2_1()
 	
 	for (i=0; i<THREAD_NUM; i++) {
 	    	if (pthread_join(thread[i], NULL) != 0) {
-			fprintf(stderr,"Fail to join thread[%d]\n", i);
+			printf("Fail to join thread[%d]\n", i);
 			return PTS_UNRESOLVED;
 		}
 	}

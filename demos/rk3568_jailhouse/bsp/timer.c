@@ -20,13 +20,6 @@ U64 GetGenericTimerFreq(void)
 
 void TimerIsr(uintptr_t para)
 {
-    static timerCnt = 0;
-    timerCnt++;
-    if (timerCnt > 1000) {
-        timerCnt = 0;
-        PRT_Printf("TimerIsr enter! \n");
-    }
-
     (void)para;
     U32 cfgMask = 0x0;
     U64 cycle = PMU_TIMER_FREQUENCY / OS_TICK_PER_SECOND;

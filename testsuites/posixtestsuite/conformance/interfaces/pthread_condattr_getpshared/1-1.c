@@ -29,7 +29,7 @@ int pthread_condattr_getpshared_1_1()
 	
 	/* Make sure there is process-shared capability. */ 
 	#ifndef PTHREAD_PROCESS_SHARED
-	  fprintf(stderr,"process-shared attribute is not available for testing\n");
+	  printf("process-shared attribute is not available for testing\n");
 	  return PTS_UNRESOLVED;	
 	#endif
 
@@ -56,7 +56,7 @@ int pthread_condattr_getpshared_1_1()
 		/* Get 'pshared'.  It should be PTHREAD_PROCESS_PRIVATE. */
 		if(pthread_condattr_getpshared(&attr[i], &pshared) != 0)
 		{
-			fprintf(stderr,"Error obtaining the attribute process-shared\n");
+			printf("Error obtaining the attribute process-shared\n");
 			return PTS_UNRESOLVED;
 		}
 	

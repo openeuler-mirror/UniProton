@@ -188,7 +188,7 @@ int pthread_setschedparam_4_1( int argc, char *argv[] )
 		UNRESOLVED( ret, "Failed to join the thread" );
 	}
 
-	output( "Test PASSED.\n" );
+	printf( "Test PASSED.\n" );
 
 	PASSED;
 }

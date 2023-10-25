@@ -63,9 +63,9 @@
   * 
   * The other file defines the functions
   * void pthread_mutex_init_output_init()
-  * void pthread_mutex_init_output(char * string, ...)
+  * void printf(char * string, ...)
   * 
-  * Those may be used to pthread_mutex_init_output information.
+  * Those may be used to printf information.
   */
 
 /********************************************************************************************/
@@ -97,7 +97,7 @@ int pthread_mutex_init_5_2(int argc, char * argv[])
 	{  UNRESOLVED(errno, "Unable to get Implementation name");  }
 	
 	#if VERBOSE > 0
-	pthread_mutex_init_output("Implementation is: \n\t%s\n\t%s\n\t%s\n", un.sysname, un.release, un.version);
+	printf("Implementation is: \n\t%s\n\t%s\n\t%s\n", un.sysname, un.release, un.version);
 	#endif
 	
 	/* If we are running Linux */
@@ -105,7 +105,7 @@ int pthread_mutex_init_5_2(int argc, char * argv[])
 	{
 		/* Linux does not provide privilege access to pthread_mutex_init function */
 		ret = PTS_UNSUPPORTED;
-		pthread_mutex_init_output("Linux does not provide this feature\n");
+		printf("Linux does not provide this feature\n");
 		pthread_mutex_init_output_fini();
 		return ret;
 	}
@@ -121,7 +121,7 @@ int pthread_mutex_init_5_2(int argc, char * argv[])
 		;
 	}
 	
-	pthread_mutex_init_output("This implementation is not tested yet\n");
+	printf("This implementation is not tested yet\n");
 	pthread_mutex_init_output_fini();
 	return PTS_UNTESTED;
 }

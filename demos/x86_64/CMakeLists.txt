@@ -64,10 +64,21 @@ add_subdirectory(cplusplus)
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
-    ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
+    ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_signal_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_exit_interface")
         add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
         target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+        add_executable(${APP} ${OBJS})
+endif()
+
+if (${APP} STREQUAL "UniPorton_test_posix_math_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_stdlib_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_ipc_interface")
+        add_subdirectory(../../testsuites/libc-test tmp)
+        target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest> $<TARGET_OBJECTS:common_mtest>)
         add_executable(${APP} ${OBJS})
 endif()
 
@@ -95,6 +106,14 @@ endif()
 if (${APP} MATCHES "x86_64")
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
     add_executable(${APP} ${OBJS})
-else()
-    add_subdirectory(testsuites)
+elseif(${APP} STREQUAL "task-switch" OR
+        ${APP} STREQUAL "task-preempt" OR
+        ${APP} STREQUAL "semaphore-shuffle" OR
+        ${APP} STREQUAL "interrupt-latency" OR
+        ${APP} STREQUAL "deadlock-break" OR
+        ${APP} STREQUAL "message-latency")
+    add_subdirectory(../../testsuites/rhealstone tmp)
+    target_compile_options(ethercat PUBLIC -DRHEALSTONE_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
+    add_executable(${APP} ${OBJS})
 endif()

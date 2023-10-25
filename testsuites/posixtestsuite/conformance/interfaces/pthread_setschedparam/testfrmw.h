@@ -40,12 +40,12 @@
 #ifdef __GNUC__ /* We are using GCC */
 
   #define UNRESOLVED(x, s) \
- { output("Test %s unresolved: got %i (%s) on line %i (%s)\n", __FILE__, x, strerror(x), __LINE__, s); \
+ { printf("Test %s unresolved: got %i (%s) on line %i (%s)\n", __FILE__, x, strerror(x), __LINE__, s); \
  	output_fini(); \
  	return (PTS_UNRESOLVED); }
  	
  #define FAILED(s) \
- { output("Test %s FAILED: %s\n", __FILE__, s); \
+ { printf("Test %s FAILED: %s\n", __FILE__, s); \
  	output_fini(); \
  	return (PTS_FAIL); }
  	
@@ -54,7 +54,7 @@
   return (PTS_PASS);
   
  #define UNTESTED(s) \
-{	output("File %s cannot test: %s\n", __FILE__, s); \
+{	printf("File %s cannot test: %s\n", __FILE__, s); \
 	  output_fini(); \
   return (PTS_UNTESTED); \
 }

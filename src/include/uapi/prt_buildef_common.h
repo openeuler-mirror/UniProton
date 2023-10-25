@@ -32,7 +32,9 @@
 #define OS_RASPI4           0x02
 #define OS_HI3093           0x03
 #define OS_RK3568_JAILHOUSE 0x04
-#define OS_CPU_TYPE_INVALID 0x05
+#define OS_KP920            0x05
+#define OS_ASCEND310B       0x06
+#define OS_CPU_TYPE_INVALID 0x07
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 

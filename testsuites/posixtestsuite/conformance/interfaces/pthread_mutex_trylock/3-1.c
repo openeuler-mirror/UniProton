@@ -22,7 +22,7 @@ int pthread_mutex_trylock_3_1()
 
 	/* Initialize a mutex object with the default mutex attributes */
 	if((rc=pthread_mutex_init(&mutex,NULL)) != 0) {
-		fprintf(stderr,"Error at pthread_mutex_init(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_init(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	
@@ -37,13 +37,13 @@ int pthread_mutex_trylock_3_1()
 	/* PATCH: since we are using the mutex properly,*/
 	/*  errors are NOT tolerable here */ 
 	else if(rc == EBUSY) {
-		fprintf(stderr,"The mutex was already locked\n");
+		printf("The mutex was already locked\n");
 	}
 	else if(rc == EINVAL) {
-		fprintf(stderr,"Invalid mutex object\n");
+		printf("Invalid mutex object\n");
 	}
 	else if(rc == EAGAIN) {
-		fprintf(stderr,"The maximum number of recursive locks has been exceeded\n");
+		printf("The maximum number of recursive locks has been exceeded\n");
 	}
 
 	/* Any other returned value means the test failed */

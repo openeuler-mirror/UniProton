@@ -19,6 +19,26 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 [编译步骤](./doc/UniProton_build.md)
 
+### 4、运行
+
+[树莓派4B混合部署示例](./doc/demoUsageGuide/raspi4_demo_usage_guide.md)
+
+[x86_64混合部署示例](./doc/demoUsageGuide/x86_64_demo_usage_guide.md)
+
+### 5、相关文档
+
+[UniProton用户指南](https://docs.openeuler.org/zh/docs/23.09/docs/Embedded/UniProton/UniProton%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-%E6%A6%82%E8%BF%B0.html)
+
+[UniProton接口说明文档](https://docs.openeuler.org/zh/docs/23.09/docs/Embedded/UniProton/UniProton%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E.html)
+
+[yocto构建系统介绍](https://openeuler.gitee.io/yocto-meta-openeuler/master/yocto/index.html)
+
+[oebuild容器指导](https://openeuler.gitee.io/yocto-meta-openeuler/master/oebuild/intro.html)
+
+[混合部署mcs仓库](https://gitee.com/openeuler/mcs)
+
+[git commit提交规范](https://openeuler.gitee.io/yocto-meta-openeuler/master/develop_help/commit.html)
+
 二、功能介绍
 ----------
 
@@ -35,7 +55,7 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 三、免责声明
 ----------
-1. 当前开源版本支持 cortex_m4 和 armv8 芯片，默认编译脚本的安全编译选项仅支持栈保护，其他选项由用户根据需要自行添加。
+1. 当前开源版本支持 cortex_m4、armv8、x86_64 芯片，默认编译脚本的安全编译选项仅支持栈保护，其他选项由用户根据需要自行添加。
 2. 遵循 MulanPSL2 开源许可协议
 
 四、如何贡献

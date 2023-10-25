@@ -18,8 +18,10 @@
 #include <errno.h>
 #include <sys/msg.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
 #include <time.h>
 #include "prt_typedef.h"
+#include "prt_buildef.h"
 #include "prt_sem_external.h"
 
 /**
@@ -60,8 +62,21 @@
  */
 #define SEMSET_MAX_SEM_NUM 8
 
+/**
+ * @ingroup shm segment
+ * Maximum number of shared memory segment 
+ */
+#define SHMSEG_MAX_SHM_LIMIT    128
+
+/**
+ * @ingroup shm segment
+ * Maximum total size of all shared memory segment 
+ */
+#define SHMSEG_MAX_SHM_TOTAL_SIZE   0x5000
+
 #define OS_IPC_INNER_ID(id)  ((id) - 1)
 #define OS_IPC_ID(innerId)  ((innerId) + 1)
+#define OS_INNER_ID(ipcId)  ((ipcId) - 1)
 
 struct MsgQueCb {
     key_t key;
@@ -73,6 +88,13 @@ struct SemSetCb {
     int semid;
     SemHandle handle[SEMSET_MAX_SEM_NUM];
     U32 num;
+};
+
+struct ShmSegCb {
+    key_t key;
+    int shmid;
+    void *addr;
+    struct shmid_ds *shminfo;
 };
 
 union semun {
@@ -92,6 +114,14 @@ int OsSemSetGetVal(int semid, int nth, int *value);
 int OsSemSetDelete(int semid);
 int OsSemSetGetAll(int semid, unsigned short *array);
 int OsSemSetTimeOp(int semid, struct sembuf *sops, size_t nops, const struct timespec *timeout);
+
+int OsShmGet(key_t key, int flag, size_t size, int *shmid);
+int OsShmAt(int shmid, const void *shmaddr, int shmflg, void **addr);
+int OsShmDt(const void *shmaddr);
+int OsShmDelete(int shmid);
+int OsShmGetStat(int shmid, struct shmid_ds *buf);
+int OsShmGetIpcInfo(struct shminfo *buf);
+int OsShmGetShmInfo(struct shm_info *buf);
 
 #endif
 

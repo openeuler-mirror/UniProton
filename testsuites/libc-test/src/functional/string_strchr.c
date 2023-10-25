@@ -35,7 +35,7 @@ static void *aligncpy(void *p, size_t len, size_t a)
 	} \
 }
 
-int main(void)
+int string_strchr_test(void)
 {
 	int i;
 	char a[128];

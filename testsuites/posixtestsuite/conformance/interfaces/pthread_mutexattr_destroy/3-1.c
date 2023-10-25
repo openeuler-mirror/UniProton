@@ -29,7 +29,7 @@ int pthread_mutexattr_destroy_3_1()
 	/* Initialize a mutex attributes object */
 	if(pthread_mutexattr_init(&mta) != 0)
 	{
-		fprintf(stderr,"Cannot initialize mutex attributes object\n");
+		printf("Cannot initialize mutex attributes object\n");
 		return PTS_UNRESOLVED;
 	}
 

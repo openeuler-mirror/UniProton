@@ -15,6 +15,7 @@
 #ifndef OS_CPU_ARMV8_H
 #define OS_CPU_ARMV8_H
 
+#include "prt_buildef.h"
 #include "prt_typedef.h"
 
 #ifdef __cplusplus
@@ -34,8 +35,13 @@ extern "C" {
 #define DAIF_FIQ_BIT      (1U << 0)
 
 #define INT_MASK          (1U << 7)
+#if (OS_MAX_CORE_NUM <= 4)
 #define OS_CORE_ID_MASK          0xFFU
 #define OS_CORE_MPID_CPUID(mpid) (((mpid) | ((mpid) >> 8)) & OS_CORE_ID_MASK)
+#else
+/* 22:21 2bit socket(32core/socket) ||  18:16 3bit clusterid (4core/cluster) || 9:8 2bit coreid */
+#define OS_CORE_MPID_CPUID(mpid) ((((mpid) >> 21) & 0x3) << 5) + ((((mpid) >> 16) & 0x7) << 2) + (((mpid) >> 8) & 0x3)
+#endif
 
 /*
  * 任务上下文的结构体定义。

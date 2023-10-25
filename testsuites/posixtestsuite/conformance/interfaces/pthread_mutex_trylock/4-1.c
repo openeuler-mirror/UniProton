@@ -28,13 +28,13 @@ int pthread_mutex_trylock_4_1()
   	int           	rc;
 
 	if((rc=pthread_mutex_lock(&pthread_mutex_trylock_4_1_mutex))!=0) {
-		fprintf(stderr,"Error at pthread_mutex_lock(), rc=%d\n",rc);
+		printf("Error at pthread_mutex_lock(), rc=%d\n",rc);
 		return PTS_UNRESOLVED;
 	}
 	    		
    	rc = pthread_mutex_trylock(&pthread_mutex_trylock_4_1_mutex);
       	if(rc!=EBUSY) {
-        	fprintf(stderr,"Expected %d(EBUSY), got %d\n",EBUSY,rc);
+        	printf("Expected %d(EBUSY), got %d\n",EBUSY,rc);
         	printf("Test FAILED\n");
 		return PTS_FAIL;
       	}

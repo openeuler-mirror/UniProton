@@ -16,7 +16,7 @@
 #include "prt_fscmem_internal.h"
 
 /* 判断初始化内存地址和大小是否为4字节对齐 */
-#define OS_MEM_GETBIT(addr) (addr & (U32)(sizeof(U32) - 1))
+#define OS_MEM_GETBIT(addr) (addr & (uintptr_t)(sizeof(uintptr_t) - 1))
 
 OS_SEC_BSS struct TagMemFuncLib g_memArithAPI; /* 算法对应API */
 OS_SEC_BSS struct TagFscMemCtrl g_fscMemNodeList[OS_FSC_MEM_LAST_IDX];

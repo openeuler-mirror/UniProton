@@ -163,7 +163,7 @@ int sem_open_15_1( int argc, char * argv[] )
 	/* Test passed */
 #if VERBOSE > 0
 
-	sem_open_output( "Test passed\n" );
+	printf( "Test passed\n" );
 
 #endif
 

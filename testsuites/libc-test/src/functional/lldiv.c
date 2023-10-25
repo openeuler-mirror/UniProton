@@ -99,13 +99,11 @@ int lldiv_test(void)
 
         if (resultValue.quot != t[i].div)
         {
-            printf("udiv %lld/%lld want %lld got %lld\n", x, y, t[i].div, resultValue.quot);
-            t_status = 1;
+            t_printf("udiv %lld/%lld want %lld got %lld\n", x, y, t[i].div, resultValue.quot);
         }
         if (resultValue.rem != t[i].mod)
         {
             t_printf("umod %lld%%%lld want %lld got %lld\n", x, y, t[i].mod, resultValue.rem);
-            t_status = 1;
         }
     }
     return t_status;

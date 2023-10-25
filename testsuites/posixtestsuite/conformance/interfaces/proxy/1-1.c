@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/un.h>
-
+#include <dirent.h>
 #include "prt_proxy_ext.h"
 
 #define FD_SETSIZE 1024
@@ -862,6 +862,26 @@ static int test_gethostbyaddr_arg()
     return 0;
 }
 
+static int test_dirent()
+{
+    int cnt = 0;
+    DIR *dir = opendir("/");
+    if (dir == NULL) {
+        return 0;
+    }
+    while (1) {
+        struct dirent *ent = readdir(dir);
+        if (!ent) {
+            break;
+        }
+        cnt++;
+        dprintf("name:%s\n",ent->d_name);
+    }
+    closedir(dir);
+    dprintf("total: %d\n", cnt);
+    return 0;
+
+}
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -900,6 +920,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_write_arg),
     TEST_CASE_Y(test_close_arg),
     TEST_CASE_Y(test_gethostbyaddr_arg),
+    TEST_CASE_Y(test_dirent),
 };
 
 int rpc_test_entry()

@@ -32,7 +32,7 @@ CONFIG_OS_OPTION_CPU64=y
 #
 # Event feature configuration
 #
-# CONFIG_OS_OPTION_EVENT is not set
+CONFIG_OS_OPTION_EVENT=y
 
 #
 # Queue feature configuration
@@ -118,6 +118,7 @@ CONFIG_OS_POSIX_TYPE_NEWLIB=y
 CONFIG_OS_POSIX_SET_TZDST=y
 CONFIG_OS_OPTION_OPENAMP=y
 CONFIG_OS_OPTION_LINUX=y
+CONFIG_OS_OPTION_PROXY=y
 #
 # Filesystem Modules Configuration
 #

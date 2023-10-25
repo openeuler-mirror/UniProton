@@ -15,7 +15,14 @@ POSIX_APP=(
     "UniPorton_test_posix_ipc_interface" \
     "UniPorton_test_posix_signal_interface" \
     "UniPorton_test_posix_exit_interface" \
+    "UniPorton_test_posix_string_interface" \
+    "UniPorton_test_posix_regex_interface" \
+    "UniPorton_test_posix_prng_interface" \
     )
+
+PROXY_APP=(
+    "UniPorton_test_proxy_posix_interface"
+)
 
 RHEALSTONE_APP=(
     "deadlock-break" \
@@ -34,7 +41,7 @@ UART_APP=(
 
 MATH_APP=("UniPorton_test_posix_math_interface")
 
-ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]} ${MATH_APP[*]} ${UART_APP[*]}"
+ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]} ${MATH_APP[*]} ${UART_APP[*]} ${PROXY_APP[*]}"
 
 for one_arg in $*; do
     if [[ $one_arg == "sim" || $one_arg == "SIM" ]]; then

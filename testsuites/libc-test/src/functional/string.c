@@ -18,7 +18,7 @@
 	!strcmp((s),(x)) || \
 	(t_error("[%s] != [%s] (%s)\n", s, x, m), 0) )
 
-int main(void)
+int string_test(void)
 {
 	char b[32];
 	char *s;

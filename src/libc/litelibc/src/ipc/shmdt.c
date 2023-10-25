@@ -18,6 +18,7 @@
 
 int shmdt(const void *shmaddr)
 {
-    errno = ENOTSUP;
-    return -1;
+    int ret = OsShmDt(shmaddr);
+    errno = ret;
+    return (ret == 0) ? 0 : (-1);
 }

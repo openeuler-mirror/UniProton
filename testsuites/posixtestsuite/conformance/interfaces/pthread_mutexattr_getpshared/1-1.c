@@ -25,7 +25,7 @@ int pthread_mutexattr_getpshared_1_1()
 	
 	/* Make sure there is process-shared capability. */ 
 	#ifndef PTHREAD_PROCESS_SHARED
-	  fprintf(stderr,"process-shared attribute is not available for testing\n");
+	  printf("process-shared attribute is not available for testing\n");
 	  return PTS_UNRESOLVED;	
 	#endif
 
@@ -42,7 +42,7 @@ int pthread_mutexattr_getpshared_1_1()
 	 /* The default 'pshared' attribute should be PTHREAD_PROCESS_PRIVATE  */
 	if(pthread_mutexattr_getpshared(&mta, &pshared) != 0)
 	{
-		fprintf(stderr,"Error obtaining the attribute process-shared\n");
+		printf("Error obtaining the attribute process-shared\n");
 		return PTS_UNRESOLVED;
 	}
 	

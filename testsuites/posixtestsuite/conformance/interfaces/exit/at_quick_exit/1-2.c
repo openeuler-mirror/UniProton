@@ -50,6 +50,5 @@ int at_quick_exit_1_2()
 
     printf("at_quick_exit_1_2 sleep 2s\n");
     sleep(2);
-    printf("at_quick_exit_1_2 can't run here\n");
     return 0;
 }
