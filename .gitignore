@@ -1,0 +1,12 @@
+/platform/libboundscheck/src
+/demos/*/include
+/demos/*/build/*.bin
+/demos/*/build/*.elf
+/demos/*/libs/*.a
+/demos/*/libs/*.lib
+/build/logs/
+/build/output/
+/build/*/__pycache__/
+/build/uniproton_config/*/prt_buildef.h
+/cmake/**/__pycache__/
+/output

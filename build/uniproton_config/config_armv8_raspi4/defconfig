@@ -135,4 +135,4 @@ CONFIG_OS_OPTION_OPENAMP=y
 #
 # Debug Modules Configuration
 #
-#CONFIG_OS_GDB_STUB=y
+# CONFIG_OS_GDB_STUB  is not set

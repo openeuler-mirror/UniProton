@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
@@ -11,28 +13,24 @@ set(AS_OPTION "-g -march=armv8.2-a+nofp+nosimd -Wl,--build-id=none -fno-builtin 
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ../raspi4.ld")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ../raspi4.ld")
+set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/raspi4.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/raspi4.ld")
 
-#set(CONFIG_OS_GDB_STUB y)
-
-if (${CONFIG_OS_GDB_STUB})
-add_compile_options(-DOS_GDB_STUB)
-endif()
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_raspi4/defconfig)
 
 include_directories(
-    ./include
-    ./include/libc/include
-    ./config
-    ./bsp
-    ./bsp/raspi4
-    ./apps/openamp
-    ./build/open-amp/output/usr/local/include
-    ./build/libmetal/output/usr/local/include
-    ../../output/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/raspi4
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${HOME_PATH}/output/libc/include
 )
 
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
@@ -47,7 +45,7 @@ add_subdirectory(config)
 add_subdirectory(apps)
 
 if (${RPC_DEMO_SWITCH})
-add_subdirectory(../../src/component/proxy proxy)
+add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
 else()
 list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
