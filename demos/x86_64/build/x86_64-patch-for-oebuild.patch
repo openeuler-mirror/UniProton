@@ -1,0 +1,22 @@
+diff --git a/config.xml b/config.xml
+index 39d4365..b6dda63 100644
+--- a/config.xml
++++ b/config.xml
+@@ -4,7 +4,7 @@
+     <UniProton_compile_mode>release</UniProton_compile_mode>
+     <tools>
+         <tool tool_name="cmake">
+-            <tool_path>/opt/buildtools/cmake-3.20.5/bin</tool_path>
++            <tool_path>/opt/buildtools/nativesdk/sysroots/x86_64-pokysdk-linux/usr/bin</tool_path>
+         </tool>
+     </tools>
+     <projects>
+@@ -56,7 +56,7 @@
+             <lib_type>SRE</lib_type>
+             <platform plat_name="x86_64">
+                 <name>x86_64</name>
+-                <compile_path_x86>/opt/buildtools/openeuler_gcc_x86_64/bin</compile_path_x86>
++                <compile_path_x86>/usr1/openeuler/gcc/openeuler_gcc_x86_64/bin</compile_path_x86>
+                 <compile_path_arm64>None</compile_path_arm64>
+                 <kconf_dir>x86_64</kconf_dir>
+             </platform>

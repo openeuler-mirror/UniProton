@@ -29,8 +29,8 @@ include_directories(
     ../../src/arch/cpu/x86_64/common
     ../../src/arch/cpu/x86_64/common/hwi
     ../../platform/libboundscheck/include
-    /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
-    /usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
+    ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
+    ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
     ../../output/libc/include
     ./cplusplus/boost_1_54_0
 )
@@ -46,9 +46,9 @@ link_libraries(
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblinuxlib.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libethercat_src.a"
-    "/usr1/openeuler/gcc/openeuler_gcc_x86_64/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
-    "/usr1/openeuler/gcc/openeuler_gcc_x86_64/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
-    "/usr1/openeuler/gcc/openeuler_gcc_x86_64/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
+    "${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
+    "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
+    "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
     -Wl,--end-group
 )
 
