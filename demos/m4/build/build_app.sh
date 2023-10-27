@@ -9,7 +9,7 @@ for one_arg in $*; do
         echo "[Info] shell not support qemu"
         export APP=shell
         SIM=""
-    elif [[ $one_arg == "helloword" || $one_arg == "HELLOWORD" ]]; then
+    elif [[ $one_arg == "helloworld" || $one_arg == "HELLOWORLD" ]]; then
         export APP=helloworld
     else
         echo "[Error] Not support args - $one_arg"
