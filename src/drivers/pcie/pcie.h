@@ -120,6 +120,11 @@ struct resource {
     uint32_t flags;
 };
 
+#define PCI_IRQ_LEGACY  (1 << 0) /* Allow legacy interrupts */
+#define PCI_IRQ_MSI     (1 << 1) /* Allow MSI interrupts */
+#define PCI_IRQ_MSIX    (1 << 2) /* Allow MSI-X interrupts */
+#define PCI_IRQ_MAX_NUM 8
+
 /* pci设备结构体 */
 struct pci_dev {
     struct list_head links;
@@ -128,7 +133,7 @@ struct pci_dev {
     uint16_t vendor;
     uint16_t subsystem_vendor;
     uint16_t subsystem_device;
-    unsigned int irq;
+    unsigned int irq[PCI_IRQ_MAX_NUM];
     unsigned int bdf;
     unsigned int bus_no;
     unsigned int devfn;
@@ -158,6 +163,22 @@ struct pci_driver {
 };
 
 int pci_frame_init(uint64_t pci_cfg_base);
-int pci_driver_register(struct pci_driver *pci_drv);
+int pci_register_driver(struct pci_driver *pci_drv);
+
+int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
+    unsigned int max_vecs, unsigned int flags);
+int pci_irq_vector(struct pci_dev *dev, int i);
+
+int pci_enable_device(struct pci_dev *dev);
+int pci_disable_device(struct pci_dev *dev);
+void pci_set_master(struct pci_dev *dev);
+int pci_request_regions(struct pci_dev *pdev, const char *res_name);
+void pci_release_regions(struct pci_dev *pdev);
+
+#define pci_resource_start(dev, bar)    ((dev)->resource[(bar)].start)
+#define pci_resource_end(dev, bar)      ((dev)->resource[(bar)].end)
+#define pci_resource_flags(dev, bar)    ((dev)->resource[(bar)].flags)
+#define pci_resource_len(dev, bar) ((pci_resource_end((dev), (bar)) == 0) ? \
+    0 : (pci_resource_end((dev), (bar)) - pci_resource_start((dev), (bar)) + 1))
 
 #endif

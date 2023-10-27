@@ -8,9 +8,14 @@
 #define MMU_UART_ADDR              0x08743000ULL /* todo */
 #define MMU_OPENAMP_ADDR           0x202780000000ULL
 #define MMU_DMA_ADDR               0x202780100000ULL
+#define MMU_LPI_PEND_ADDR          0x202780400000ULL
 
 #define MMU_ECAM_ADDR               0xd0000000ULL
 #define MMU_ECAM_ADDR_LEN           0x10000000ULL /* MMU_ECAM_ADDR_LEN 256Bus * 32Device * 8Fuc * 4KB */
+
+#define MMU_ITS_ADDR                0xA8100000ULL
+#define MMU_ITS1_ADDR               0x2000A8100000ULL
+#define MMU_ITS_ADDR_LEN            0x100000ULL /* 1MB */
 
 #define MMU_INVALID_ADDR            0x0ULL
 
@@ -20,7 +25,7 @@
 
 #define OS_GIC_VER                 3
 #define SICR_ADDR_OFFSET_PER_CORE  0x40000U
-#define GIC_REG_BASE_ADDR          0xAA000000ULL
+#define GIC_REG_BASE_ADDR          0xAA000000ULL // MMU_GIC_ADDR
 
 #define GICD_CTLR_S_ADDR           (GIC_REG_BASE_ADDR + 0x0000U)
 #define GICD_IGROUPN_ADDR          (GIC_REG_BASE_ADDR + 0x0080U)
@@ -32,14 +37,28 @@
 #define GICR_BASE0                 (GIC_REG_BASE_ADDR + 0x100000U)
 #define GICR_BASE1                 (GIC_REG_BASE_ADDR + 0x110000U)
 
-#define GICR_CTRL_ADDR             (GICR_BASE0 + 0x0000U)
+#define GICR_CTRL_ADDR             (GICR_BASE0 + 0x0000U)  /* GICR_CTLR_ADDR */
+#define GICR_IIDR_ADDR             (GICR_BASE0 + 0x0004U)
+#define GICR_TYPER_ADDR            (GICR_BASE0 + 0x0008U)  /* 64bit */
+#define GICR_STATUSR_ADDR          (GICR_BASE0 + 0x0010U)
 #define GICR_WAKER_ADDR            (GICR_BASE0 + 0x0014U)
+#define GICR_PROPBASER_ADDR        (GICR_BASE0 + 0x0070U) /* 64bit */
+#define GICR_PENDBASER_ADDR        (GICR_BASE0 + 0x0078U) /* 64bit */
 
 #define GICR_IGROUPR0_ADDR         (GICR_BASE1 + 0x0080U)
 #define GICR_ISENABLER0_ADDR       (GICR_BASE1 + 0x0100U)
 #define GICR_ICENABLER0_ADDR       (GICR_BASE1 + 0x0180U)
 #define GICR_IGRPMODR0_ADDR        (GICR_BASE1 + 0x0D00U)
 
+#define GITS_BASE                  MMU_ITS_ADDR // 0xA8100000ULL
+#define GITS_IIDR                  (GITS_BASE + 0x0004U)
+#define GITS_TYPER                 (GITS_BASE + 0x0008U)
+#define GITS_PIDR(n)               (GITS_BASE + (((n) > 3) ? 0xffc0U : 0xffe0U) + (4 * (n)))
+
+#define GITS1_BASE                  MMU_ITS1_ADDR // 0xA8100000ULL
+#define GITS1_IIDR                  (GITS1_BASE + 0x0004U)
+#define GITS1_TYPER                 (GITS1_BASE + 0x0008U)
+#define GITS1_PIDR(n)               (GITS1_BASE + (((n) > 3) ? 0xffc0U : 0xffe0U) + (4 * (n)))
 
 #define MAX_INT_NUM                387
 #define MIN_GIC_SPI_NUM            32

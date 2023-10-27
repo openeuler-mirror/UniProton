@@ -40,6 +40,7 @@
 #define MIN_PPI_ID                16   // 系统支持的最小PPI的中断号
 #define MAX_PPI_ID                31   // 系统支持的最大PPI的中断号
 #define MAX_SPI_ID                1019 // 系统可支持的最大SPI的中断号
+#define MIN_LPI_ID                8192 // 系统可支持的最小LPI的中断号
 #define MAX_INT_PRIORITY          0xF  // 安全可配置的最大优先级
 #define GIC_INT_ID_MASK           0x3FFU
 // 使能/去使能中断，每个寄存器对应32个中断
@@ -168,5 +169,10 @@ extern void OsGicrDisableInt(U32 coreId, U32 intId);
 extern void OsGicrSetPriority(U32 coreId, U32 intId, U32 priority);
 extern U32 OsGicrGetPriority(U32 coreId, U32 intId);
 extern bool OsGicIsSpi(U32 intId);
+
+extern void OsGicrLpiEnableInt(U32 intId);
+extern void OsGicrLpiDisableInt(U32 intId);
+extern void OsGicrLpiSetPriority(U32 intId, U32 priority);
+extern U32 OsGicrLpiGetPriority(U32 intId);
 
 #endif /* PRT_GIC_EXTERNAL_H */

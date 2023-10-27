@@ -85,6 +85,9 @@ OS_SEC_TEXT void OsHwiReportHwiNumErr(void)
     return;
 }
 
+int irq_range_idx = 0;
+unsigned int irq_range_log[0x40] = {0};
+
 /*
  * 描述: 中断处理, 调用处外部已关中断
  */
@@ -100,6 +103,11 @@ OS_SEC_L0_TEXT void OsHwiDispatchHandle(U32 arg1)
     OsFiqEnable();
 
     hwiNum = OsHwiNumGet();
+
+    if (irq_range_idx < 0x40 && hwiNum >= 8192) {
+        irq_range_log[irq_range_idx] = hwiNum;
+        irq_range_idx++;
+    }
 
     if (OS_HWI_CLEAR_CHECK(hwiNum) || OS_HWI_NUM_CHECK(hwiNum)) {
         goto OS_HWI_CONTINUE;

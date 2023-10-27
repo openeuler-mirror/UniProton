@@ -32,6 +32,12 @@
 #define GIC_GICR_BASE0                (GIC_REG_BASE + g_gicrOffset)
 #define GIC_GICR_BASE1                (GIC_GICR_BASE0 + 0x10000)
 #define GICR_CTRL_ADDR                (GIC_GICR_BASE0 + 0x0000)
+#define GICR_IIDR_ADDR                (GIC_GICR_BASE0 + 0x0004U)
+#define GICR_TYPER_ADDR               (GIC_GICR_BASE0 + 0x0008U)  /* 64bit */
+#define GICR_STATUSR_ADDR             (GIC_GICR_BASE0 + 0x0010U)
+#define GICR_WAKER_ADDR               (GIC_GICR_BASE0 + 0x0014U)
+#define GICR_PROPBASER_ADDR           (GIC_GICR_BASE0 + 0x0070U)  /* 64bit */
+#define GICR_PENDBASER_ADDR           (GIC_GICR_BASE0 + 0x0078U)  /* 64bit */
 #define GICR_ISENABLER0_ADDR          (GIC_GICR_BASE1 + 0x0100)
 #define GICR_ICENABLER0_ADDR          (GIC_GICR_BASE1 + 0x0180)
 #define GICR_IPRIORITY_SGI_S_ADDR     (GIC_GICR_BASE1 + 0x0400)

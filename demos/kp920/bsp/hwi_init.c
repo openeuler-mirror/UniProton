@@ -235,6 +235,49 @@ void OsSicSetGroup(U32 intId, enum SicGroupType groupId)
     }
 }
 
+U64 g_origin_propbase;
+U64 g_origin_pendbase;
+
+U32 OsSicLpiInit(void)
+{
+    U32 regAddr;
+    U64 probaseCore0, probaseCoreL;
+    U64 pendbase;
+
+    /* 所有core对应的 GICR_LPI 的 Configure Table为同段内存， 这里从Core0复制 */
+    regAddr = GICR_PROPBASER_ADDR;
+    probaseCore0 = GIC_REG_READ(regAddr) | (GIC_REG_READ(regAddr + 4) << 32);
+
+    regAddr = GICR_PROPBASER_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
+    probaseCoreL = GIC_REG_READ(regAddr) | (GIC_REG_READ(regAddr + 4) << 32);
+    g_origin_propbase = probaseCoreL;
+    if (probaseCoreL & 0x0000FFFFFFFF0000 == 0) {
+        probaseCoreL |= 0x1f; /* 最大bit数 */
+        regAddr = GICR_PROPBASER_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
+        GIC_REG_WRITE(regAddr, (U32)probaseCoreL);
+        GIC_REG_WRITE(regAddr + 4, (U32)(probaseCoreL >> 32));
+    }
+    // todo 建立映射表，软件可以访问config table
+    
+
+    /* pending table */
+    regAddr = GICR_PENDBASER_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
+    pendbase = GIC_REG_READ(regAddr) + (GIC_REG_READ(regAddr + 4) << 32);
+    g_origin_pendbase = pendbase;
+    if ((pendbase & 0x0000FFFFFFFF0000) == 0) {
+        pendbase = MMU_LPI_PEND_ADDR;
+        GIC_REG_WRITE(regAddr, (U32)pendbase);
+        GIC_REG_WRITE(regAddr + 4, (U32)(pendbase >> 32));
+        // todo 记录pending table基地址
+    } else {
+        // todo 建立映射表，软件可以访问pending table
+    }
+    
+    // enable LPI
+    regAddr = GICR_CTRL_ADDR + OsGetCoreID() * SICR_ADDR_OFFSET_PER_CORE;
+    GIC_REG_WRITE(regAddr, 1);
+}
+
 U32 OsSicInitLocal(void)
 {
     U32 ret;
@@ -246,6 +289,8 @@ U32 OsSicInitLocal(void)
     if (ret != OS_OK) {
         return ret;
     }
+
+    OsSicLpiInit();
 
     for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
         OsSicSetGroup(intId, SIC_GROUP_G1NS);

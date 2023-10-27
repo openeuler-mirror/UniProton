@@ -19,6 +19,9 @@
 #include "pcie.h"
 #include "pcie_config.h"
 
+#define IORESOURCE_IO   0x00000100	/* PCI/ISA I/O ports */
+#define IORESOURCE_MEM  0x00000200
+
 LIST_HEAD(g_pcie_device_list_head);
 LIST_HEAD(g_pcie_driver_list_head);
 
@@ -42,7 +45,7 @@ uint32_t __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
 }
 
 /* 根据 pci_drv 中的 pci_device_id 匹配所有pci设备，若果能匹配到，则执行挂接probe函数 */
-int pci_driver_register(struct pci_driver *pci_drv)
+int pci_register_driver(struct pci_driver *pci_drv)
 {
     int ret = OS_OK;
     int b, d, f;
@@ -64,6 +67,7 @@ int pci_driver_register(struct pci_driver *pci_drv)
             for (f = 0; f < PCI_FUNCTION_NUM_MAX; f++) {
                 bdf = PCI_BDF(b, d, f);
                 ret = pci_match_dev(pci_dev_id_tbl, bdf, &pci_dev_id);
+                printf("bdf:0x%x match ret:%u\r\n", bdf, ret);
                 if (ret == FALSE) {
                     continue;
                 }
@@ -74,7 +78,7 @@ int pci_driver_register(struct pci_driver *pci_drv)
                 pci_device->pdrv = pci_drv;
                 pci_dev_add(pci_device);
                 ret = pci_drv->probe(pci_device, pci_dev_id);
-                printf("bdf:0x%x probe ret 0x%x!\n", bdf, ret);
+                printf("bdf:0x%x probe ret 0x%x!\r\n", bdf, ret);
             }
         }
     }
@@ -226,7 +230,7 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
     sz64 = pci_size(l64, sz64, mask64);
     if (!sz64) {
         res->flags = 0;
-        printf("bar 0x%x: invalid BAR (can't size)\n", bar);
+        printf("bar 0x%x: invalid BAR (can't size)\r\n", bar);
     }
 
     res->start = l64;
@@ -257,7 +261,7 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     pdev = &(g_pdev[g_pdev_num]);
     g_pdev_num++;
     if (pdev == NULL) {
-        printf("pci dev create malloc fail\n");
+        printf("pci dev create malloc fail\r\n");
         return NULL;
     }
 
@@ -299,4 +303,157 @@ void pci_dev_add(struct pci_dev *pdev)
     if (pdev->pdrv->links.prev == NULL) { /* 避免重复push同一driver */
         list_add_tail(&(pdev->pdrv->links), &g_pcie_driver_list_head);
     }
+}
+
+const char *my_strstr(const char *h, const char *n)
+{
+    if (*n == '\0') return h;
+
+    while (*h != '\0') {
+        const char *p1 = h;
+        const char *p2 = n;
+        while (*p1 != '\0' && *p2 != '\0' && *p1 == *p2) {
+            p1++;
+            p2++;
+        }
+        if (*p2 == '\0') return h;
+        if (*p1 == '\0') return NULL;
+        h++;
+    }
+    return NULL;
+}
+
+#define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
+extern int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len);
+
+int pci_irq_parse(char *buff, int *irq, int irq_num)
+{
+    int ret;
+    char format[32];
+    unsigned int cnt;
+    char *ptr;
+    printf("func:%s line:%d buff:%s\r\n", __FUNCTION__, __LINE__, buff);
+    for (cnt = 0; cnt < irq_num; cnt++) {
+        sprintf(format, "msi_%u_", cnt);
+        ptr = my_strstr(buff, format);
+        printf("func:%s line:%d format:%s buff:%llx ptr:%llx\r\n", __FUNCTION__, __LINE__, format, buff, ptr);
+        if (ptr == NULL) {
+            printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
+            break;
+        }
+
+        // sprintf(format, "msi_%u_%%u", cnt);
+        // ret = sscanf_s(ptr, format, &irq[cnt]);
+        // if (ret < 1) {
+        //     break;
+        // }
+        printf("func:%s line:%d ptr:%llx\r\n", __FUNCTION__, __LINE__, ptr);
+        ptr += strlen(format);
+        printf("func:%s line:%d ptr:%llx\r\n", __FUNCTION__, __LINE__, ptr);
+        irq[cnt] = atoi(ptr);
+        printf("func:%s line:%d irq[%d]:%d\r\n", __FUNCTION__, __LINE__, cnt, irq[cnt]);
+    }
+
+    return cnt;
+}
+
+int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
+    unsigned int max_vecs, unsigned int flags)
+{
+    char result_buf[0x100];
+    char cmdline[0x100];
+    int ret;
+
+    sprintf(cmdline, "ls %s%04x", UNIPROTON_NODE_PATH, dev->bdf);
+    printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
+    ret = proxybash_exec(cmdline, result_buf, sizeof(result_buf));
+    if (ret < 0) {
+        printf("proxybash_exec ret:%x", ret);
+        return -1;
+    }
+
+    printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
+    printf("%s result:%s\r\n", cmdline, result_buf);
+    int irq_num = pci_irq_parse(result_buf, dev->irq, PCI_IRQ_MAX_NUM);
+    if (irq_num > 0) {
+        dev->msi_enabled = true;
+    }
+    printf("pci_irq_parse result:%d\r\n", irq_num);
+    if (irq_num < min_vecs) {
+        return 0;
+    }
+
+    if (irq_num > max_vecs) {
+        return max_vecs;
+    }
+
+    return irq_num;
+}
+
+int pci_irq_vector(struct pci_dev *dev, int i)
+{
+    if (dev && dev->msi_enabled && i < PCI_IRQ_MAX_NUM) {
+        return dev->irq[i];
+    }
+    return 0;
+}
+
+void pci_free_irq_vectors(struct pci_dev *dev)
+{
+    return;
+}
+
+int pci_enable_device(struct pci_dev *dev)
+{
+    uint16_t val;
+
+    if (dev == NULL) {
+        return -1;
+    }
+
+    pcie_device_cfg_read_halfword(dev->bdf, PCI_COMMAND, &val);
+    val |= PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
+    pcie_device_cfg_write_halfword(dev->bdf, PCI_COMMAND, val);
+
+    return 0;
+}
+
+int pci_disable_device(struct pci_dev *dev)
+{
+    uint16_t val;
+
+    if (dev == NULL) {
+        return -1;
+    }
+
+    pcie_device_cfg_read_halfword(dev->bdf, PCI_COMMAND, &val);
+    val &= ~PCI_COMMAND_MASTER;
+    pcie_device_cfg_write_halfword(dev->bdf, PCI_COMMAND, val);
+
+    return 0;
+}
+
+void pci_set_master(struct pci_dev *dev)
+{
+    uint16_t val;
+
+    if (dev == NULL) {
+        return -1;
+    }
+
+    pcie_device_cfg_read_halfword(dev->bdf, PCI_COMMAND, &val);
+    val |= PCI_COMMAND_MASTER;
+    pcie_device_cfg_write_halfword(dev->bdf, PCI_COMMAND, val);
+
+    return 0;
+}
+
+int pci_request_regions(struct pci_dev *pdev, const char *res_name)
+{
+    return 0;
+}
+
+void pci_release_regions(struct pci_dev *pdev)
+{
+    return;
 }
