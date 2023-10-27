@@ -3,6 +3,6 @@ if(${CONFIG_OS_SUPPORT_NET})
 add_subdirectory(lwip-2.1)
 endif()
 
-if (${PLAM_TYPE} STREQUAL "x86_64")
+if (${CONFIG_OS_SUPPORT_ETHERCAT})
 add_subdirectory(ethercat)
 endif()

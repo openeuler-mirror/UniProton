@@ -45,13 +45,17 @@ link_libraries(
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblinuxlib.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libethercat_src.a"
     "${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
     "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
     "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
     -Wl,--end-group
 )
 
+if (${APP} STREQUAL "ethercatTest")
+link_libraries(
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libethercat_src.a"
+)
+endif()
 if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
 set(RPC_DEMO_SWITCH ON)
 endif()

@@ -81,18 +81,6 @@ install(TARGETS
     ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_DIR}/
 )
 
-install(TARGETS
-    linuxlib
-    EXPORT ${x86_64_export}
-    ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_LINUX_DIR}/
-)
-
-install(TARGETS
-    ethercat_src
-    EXPORT ${x86_64_export}
-    ARCHIVE DESTINATION ${INSTALL_X86_64_ARCHIVE_ETHERCAT_DIR}/
-)
-
 if (${COMPILE_OPTION} STREQUAL "coverity" OR ${COMPILE_OPTION} STREQUAL "fortify" OR ${COMPILE_OPTION} STREQUAL "UniProton")
     message("Don't Install Sec Lib In ${COMPILE_OPTION}")
 else()
