@@ -103,7 +103,7 @@ include_directories(
         ./src/driver/i210
 )
 
-if (${PLAM_TYPE} STREQUAL "x86_64")
+if (${CONFIG_OS_OPTION_LINUX})
 set(LINUX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/osal/linux)
 include_directories(
     ${LINUX_INCLUDE_DIR}/include_self_def

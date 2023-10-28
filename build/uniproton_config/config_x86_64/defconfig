@@ -118,7 +118,7 @@ CONFIG_OS_POSIX_TYPE_NEWLIB=y
 CONFIG_OS_POSIX_SET_TZDST=y
 CONFIG_OS_OPTION_OPENAMP=y
 CONFIG_OS_OPTION_LINUX=y
-CONFIG_OS_OPTION_PROXY=y
+# CONFIG_OS_OPTION_PROXY is not set
 #
 # Filesystem Modules Configuration
 #
@@ -126,10 +126,15 @@ CONFIG_OS_OPTION_PROXY=y
 
 #
 # EtherCAT Modules Configuration
-#
+# depend on CONFIG_OS_OPTION_LINUX
 # CONFIG_OS_SUPPORT_ETHERCAT is not set
 
 #
 # Debug Modules Configuration
 #
 # CONFIG_OS_GDB_STUB is not set
+
+#
+# enable CXX
+#
+# CONFIG_OS_SUPPORT_CXX is not set

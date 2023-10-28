@@ -7,8 +7,6 @@ foreach(FILE_NAME ${ALL_OBJECT_LIBRARYS})
         $<TARGET_OBJECTS:${FILE_NAME}>
     )
 endforeach()
- 
-
 
 #编译结果
 string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
@@ -24,12 +22,6 @@ add_custom_command(TARGET cleanobj POST_BUILD
 
 if (${COMPILE_MODE} STREQUAL "debug")
     message("=============== COMPILE_MODE is ${COMPILE_MODE} ===============")
-else()
-    add_custom_command(
-        TARGET CortexM4
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "CortexM4.a"
-    )
 endif()
 ####以下为m4 make install打包脚本#####
 set(m4_cortex_export modules)

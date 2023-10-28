@@ -23,12 +23,6 @@ add_custom_command(TARGET cleanobj POST_BUILD
 
 if (${COMPILE_MODE} MATCHES "^.*dbg.*$")
 	message("=============== COMPILE_MODE is ${COMPILE_MODE} ===============")
-else()
-	add_custom_command(
-		TARGET RASPI4
-		POST_BUILD
-		COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "RASPI4.a"
-	)
 endif()
 
 ####以下为make install打包脚本#####

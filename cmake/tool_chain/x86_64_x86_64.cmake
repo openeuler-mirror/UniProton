@@ -26,12 +26,6 @@ add_custom_command(TARGET cleanobj POST_BUILD
 
 if (${COMPILE_MODE} STREQUAL "debug")
     message("=============== COMPILE_MODE is ${COMPILE_MODE} ===============")
-else()
-    add_custom_command(
-        TARGET X86_64
-        POST_BUILD
-        COMMAND sh ${PROJECT_SOURCE_DIR}/cmake/common/build_auxiliary_script/make_lib_rename_file_type.sh ${OBJCOPY_PATH} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} "X86_64.a"
-    )
 endif()
  ####以下为X86_64 make install打包脚本#####
 set(x86_64_export modules)

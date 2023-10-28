@@ -5,7 +5,7 @@ file(GLOB_RECURSE LINUX_SOURCE
     testcase/*.c
 )
 
-add_library(linuxlib STATIC  ${LINUX_SOURCE})
+add_library(linuxlib OBJECT ${LINUX_SOURCE})
 
 target_compile_options(linuxlib PUBLIC
         -Wno-bad-function-cast
@@ -23,6 +23,9 @@ target_compile_options(linuxlib PUBLIC
         -Werror=implicit-function-declaration
         -Werror=return-type
         )
+
+list(APPEND ALL_OBJECT_LIBRARYS linuxlib)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
 
 install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/include_self_def/linux
