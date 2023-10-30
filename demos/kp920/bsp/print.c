@@ -87,6 +87,27 @@ int TestPrintf(const char *format, va_list vaList)
     return OS_OK;
 }
 
+#if defined(OS_OPTION_OPENAMP)
+extern int send_message(unsigned char *message, int len);
+extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
+int PRT_Printf(const char *format, ...)
+{
+    int len;
+    va_list vaList;
+    char buff[OS_MAX_SHOW_LEN] = {0};
+
+    memset_s(buff, OS_MAX_SHOW_LEN, 0, OS_MAX_SHOW_LEN);
+    va_start(vaList, format);
+    len = vsnprintf(buff, OS_MAX_SHOW_LEN, format, vaList);
+    if (len == -1) {
+        return len;
+    }
+    va_end(vaList);
+
+    return send_message(buff, len + 1);
+}
+#else
 U32 PRT_Printf(const char *format, ...)
 {
     va_list vaList;
@@ -98,7 +119,7 @@ U32 PRT_Printf(const char *format, ...)
     
     return count;
 }
-
+#endif
 U32 PRT_PrintfInit()
 {
     U32 ret;

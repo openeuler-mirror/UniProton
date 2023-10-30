@@ -45,5 +45,17 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 
-list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
-add_executable(${APP} ${OBJS})
+if (${APP} MATCHES "kp920")
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
+    add_executable(${APP} ${OBJS})
+elseif (${APP} STREQUAL "task-switch" OR
+        ${APP} STREQUAL "task-preempt" OR
+        ${APP} STREQUAL "semaphore-shuffle" OR
+        ${APP} STREQUAL "interrupt-latency" OR
+        ${APP} STREQUAL "deadlock-break" OR
+        ${APP} STREQUAL "message-latency")
+    add_subdirectory(../../testsuites/rhealstone tmp)
+    target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:rhealstoneTest>)
+    add_executable(${APP} ${OBJS})
+endif()
