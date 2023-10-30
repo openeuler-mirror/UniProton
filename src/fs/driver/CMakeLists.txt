@@ -37,8 +37,8 @@ endif()
 add_library(base_driver OBJECT ${DRIVER_SOURCE})
 
 target_include_directories(base_driver PUBLIC 
-    ${DRIVERS_BASE_DIR}/include
-    ${DRIVERS_BASE_DIR}/base
+    ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_driver)
