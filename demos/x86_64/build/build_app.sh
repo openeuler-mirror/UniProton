@@ -2,7 +2,7 @@
 # x86_64 UniPorton_test_posix_time_interface UniPorton_test_proxy_posix_interface
 # task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency
 # linuxTest ethercatTest
-export ALL="linuxTest ethercatTest x86_64"
+export ALL="x86_64"
 
 gcc_file=/opt/buildtools/openeuler_gcc_x86_64/bin/x86_64-openeuler-linux-gnu-gcc
 if test -f "$gcc_file"; then

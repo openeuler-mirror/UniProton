@@ -44,8 +44,6 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblinuxlib.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libethercat_src.a"
     "${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
     "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
     "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
@@ -59,7 +57,9 @@ endif()
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
+if (${CONFIG_OS_SUPPORT_CXX})
 add_subdirectory(cplusplus)
+endif()
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
@@ -104,8 +104,13 @@ endif()
 
 #rpmsg
 if (${APP} MATCHES "x86_64")
-    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
-    add_executable(${APP} ${OBJS})
+    if (${CONFIG_OS_SUPPORT_CXX})
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
+        add_executable(${APP} ${OBJS})
+    else()
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+        add_executable(${APP} ${OBJS})
+    endif()
 elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "task-preempt" OR
         ${APP} STREQUAL "semaphore-shuffle" OR

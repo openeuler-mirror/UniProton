@@ -14,13 +14,13 @@
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
-#ifdef LINUX_TESTCASE
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
 void kthreadTest(void);
 void schedTest(void);
 void waitTest(void);
 #endif
 
-#ifdef ETHERCAT_TESTCASE
+#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
 int ethercat_main(void);
 int ethercat_init(void);
 void test_ethercat_main();
@@ -54,7 +54,8 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
-#ifdef ETHERCAT_TESTCASE
+
+#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
     ethercat_init();
     if (!wait_for_slave_respond()) {
         printf("[TEST] no slave responding!");
@@ -67,7 +68,8 @@ void TestTaskEntry()
     }
     test_ethercat_main();
 #endif
-#ifdef LINUX_TESTCASE
+
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
     kthreadTest();
     schedTest();
     waitTest();
@@ -110,8 +112,9 @@ void HwiTimerIsr(HwiArg arg)
 U32 PRT_AppInit(void)
 {
     U32 ret;
-
+#ifdef OS_SUPPORT_CXX
     PRT_CppSystemInit();
+#endif
     ret = OsTestInit();
     if (ret) {
         return ret;
