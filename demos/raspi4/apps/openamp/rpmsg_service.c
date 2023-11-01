@@ -19,6 +19,13 @@ static struct rpmsg_virtio_device rvdev;
 static struct metal_io_region *io;
 struct rpmsg_device *g_rdev;
 
+#define RPMSG_VIRTIO_CONSOLE_CONFIG            \
+    (&(const struct rpmsg_virtio_config) {     \
+        .h2r_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
+        .r2h_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
+        .split_shpool = false,             \
+})
+
 extern int rpmsg_endpoint_init(struct rpmsg_device *rdev);
 
 extern void example_init();
@@ -32,7 +39,7 @@ int openamp_init(void)
         return err;
     }
 
-    err = rpmsg_init_vdev(&rvdev, &vdev, NULL, io, NULL);
+    err = rpmsg_init_vdev_with_config(&rvdev, &vdev, NULL, io, NULL, RPMSG_VIRTIO_CONSOLE_CONFIG);
     if (err) {
         return err;
     }

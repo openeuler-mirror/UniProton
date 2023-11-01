@@ -1,7 +1,2 @@
-if (${RPC_DEMO_SWITCH})
-add_definitions(-DSTATIC_EP)
-set(SRC rpmsg_backend.c rpmsg_service.c example_rpc.c main.c)
-else()
 set(SRC rpmsg_backend.c rpmsg_service.c example_default.c main.c)
-endif()
 add_library(rpmsg OBJECT ${SRC})

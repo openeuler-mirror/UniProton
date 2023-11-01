@@ -92,7 +92,7 @@ typedef struct rpc_resp_base {
 } rpc_resp_base_t;
 
 typedef struct rpc_outp_base {
-    int *eptr;
+    int errnum;
 } rpc_outp_base_t;
 
 typedef struct rpc_common_resp {

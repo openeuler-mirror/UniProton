@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#define RPMSG_CONSOLE_BUFFER_SIZE 2048
+
 extern int rpmsg_service_init(void);
 
 /*

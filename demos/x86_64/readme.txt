@@ -17,3 +17,6 @@
 ## C++支持
 如果需要支持C++，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_CXX
 并且需要给demos/x86_64/build/build_app.sh 27行的cmake命令添加选项：-DCONFIG_OS_SUPPORT_CXX=on
+
+## 代理接口支持
+如果需要支持代理接口，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_OPTION_PROXY
