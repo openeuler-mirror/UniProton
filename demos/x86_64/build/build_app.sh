@@ -16,6 +16,11 @@ else
     popd
 fi
 
+# if yocto build, do_fetch step will download code
+if [ "$2" != "yocto" ]
+then
+    sh ./build_fetch.sh
+fi
 sh ./build_static.sh x86_64
 sh ./build_openamp.sh $TOOLCHAIN_PATH
 
@@ -24,7 +29,7 @@ function build()
     export APP=$1
     export TMP_DIR=$APP
 
-    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="x86_64"
+    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="x86_64" -DCMAKE_C_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-gcc -DCMAKE_CXX_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-g++
     pushd $TMP_DIR
     make $APP
     popd

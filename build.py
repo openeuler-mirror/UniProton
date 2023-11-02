@@ -107,7 +107,7 @@ class Compile:
         self.UniProton_packing_path = UniProton_packing_path if make_phase == "CREATE_CMAKE_FILE" else '%s/output'%self.home_path
         self.UniProton_binary_dir = os.getenv('RPROTON_BINARY_DIR')
         self.UniProton_install_file_option = os.getenv('RPROTON_INSTALL_FILE_OPTION')
-        self.UniProton_make_jx = 'VERBOSE=1' if self.UniProton_install_file_option == 'SUPER_BUILD' else 'VERBOSE=1 -j$(nproc)'
+        self.UniProton_make_jx = 'VERBOSE=1' if self.UniProton_install_file_option == 'SUPER_BUILD' else 'VERBOSE=1 -j' + str(os.cpu_count())
         # 当前编译平台信息
         self.getOsPlatform()
 

@@ -23,9 +23,11 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 [树莓派4B混合部署示例](./doc/demoUsageGuide/raspi4_demo_usage_guide.md)
 
+[Hi3093混合部署示例](./doc/demoUsageGuide/hi3093_demo_usage_guide.md)
+
 [x86_64混合部署示例](./doc/demoUsageGuide/x86_64_demo_usage_guide.md)
 
-[UniProton gdb-stub使用指南](./doc/demoUsageGuide/gdbstub.md)
+[UniProton gdb-stub使用指南](./doc/gdbstub.md)
 
 ### 5、相关文档
 
