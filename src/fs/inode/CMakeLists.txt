@@ -3,8 +3,8 @@ file(GLOB_RECURSE INODE_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 add_library(base_inode OBJECT ${INODE_SOURCE})
 
 target_include_directories(base_inode PUBLIC 
-    ${DRIVERS_BASE_DIR}/include
-    ${DRIVERS_BASE_DIR}/base
+    ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/
 )
 
 target_compile_options(base_inode PUBLIC 

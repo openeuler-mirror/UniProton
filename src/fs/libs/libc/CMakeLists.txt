@@ -4,8 +4,8 @@ add_library(base_libs_libc OBJECT ${STDIO_SOURCE})
 
 target_include_directories(base_libs_libc PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${DRIVERS_BASE_DIR}/include
-    ${DRIVERS_BASE_DIR}/base
+    ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_libs_libc)

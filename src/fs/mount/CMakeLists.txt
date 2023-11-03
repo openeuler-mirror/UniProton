@@ -24,9 +24,9 @@ endif()
 add_library(base_mount OBJECT ${MOUNT_SOURCE})
 
 target_include_directories(base_mount PUBLIC 
-    ${DRIVERS_BASE_DIR}/include
-    ${DRIVERS_BASE_DIR}/include/nuttx/drivers
-    ${DRIVERS_BASE_DIR}/base
+    ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/include/nuttx/drivers
+    ${FS_BASE_DIR}/
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_mount)

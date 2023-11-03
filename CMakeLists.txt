@@ -100,7 +100,7 @@ include_directories(
         ./src/libc/musl/include
         ./src/core/ipc/rwlock
         ./src/kal/include
-        ./src/driver/i210
+        ./src/drivers/i210
 )
 
 if (${CONFIG_OS_OPTION_LINUX})
@@ -142,6 +142,7 @@ endif()
 
 if (${CONFIG_OS_OPTION_NUTTX_VFS})
 include_directories(
+  ./src/fs/include
   ./src/drivers/include
 )
 endif()
