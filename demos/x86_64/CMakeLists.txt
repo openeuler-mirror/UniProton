@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C CXX ASM)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-g++)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-as)
@@ -16,26 +18,29 @@ set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/x86_64.l
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/x86_64.ld")
 set(CMAKE_CXX_STANDARD 17)
 
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_x86_64/defconfig)
+
 include_directories(
-    ./include
-    ./include/libc/include
-    ./include/libc/include/bits
-    ./config
-    ./bsp
-    ./bsp/x86_64
-    ./apps/ethercat
-    ./build/open-amp/output/usr/local/include
-    ./build/libmetal/output/usr/local/include
-    ../../src/arch/cpu/x86_64/common
-    ../../src/arch/cpu/x86_64/common/hwi
-    ../../platform/libboundscheck/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include/bits
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/x86_64
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/ethercat
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${HOME_PATH}/src/arch/cpu/x86_64/common
+    ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
+    ${HOME_PATH}/platform/libboundscheck/include
     ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
     ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
-    ../../output/libc/include
-    ./cplusplus/boost_1_54_0
+    ${HOME_PATH}/output/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/cplusplus/boost_1_54_0
 )
 
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
@@ -50,7 +55,7 @@ link_libraries(
     -Wl,--end-group
 )
 
-add_subdirectory(../../src/component/proxy proxy)
+add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
@@ -67,7 +72,7 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_signal_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_exit_interface")
-        add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
+        add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
         target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
         add_executable(${APP} ${OBJS})
@@ -76,14 +81,14 @@ endif()
 if (${APP} STREQUAL "UniPorton_test_posix_math_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_stdlib_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_ipc_interface")
-        add_subdirectory(../../testsuites/libc-test tmp)
+        add_subdirectory(${HOME_PATH}/testsuites/libc-test tmp)
         target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest> $<TARGET_OBJECTS:common_mtest>)
         add_executable(${APP} ${OBJS})
 endif()
 
 if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
-    add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
+    add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
     target_compile_options(ethercat PUBLIC -DPOSIX_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
     add_executable(${APP} ${OBJS})
@@ -116,7 +121,7 @@ elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "interrupt-latency" OR
         ${APP} STREQUAL "deadlock-break" OR
         ${APP} STREQUAL "message-latency")
-    add_subdirectory(../../testsuites/rhealstone tmp)
+    add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
     target_compile_options(ethercat PUBLIC -DRHEALSTONE_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
     add_executable(${APP} ${OBJS})

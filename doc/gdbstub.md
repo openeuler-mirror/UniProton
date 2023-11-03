@@ -2,7 +2,6 @@
 
 ## 1 编译时使能gdbstub功能：
 * defconfig 设置CONFIG_OS_GDB_STUB=y
-* 修改build_app.sh, cmake -S .. -B XXXX 后新增 -DCONFIG_OS_GDB_STUB=ON
 
 ## 2 如何进行调试：
 混合部署场景下，需要在linux上支持转发的功能，用于在gdbstub和gdb之间转发RSP包。根据转发模块形态的不同，可分为下面2种使用方式。
