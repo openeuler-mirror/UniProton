@@ -111,9 +111,9 @@ release_and_exit:
 #if defined(OS_OPTION_LINUX)
     if (kthreadTsk != NULL) {
         if (kthreadTsk->name != NULL) {
-            OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthreadTsk->name));
+            OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthreadTsk->name));
         }
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthreadTsk));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthreadTsk));
     }
 #endif
     /* if deleteing current task this is unreachable. */
