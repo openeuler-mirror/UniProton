@@ -19,9 +19,12 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/rand_r.c
     )
+
+if(NOT ${CONFIG_OS_OPTION_PROXY})
+    list(APPEND  MULS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c)
+endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/${CMAKE_SYSTEM_PROCESSOR}/arch.mak)
 list(APPEND  MULS_SOURCE
@@ -256,7 +259,6 @@ if(${CONFIG_OS_OPTION_PROXY})
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/readdir.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/dirent/closedir.c
         )
-    add_compile_options(-DOS_OPTION_PROXY)
     list(APPEND MULS_SOURCE    ${MUSL_FS_SOURCE})
 endif()
 
@@ -272,6 +274,7 @@ target_compile_options(musllibc PUBLIC
         -Wno-cast-function-type
         -Wno-float-conversion
         -Wno-unknown-pragmas
+        -include ${CONFIG_FILE_PATH}/prt_buildef.h
         )
 if (${CONFIG_OS_POSIX_SET_TZDST})
     target_compile_options(musllibc PUBLIC -DPOSIX_SET_TZDST)

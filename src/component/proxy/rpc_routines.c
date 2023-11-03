@@ -27,6 +27,7 @@
 #include "rpc_internal_common.h"
 #include "rpc_internal_model.h"
 #include "rpc_err.h"
+#include "prt_buildef.h"
 
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT    97
@@ -44,7 +45,7 @@
     rpc_##name##_outp_t outp;                   \
     int slot_idx = 0, ret = 0;                  \
     unsigned int payload_size = sizeof(req);    \
-    outp.super.eptr = &errno;
+    outp.super.errnum = 0;
 
 #define RECORD_AT(i) (g_records_ctl->records[i])
 
@@ -99,6 +100,8 @@ typedef struct rpc_records_ctl {
     pthread_mutex_t lock; 
 } rpc_records_ctl_t;
 
+int PRT_ProxyWriteStdOut(const char *buf, int len);
+
 static struct rpmsg_endpoint *g_ept;
 
 static rpc_record_t g_records[MAX_RECORDS];
@@ -111,6 +114,7 @@ static rpc_records_ctl_t g_default_ctl = {
     .lock = PTHREAD_MUTEX_INITIALIZER
 };
 static rpc_records_ctl_t *g_records_ctl = &g_default_ctl;
+static char *g_s1 = "Hello, UniProton! \r\n";
 
 static int alloc_slot()
 {
@@ -192,8 +196,8 @@ static void common_cb(int status, void *data, size_t len)
     dprintf("tid:%d", trace_id);
     obase = RECORD_AT(idx).outp;
     cb = RECORD_AT(idx).cb;
-    if (obase != NULL && obase->eptr != NULL) {
-        *obase->eptr = base->errnum;
+    if (obase != NULL && base->errnum != 0) {
+        obase->errnum = base->errnum;
     }
     if (cb != NULL) {
         cb(data, obase);
@@ -412,6 +416,11 @@ int rpmsg_client_cb(struct rpmsg_endpoint *ept,
     msg = (struct rpmsg_rpc_answer *)data;
     dprintf("==(%x,%d)", src, msg->id);
 
+    if (msg->id == 0) {
+        PRT_ProxyWriteStdOut((void *)g_s1, strlen(g_s1) * sizeof(char));
+        return RPMSG_SUCCESS;
+    }
+
     if (msg->id < MIN_ID || msg->id > MAX_ID) {
         dprintf("invalid msg id(%d)\n", msg->id);
         return RPMSG_ERR_PARAM;
@@ -465,6 +474,7 @@ static int __open(const char *filename, int flags, unsigned mode)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -508,6 +518,7 @@ ssize_t PRT_ProxyRead(int fd, void *buf, size_t count)
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -536,6 +547,7 @@ ssize_t PRT_ProxyWrite(int fd, const void *buf, size_t count)
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -558,6 +570,7 @@ int PRT_ProxyClose(int fd)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -586,6 +599,7 @@ int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -610,6 +624,7 @@ static int __fcntl(int fd, int cmd, unsigned long arg)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -646,6 +661,7 @@ int PRT_ProxyFcntl(int fd, int cmd, ...)
     CHECK_RET(ret)
 
     oret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return oret;
  }
@@ -673,6 +689,7 @@ int PRT_ProxyUnlink(const char *path)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -738,6 +755,7 @@ int PRT_ProxyGetAddrInfo(const char *node, const char *service,
         ret = OsProxyDecodeAddrList(req.buf, outp.cnt, sizeof(req.buf), res);
     }
 
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -778,6 +796,7 @@ struct hostent *PRT_ProxyGetHostByAddr(const void *addr, socklen_t len, int type
         }
     }
 
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ht;
 }
@@ -814,6 +833,7 @@ struct hostent *PRT_ProxyGetHostByName(const char *name)
         }
     }
 
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ht;
 }
@@ -845,6 +865,7 @@ int PRT_ProxyPoll(struct pollfd *fds, nfds_t nfds, int timeout)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -876,6 +897,7 @@ int PRT_ProxyGetPeerName(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -905,6 +927,7 @@ int PRT_ProxyGetHostName(char *name, size_t len)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -935,6 +958,7 @@ int PRT_ProxyGetSockName(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -966,6 +990,7 @@ int PRT_ProxyGetSockOpt(int sockfd, int level, int optname, void *optval, sockle
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1019,6 +1044,7 @@ int PRT_ProxySelect(int n, fd_set *restrict rfds, fd_set *restrict wfds,
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1053,6 +1079,7 @@ int PRT_ProxyAccept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1079,6 +1106,7 @@ int PRT_ProxyBind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1105,6 +1133,7 @@ int PRT_ProxyConnect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1128,6 +1157,7 @@ int PRT_ProxyListen(int sockfd, int backlog)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1156,6 +1186,7 @@ ssize_t PRT_ProxyRecv(int sockfd, void *buf, size_t len, int flags)
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -1189,6 +1220,7 @@ static ssize_t __PRT_ProxyRecvFrom(int sockfd, void *buf, size_t len, int flags,
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -1230,6 +1262,7 @@ ssize_t PRT_ProxySend(int sockfd, const void *buf, size_t len, int flags)
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -1259,6 +1292,7 @@ static ssize_t __PRT_ProxySendTo(int sockfd, const void *buf, size_t len, int fl
     CHECK_RET(ret)
 
     sret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
 }
@@ -1303,6 +1337,7 @@ int PRT_ProxySetSockOpt(int sockfd, int level, int optname, const void *optval,
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1326,6 +1361,7 @@ int PRT_ProxyShutdown(int sockfd, int how)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1349,6 +1385,7 @@ int PRT_ProxySocket(int domain, int type, int protocol)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
@@ -1424,10 +1461,11 @@ int PRT_ProxyGetDents64(int fd, char *buf, int len)
     CHECK_RET(ret)
 
     ret = outp.ret;
+    errno = outp.super.errnum;
     free_slot(slot_idx);
     return ret;
 }
-
+#ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyRead, read);
 WEAK_ALIAS(PRT_ProxyWrite, write);
@@ -1456,4 +1494,4 @@ WEAK_ALIAS(PRT_ProxySendTo, sendto);
 WEAK_ALIAS(PRT_ProxySetSockOpt, setsockopt);
 WEAK_ALIAS(PRT_ProxyShutdown, shutdown);
 WEAK_ALIAS(PRT_ProxySocket, socket);
-
+#endif

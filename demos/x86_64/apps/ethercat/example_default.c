@@ -1,8 +1,14 @@
 #include "openamp/open_amp.h"
+#include "prt_proxy_ext.h"
 
 #define RPMSG_ENDPOINT_NAME "console"
 
 static struct rpmsg_endpoint g_ept;
+
+extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
+                    void *data, size_t len,
+                    uint32_t src, void *priv);
+extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
 
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -11,22 +17,22 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 
 int send_message(unsigned char *message, int len)
 {
-    return rpmsg_send(&g_ept, message, len);
-}
-
-static char *g_s1 = "Hello, UniProton! \r\n";
-static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
-{
-    send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
-
-    return OS_OK;
+    return PRT_ProxyWriteStdOut(message, len);
 }
 
 int rpmsg_endpoint_init(struct rpmsg_device *rdev)
 {
-    return rpmsg_create_ept(&g_ept, rdev, RPMSG_ENDPOINT_NAME,
+    int err;
+    err = rpmsg_create_ept(&g_ept, rdev, RPMSG_ENDPOINT_NAME,
                     0xF, RPMSG_ADDR_ANY,
-                    rpmsg_endpoint_cb, rpmsg_service_unbind);
+                    rpmsg_client_cb, rpmsg_service_unbind);
+    if (err) {
+        return err;
+    }
+
+    rpmsg_set_default_ept(&g_ept);
+
+    return err;
 }
 
 void example_init()
