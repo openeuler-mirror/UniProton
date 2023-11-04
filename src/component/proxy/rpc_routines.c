@@ -414,7 +414,7 @@ static void resp2outp_fread(void *from, void *to)
         return;
     }
     size_t buflen = outp->totalSize;
-    memcpy_s(outp->buf, buflen, resp->buf, buflen);
+    (void)memcpy_s(outp->buf, buflen, resp->buf, buflen);
     outp->ret = resp->ret;
 }
 
@@ -422,7 +422,7 @@ static void resp2outp_fgets(void *from, void *to)
 {
     rpc_fgets_resp_t *resp = (rpc_fgets_resp_t *)from;
     rpc_fgets_outp_t *outp = (rpc_fgets_outp_t *)to;
-    memcpy_s(outp->str, outp->size, resp->str, outp->size);
+    (void)memcpy_s(outp->str, outp->size, resp->str, outp->size);
     outp->isEof = resp->isEof;
 }
 
@@ -445,7 +445,7 @@ static void resp2outp_setvbuf(void *from, void *to)
     rpc_setvbuf_resp_t *resp = (rpc_setvbuf_resp_t *)from;
     rpc_setvbuf_outp_t *outp = (rpc_setvbuf_outp_t *)to;
     if (!outp->isNullbuf) {
-        memcpy_s(outp->buf, outp->size, resp->buf, outp->size);
+        (void)memcpy_s(outp->buf, outp->size, resp->buf, outp->size);
     }
 }
 
@@ -1546,30 +1546,33 @@ FILE *PRT_ProxyFopen(const char *filename, const char *mode)
     rpc_fcommon_outp_t outp = {0};
 
     if (g_ept == NULL || filename == NULL || mode == NULL) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int flen = strlen(filename) + 1;
     int mlen = strlen(mode) + 1;
     if (flen > sizeof(req.filename) || mlen > sizeof(req.mode)) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
-        return 0;
+        errno = ETXTBSY;
+        return NULL;
     }
 
     outp.super.errnum = 0;
     req.func_id = FOPEN_ID;
-    memcpy_s(req.filename, flen, filename, flen);
-    memcpy_s(req.mode, mlen, mode, mlen);
+    (void)memcpy_s(req.filename, flen, filename, flen);
+    (void)memcpy_s(req.mode, mlen, mode, mlen);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
 
     int ret = wait4resp(slot_idx, &req, sizeof(req));
     if (ret < 0) {
-        return 0;
+        return NULL;
     }
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -1583,11 +1586,13 @@ int PRT_ProxyFclose(FILE *f)
     rpc_common_outp_t outp = {0};
 
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1612,16 +1617,17 @@ size_t PRT_ProxyFread(void *buffer, size_t size, size_t count, FILE *f)
     rpc_fread_req_t req = {0};
     rpc_fread_outp_t outp = {0};
     if (g_ept == NULL || f == NULL || buffer == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     size_t totalSize = size * count;
-    if (totalSize > MAX_STRING_LEN) {
-        return -1;
-    }
+    totalSize = MIN(totalSize, MAX_STRING_LEN);
+    size_t cnt = totalSize / size;
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1630,7 +1636,7 @@ size_t PRT_ProxyFread(void *buffer, size_t size, size_t count, FILE *f)
     outp.totalSize = totalSize;
     req.func_id = FREAD_ID;
     req.size = size;
-    req.count = count;
+    req.count = cnt;
     req.fhandle = (fileHandle)f;
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_fread;
@@ -1650,25 +1656,26 @@ size_t PRT_ProxyFwrite(const void *buffer, size_t size, size_t count, FILE *f)
     rpc_fwrite_req_t req = {0};
     rpc_fwrite_outp_t outp = {0};
     if (g_ept == NULL || f == NULL || buffer == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     size_t totalSize = size * count;
-    if (totalSize > MAX_STRING_LEN) {
-        return -1;
-    }
+    totalSize = MIN(totalSize, MAX_STRING_LEN);
+    size_t cnt = totalSize / size;
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = FWRITE_ID;
     req.size = size;
-    req.count = count;
+    req.count = cnt;
     req.fhandle = (fileHandle)f;
-    memcpy_s(req.buf, totalSize, buffer, totalSize);
+    (void)memcpy_s(req.buf, totalSize, buffer, totalSize);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_fwrite;
 
@@ -1688,31 +1695,34 @@ FILE *PRT_ProxyFreopen(const char *filename, const char *mode, FILE *f)
     rpc_fcommon_outp_t outp = {0};
 
     if (g_ept == NULL || filename == NULL || mode == NULL || f == NULL) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int flen = strlen(filename) + 1;
     int mlen = strlen(mode) + 1;
     if (flen > sizeof(req.filename) || mlen > sizeof(req.mode)) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
-        return 0;
+        errno = ETXTBSY;
+        return NULL;
     }
 
     outp.super.errnum = 0;
     req.func_id = FREOPEN_ID;
-    memcpy_s(req.filename, flen, filename, flen);
-    memcpy_s(req.mode, mlen, mode, mlen);
+    (void)memcpy_s(req.filename, flen, filename, flen);
+    (void)memcpy_s(req.mode, mlen, mode, mlen);
     req.fhandle = (fileHandle)f;
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
 
     int ret = wait4resp(slot_idx, &req, sizeof(req));
     if (ret < 0) {
-        return 0;
+        return NULL;
     }
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -1725,23 +1735,26 @@ int PRT_ProxyFputs(const char *str, FILE *f)
     rpc_fputs_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL || str == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int len = strlen(str) + 1;
     if (len > sizeof(req.str)) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = FPUTS_ID;
     req.fhandle = (fileHandle)f;
-    memcpy_s(req.str, len, str, len);
+    (void)memcpy_s(req.str, len, str, len);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1759,13 +1772,20 @@ char *PRT_ProxyFgets(char *str, int n, FILE *f)
 {
     rpc_fgets_req_t req = {0};
     rpc_fgets_outp_t outp = {0};
-    if (g_ept == NULL || f == NULL || str == NULL || n > MAX_STRING_LEN) {
-        return 0;
+    if (g_ept == NULL || f == NULL || str == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    if (n > MAX_STRING_LEN) {
+        errno = ENOMEM;
+        return NULL;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
-        return 0;
+        errno = ETXTBSY;
+        return NULL;
     }
 
     outp.super.errnum = 0;
@@ -1779,7 +1799,7 @@ char *PRT_ProxyFgets(char *str, int n, FILE *f)
 
     int ret = wait4resp(slot_idx, &req, sizeof(req));
     if (ret < 0) {
-        return 0;
+        return NULL;
     }
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -1792,11 +1812,13 @@ int PRT_ProxyFeof(FILE *f)
     rpc_feof_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1838,6 +1860,7 @@ static int __fprintf(FILE *f, const char *format, va_list list)
 int PRT_ProxyFprintf(FILE *f, const char *format, ...)
 {
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
@@ -1856,11 +1879,13 @@ int PRT_ProxyGetc(FILE *f)
     rpc_getc_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1885,11 +1910,13 @@ int PRT_ProxyFerror(FILE *f)
     rpc_ferror_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1909,46 +1936,18 @@ int PRT_ProxyFerror(FILE *f)
     return outp.ret;
 }
 
-void PRT_ProxyFlockfile(FILE *f)
-{
-    rpc_flockfile_req_t req = {0};
-    if (g_ept == NULL || f == NULL) {
-        return;
-    }
-
-    req.func_id = FLOCKFILE_ID;
-    req.fhandle = (fileHandle)f;
-
-    (void)rpmsg_send(g_ept, &req, sizeof(req));
-
-    return;
-}
-
-void PRT_ProxyFunlockfile(FILE *f)
-{
-    rpc_funlockfile_req_t req = {0};
-    if (g_ept == NULL || f == NULL) {
-        return;
-    }
-
-    req.func_id = FLOCKFILE_ID;
-    req.fhandle = (fileHandle)f;
-
-    (void)rpmsg_send(g_ept, &req, sizeof(req));
-
-    return;
-}
-
 int PRT_ProxyGetcUnlocked(FILE *f)
 {
     rpc_getc_unlocked_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -1973,11 +1972,13 @@ int PRT_ProxyPclose(FILE *f)
     rpc_pclose_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -2002,12 +2003,14 @@ FILE *PRT_ProxyTmpfile(void)
     rpc_tmpfile_req_t req = {0};
     rpc_fcommon_outp_t outp = {0};
     if (g_ept == NULL) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
-        return 0;
+        errno = ETXTBSY;
+        return NULL;
     }
 
     outp.super.errnum = 0;
@@ -2017,7 +2020,7 @@ FILE *PRT_ProxyTmpfile(void)
 
     int ret = wait4resp(slot_idx, &req, sizeof(req));
     if (ret < 0) {
-        return 0;
+        return NULL;
     }
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2029,6 +2032,7 @@ void PRT_ProxyClearerr(FILE *f)
 {
     rpc_clearerr_req_t req = {0};
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return;
     }
 
@@ -2046,30 +2050,33 @@ FILE *PRT_ProxyPopen(const char *cmd, const char *mode)
     rpc_fcommon_outp_t outp = {0};
 
     if (g_ept == NULL || cmd == NULL || mode == NULL) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int clen = strlen(cmd) + 1;
     int mlen = strlen(mode) + 1;
     if (clen > sizeof(req.cmd) || mlen > sizeof(req.mode)) {
-        return 0;
+        errno = EINVAL;
+        return NULL;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
-        return 0;
+        errno = ETXTBSY;
+        return NULL;
     }
 
     outp.super.errnum = 0;
     req.func_id = POPEN_ID;
-    memcpy_s(req.cmd, clen, cmd, clen);
-    memcpy_s(req.mode, mlen, mode, mlen);
+    (void)memcpy_s(req.cmd, clen, cmd, clen);
+    (void)memcpy_s(req.mode, mlen, mode, mlen);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
 
     int ret = wait4resp(slot_idx, &req, sizeof(req));
     if (ret < 0) {
-        return 0;
+        return NULL;
     }
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2083,11 +2090,13 @@ int PRT_ProxyUngetc(int c, FILE *f)
     rpc_common_outp_t outp = {0};
 
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -2108,24 +2117,26 @@ int PRT_ProxyUngetc(int c, FILE *f)
     return outp.ret;
 }
 
-int PRT_ProxyFseeko(FILE *f, long a, int b)
+int PRT_ProxyFseeko(FILE *f, off_t offset, int whence)
 {
     rpc_fseeko_req_t req = {0};
     rpc_common_outp_t outp = {0};
 
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = FSEEKO_ID;
-    req.a = a;
-    req.b = b;
+    req.a = offset;
+    req.b = whence;
     req.fhandle = (fileHandle)f;
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
@@ -2146,11 +2157,13 @@ long PRT_ProxyFtello(FILE * f)
     rpc_ftello_outp_t outp = {0};
 
     if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
@@ -2175,24 +2188,27 @@ int PRT_ProxyRename(const char *old, const char *new)
     rpc_rename_req_t req = {0};
     rpc_common_outp_t outp = {0};
     if (old == NULL || new == NULL) {
+        errno = EINVAL;
         return -1;
     }
 
     int oldLen = strlen(old) + 1;
     int newLen = strlen(new) + 1;
     if (oldLen > MAX_FILE_NAME_LEN || newLen > MAX_FILE_NAME_LEN) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = RENAME_ID;
-    memcpy_s(req.old, oldLen, old, oldLen);
-    memcpy_s(req.new, newLen, new, newLen);
+    (void)memcpy_s(req.old, oldLen, old, oldLen);
+    (void)memcpy_s(req.new, newLen, new, newLen);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2213,17 +2229,19 @@ int PRT_ProxyRemove(const char *path)
 
     int len = strlen(path) + 1;
     if (len > MAX_FILE_NAME_LEN) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = REMOVE_ID;
-    memcpy_s(req.path, len, path, len);
+    (void)memcpy_s(req.path, len, path, len);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2244,17 +2262,19 @@ int PRT_ProxyMkstemp(char *template)
 
     int len = strlen(template) + 1;
     if (len > MAX_FILE_NAME_LEN) {
+        errno = EINVAL;
         return -1;
     }
 
     int slot_idx = new_slot(&outp);
     if (slot_idx < 0) {
+        errno = ETXTBSY;
         return -1;
     }
 
     outp.super.errnum = 0;
     req.func_id = MKSTMP_ID;
-    memcpy_s(req.tmp, len, template, len);
+    (void)memcpy_s(req.tmp, len, template, len);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2308,8 +2328,6 @@ WEAK_ALIAS(PRT_ProxyFeof, feof);
 WEAK_ALIAS(PRT_ProxyFprintf, fprintf);
 WEAK_ALIAS(PRT_ProxyGetc, getc);
 WEAK_ALIAS(PRT_ProxyFerror, ferror);
-WEAK_ALIAS(PRT_ProxyFlockfile, flockfile);
-WEAK_ALIAS(PRT_ProxyFunlockfile, funlockfile);
 WEAK_ALIAS(PRT_ProxyGetcUnlocked, getc_unlocked);
 WEAK_ALIAS(PRT_ProxyPclose, pclose);
 WEAK_ALIAS(PRT_ProxyTmpfile, tmpfile);

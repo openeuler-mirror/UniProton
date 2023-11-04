@@ -32,3 +32,13 @@ int isatty(int fd)
 {
     return 0;
 }
+
+void flockfile(FILE *f)
+{
+    return;
+}
+
+void funlockfile(FILE *f)
+{
+    return;
+}
