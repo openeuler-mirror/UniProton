@@ -52,6 +52,30 @@
 #define SETSOCKOPT_ID      118UL
 #define SHUTDOWN_ID        119UL
 #define SOCKET_ID          120UL
+#define FOPEN_ID           121UL
+#define FCLOSE_ID          122UL
+#define FREAD_ID           123UL
+#define FWRITE_ID          124UL
+#define FREOPEN_ID         125UL
+#define FPUTS_ID           126UL
+#define FGETS_ID           127UL
+#define FEOF_ID            129UL
+#define FPRINTF_ID         130UL
+#define GETC_ID            131UL
+#define FERROR_ID          132UL
+#define FLOCKFILE_ID       133UL
+#define FUNLOCKFILE_ID     134UL
+#define GETC_UNLOCK_ID     135UL
+#define PCLOSE_ID          136UL
+#define TMPFILE_ID         137UL
+#define CLEARERR_ID        138UL
+#define POPEN_ID           139UL
+#define UNGETC_ID          140UL
+#define FSEEKO_ID          142UL
+#define FTELLO_ID          143UL
+#define RENAME_ID          144UL
+#define REMOVE_ID          145UL
+#define MKSTMP_ID          146UL
 #define PRINTF_ID          300UL
 
 #define MIN_ID            OPEN_ID
@@ -63,6 +87,8 @@
 #define MAX_STRING_LEN    MAX_SBUF_LEN
 #define MAX_FILE_NAME_LEN 128
 #define MAX_POLL_FDS      32
+
+#define MAX_FILE_MODE_LEN 6
 
 #ifndef MAX_FUNC_ID_LEN
 #define MAX_FUNC_ID_LEN sizeof(unsigned long)
@@ -105,6 +131,22 @@ typedef struct rpc_common_outp {
     rpc_outp_base_t super;
     int ret;
 } rpc_common_outp_t;
+
+typedef struct rpc_fcommon_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+} rpc_fcommon_req_t;
+
+typedef struct rpc_fcommon_resp {
+    rpc_resp_base_t super;
+    fileHandle fhandle;
+} rpc_fcommon_resp_t;
+
+typedef struct rpc_fcommon_outp {
+    rpc_outp_base_t super;
+    fileHandle fhandle;
+} rpc_fcommon_outp_t;
 
 /* common ssize_t ret*/
 typedef struct rpc_csret_resp {
@@ -680,5 +722,230 @@ typedef struct rpc_cmd_base_req {
     char resv[4]; // 8字节对齐
     cmd_base_resp_t base_respond;
 } rpc_cmd_base_req_t; // actually for respond
+
+/* fopen */
+typedef struct rpc_fopen_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char filename[MAX_FILE_NAME_LEN];
+    char mode[MAX_FILE_MODE_LEN];
+} rpc_fopen_req_t;
+
+/* fclose */
+typedef rpc_fcommon_req_t rpc_fclose_req_t;
+
+/* fread */
+typedef struct rpc_fread_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    size_t size;
+    size_t count;
+    fileHandle fhandle;
+} rpc_fread_req_t;
+
+typedef struct rpc_fread_resp {
+    rpc_resp_base_t super;
+    size_t ret;
+    char buf[MAX_STRING_LEN];
+} rpc_fread_resp_t;
+
+typedef struct rpc_fread_outp {
+    rpc_outp_base_t super;
+    size_t ret;
+    size_t totalSize;
+    void *buf;
+} rpc_fread_outp_t;
+
+/* fwrite */
+typedef struct rpc_fwrite_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    size_t size;
+    size_t count;
+    fileHandle fhandle;
+    char buf[MAX_STRING_LEN];
+} rpc_fwrite_req_t;
+
+typedef struct rpc_fwrite_resp {
+    rpc_resp_base_t super;
+    size_t ret;
+} rpc_fwrite_resp_t;
+
+typedef struct rpc_fwrite_outp {
+    rpc_outp_base_t super;
+    size_t ret;
+} rpc_fwrite_outp_t;
+
+/* freopen */
+typedef struct rpc_freopen_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char filename[MAX_FILE_NAME_LEN];
+    char mode[MAX_FILE_MODE_LEN];
+    fileHandle fhandle;
+} rpc_freopen_req_t;
+
+/* fputs */
+typedef struct rpc_fputs_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+    char str[MAX_STRING_LEN];
+} rpc_fputs_req_t;
+
+/* fgets */
+typedef struct rpc_fgets_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+    int size;
+} rpc_fgets_req_t;
+
+typedef struct rpc_fgets_resp {
+    rpc_resp_base_t super;
+    int isEof;
+    char str[MAX_STRING_LEN];
+} rpc_fgets_resp_t;
+
+typedef struct rpc_fgets_outp {
+    rpc_outp_base_t super;
+    char *str;
+    int size;
+    int isEof;
+} rpc_fgets_outp_t;
+
+/* fflush */
+typedef rpc_fcommon_req_t rpc_fflush_req_t;
+
+/* feof */
+typedef rpc_fcommon_req_t rpc_feof_req_t;
+
+/* fprintf */
+typedef struct rpc_fprintf_req {
+    unsigned long func_id;
+    fileHandle fhandle;
+    int len;
+    char buf[MAX_STRING_LEN];
+} rpc_fprintf_req_t;
+
+/* getc */
+typedef rpc_fcommon_req_t rpc_getc_req_t;
+
+/* ferror */
+typedef rpc_fcommon_req_t rpc_ferror_req_t;
+
+/* flockfile */
+typedef struct rpc_flockfile_req {
+    unsigned long func_id;
+    fileHandle fhandle;
+} rpc_flockfile_req_t;
+
+/* funlockfile */
+typedef struct rpc_funlockfile_req {
+    unsigned long func_id;
+    fileHandle fhandle;
+} rpc_funlockfile_req_t;
+
+/* getc_unlocked */
+typedef rpc_fcommon_req_t rpc_getc_unlocked_req_t;
+
+/* pclose */
+typedef rpc_fcommon_req_t rpc_pclose_req_t;
+
+/* tmpfile */
+typedef struct rpc_tmpfile_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+} rpc_tmpfile_req_t;
+
+/* clearerr */
+typedef struct rpc_clearerr_req {
+    unsigned long func_id;
+    fileHandle fhandle;
+} rpc_clearerr_req_t;
+
+/* popen */
+typedef struct rpc_popen_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char cmd[MAX_FILE_NAME_LEN];
+    char mode[MAX_FILE_MODE_LEN];
+} rpc_popen_req_t;
+
+/* ungetc */
+typedef struct rpc_ungetc_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int c;
+    fileHandle fhandle;
+} rpc_ungetc_req_t;
+
+/* setvbuf */
+typedef struct rpc_setvbuf_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+    int type;
+    size_t size;
+    int isNullbuf;
+} rpc_setvbuf_req_t;
+
+typedef struct rpc_setvbuf_resp {
+    rpc_resp_base_t super;
+    int ret;
+    char buf[MAX_STRING_LEN];
+} rpc_setvbuf_resp_t;
+
+typedef struct rpc_setvbuf_outp {
+    rpc_outp_base_t super;
+    int ret;
+    char *buf;
+    size_t size;
+    int isNullbuf;
+} rpc_setvbuf_outp_t;
+
+/* fseeko */
+typedef struct rpc_fseeko_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+    long a;
+    int b;
+} rpc_fseeko_req_t;
+
+/* ftello */
+typedef rpc_fcommon_req_t rpc_ftello_req_t;
+
+typedef struct rpc_ftello_resp {
+    rpc_resp_base_t super;
+    long ret;
+} rpc_ftello_resp_t;
+
+typedef struct rpc_ftello_outp {
+    rpc_outp_base_t super;
+    long ret;
+} rpc_ftello_outp_t;
+
+/* rename */
+typedef struct rpc_rename_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char old[MAX_FILE_NAME_LEN];
+    char new[MAX_FILE_NAME_LEN];
+} rpc_rename_req_t;
+
+/* remove */
+typedef struct rpc_remove_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char path[MAX_FILE_NAME_LEN];
+} rpc_remove_req_t;
+
+/* mkstemp */
+typedef struct rpc_mkstemp_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char tmp[MAX_FILE_NAME_LEN];
+} rpc_mkstemp_req_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */
