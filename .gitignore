@@ -1,4 +1,5 @@
 /platform/libboundscheck/src
+/platform/libboundscheck/include
 /demos/*/include
 /demos/*/build/*.bin
 /demos/*/build/*.elf
