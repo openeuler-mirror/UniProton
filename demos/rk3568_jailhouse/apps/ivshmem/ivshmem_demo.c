@@ -241,7 +241,7 @@ int DeviceInit(struct IvshmemDeviceData *d)
     vndrCap = PciCapFind(d->bdf, PCI_CAP_VENDOR);
     if (vndrCap < 0) {
         PRT_Printf("IVSHMEM ERROR: missing vendor capability\n");
-        return;
+        return -1;
     }
     d->registers = (struct IvshmRegs *)BAR_BASE;
     PciCfgWrite(d->bdf, PCI_CFG_BAR, (unsigned long)d->registers, BYTES_NUMBER_FOUR);
@@ -262,6 +262,9 @@ int DeviceInit(struct IvshmemDeviceData *d)
 
     d->id = MmioRead32(&d->registers->id);
     PRT_Printf("IVSHMEM: ID is %d\n", d->id);
+
+    maxPeers = MmioRead32(&d->registers->maxPeers);
+    PRT_Printf("IVSHMEM: maxPeers is %d\n", maxPeers);
 
     d->stateTableSize =
         PciCfgRead(d->bdf, vndrCap + IVSHMEM_CFG_STATE_TAB_SZ, BYTES_NUMBER_FOUR);
