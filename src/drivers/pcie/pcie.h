@@ -187,4 +187,8 @@ void pci_release_regions(struct pci_dev *pdev);
 #define pci_resource_len(dev, bar) ((pci_resource_end((dev), (bar)) == 0) ? \
     0 : (pci_resource_end((dev), (bar)) - pci_resource_start((dev), (bar)) + 1))
 
+typedef uint32_t (*pci_bus_accessible_pfn)(uint32_t bus_no);
+
+extern pci_bus_accessible_pfn pci_bus_accessible_fn;
+
 #endif

@@ -32,20 +32,13 @@ int TestOpenamp()
 }
 #endif
 
-extern U64 g_origin_propbase;
-extern U64 g_origin_pendbase;
-
-
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
 #endif
-    int tick_cnt = 1;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
-        PRT_TaskDelay(tick_cnt);
-        tick_cnt = tick_cnt * 10;
     }
 #if defined(OS_OPTION_PCIE)
     test_pcie_demo(); /* 依赖openamp实现的代理bash，放在TestOpenamp之后 */

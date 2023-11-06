@@ -104,7 +104,6 @@ OS_SEC_L2_TEXT U32 OsGicrGetPriority(U32 coreId, U32 intId)
     return (gicrPrio >> GIC_IPRIORITY_HIGH_BIT); // 4: 每8bit中的高4bit对应一个中断的优先级, 低4bit预留。
 }
 
-#if defined(OS_OPTION_GIC_LPI)
 /*
  * 描述: 使能LPI, 调用者保证入参的有效性
  */
@@ -133,5 +132,3 @@ OS_SEC_L2_TEXT U32 OsGicrLpiGetPriority(U32 intId)
     /* todo: */
     return 0x20;
 }
-
-#endif

@@ -13,6 +13,9 @@
  * Description: PCIE功能
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "prt_typedef.h"
 #include "prt_module.h"
 #include "prt_mem.h"
@@ -36,8 +39,14 @@ int pci_frame_init(uint64_t pci_cfg_base)
     return 0;
 }
 
-uint32_t __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
+pci_bus_accessible_pfn pci_bus_accessible_fn = NULL;
+
+static uint32_t pci_bus_accessible(uint32_t bus_no)
 {
+    if (pci_bus_accessible_fn != NULL) {
+        return pci_bus_accessible_fn(bus_no);
+    }
+
     if (bus_no >= PCI_BUS_NUM_MAX) {
         return 0;
     }
@@ -239,10 +248,6 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
     return (res->flags & IORESOURCE_MEM_64) ? 1 : 0;
 }
 
-#define PCI_DEV_MAX_NUM 10
-static int g_pdev_num = 0;
-struct pci_dev g_pdev[PCI_DEV_MAX_NUM];
-
 /*  malloc and init pci_dev  */
 struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
 {
@@ -250,16 +255,8 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     struct pci_dev *pdev;
     uint32_t class_revision, bar_value, orig_cmd;
 
-    if (g_pdev_num >= PCI_DEV_MAX_NUM) {
-        return NULL;
-    }
-
-    /* 这里malloc的问题待修复
-    pdev = (struct pci_dev*)OsMemAlloc(OS_MID_HARDDRV, OS_MEM_DEFAULT_FSC_PT,
+    pdev = (struct pci_dev*)PRT_MemAlloc(OS_MID_HARDDRV, OS_MEM_DEFAULT_FSC_PT,
         sizeof(struct pci_dev));
-    */
-    pdev = &(g_pdev[g_pdev_num]);
-    g_pdev_num++;
     if (pdev == NULL) {
         PCIE_DBG_PRINTF("pci dev create malloc fail\r\n");
         return NULL;
@@ -305,24 +302,6 @@ void pci_dev_add(struct pci_dev *pdev)
     }
 }
 
-static const char *local_strstr(const char *h, const char *n)
-{
-    if (*n == '\0') return h;
-
-    while (*h != '\0') {
-        const char *p1 = h;
-        const char *p2 = n;
-        while (*p1 != '\0' && *p2 != '\0' && *p1 == *p2) {
-            p1++;
-            p2++;
-        }
-        if (*p2 == '\0') return h;
-        if (*p1 == '\0') return NULL;
-        h++;
-    }
-    return NULL;
-}
-
 #define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
 extern int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len);
 
@@ -335,7 +314,7 @@ int pci_irq_parse(char *buff, int *irq, int irq_num)
 
     for (cnt = 0; cnt < irq_num; cnt++) {
         sprintf(format, "msi_%u_", cnt);
-        ptr = local_strstr(buff, format);
+        ptr = strstr(buff, format);
         if (ptr == NULL) {
             break;
         }
@@ -428,14 +407,14 @@ void pci_set_master(struct pci_dev *dev)
     uint16_t val;
 
     if (dev == NULL) {
-        return -1;
+        return;
     }
 
     pcie_device_cfg_read_halfword(dev->bdf, PCI_COMMAND, &val);
     val |= PCI_COMMAND_MASTER;
     pcie_device_cfg_write_halfword(dev->bdf, PCI_COMMAND, val);
 
-    return 0;
+    return;
 }
 
 int pci_request_regions(struct pci_dev *pdev, const char *res_name)

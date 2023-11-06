@@ -54,16 +54,16 @@ int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32
 
 #define PROXYBASH_BUFF_LEN  0x800
 bool g_proxybash_openampFlag = false;
-char proxybash_result_buff[PROXYBASH_BUFF_LEN];
-unsigned int proxybash_result_buff_len = sizeof(proxybash_result_buff);
-unsigned int proxybash_result_len = 0;
+char g_proxybash_result_buff[PROXYBASH_BUFF_LEN];
+unsigned int g_proxybash_result_buff_len = sizeof(g_proxybash_result_buff);
+unsigned int g_proxybash_result_len = 0;
 
 int proxybash_rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
     size_t len, uint32_t src, void *priv)
 {
     if (len > 0) {
-        proxybash_result_len = len;
-        memcpy_s(proxybash_result_buff, proxybash_result_buff_len, data, len);
+        g_proxybash_result_len = len;
+        memcpy_s(g_proxybash_result_buff, g_proxybash_result_buff_len, data, len);
     }
     g_proxybash_openampFlag = true;
     return OS_OK;
@@ -72,13 +72,12 @@ int proxybash_rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
 int proxybash_send_message(unsigned char *message, int len)
 {
     g_proxybash_openampFlag = false;
-    proxybash_result_len = 0;
+    g_proxybash_result_len = 0;
     return rpmsg_send(&g_proxybash_ept, message, len);
 }
 
 int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len)
 {
-    int i;
     int ret;
     int retry = 0;
     ret = proxybash_send_message(cmdline, (strlen(cmdline) + 1));
@@ -92,20 +91,20 @@ int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len)
             return -1;
         }
     }
-    if (g_proxybash_openampFlag && proxybash_result_len > 0) {
-        memcpy_s(result_buf, buf_len, proxybash_result_buff,
-            proxybash_result_len);
-        memset_s(proxybash_result_buff, proxybash_result_buff_len, 0,
-            proxybash_result_buff_len);
+    if (g_proxybash_openampFlag && g_proxybash_result_len > 0) {
+        (void)memcpy_s(result_buf, buf_len, g_proxybash_result_buff,
+            g_proxybash_result_len);
+        (void)memset_s(g_proxybash_result_buff, g_proxybash_result_buff_len, 0,
+            g_proxybash_result_buff_len);
     }
 
     /* 增加结束符检查 */
-    if (result_buf[proxybash_result_len - 1] != '\0') {
-        proxybash_result_len++;
-        result_buf[proxybash_result_len - 1] = '\0';
+    if (result_buf[g_proxybash_result_len - 1] != '\0') {
+        g_proxybash_result_len++;
+        result_buf[g_proxybash_result_len - 1] = '\0';
     }
 
-    return (int)proxybash_result_len;
+    return (int)g_proxybash_result_len;
 }
 #endif
 int openamp_init(void)

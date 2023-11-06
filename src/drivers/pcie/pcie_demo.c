@@ -110,7 +110,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
         return -1;
     }
 
-    for (int i= 0; i < irq_num; i++) {
+    for (int i = 0; i < irq_num; i++) {
         int irq = pci_irq_vector(dev, i);
         printf("irq%d:%d\r\n", i, irq);
 
@@ -146,9 +146,14 @@ static struct pci_driver hpm_driver = {
 #define MMU_ECAM_ADDR 0xd0000000ULL
 #endif
 
+extern uint32_t pci_bus_accessible(uint32_t bus_no);
+
 void test_pcie_demo(void)
 {
     int ret;
+
+    // __attribute__((weak)) 属性用不了，这里挂一下函数
+    pci_bus_accessible_fn = pci_bus_accessible;
 
     // 由系统初始化调用
     ret = pci_frame_init(MMU_ECAM_ADDR);
