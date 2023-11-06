@@ -1,6 +1,10 @@
 echo "################# git clone ethercat #################"
 pushd ../../../src/net/
 git clone https://gitlab.com/Tim-Tianyu/ethercat.git
+cd ethercat
+git fetch origin
+git checkout -b igh-23.09 origin/igh-23.09
+cd ../
 popd
 
 git clone https://gitee.com/openeuler/libboundscheck.git
