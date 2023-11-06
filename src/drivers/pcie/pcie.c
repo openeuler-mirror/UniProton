@@ -67,7 +67,7 @@ int pci_register_driver(struct pci_driver *pci_drv)
             for (f = 0; f < PCI_FUNCTION_NUM_MAX; f++) {
                 bdf = PCI_BDF(b, d, f);
                 ret = pci_match_dev(pci_dev_id_tbl, bdf, &pci_dev_id);
-                printf("bdf:0x%x match ret:%u\r\n", bdf, ret);
+                PCIE_DBG_PRINTF("bdf:0x%x match ret:%u\r\n", bdf, ret);
                 if (ret == FALSE) {
                     continue;
                 }
@@ -78,7 +78,7 @@ int pci_register_driver(struct pci_driver *pci_drv)
                 pci_device->pdrv = pci_drv;
                 pci_dev_add(pci_device);
                 ret = pci_drv->probe(pci_device, pci_dev_id);
-                printf("bdf:0x%x probe ret 0x%x!\r\n", bdf, ret);
+                PCIE_DBG_PRINTF("bdf:0x%x probe ret 0x%x!\r\n", bdf, ret);
             }
         }
     }
@@ -230,7 +230,7 @@ int pci_read_base(struct pci_dev *pdev, struct resource *res, uint32_t bar)
     sz64 = pci_size(l64, sz64, mask64);
     if (!sz64) {
         res->flags = 0;
-        printf("bar 0x%x: invalid BAR (can't size)\r\n", bar);
+        PCIE_DBG_PRINTF("bar 0x%x: invalid BAR (can't size)\r\n", bar);
     }
 
     res->start = l64;
@@ -261,7 +261,7 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
     pdev = &(g_pdev[g_pdev_num]);
     g_pdev_num++;
     if (pdev == NULL) {
-        printf("pci dev create malloc fail\r\n");
+        PCIE_DBG_PRINTF("pci dev create malloc fail\r\n");
         return NULL;
     }
 
@@ -305,7 +305,7 @@ void pci_dev_add(struct pci_dev *pdev)
     }
 }
 
-const char *my_strstr(const char *h, const char *n)
+static const char *local_strstr(const char *h, const char *n)
 {
     if (*n == '\0') return h;
 
@@ -332,26 +332,18 @@ int pci_irq_parse(char *buff, int *irq, int irq_num)
     char format[32];
     unsigned int cnt;
     char *ptr;
-    printf("func:%s line:%d buff:%s\r\n", __FUNCTION__, __LINE__, buff);
+
     for (cnt = 0; cnt < irq_num; cnt++) {
         sprintf(format, "msi_%u_", cnt);
-        ptr = my_strstr(buff, format);
-        printf("func:%s line:%d format:%s buff:%llx ptr:%llx\r\n", __FUNCTION__, __LINE__, format, buff, ptr);
+        ptr = local_strstr(buff, format);
         if (ptr == NULL) {
-            printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
             break;
         }
 
-        // sprintf(format, "msi_%u_%%u", cnt);
-        // ret = sscanf_s(ptr, format, &irq[cnt]);
-        // if (ret < 1) {
-        //     break;
-        // }
-        printf("func:%s line:%d ptr:%llx\r\n", __FUNCTION__, __LINE__, ptr);
         ptr += strlen(format);
-        printf("func:%s line:%d ptr:%llx\r\n", __FUNCTION__, __LINE__, ptr);
         irq[cnt] = atoi(ptr);
-        printf("func:%s line:%d irq[%d]:%d\r\n", __FUNCTION__, __LINE__, cnt, irq[cnt]);
+        PCIE_DBG_PRINTF("func:%s line:%d irq[%d]:%d\r\n",
+            __FUNCTION__, __LINE__, cnt, irq[cnt]);
     }
 
     return cnt;
@@ -365,20 +357,18 @@ int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
     int ret;
 
     sprintf(cmdline, "ls %s%04x", UNIPROTON_NODE_PATH, dev->bdf);
-    printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
     ret = proxybash_exec(cmdline, result_buf, sizeof(result_buf));
     if (ret < 0) {
-        printf("proxybash_exec ret:%x", ret);
+        PCIE_DBG_PRINTF("proxybash_exec ret:%x", ret);
         return -1;
     }
 
-    printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
-    printf("%s result:%s\r\n", cmdline, result_buf);
+    PCIE_DBG_PRINTF("%s result:%s\r\n", cmdline, result_buf);
     int irq_num = pci_irq_parse(result_buf, dev->irq, PCI_IRQ_MAX_NUM);
     if (irq_num > 0) {
         dev->msi_enabled = true;
     }
-    printf("pci_irq_parse result:%d\r\n", irq_num);
+    PCIE_DBG_PRINTF("pci_irq_parse result:%d\r\n", irq_num);
     if (irq_num < min_vecs) {
         return 0;
     }

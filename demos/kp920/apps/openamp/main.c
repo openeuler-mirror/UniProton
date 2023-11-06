@@ -15,26 +15,7 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 extern U32 PRT_PrintfInit();
 
 #if defined(OS_OPTION_PCIE)
-extern void test_pcie(void);
-#endif
-
-#if 0 // defined(OS_OPTION_PCIE)
-void test_gic_its(void)
-{
-    uint32_t value, n;
-
-    printf("GITS_IIDR:0x%08x\n", GIC_REG_READ(GITS_IIDR));
-    printf("GITS_TYPER:0x%08x\n", GIC_REG_READ(GITS_TYPER));
-    for (n = 0; n < 8; n++) {
-        printf("GITS_PIDR(%u):0x%08x\n", n, GIC_REG_READ(GITS_PIDR(n)));
-    }
-
-    printf("GITS1_IIDR:0x%08x\n", GIC_REG_READ(GITS1_IIDR));
-    printf("GITS1_TYPER:0x%08x\n", GIC_REG_READ(GITS1_TYPER));
-    for (n = 0; n < 8; n++) {
-        printf("GITS1_PIDR(%u):0x%08x\n", n, GIC_REG_READ(GITS1_PIDR(n)));
-    }
-}
+extern void test_pcie_demo(void);
 #endif
 
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
@@ -51,15 +32,10 @@ int TestOpenamp()
 }
 #endif
 
-#if defined(OS_OPTION_OPENAMP_PROXYBASH)
-extern int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len);
-#endif
-
 extern U64 g_origin_propbase;
 extern U64 g_origin_pendbase;
 
-extern int irq_range_idx;
-extern unsigned int irq_range_log[];
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
@@ -72,31 +48,10 @@ void TestTaskEntry()
         tick_cnt = tick_cnt * 10;
     }
 #if defined(OS_OPTION_PCIE)
-    //test_gic_its();
-    test_pcie();
+    test_pcie_demo(); /* 依赖openamp实现的代理bash，放在TestOpenamp之后 */
 #endif
 
-#if 0 // defined(OS_OPTION_OPENAMP_PROXYBASH)
-    char *cmdline = "cat /proc/iomem | grep 'PCI ECAM'";
-    char result_buf[0x800];
-    unsigned int buf_len = sizeof(result_buf);
-    int ret = proxybash_exec(cmdline, result_buf, buf_len);
-    if (ret < 0) {
-        printf("proxybash_exec fail, ret:0x%x", ret);
-    } else {
-        printf("proxybash_exec result(%u): %02x %02x %02x %02x %02x %02x %02x %02x",
-            ret, result_buf[0], result_buf[1], result_buf[2], result_buf[3],
-            result_buf[4], result_buf[5], result_buf[6], result_buf[7]);
-    }
-#endif
-
-    printf("0x%llx,0x%llx,\r\n", g_origin_propbase, g_origin_pendbase);
     do {
-        if (irq_range_idx > 0) {
-            for (irq_range_idx; irq_range_idx > 0; irq_range_idx--) {
-                printf("%u,", irq_range_log[irq_range_idx - 1]);
-            }
-        }
         PRT_TaskDelay(100);
     } while(1);
 

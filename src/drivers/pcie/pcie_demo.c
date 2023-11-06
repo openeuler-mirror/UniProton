@@ -38,8 +38,6 @@ void irq_handler(uintptr_t arg)
     printf("irq_handler:%d\n", irq);
 }
 
-#define HCLGE_PF_OTHER_INT_REG 0x20600
-
 static int hpm_probe_flag = 0;
 int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
@@ -70,33 +68,8 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
     }
 
     pci_set_master(dev);
-
-#if 0
-    int irq_num = pci_alloc_irq_vectors(dev, 2, 4, PCI_IRQ_MSIX);
-    if (irq_num < 0) {
-        return -1;
-    }
-
-    for (int i= 0; i < irq_num; i++) {
-        int irq = pci_irq_vector(dev, i);
-        printf("irq%d:%d\r\n", i, irq);
-
-        ret = PRT_HwiSetAttr(irq, 12, OS_HWI_MODE_ENGROSS);
-        if (ret != OS_OK) {
-            printf("irq%d: %d setAttr failed, ret:%x\r\n", i, irq, ret);
-        }
-
-        intptr_t hwiarg = &(dev->irq[i]);
-        ret = PRT_HwiCreate(irq, irq_handler, hwiarg);
-        if (ret != OS_OK) {
-            printf("irq%d: %d create failed, ret:%x\r\n", i, irq, ret);
-        }
-    }
-#endif
-
     mmu_info_dump();
 
-#if 1
     uintptr_t bar0 = pci_resource_start(dev, 0);
     uint32_t bar0_size = pci_resource_len(dev, 0);
     uint32_t bar0_flags = pci_resource_flags(dev, 0);
@@ -131,56 +104,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
     for (int i = 0; i < bar2_size && i < 0x20; i += 4) {
         printf("%08x\r\n", *((unsigned int*)(bar2 + i)));
     }
-#endif
 
-#if 0
-    struct resource *dev_rs;
-    uintptr_t bar, bar_size;
-
-    dev_rs = dev->resource;
-    printf("resource[%u]: [%llx %llx] %x\r\n", 0, dev_rs[0].start, dev_rs[0].end, dev_rs[0].flags);
-    printf("resource[%u]: [%llx %llx] %x\r\n", 2, dev_rs[2].start, dev_rs[2].end, dev_rs[2].flags);
-
-    bar = dev_rs[0].start;
-    bar_size = dev_rs[0].end - dev_rs[0].start + 1;
-    ret = mmu_request(bar, bar_size);
-    if (ret != 0) {
-        return ret;
-    }
-
-    ret = mmu_update();
-    if (ret != 0) {
-        return ret;
-    }
-
-    bar = dev_rs[2].start;
-    bar_size = dev_rs[2].end - dev_rs[2].start + 1;
-    ret = mmu_request(bar, bar_size);
-    if (ret != 0) {
-        return ret;
-    }
-
-    ret = mmu_update();
-    if (ret != 0) {
-        return ret;
-    }
-
-    bar = dev_rs[0].start;
-    printf("resource0 dump:\r\n");
-    for (int i = 0; i < (dev_rs[0].end - dev_rs[0].start + 1) && i < 0x20; i += 4) {
-        printf("%08x\r\n", *((uint32_t *)(bar + i)));
-    }
-
-    bar = dev_rs[2].start;
-    printf("resource2 reg test:\r\n");
-
-    intptr_t *reg_addr = bar + HCLGE_PF_OTHER_INT_REG;
-    int32_t reg_value = *reg_addr;
-    *reg_addr = (reg_value & 0x1) ? (reg_value & (~0x1)) : (reg_value | 0x1);
-    printf("0x%08x == > 0x%08x", reg_value, *reg_addr);
-#endif
-
-#if 1
     int irq_num = pci_alloc_irq_vectors(dev, 2, 4, PCI_IRQ_MSIX);
     if (irq_num < 0) {
         return -1;
@@ -201,7 +125,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
             printf("irq%d: %d create failed, ret:%x\r\n", i, irq, ret);
         }
     }
-#endif
+
 
     return 0;
 }
@@ -222,7 +146,7 @@ static struct pci_driver hpm_driver = {
 #define MMU_ECAM_ADDR 0xd0000000ULL
 #endif
 
-void test_pcie(void)
+void test_pcie_demo(void)
 {
     int ret;
 

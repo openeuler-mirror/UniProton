@@ -61,7 +61,6 @@ unsigned int proxybash_result_len = 0;
 int proxybash_rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
     size_t len, uint32_t src, void *priv)
 {
-    printf("func:%s line:%d len:%d\r\n", __FUNCTION__, __LINE__, len);
     if (len > 0) {
         proxybash_result_len = len;
         memcpy_s(proxybash_result_buff, proxybash_result_buff_len, data, len);
@@ -87,17 +86,13 @@ int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len)
         return ret;
     }
 
-    printf("func:%s line:%d\r\n", __FUNCTION__, __LINE__);
     while (g_proxybash_openampFlag == false) {
         PRT_TaskDelay(10);
         if (retry++ > 0x10000) {
             return -1;
         }
     }
-    printf("func:%s line:%d retry:%d\r\n", __FUNCTION__, __LINE__, retry);
     if (g_proxybash_openampFlag && proxybash_result_len > 0) {
-        printf("proxybash_result_buff(%u):%s\r\n", proxybash_result_len,
-            proxybash_result_buff);
         memcpy_s(result_buf, buf_len, proxybash_result_buff,
             proxybash_result_len);
         memset_s(proxybash_result_buff, proxybash_result_buff_len, 0,
@@ -109,7 +104,7 @@ int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len)
         proxybash_result_len++;
         result_buf[proxybash_result_len - 1] = '\0';
     }
-    printf("func:%s line:%d len:%d\r\n", __FUNCTION__, __LINE__, (int)proxybash_result_len);
+
     return (int)proxybash_result_len;
 }
 #endif

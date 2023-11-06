@@ -16,57 +16,57 @@ U32 g_mmu_map_reserved_num = MMU_MAP_RESREVED_NUM;
 
 static mmu_mmap_region_s g_mem_map_info[] = {
     {
-        .virt      = MMU_OPENAMP_ADDR,  // 0x202780000000ULL
+        .virt      = MMU_OPENAMP_ADDR,
         .phys      = MMU_OPENAMP_ADDR,
         .size      = 0x30000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_DMA_ADDR,      // 0x202780100000ULL
+        .virt      = MMU_DMA_ADDR,
         .phys      = MMU_DMA_ADDR,
         .size      = 0x200000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_LPI_PEND_ADDR, // 0x202780400000ULL
+        .virt      = MMU_LPI_PEND_ADDR,
         .phys      = MMU_LPI_PEND_ADDR,
         .size      = 0x200000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_IMAGE_ADDR,    // 0x202783000000ULL
+        .virt      = MMU_IMAGE_ADDR,
         .phys      = MMU_IMAGE_ADDR,
         .size      = 0x1000000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_GIC_ADDR,      // 0xAA000000ULL
+        .virt      = MMU_GIC_ADDR,
         .phys      = MMU_GIC_ADDR,
         .size      = 0x1000000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_ITS_ADDR,      // 0xA8100000ULL
+        .virt      = MMU_ITS_ADDR,
         .phys      = MMU_ITS_ADDR,
         .size      = MMU_ITS_ADDR_LEN,  /* 0x100000ULL  1MB */
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_ITS1_ADDR,     // 0x2000A8100000ULL
+        .virt      = MMU_ITS1_ADDR,
         .phys      = MMU_ITS1_ADDR,
         .size      = MMU_ITS_ADDR_LEN,  /* 0x100000ULL  1MB */
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_UART_ADDR,     // 0x08743000ULL /* todo */
+        .virt      = MMU_UART_ADDR,
         .phys      = MMU_UART_ADDR,
         .size      = 0x2000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
-        .virt      = MMU_ECAM_ADDR,     // 0xd0000000ULL
+        .virt      = MMU_ECAM_ADDR,
         .phys      = MMU_ECAM_ADDR,
-        .size      = 0x10000000, /* 256Bus * 32Device * 8Fuc * 4KB */
+        .size      = MMU_ECAM_ADDR_LEN, /* 256Bus * 32Device * 8Fuc * 4KB */
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
@@ -441,6 +441,6 @@ void mmu_release(U64 virt_addr)
 
 void mmu_info_dump(void)
 {
-    printf("mmu_map_num:%d\r\n, g_mmu_map_reserved_num:%d\r\n mmu_map_reserved_sid:%d\r\n",
+    printf("mmu_map_num:%d mmu_map_reserved_num:%d mmu_map_reserved_sid:%d\r\n",
         MMU_MAP_NUM, g_mmu_map_reserved_num, MMU_MAP_RESERVE_SID);
 }

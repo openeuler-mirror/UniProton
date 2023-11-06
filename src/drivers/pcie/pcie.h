@@ -18,6 +18,12 @@
 
 #include "prt_typedef.h"
 
+#ifdef PCIE_DBG_LOG
+#define PCIE_DBG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define PCIE_DBG_PRINTF(...)
+#endif
+
 #undef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
