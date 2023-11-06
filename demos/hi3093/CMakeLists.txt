@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
@@ -11,22 +13,25 @@ set(AS_OPTION "-g -march=armv8.2-a+nofp+nosimd -Wl,--build-id=none -fno-builtin 
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ../hi3093.ld")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ../hi3093.ld")
+set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/hi3093.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/hi3093.ld")
+
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_hi3093/defconfig)
 
 include_directories(
-    ./include
-    ./include/libc/include
-    ./config
-    ./bsp
-    ./bsp/hi3093
-    ./bsp/uart
-    ./apps/openamp
-    ./build/open-amp/output/usr/local/include
-    ./build/libmetal/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/hi3093
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
 )
 
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
