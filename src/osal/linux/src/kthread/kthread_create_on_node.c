@@ -56,7 +56,7 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
     struct TagTskCb *taskCb = NULL;
     uintptr_t curStackSize = 0;
 
-    char *kthread_name = PRT_MemAlloc((U32)OS_MID_TSK, OS_MEM_DEFAULT_FSC_PT, sizeof(TASK_COMM_LEN));
+    char *kthread_name = PRT_MemAlloc((U32)OS_MID_APP, OS_MEM_DEFAULT_FSC_PT, sizeof(TASK_COMM_LEN));
     if (kthread_name == NULL) {
         return ERR_PTR(-ENOMEM);
     }
@@ -80,13 +80,13 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 
     ret = OsTaskCreateParaCheck(&taskId, &param);
     if (ret != OS_OK) {
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthread_name));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthread_name));
         return ERR_PTR(-EINTR);
     }
 
-    taskStrut = PRT_MemAlloc((U32)OS_MID_TSK, OS_MEM_DEFAULT_FSC_PT, sizeof(struct task_struct));
+    taskStrut = PRT_MemAlloc((U32)OS_MID_APP, OS_MEM_DEFAULT_FSC_PT, sizeof(struct task_struct));
     if (taskStrut == NULL) {
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthread_name));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthread_name));
         return ERR_PTR(-ENOMEM);
     }
 
@@ -94,8 +94,8 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
     ret = OsTaskCreateChkAndGetTcb(&taskCb);
     if (ret != OS_OK) {
         OsIntRestore(intSave);
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthread_name));
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)taskStrut));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthread_name));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)taskStrut));
         return ERR_PTR(-ENOMEM);
     }
 
@@ -111,8 +111,8 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
     if (ret != OS_OK) {
         ListAdd(&taskCb->pendList, &g_tskCbFreeList);
         OsIntRestore(intSave);
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)kthread_name));
-        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_TSK, (void *)taskStrut));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthread_name));
+        OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)taskStrut));
         return ERR_PTR(-EINTR);
     }
     OsTskStackInit(curStackSize, (uintptr_t)topStack);

@@ -1,4 +1,5 @@
 #include "openamp/open_amp.h"
+#include "prt_buildef.h"
 #include "prt_proxy_ext.h"
 
 #define RPMSG_ENDPOINT_NAME "console"
@@ -9,6 +10,9 @@ extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
                     void *data, size_t len,
                     uint32_t src, void *priv);
 extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
+#ifdef OS_SUPPORT_ETHERCAT
+extern int workers_init(struct rpmsg_endpoint *ept);
+#endif
 
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -42,4 +46,7 @@ void example_init()
         ret = is_rpmsg_ept_ready(&g_ept);
         __asm__ __volatile__ ("mfence");
     }
+#ifdef OS_SUPPORT_ETHERCAT
+    workers_init(&g_ept);
+#endif
 }

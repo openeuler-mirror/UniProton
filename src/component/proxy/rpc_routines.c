@@ -26,8 +26,10 @@
 #include "securec.h"
 #include "rpc_internal_common.h"
 #include "rpc_internal_model.h"
+#include "rpc_client_internal.h"
 #include "rpc_err.h"
 #include "prt_buildef.h"
+#include "prt_queue.h"
 
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT    97
@@ -418,8 +420,18 @@ int rpmsg_client_cb(struct rpmsg_endpoint *ept,
 
     if (msg->id == 0) {
         PRT_ProxyWriteStdOut((void *)g_s1, strlen(g_s1) * sizeof(char));
+    }
+
+#ifdef OS_SUPPORT_ETHERCAT
+    if (is_valid_cmd_func_id(msg->id)) {
+        cmd_base_req_t *cmd_req = (cmd_base_req_t *)&(msg->params[0]);
+        U32 ret = PRT_QueueWrite(g_cmd_req_queue, cmd_req, len - MAX_FUNC_ID_LEN, 0, OS_QUEUE_NORMAL);
+        if (ret != OS_OK) {
+            return RPMSG_ERR_NO_MEM;
+        }
         return RPMSG_SUCCESS;
     }
+#endif
 
     if (msg->id < MIN_ID || msg->id > MAX_ID) {
         dprintf("invalid msg id(%d)\n", msg->id);
@@ -436,7 +448,12 @@ static int wait4resp(int slot_idx, void *data, size_t size)
 
     /* flag set to wait for response from endpoint callback */
     set_status(slot_idx, STATUS_WAITING);
+
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
     ret = rpmsg_send(g_ept, data, size);
+    PRT_HwiRestore(intSave);
+
     if (ret < 0) {
         set_status(slot_idx, STATUS_READY);
         free_slot(slot_idx);
@@ -1403,7 +1420,10 @@ int PRT_ProxyWriteStdOut(const char *buf, int len)
     req.func_id = PRINTF_ID;
     req.len = len;
 
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
     ret = rpmsg_send(g_ept, &req, len + hlen);
+    PRT_HwiRestore(intSave);
 
     return ret - hlen;
 }
@@ -1421,7 +1441,10 @@ static int __printf(const char *format, va_list list)
     req.func_id = PRINTF_ID;
     req.len = len;
     
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
     ret = rpmsg_send(g_ept, &req, len + hlen);
+    PRT_HwiRestore(intSave);
 
     return ret - hlen;
 }

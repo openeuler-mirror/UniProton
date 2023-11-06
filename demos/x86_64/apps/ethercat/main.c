@@ -20,9 +20,12 @@ void schedTest(void);
 void waitTest(void);
 #endif
 
+#if defined(OS_SUPPORT_ETHERCAT)
+int ethercat_init(void);
+#endif
+
 #if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
 int ethercat_main(void);
-int ethercat_init(void);
 void test_ethercat_main();
 bool wait_for_slave_scan_complete();
 bool wait_for_slave_respond();
@@ -55,17 +58,21 @@ void TestTaskEntry()
 #endif
     printf("test entry\n");
 
-#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
+#if defined(OS_SUPPORT_ETHERCAT)
     ethercat_init();
+#endif
+
+#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
     if (!wait_for_slave_respond()) {
-        printf("[TEST] no slave responding!");
+        printf("[TEST] no slave responding!\n");
         return;
     }
 
     if (!wait_for_slave_scan_complete()) {
-        printf("[TEST] slave scan not compete yet!");
+        printf("[TEST] slave scan not compete yet!\n");
         return;
     }
+    printf("[TEST] detect slave\n");
     test_ethercat_main();
 #endif
 
