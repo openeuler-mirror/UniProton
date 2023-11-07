@@ -12,6 +12,8 @@
 /demos/*/component/open-amp*
 /demos/*/component/openamp*
 /src/libc/musl/include/bits/
+/src/component/lua-*
+/demos/rk3568_jailhouse/apps/ivshmem/lua.c
 /build/logs/
 /build/output/
 /build/*/__pycache__/
