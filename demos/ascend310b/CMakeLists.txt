@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
@@ -12,26 +14,25 @@ set(AS_OPTION "-g -march=armv8.2-a+nofp+nosimd -Wl,--build-id=none -fno-builtin 
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ../ascend310b.ld")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ../ascend310b.ld")
+set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/ascend310b.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/ascend310b.ld")
 
 # 公共函数定义导入
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/functions/uniproton_functions.cmake)
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 # 函数import_kconfig把.config文件中的定义转换为cmake变量，用于后续子文件夹中决定是否编译某库
-import_kconfig(${CMAKE_CURRENT_SOURCE_DIR}/../../build/uniproton_config/config_armv8_ascend310b/defconfig)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_ascend310b/defconfig)
 
 include_directories(
-    ./include
-    ./config
-    ./bsp
-    ./bsp/ascend310b
-    ./apps/helloworld
-    ../../src/arch/include
-    ../../src/utility/lib/include
-    ../../build/uniproton_config/config_armv8_ascend310b
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/ascend310b
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/helloworld
+    ${HOME_PATH}/src/arch/include
+    ${HOME_PATH}/src/utility/lib/include
 )
 
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
