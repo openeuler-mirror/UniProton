@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM)
 
+set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
@@ -12,20 +14,23 @@ set(AS_OPTION "-g -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cf
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ../rk3568_jailhouse.ld")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ../rk3568_jailhouse.ld")
+set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rk3568_jailhouse.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rk3568_jailhouse.ld")
+
+include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_rk3568_jailhouse/defconfig)
 
 include_directories(
-    ./include
-    ./config
-    ./bsp
-    ./bsp/rk3568_jailhouse
-    ./bsp/uart
-    ./apps/ivshmem
-    ../../output/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/rk3568_jailhouse
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/ivshmem
+    ${HOME_PATH}/output/libc/include
 )
 
-link_directories(./libs)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
@@ -43,7 +48,7 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
-    add_subdirectory(../../testsuites/posixtestsuite/conformance tmp)
+    add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
     target_compile_options(ivshmem PUBLIC -DTESTSUITE_CASE)
     list(APPEND OBJS $<TARGET_OBJECTS:ivshmem> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
     add_executable(${APP} ${OBJS})
@@ -53,7 +58,7 @@ elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "interrupt-latency" OR
         ${APP} STREQUAL "deadlock-break" OR
         ${APP} STREQUAL "message-latency")
-    add_subdirectory(../../testsuites/rhealstone tmp)
+    add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
     target_compile_options(ivshmem PUBLIC -DTESTSUITE_CASE)
     list(APPEND OBJS $<TARGET_OBJECTS:ivshmem> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:rhealstoneTest>)
     add_executable(${APP} ${OBJS})
