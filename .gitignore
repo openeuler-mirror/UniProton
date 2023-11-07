@@ -3,8 +3,15 @@
 /demos/*/include
 /demos/*/build/*.bin
 /demos/*/build/*.elf
+/demos/*/build/*.asm
 /demos/*/libs/*.a
 /demos/*/libs/*.lib
+/demos/*/build/libmetal/
+/demos/*/build/open-amp/
+/demos/*/component/libmetal*
+/demos/*/component/open-amp*
+/demos/*/component/openamp*
+/src/libc/musl/include/bits/
 /build/logs/
 /build/output/
 /build/*/__pycache__/
