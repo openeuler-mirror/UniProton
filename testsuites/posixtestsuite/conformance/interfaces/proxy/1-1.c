@@ -584,7 +584,7 @@ static int test_select()
     struct timeval tv;
     int fd1 = 0;
     int fd2 = 0;
-    int smallerFd = 0;
+    int largerFd = 0;
     int ret = 0;
     char *fname1 = "/tmp/remote.file";
     char *fname2 = "/tmp/remote.file1";
@@ -595,9 +595,9 @@ static int test_select()
            S_IRUSR | S_IWUSR);
     fd2 = open(fname2, REDEF_O_CREAT | REDEF_O_RDWR | REDEF_O_APPEND,
            S_IRUSR | S_IWUSR);
-    smallerFd = fd1;
-    if (fd1 > fd2) {
-        smallerFd = fd2;
+    largerFd = fd1;
+    if (fd1 < fd2) {
+        largerFd = fd2;
     }
     dprintf("\nfd1:%d, fd2:%d\n", fd1, fd2);
     FD_ZERO(&readset);
@@ -614,7 +614,7 @@ static int test_select()
 
     dprintf("\nUP>select fd1: %d, fd2: %d, sizeof(fd_set):%d\r\n",
         FD_ISSET(fd1, &readset), FD_ISSET(fd2, &readset), sizeof(fd_set));
-    ret = select(smallerFd + 1, &readset, &writeset, &exceptset, &tv);
+    ret = select(largerFd + 1, &readset, &writeset, &exceptset, &tv);
     dprintf("\nUP>select return: %d, sec:%ld, usec:%ld, read_fd1: %d, read_fd2: %d\r\n", 
         ret, tv.tv_sec, tv.tv_usec, FD_ISSET(fd1, &readset), FD_ISSET(fd2, &readset)); 
     dprintf("UP>select write_fd1: %d, write_fd2: %d, except_fd1: %d, except_fd2: %d\r\n",

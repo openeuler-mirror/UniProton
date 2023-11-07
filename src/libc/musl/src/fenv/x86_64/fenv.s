@@ -2,6 +2,8 @@
 .type feclearexcept,@function
 feclearexcept:
 		# maintain exceptions in the sse mxcsr, clear x87 exceptions
+	pushfq
+	cli
 	mov %edi,%ecx
 	and $0x3f,%ecx
 	fnstsw %ax
@@ -17,16 +19,20 @@ feclearexcept:
 	and %ecx,-8(%rsp)
 	ldmxcsr -8(%rsp)
 1:	xor %eax,%eax
+	popfq
 	ret
 
 .global feraiseexcept
 .type feraiseexcept,@function
 feraiseexcept:
+	pushfq
+	cli
 	and $0x3f,%edi
 	stmxcsr -8(%rsp)
 	or %edi,-8(%rsp)
 	ldmxcsr -8(%rsp)
 	xor %eax,%eax
+	popfq
 	ret
 
 .global __fesetround
