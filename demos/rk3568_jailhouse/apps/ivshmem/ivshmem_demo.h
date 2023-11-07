@@ -38,12 +38,6 @@
 #define HUGE_PAGE_SIZE		(2 * 1024 * 1024ULL)
 #define HUGE_PAGE_MASK		(~(HUGE_PAGE_SIZE - 1))
 
-#define ICC_IAR1_EL1		SYSREG_32(0, c12, c12, 0)
-#define ICC_EOIR1_EL1		SYSREG_32(0, c12, c12, 1)
-#define ICC_PMR_EL1		SYSREG_32(0, c4, c6, 0)
-#define ICC_CTLR_EL1		SYSREG_32(0, c12, c12, 4)
-#define ICC_IGRPEN1_EL1		SYSREG_32(0, c12, c12, 7)
-
 #define ICC_IGRPEN1_EN		0x1
 
 #define MAIR_ATTR_SHIFT(__n)	((__n) << 3)
@@ -170,5 +164,6 @@ void PrintShmem(struct IvshmemDeviceData *d);
 U32 MmioRead32(void *address);
 void ShmemHandler(U32 intNum);
 U32 TestShmemStart(void);
+U32 PciCfgRead(U16 bdf, unsigned int addr, unsigned int size);
 
 #endif

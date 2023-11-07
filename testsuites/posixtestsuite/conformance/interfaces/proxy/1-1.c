@@ -13,6 +13,7 @@
 #include <sys/un.h>
 #include <dirent.h>
 #include "prt_proxy_ext.h"
+#include <stdio.h>
 
 #define FD_SETSIZE 1024
 #define dprintf(format, ...) PRT_ProxyPrintf(format, ##__VA_ARGS__)
@@ -99,6 +100,50 @@ static int test_fs_posix2()
         return -1;
     }
     return 0;
+}
+
+static int test_fs_posix3()
+{
+    char *tmpfname = "/tmp/tmpXXXXXX";
+    char *str = "A Test string being written to file..";
+    int fd = 0;
+    int ret = 0;
+    off_t off = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fd = mkstemp(tmpfname);
+    if (fd < 0) {
+        dprintf("\nUP>mkstemp file '%s' fail, ret: %d\r\n", tmpfname, fd);
+        return fd;
+    }
+    dprintf("\nUP>mkstemp file '%s' with fd = %d\r\n", tmpfname, fd);
+
+    ret = write(fd, str, strlen(str));
+    if (ret < 0) {
+        dprintf("\nUP>write fail, ret: %d\r\n", ret);
+        goto close_file;
+    }
+    dprintf("\nUP>Wrote to fd = %d, size = %d, content = %s\r\n", fd, ret, str);
+
+    off = lseek(fd, 0, SEEK_SET);
+    if (off < 0) {
+        dprintf("\nUP>lseek fail, ret %d\r\n", ret);
+        goto close_file;
+    }
+    ret = read(fd, rbuff, sizeof(rbuff));
+    if (ret < 0) {
+        dprintf("\nUP>Read from fd = %d, failed ret %d\r\n", fd, ret);
+        goto close_file;
+    }
+    rbuff[ret] = 0;
+    dprintf("\nUP>Read from fd = %d, size = %d, "
+    "printing contents below .. %s\r\n", fd, ret, rbuff);
+
+close_file:
+    close(fd);
+    dprintf("\nUP>Closed fd = %d\r\n", fd);
+    return ret >= 0 ? 0 : -1;
 }
 
 #define BACKLOG         5
@@ -882,6 +927,364 @@ static int test_dirent()
     return 0;
 
 }
+
+static int test_FILE_fs_posix1()
+{
+    char *fname = "/tmp/remote1.txt";
+    char *str = "A Test string being written to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fp = fopen(fname, "w+");
+    if (fp == 0) {
+        dprintf("\nUP>fopen file '%s' fail, ret: %lu\r\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>fopen file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
+
+    size_t nmemb = strlen(str);
+    size_t sz = fwrite(str, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        dprintf("\nUP>fwrite fail, sz: %u, nmemb: %u\r\n", sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>fwrite to fp = %lu, size = %d, content = %s\r\n", (unsigned long)fp, sz, str);
+
+    ret = fseeko(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    sz = fread(rbuff, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        dprintf("\nUP>fread from fp = %lu, failed, sz: %u, nmemb: %u\r\n", (unsigned long)fp, sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+    rbuff[sz] = 0;
+    dprintf("\nUP>fread from fp = %lu, size = %d, "
+    "printing contents below .. %s\r\n", (unsigned long)fp, sz, rbuff);
+
+    remove(fname);
+    return ret >= 0 ? 0 : -1;
+}
+
+static int test_FILE_fs_posix2()
+{
+    char *str = "A Test string being written to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a tmpfile on host and writing to it..\r\n");
+    fp = tmpfile();
+    if (fp == 0) {
+        dprintf("\nUP>tmpfile fail, ret: %lu\r\n", (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>tmpfile with fp = %lu\r\n", (unsigned long)fp);
+
+    size_t nmemb = strlen(str);
+    size_t sz = fwrite(str, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        dprintf("\nUP>fwrite fail, sz: %u, nmemb: %u\r\n", sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>fwrite to fp = %lu, size = %d, content = %s\r\n", (unsigned long)fp, sz, str);
+
+    ret = fseeko(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    sz = fread(rbuff, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        dprintf("\nUP>fread from fp = %lu, failed, sz: %u, nmemb: %u\r\n", (unsigned long)fp, sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+    rbuff[sz] = 0;
+    dprintf("\nUP>fread from fp = %lu, size = %d, "
+    "printing contents below .. %s\r\n", (unsigned long)fp, sz, rbuff);
+
+    return ret >= 0 ? 0 : -1;
+}
+
+static int test_FILE_fs_posix3()
+{
+    char *fname = "/tmp/remote3.txt";
+    char *fnameNew = "/tmp/remoteNew3.txt";
+    char *strAdd = "A Test string being Add to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fp = fopen(fname, "w+");
+    if (fp == 0) {
+        dprintf("\nUP>fopen file '%s' fail, ret: %lu\r\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>fopened file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
+
+    rename(fname, fnameNew);
+    dprintf("\nUP>rename form '%s' to '%s'\r\n", fname, fnameNew);
+
+    fp = freopen(fnameNew, "a", fp);
+    if (fp == 0) {
+        dprintf("\nUP>freopen file '%s' fail, ret: %lu\r\n", fnameNew, (unsigned long)fp);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>freopened file '%s' with fp = %lu\r\n", fnameNew, (unsigned long)fp);
+
+    ret = fprintf(fp, strAdd);
+    if (ret < 0) {
+        dprintf("\nUP>fprintf fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fseeko(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    size_t nmemb = strlen(strAdd);
+    size_t sz = fread(rbuff, sizeof(char), nmemb, fp);
+    if (sz != 0) {
+        dprintf("\nUP>file is add only, should not read.\r\n");
+        fclose(fp);
+        return -1;
+    }
+
+    fp = freopen(fnameNew, "r", fp);
+    sz = fread(rbuff, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        dprintf("\nUP>fread from fp = %lu, failed, sz: %u, nmemb: %u\r\n", (unsigned long)fp, sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+    rbuff[sz] = 0;
+    dprintf("\nUP>fread from fp = %lu, size = %d, "
+    "printing contents below .. %s\r\n", (unsigned long)fp, sz, rbuff);
+
+    ret = fclose(fp);
+    dprintf("\nUP>fclosed fp = %lu\r\n", (unsigned long)fp);
+    remove(fnameNew);
+    return ret >= 0 ? 0 : -1;
+}
+
+static int test_FILE_fs_posix4()
+{
+    char *fname = "/tmp/remote4.txt";
+    char *str = "A Test string being written to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fp = fopen(fname, "w");
+    if (fp == 0) {
+        dprintf("\nUP>fopen file '%s' fail, ret: %lu\r\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>fopen file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
+
+    ret = fprintf(fp, str);
+    if (ret < 0) {
+        dprintf("\nUP>fprintf fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    size_t nmemb = strlen(str);
+    size_t sz = fread(rbuff, sizeof(char), nmemb, fp);
+    if (ferror(fp) == 0) { // 只写模式，不应该读成功
+        dprintf("\nUP>file is write only, should not read.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    clearerr(fp);
+    if (ferror(fp) != 0) {
+        dprintf("\nUP>clearerr fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fclose(fp);
+    dprintf("\nUP>fclosed fp = %lu\r\n", (unsigned long)fp);
+    remove(fname);
+    return ret >= 0 ? 0 : -1;
+}
+
+static int test_FILE_fs_posix5()
+{
+    char *fname = "/tmp/remote5.txt";
+    char *str = "This is a Test string being written to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fp = fopen(fname, "w+");
+    if (fp == 0) {
+        dprintf("\nUP>fopen file '%s' fail, ret: %lu\r\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>fopened file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
+
+    ret = fputs(str, fp);
+    if (ret < 0) {
+        dprintf("\nUP>fputs fail, ret: %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>fputs to fp = %lu, content = %s\r\n", (unsigned long)fp, str);
+
+    long pos = ftello(fp);
+    size_t slen = strlen(str);
+    size_t realPos = slen;
+    if (pos != realPos) {
+        dprintf("\nUP>ftello get pos fail, pos: %d, realPos: %d\r\n", pos, realPos);
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fseeko(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    pos = ftello(fp);
+    realPos = 0;
+    if (pos != realPos) {
+        dprintf("\nUP>reset pos fail, pos: %d, realPos: %d\r\n", pos, realPos);
+        fclose(fp);
+        return -1;
+    }
+
+    int isEof = feof(fp);
+    if (isEof) {
+        dprintf("\nUP>should not EOF\r\n");
+        fclose(fp);
+        return -1;
+    }
+
+    int ch = getc(fp);
+    if (ch != *str) {
+        dprintf("\nUP>getc fail, ch: %c\r\n", ch);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>getc, fp = %lu, ch = %c\r\n", (unsigned long)fp, ch);
+
+    ch = getc_unlocked(fp);
+    if (ch != *(str + 1)) {
+        dprintf("\nUP>getc_unlocked fail, ch: %c\r\n", ch);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>getc_unlocked, fp = %lu, ch = %c\r\n", (unsigned long)fp, ch);
+
+    remove(fname);
+    return ret >= 0 ? 0 : -1;
+}
+
+
+static int test_FILE_fs_posix6()
+{
+    char *fname = "/tmp/remote6.txt";
+    char *str = "A Test string being written to file..";
+    FILE *fp;
+    int ret = 0;
+    char rbuff[100];
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fp = fopen(fname, "w+");
+    if (fp == 0) {
+        dprintf("\nUP>fopen file '%s' fail, ret: %lu\r\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    dprintf("\nUP>fopened file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
+
+    size_t slen = strlen(str);
+    ret = fputs(str, fp);
+    if (ret < 0) {
+        dprintf("\nUP>fputs fail, ret: %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>fputs to fp = %lu, content = %s\r\n", (unsigned long)fp, str);
+
+    ret = fseeko(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    char *retStr = fgets(rbuff, slen + 1, fp);
+    if (retStr == NULL) {
+        dprintf("\nUP>fgets fail. \r\n");
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>fgets fp = %lu, size = %d, "
+    "printing contents below .. %s\r\n", (unsigned long)fp, slen, rbuff);
+
+    retStr = fgets(rbuff, slen + 1, fp); // 再次获取一遍
+    if (retStr != NULL) {
+        dprintf("\nUP>fgets should get nothing, str: %s.\r\n", rbuff);
+        fclose(fp);
+        return -1;
+    }
+
+    int isEof = feof(fp);
+    if (!isEof) {
+        dprintf("\nUP>should EOF\r\n");
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fclose(fp);
+    dprintf("\nUP>fclosed fp = %lu\r\n", (unsigned long)fp);
+    remove(fname);
+    return ret >= 0 ? 0 : -1;
+}
+
+static int test_FILE_fs_posix7()
+{
+    FILE *fp;
+    char buffer[100] = {0};
+
+    fp = popen("pwd", "r");
+    if (fp == 0) {
+        dprintf("popen failed!");
+        return -1;
+    }
+
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        dprintf("%s", buffer);
+    }
+
+    int ret = pclose(fp);
+    return (ret == 0 ? 0 : -1);
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -901,6 +1304,7 @@ typedef struct test_case {
 static test_case_t g_cases[] = {
     TEST_CASE_Y(test_fs_posix1),
     TEST_CASE_Y(test_fs_posix2),
+    TEST_CASE_Y(test_fs_posix3),
     TEST_CASE_N(test_domain_server),
     TEST_CASE_N(test_domain_client),
     TEST_CASE_Y(test_getaddrinfo),
@@ -921,6 +1325,13 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_close_arg),
     TEST_CASE_Y(test_gethostbyaddr_arg),
     TEST_CASE_Y(test_dirent),
+    TEST_CASE_Y(test_FILE_fs_posix1),
+    TEST_CASE_Y(test_FILE_fs_posix2),
+    TEST_CASE_Y(test_FILE_fs_posix3),
+    TEST_CASE_Y(test_FILE_fs_posix4),
+    TEST_CASE_Y(test_FILE_fs_posix5),
+    TEST_CASE_Y(test_FILE_fs_posix6),
+    TEST_CASE_Y(test_FILE_fs_posix7),
 };
 
 int rpc_test_entry()
@@ -929,9 +1340,10 @@ int rpc_test_entry()
     int cnt = 0;
     int fails = 0;
     int len = sizeof(g_cases) / sizeof(test_case_t);
-    dprintf("\n===test start===\n");
+    dprintf("\n===test start=== \n");
     for (i = 0, cnt = 0; i < len; i++) {
         test_case_t *tc = &g_cases[i];
+        dprintf("\n===%s start === \n", tc->name);
         if (tc->skip) {
             continue;
         }
@@ -939,9 +1351,11 @@ int rpc_test_entry()
         int ret = tc->fn();
         if (ret) {
             fails++;
-            dprintf("===%s failed ===\n", tc->name);
+            dprintf("\n===%s failed ===\n", tc->name);
+        } else {
+            dprintf("\n===%s success ===\n", tc->name);
         }
     }
-    dprintf("\n===test end, fails:%d ===\n", fails);
+    dprintf("\n===test end, total: %d, fails:%d ===\n", cnt, fails);
     return cnt;
 }

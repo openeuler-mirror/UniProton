@@ -161,6 +161,8 @@ struct sockaddr_in {
 };
 #endif /* NO_STD_HEADERS */
 
+typedef uintptr_t fileHandle;
+
 void OsProxyFreeAddrList(struct addrinfo *ai);
 int OsProxyEncodeAddrList(const struct addrinfo *ai, char *buf, int *buflen);
 int OsProxyDecodeAddrList(const char *buf, int cnt, int buflen, struct addrinfo **out);
