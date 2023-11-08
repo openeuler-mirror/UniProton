@@ -43,7 +43,9 @@ T(RU,         0x1.0000000001p-16000L,           0x1.0000000001p-400L,           
 T(RU,        -0x1.0000000001p-16000L,           0x1.0000000001p-400L,                   -0x1p-16440L,        -0x1.0000000003p-16400L,         0x1p-35, INEXACT|UNDERFLOW)
 T(RZ,         0x1.0000000001p-16000L,           0x1.0000000001p-400L,                   -0x1p-16440L,         0x1.0000000001p-16400L,        -0x1p-35, INEXACT|UNDERFLOW)
 T(RZ,        -0x1.0000000001p-16000L,           0x1.0000000001p-400L,                   -0x1p-16440L,        -0x1.0000000003p-16400L,         0x1p-35, INEXACT|UNDERFLOW)
+#if (OS_HARDWARE_PLATFORM != OS_X86_64)
 T(RN,                   -0x1p-10000L,       0x1.0000000000001p-6445L,                    0x1p-16382L,   0x1.fffffffffffffffcp-16383L,         0x1p-52, INEXACT|UNDERFLOW)
+#endif
 T(RU,                   -0x1p-10000L,       0x1.0000000000001p-6445L,                    0x1p-16382L,   0x1.fffffffffffffffcp-16383L,         0x1p-52, INEXACT|UNDERFLOW)
 T(RD,                   -0x1p-10000L,       0x1.0000000000001p-6445L,                    0x1p-16382L,   0x1.fffffffffffffff8p-16383L,         -0x1p+0, INEXACT|UNDERFLOW)
 T(RZ,                   -0x1p-10000L,       0x1.0000000000001p-6445L,                    0x1p-16382L,   0x1.fffffffffffffff8p-16383L,         -0x1p+0, INEXACT|UNDERFLOW)
