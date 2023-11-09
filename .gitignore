@@ -13,9 +13,9 @@
 /demos/*/component/openamp*
 /testsuites/build/*.bin
 /testsuites/build/*.elf
+/src/drivers/include/arch/board/
 /src/libc/musl/include/bits/
 /src/component/lua-*
-/src/fs/include/arch/
 /src/fs/include/inode/
 /demos/rk3568_jailhouse/apps/ivshmem/lua.c
 /build/logs/
