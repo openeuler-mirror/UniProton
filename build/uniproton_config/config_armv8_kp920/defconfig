@@ -132,5 +132,14 @@ CONFIG_OS_POSIX_SET_TZDST=y
 # Openamp Modules Configuration
 #
 CONFIG_OS_OPTION_OPENAMP=y
+CONFIG_OS_OPTION_OPENAMP_PROXYBASH=y
 
+#
+# PCIe Modules Configuration
+#
 CONFIG_OS_OPTION_PCIE=y
+
+#
+# GIC_LPI Modules Configuration
+#
+CONFIG_OS_OPTION_GIC_LPI=y

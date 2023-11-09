@@ -207,5 +207,5 @@ extern S32 mmu_init(void);
 extern S32 mmu_request(U64 phy_addr, U64 length);
 extern void mmu_release(U64 virt_addr);
 extern S32 mmu_update(void);
-
+extern void mmu_info_dump(void);
 #endif

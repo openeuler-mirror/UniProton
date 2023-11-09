@@ -7,6 +7,7 @@
 #include "prt_config_internal.h"
 #include "prt_task.h"
 #include "test.h"
+#include "cpu_config.h"
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -14,10 +15,10 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 extern U32 PRT_PrintfInit();
 
 #if defined(OS_OPTION_PCIE)
-extern void test_pcie(void);
+extern void test_pcie_demo(void);
 #endif
 
-#if defined(OS_OPTION_OPENAMP)
+#if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
 int TestOpenamp()
 {
     int ret;
@@ -33,15 +34,20 @@ int TestOpenamp()
 
 void TestTaskEntry()
 {
-#if defined(OS_OPTION_OPENAMP)
+#if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
 #endif
-    for (int i = 1; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
     }
 #if defined(OS_OPTION_PCIE)
-    test_pcie();
+    test_pcie_demo(); /* 依赖openamp实现的代理bash，放在TestOpenamp之后 */
 #endif
+
+    do {
+        PRT_TaskDelay(100);
+    } while(1);
+
 }
 
 U32 OsTestInit(void)

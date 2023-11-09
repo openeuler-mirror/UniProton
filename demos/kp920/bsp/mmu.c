@@ -28,6 +28,12 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
+        .virt      = MMU_LPI_PEND_ADDR,
+        .phys      = MMU_LPI_PEND_ADDR,
+        .size      = 0x200000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
         .virt      = MMU_IMAGE_ADDR,
         .phys      = MMU_IMAGE_ADDR,
         .size      = 0x1000000,
@@ -40,6 +46,18 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
+        .virt      = MMU_ITS_ADDR,
+        .phys      = MMU_ITS_ADDR,
+        .size      = MMU_ITS_ADDR_LEN,  /* 0x100000ULL  1MB */
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_ITS1_ADDR,
+        .phys      = MMU_ITS1_ADDR,
+        .size      = MMU_ITS_ADDR_LEN,  /* 0x100000ULL  1MB */
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
         .virt      = MMU_UART_ADDR,
         .phys      = MMU_UART_ADDR,
         .size      = 0x2000,
@@ -48,12 +66,12 @@ static mmu_mmap_region_s g_mem_map_info[] = {
     }, {
         .virt      = MMU_ECAM_ADDR,
         .phys      = MMU_ECAM_ADDR,
-        .size      = 0x10000000, /* 256Bus * 32Device * 8Fuc * 4KB */
+        .size      = MMU_ECAM_ADDR_LEN, /* 256Bus * 32Device * 8Fuc * 4KB */
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
     /* 这里预留MMU_MAP_RESREVED_NUM个mmu页表用于pcie设备io、mem空间的映射 */
-    [6 ... (6 + MMU_MAP_RESREVED_NUM - 1)] = {
+    [9 ... (9 + MMU_MAP_RESREVED_NUM - 1)] = {
         .virt      = MMU_INVALID_ADDR,
         .phys      = MMU_INVALID_ADDR,
         .size      = 0x0,
@@ -419,4 +437,10 @@ void mmu_release(U64 virt_addr)
     g_mem_map_info[i].size = 0;
     g_mmu_map_reserved_num++;
     return;
+}
+
+void mmu_info_dump(void)
+{
+    printf("mmu_map_num:%d mmu_map_reserved_num:%d mmu_map_reserved_sid:%d\r\n",
+        MMU_MAP_NUM, g_mmu_map_reserved_num, MMU_MAP_RESERVE_SID);
 }

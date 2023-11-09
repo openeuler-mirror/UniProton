@@ -30,7 +30,11 @@
 #define OS_HWI_IS_PPI(hwiNum)        (((hwiNum) > MAX_SGI_ID) && ((hwiNum) <= MAX_PPI_ID))
 
 /* OS_HWI_MAX_NUM 大小会影响bss段大小。需要根据实际使用hwi个数配置 */
+#if defined(OS_OPTION_GIC_LPI)
+#define OS_HWI_MAX_NUM           0x10000U  /* 后续整改这里，当前这样用 */
+#else
 #define OS_HWI_MAX_NUM           0x182U
+#endif
 #define OS_HWI_NUM_CHECK(hwiNum) ((hwiNum) >= OS_HWI_MAX_NUM)
 
 #define OS_HWI_MAX           (OS_HWI_MAX_NUM - 1)

@@ -70,6 +70,8 @@ OS_SEC_L4_TEXT void OsGicDisableInt(U32 intId)
         OsGicrDisableInt(PRT_GetCoreID(), intId);
     } else if (intId <= MAX_SPI_ID) {
         OsGicdDisableInt(intId);
+    } else if (intId >= MIN_LPI_ID) {
+        OsGicrLpiDisableInt(intId);
     }
 }
 
@@ -82,6 +84,8 @@ OS_SEC_L4_TEXT void OsGicEnableInt(U32 intId)
         OsGicrEnableInt(PRT_GetCoreID(), intId);
     } else if (intId <= MAX_SPI_ID) {
         OsGicdEnableInt(intId);
+    } else if (intId >= MIN_LPI_ID) {
+        OsGicrLpiEnableInt(intId);
     }
 }
 
