@@ -105,7 +105,7 @@ extern void *__wrap_memset(void *dest, int set, U32 len)
     for (int i = 0; i < len; ++i) {
         ret[i] = set;
     }
-    return ret;
+    return dest;
 }
 
 extern void *__wrap_memcpy(void *dest, const void *src, size_t size)
