@@ -14,7 +14,25 @@ extern U64 g_mmu_page_end;
 #define MMU_MAP_RESREVED_NUM 8 /* 暂时预留8个mmu页表用于pcie设备io、mem空间的映射 */
 U32 g_mmu_map_reserved_num = MMU_MAP_RESREVED_NUM;
 
-static mmu_mmap_region_s g_mem_map_info[] = {
+typedef enum {
+    MMU_OPENAMP_TYPE = 0,
+    MMU_DMA_TYPE,
+    MMU_LPI_PEND_TYPE,
+    MMU_IMAGE_TYPE,
+#ifdef OS_GDB_STUB
+    MMU_GDB_STUB_TYPE,
+#endif
+    MMU_GIC_TYPE,
+    MMU_ITS_TYPE,
+    MMU_ITS1_TYPE,
+    MMU_UART_TYPE,
+    MMU_ECAM_TYPE,
+    MMU_RESERVE_S_TYPE,
+    MMU_RESERVE_E_TYPE = MMU_RESERVE_S_TYPE + MMU_MAP_RESREVED_NUM - 1,
+    MMU_MAX_TYPE,
+} MMU_PAGE_TYPE_E;
+
+static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
     {
         .virt      = MMU_OPENAMP_ADDR,
         .phys      = MMU_OPENAMP_ADDR,
@@ -40,6 +58,14 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
     }, {
+#ifdef OS_GDB_STUB
+        .virt      = MMU_GDB_STUB_ADDR,
+        .phys      = MMU_GDB_STUB_ADDR,
+        .size      = 0x10000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+#endif
         .virt      = MMU_GIC_ADDR,
         .phys      = MMU_GIC_ADDR,
         .size      = 0x1000000,
@@ -71,7 +97,7 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
     /* 这里预留MMU_MAP_RESREVED_NUM个mmu页表用于pcie设备io、mem空间的映射 */
-    [9 ... (9 + MMU_MAP_RESREVED_NUM - 1)] = {
+    [MMU_RESERVE_S_TYPE ... MMU_RESERVE_E_TYPE] = {
         .virt      = MMU_INVALID_ADDR,
         .phys      = MMU_INVALID_ADDR,
         .size      = 0x0,

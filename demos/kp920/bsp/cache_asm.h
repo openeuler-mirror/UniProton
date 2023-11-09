@@ -7,6 +7,8 @@
 #include "prt_errno.h"
 
 extern void os_asm_invalidate_dcache_all(void);
+extern void os_asm_flush_dcache_all(void);
+extern void os_asm_clean_dcache_all(void);
 extern void os_asm_invalidate_icache_all(void);
 extern void os_asm_invalidate_tlb_all(void);
 #endif

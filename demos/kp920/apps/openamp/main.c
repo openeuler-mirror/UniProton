@@ -32,6 +32,13 @@ int TestOpenamp()
 }
 #endif
 
+uint32_t g_power_off_flag = 0;
+extern U32 OsCpuPowerOff(void);
+void OsPowerOff(void)
+{
+    g_power_off_flag = 1;
+}
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
@@ -45,9 +52,13 @@ void TestTaskEntry()
 #endif
 
     do {
-        PRT_TaskDelay(100);
+        PRT_TaskDelay(1000);
+        printf("TestTaskEntry\r\n");
+        if (g_power_off_flag) {
+            PRT_TaskDelay(500);
+            OsCpuPowerOff();
+        }
     } while(1);
-
 }
 
 U32 OsTestInit(void)

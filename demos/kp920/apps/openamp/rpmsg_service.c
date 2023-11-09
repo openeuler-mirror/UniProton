@@ -12,7 +12,11 @@
  * Description: openamp configuration
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "rpmsg_backend.h"
+#include "cpu_config.h"
 
 static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
@@ -28,9 +32,11 @@ bool g_openampFlag = false;
 #if defined(OS_OPTION_OPENAMP_PROXYBASH)
 #define PROXYBASH_RPMSG_ENDPOINT_NAME "proxybash"
 #endif
+extern void OsPowerOff(void);
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
     rpmsg_destroy_ept(ep);
+    (void)OsPowerOff();
 }
 
 int send_message(unsigned char *message, int len)

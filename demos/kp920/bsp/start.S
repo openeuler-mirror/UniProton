@@ -2,6 +2,7 @@
 
     .global   OsResetVector
     .global   mmu_init
+    .global   OsArmSmccSmc
     
     .type     mmu_init, function
     .type     start, function
@@ -105,3 +106,7 @@ OsEnterReset:
     
     .section .text, "ax"
     .balign 4
+
+OsArmSmccSmc:
+    smc    #0x0
+    ret

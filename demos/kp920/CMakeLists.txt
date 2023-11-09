@@ -29,6 +29,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/arch/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/utility/lib/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)

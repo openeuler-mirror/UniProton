@@ -21,6 +21,7 @@
 #include "prt_mem.h"
 #include "pcie.h"
 #include "pcie_config.h"
+#include "pcie_bus_filter.h"
 
 #define IORESOURCE_IO   0x00000100	/* PCI/ISA I/O ports */
 #define IORESOURCE_MEM  0x00000200
@@ -37,20 +38,6 @@ int pci_frame_init(uint64_t pci_cfg_base)
 {
     pcie_config_base_addr_register(pci_cfg_base);
     return 0;
-}
-
-pci_bus_accessible_pfn pci_bus_accessible_fn = NULL;
-
-static uint32_t pci_bus_accessible(uint32_t bus_no)
-{
-    if (pci_bus_accessible_fn != NULL) {
-        return pci_bus_accessible_fn(bus_no);
-    }
-
-    if (bus_no >= PCI_BUS_NUM_MAX) {
-        return 0;
-    }
-    return 1;
 }
 
 /* 根据 pci_drv 中的 pci_device_id 匹配所有pci设备，若果能匹配到，则执行挂接probe函数 */

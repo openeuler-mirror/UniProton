@@ -32,10 +32,12 @@
 /* OS_HWI_MAX_NUM 大小会影响bss段大小。需要根据实际使用hwi个数配置 */
 #if defined(OS_OPTION_GIC_LPI)
 #define OS_HWI_MAX_NUM           0x10000U  /* 后续整改这里，当前这样用 */
+#define OS_HWI_NUM_CHECK(hwiNum)    ((hwiNum) >= OS_HWI_MAX_NUM) || \
+    (((hwiNum) > MAX_SPI_ID) && ((hwiNum) < MIN_LPI_ID))
 #else
 #define OS_HWI_MAX_NUM           0x182U
-#endif
 #define OS_HWI_NUM_CHECK(hwiNum) ((hwiNum) >= OS_HWI_MAX_NUM)
+#endif
 
 #define OS_HWI_MAX           (OS_HWI_MAX_NUM - 1)
 #define OS_HWI_FORMARRAY_NUM OS_HWI_MAX_NUM

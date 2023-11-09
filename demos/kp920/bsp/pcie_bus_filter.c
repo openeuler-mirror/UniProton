@@ -1,6 +1,5 @@
 #include "prt_buildef.h"
 #include "prt_typedef.h"
-#include "pcie_bus_filter.h"
 
 struct pcie_bus_range_s {
     uint64_t start;
