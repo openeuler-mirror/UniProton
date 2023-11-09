@@ -253,6 +253,7 @@ extern void *__wrap_memcpy(void *dest, const void *src, size_t size)
     for (size_t i = 0; i < size; ++i) {
         *(char *)(dest + i) = *(char *)(src + i);
     }
+    return dest;
 }
 
 extern int __wrap_strcmp(const char *str1, const char *str2)
