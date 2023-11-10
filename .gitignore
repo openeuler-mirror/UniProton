@@ -24,3 +24,5 @@
 /build/uniproton_config/*/prt_buildef.h
 /cmake/**/__pycache__/
 /output
+/src/net/lwip
+/src/fs/fat/ff15
