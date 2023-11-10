@@ -2,6 +2,14 @@
 set -e
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-none-eabi-10-2020-q4-major
 
+if [ ! -f "../../platform/libboundscheck/include/securec.h" ]; then
+    git clone https://gitee.com/openeuler/libboundscheck.git
+
+    cp libboundscheck/include/* ../../platform/libboundscheck/include
+    cp libboundscheck/src/* ../../platform/libboundscheck/src
+    rm -rf libboundscheck
+fi
+
 sim_flag=false
 build_flag=""
 LIB_RUN_TYPE="FPGA"
