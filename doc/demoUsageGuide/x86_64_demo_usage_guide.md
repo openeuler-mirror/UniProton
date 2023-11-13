@@ -2,13 +2,8 @@
 原生 ubuntu 22.04
 
 ## oebuild安装
-参考 "运行环境准备"，安装python3 pip oebuild
-
-https://openeuler.gitee.io/yocto-meta-openeuler/master/yocto/oebuild.html#id2
-
-参考 "如何编译一个标准镜像"，尝试构建默认镜像（操作时需要切换到普通用户权限）
-
-https://openeuler.gitee.io/yocto-meta-openeuler/master/yocto/oebuild.html#id4
+参考 "如何编译一个标准镜像"，安装python3 pip oebuild，尝试构建默认镜像（操作时需要切换到普通用户权限）
+https://gitee.com/openeuler/oebuild?_from=gitee_search#%E5%A6%82%E4%BD%95%E7%BC%96%E8%AF%91%E4%B8%80%E4%B8%AA%E6%A0%87%E5%87%86%E9%95%9C%E5%83%8F
 
 例子：
 ```sh
@@ -17,26 +12,25 @@ cd ./example
 oebuild init tmp
 cd ./tmp 
 oebuild update
-oebuild generate
-cd ./build/aarch64-std
+oebuild generate -p x86-64
+cd ./build/x86-64
 oebuild bitbake openeuler-image
 ```
 
 结果显示没有error messages，代表构建默认镜像成功，编辑环境正常
 
 ## 编译 uniproton
-在 build/aarch64-std 文件夹内，使用 oebuild bitbake, 进入编译环境
+在 build/x86-64 文件夹内，使用 oebuild bitbake, 进入编译环境
 下载并编译 uniproton 个人分支代码:
 
 ```sh
 git clone https://gitee.com/openeuler/UniProton.git
 cd UniProton
-git checkout -b dev origin/dev
 cd demos/x86_64/build
 sh ./build_app.sh
 ```
 
-镜像路径: build/aarch64-std/UniProton/demos/x86_64/build/x86_64.bin
+镜像路径: build/x86-64/UniProton/demos/x86_64/build/x86_64.bin
 
 ## 编译 mcs_km.ko及rpmsg_main
 参考 "构建安装指导"，构建出mcs_km.ko及rpmsg_main，并根据指导拷贝libmetal,libopen_amp,libsysfs到安装环境
