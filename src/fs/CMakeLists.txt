@@ -25,7 +25,7 @@ add_subdirectory(adapter)
 add_subdirectory(inode)
 add_subdirectory(mount)
 add_subdirectory(vfs)
-add_subdirectory(libs)
+add_subdirectory(sys)
 
 install(DIRECTORY
     ${FS_BASE_DIR}/include
