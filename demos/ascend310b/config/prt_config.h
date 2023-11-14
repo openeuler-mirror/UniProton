@@ -38,7 +38,7 @@ extern "C" {
 /* Tick中断模块裁剪开关 */
 #define OS_INCLUDE_TICK                                 YES
 /* Tick中断时间间隔，tick处理时间不能超过1/OS_TICK_PER_SECOND(s) */
-#define OS_TICK_PER_SECOND                              1000
+#define OS_TICK_PER_SECOND                              100
 
 /* ***************************** 配置定时器模块 ***************************** */
 /* 基于TICK的软件定时器裁剪开关 */

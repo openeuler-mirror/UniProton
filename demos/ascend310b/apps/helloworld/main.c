@@ -19,9 +19,9 @@ void TestTaskEntry()
 {
     U64 n = 0;
     while (1) {
-        PRT_Printf("[uniproton] test [%llu]\n", n);
         n++;
-        PRT_TaskDelay(10000);
+        PRT_TaskDelay(OS_TICK_PER_SECOND * 10);
+        PRT_Printf("[uniproton] test [%llu]\n", n);
     }
     return;
 }
@@ -59,14 +59,12 @@ U32 PRT_AppInit(void)
         return ret;
     }
 
-    ret = TestShmStart();
+    ret = TestClkStart();
     if (ret) {
-        PRT_Printf("[uniproton] TestShmStart error!\n");
-    } else {
-        PRT_Printf("[uniproton] TestShmStart success!\n");
+        return ret;
     }
 
-    ret = TestClkStart();
+    ret = TestShmStart();
     if (ret) {
         return ret;
     }
@@ -92,7 +90,9 @@ void PRT_HardBootInit(void)
 S32 main(void)
 {
     PRT_UartInit();
-    PRT_Printf("[uniproton] hello uniproton!\n");
+    U64 t;
+    asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
+    PRT_Printf("[uniproton] start time 0.%llu s\n", t / 48);
     return OsConfigStart();
 }
 
