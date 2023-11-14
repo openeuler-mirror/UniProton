@@ -3,5 +3,5 @@
 
 _Noreturn void _exit(int status)
 {
-	_Exit(status);
+    _Exit(status);
 }

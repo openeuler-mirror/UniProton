@@ -2,5 +2,5 @@
 
 pid_t setpgrp(void)
 {
-	return setpgid(0, 0);
+    return setpgid(0, 0);
 }

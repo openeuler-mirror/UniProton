@@ -18,14 +18,14 @@
 #undef stdin
 static unsigned char stdin_buf[BUFSIZ+UNGET];
 hidden FILE __stdin_FILE = {
-	.buf = stdin_buf+UNGET,
-	.buf_size = sizeof stdin_buf-UNGET,
-	.fd = 0,
-	.flags = F_PERM | F_NOWR,
-	.read = NULL,
-	.seek = NULL,
-	.close = NULL,
-	.lock = -1,
+    .buf = stdin_buf+UNGET,
+    .buf_size = sizeof stdin_buf-UNGET,
+    .fd = 0,
+    .flags = F_PERM | F_NOWR,
+    .read = NULL,
+    .seek = NULL,
+    .close = NULL,
+    .lock = -1,
 };
 FILE *const stdin = &__stdin_FILE;
 FILE *volatile __stdin_used = &__stdin_FILE;
@@ -33,15 +33,15 @@ FILE *volatile __stdin_used = &__stdin_FILE;
 #undef stdout
 static unsigned char stdout_buf[BUFSIZ+UNGET];
 hidden FILE __stdout_FILE = {
-	.buf = stdout_buf+UNGET,
-	.buf_size = sizeof stdout_buf-UNGET,
-	.fd = 1,
-	.flags = F_PERM | F_NORD,
-	.lbf = '\n',
-	.write = NULL,
-	.seek = NULL,
-	.close = NULL,
-	.lock = -1,
+    .buf = stdout_buf+UNGET,
+    .buf_size = sizeof stdout_buf-UNGET,
+    .fd = 1,
+    .flags = F_PERM | F_NORD,
+    .lbf = '\n',
+    .write = NULL,
+    .seek = NULL,
+    .close = NULL,
+    .lock = -1,
 };
 FILE *const stdout = &__stdout_FILE;
 FILE *volatile __stdout_used = &__stdout_FILE;
@@ -49,15 +49,15 @@ FILE *volatile __stdout_used = &__stdout_FILE;
 #undef stderr
 static unsigned char stderr_buf[UNGET];
 hidden FILE __stderr_FILE = {
-	.buf = stderr_buf+UNGET,
-	.buf_size = 0,
-	.fd = 2,
-	.flags = F_PERM | F_NORD,
-	.lbf = -1,
-	.write = NULL,
-	.seek = NULL,
-	.close = NULL,
-	.lock = -1,
+    .buf = stderr_buf+UNGET,
+    .buf_size = 0,
+    .fd = 2,
+    .flags = F_PERM | F_NORD,
+    .lbf = -1,
+    .write = NULL,
+    .seek = NULL,
+    .close = NULL,
+    .lock = -1,
 };
 FILE *const stderr = &__stderr_FILE;
 FILE *volatile __stderr_used = &__stderr_FILE;

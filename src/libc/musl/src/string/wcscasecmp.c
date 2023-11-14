@@ -3,5 +3,5 @@
 
 int wcscasecmp(const wchar_t *l, const wchar_t *r)
 {
-	return wcsncasecmp(l, r, -1);
+    return wcsncasecmp(l, r, -1);
 }

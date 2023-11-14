@@ -3,7 +3,7 @@
 
 int getc(FILE *f)
 {
-	return do_getc(f);
+    return do_getc(f);
 }
 
 weak_alias(getc, _IO_getc);

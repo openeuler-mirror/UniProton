@@ -8,10 +8,10 @@ struct stat32;
 
 int __fstatat_time32(int fd, const char *restrict path, struct stat32 *restrict st32, int flag)
 {
-	struct stat st;
-	int r = fstatat(fd, path, &st, flag);
-	if (!r) memcpy(st32, &st, offsetof(struct stat, st_atim));
-	return r;
+    struct stat st;
+    int r = fstatat(fd, path, &st, flag);
+    if (!r) memcpy(st32, &st, offsetof(struct stat, st_atim));
+    return r;
 }
 
 weak_alias(fstatat, fstatat64);

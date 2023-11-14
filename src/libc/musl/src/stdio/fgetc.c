@@ -3,5 +3,5 @@
 
 int fgetc(FILE *f)
 {
-	return do_getc(f);
+    return do_getc(f);
 }

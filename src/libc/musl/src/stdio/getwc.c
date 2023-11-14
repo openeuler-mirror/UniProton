@@ -3,5 +3,5 @@
 
 wint_t getwc(FILE *f)
 {
-	return fgetwc(f);
+    return fgetwc(f);
 }

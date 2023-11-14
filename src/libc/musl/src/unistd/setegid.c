@@ -4,5 +4,5 @@
 
 int setegid(gid_t egid)
 {
-	return __setxid(SYS_setresgid, -1, egid, -1);
+    return __setxid(SYS_setresgid, -1, egid, -1);
 }

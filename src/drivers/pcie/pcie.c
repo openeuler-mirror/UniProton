@@ -23,7 +23,7 @@
 #include "pcie_config.h"
 #include "pcie_bus_filter.h"
 
-#define IORESOURCE_IO   0x00000100	/* PCI/ISA I/O ports */
+#define IORESOURCE_IO   0x00000100    /* PCI/ISA I/O ports */
 #define IORESOURCE_MEM  0x00000200
 
 LIST_HEAD(g_pcie_device_list_head);
@@ -155,7 +155,7 @@ static inline unsigned long decode_bar(uint32_t bar)
 
 static uint64_t pci_size(uint64_t base, uint64_t maxbase, uint64_t mask)
 {
-    uint64_t size = mask & maxbase;	/* Find the significant bits */
+    uint64_t size = mask & maxbase;    /* Find the significant bits */
     if (!size)
         return 0;
 

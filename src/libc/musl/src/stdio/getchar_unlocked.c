@@ -2,5 +2,5 @@
 
 int getchar_unlocked(void)
 {
-	return getc_unlocked(stdin);
+    return getc_unlocked(stdin);
 }

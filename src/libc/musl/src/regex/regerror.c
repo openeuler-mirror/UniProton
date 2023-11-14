@@ -29,9 +29,9 @@ static const char messages[] = {
 
 size_t regerror(int e, const regex_t *restrict preg, char *restrict buf, size_t size)
 {
-	const char *s;
-	for (s=messages; e && *s; e--, s+=strlen(s)+1);
-	if (!*s) s++;
-	s = LCTRANS_CUR(s);
-	return 1+snprintf(buf, size, "%s", s);
+    const char *s;
+    for (s=messages; e && *s; e--, s+=strlen(s)+1);
+    if (!*s) s++;
+    s = LCTRANS_CUR(s);
+    return 1+snprintf(buf, size, "%s", s);
 }

@@ -4,5 +4,5 @@
 
 int sched_getparam(pid_t pid, struct sched_param *param)
 {
-	return __syscall_ret(-ENOSYS);
+    return __syscall_ret(-ENOSYS);
 }

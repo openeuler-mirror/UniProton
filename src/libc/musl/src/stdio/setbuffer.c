@@ -3,5 +3,5 @@
 
 void setbuffer(FILE *f, char *buf, size_t size)
 {
-	setvbuf(f, buf, buf ? _IOFBF : _IONBF, size);
+    setvbuf(f, buf, buf ? _IOFBF : _IONBF, size);
 }

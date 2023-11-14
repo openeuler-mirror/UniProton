@@ -6,14 +6,14 @@
 int remove(const char *path)
 {
 #ifdef SYS_unlink
-	int r = __syscall(SYS_unlink, path);
+    int r = __syscall(SYS_unlink, path);
 #else
-	int r = __syscall(SYS_unlinkat, AT_FDCWD, path, 0);
+    int r = __syscall(SYS_unlinkat, AT_FDCWD, path, 0);
 #endif
 #ifdef SYS_rmdir
-	if (r==-EISDIR) r = __syscall(SYS_rmdir, path);
+    if (r==-EISDIR) r = __syscall(SYS_rmdir, path);
 #else
-	if (r==-EISDIR) r = __syscall(SYS_unlinkat, AT_FDCWD, path, AT_REMOVEDIR);
+    if (r==-EISDIR) r = __syscall(SYS_unlinkat, AT_FDCWD, path, AT_REMOVEDIR);
 #endif
-	return __syscall_ret(r);
+    return __syscall_ret(r);
 }

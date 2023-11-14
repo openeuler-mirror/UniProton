@@ -2,5 +2,5 @@
 
 int __libc_current_sigrtmax()
 {
-	return _NSIG-1;
+    return _NSIG-1;
 }

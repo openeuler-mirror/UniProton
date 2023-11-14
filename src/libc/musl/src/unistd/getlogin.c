@@ -3,5 +3,5 @@
 
 char *getlogin(void)
 {
-	return getenv("LOGNAME");
+    return getenv("LOGNAME");
 }

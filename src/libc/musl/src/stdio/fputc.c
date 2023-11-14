@@ -3,5 +3,5 @@
 
 int fputc(int c, FILE *f)
 {
-	return do_putc(c, f);
+    return do_putc(c, f);
 }

@@ -2,5 +2,5 @@
 
 int pthread_spin_init(pthread_spinlock_t *s, int shared)
 {
-	return *s = 0;
+    return *s = 0;
 }

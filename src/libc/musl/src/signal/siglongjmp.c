@@ -5,5 +5,5 @@
 
 _Noreturn void siglongjmp(sigjmp_buf buf, int ret)
 {
-	longjmp(buf, ret);
+    longjmp(buf, ret);
 }

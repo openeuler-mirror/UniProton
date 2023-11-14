@@ -4,5 +4,5 @@
 
 int acct(const char *filename)
 {
-	return syscall(SYS_acct, filename);
+    return syscall(SYS_acct, filename);
 }

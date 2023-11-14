@@ -2,5 +2,5 @@
 
 int pthread_getconcurrency()
 {
-	return 0;
+    return 0;
 }
