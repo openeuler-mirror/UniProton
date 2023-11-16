@@ -10,7 +10,7 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -81,7 +81,7 @@ void TestTaskEntry()
     schedTest();
     waitTest();
 #endif
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
     Init(0, 0, 0, 0);
 #endif
 }
@@ -92,7 +92,7 @@ U32 OsTestInit(void)
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
 
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x9000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x9000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = g_testTskPri;
     param.name = "TestTask";

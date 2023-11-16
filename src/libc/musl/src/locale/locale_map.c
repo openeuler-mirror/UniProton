@@ -63,6 +63,7 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 	for (p=loc_head; p; p=p->next)
 		if (!strcmp(val, p->name)) return p;
 
+#if !defined(OS_OPTION_LOCALE)
 	if (!libc.secure) path = getenv("MUSL_LOCPATH");
 	/* FIXME: add a default path? */
 
@@ -91,7 +92,7 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 			break;
 		}
 	}
-
+#endif
 	/* If no locale definition was found, make a locale map
 	 * object anyway to store the name, which is kept for the
 	 * sake of being able to do message translations at the

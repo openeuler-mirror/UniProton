@@ -66,6 +66,30 @@ if (${CPU_TYPE} STREQUAL "m4")
     )
 endif()
 
+set(MUSL_LOCALE_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/wcscoll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strxfrm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/wcsxfrm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strcoll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/__mo_lookup.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/setlocale.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/locale_map.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/newlocale.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/duplocale.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/freelocale.c
+)
+
+set(MUSL_MULTIBYTE_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbsrtowcs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbstowcs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbrtowc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbsrtowcs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbstowcs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctob.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/btowc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/internal.c
+)
+
 if (${CPU_TYPE} STREQUAL "x86_64")
     list(APPEND  MULS_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
@@ -73,12 +97,18 @@ if (${CPU_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/intscan.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
     )
 endif()
 
 file(GLOB_RECURSE MUSL_TIME_SOURCE musl/src/time/*.c)
 file(GLOB MUSL_THREAD_SOURCE musl/src/thread/*.c)
 file(GLOB MUSL_IPC_SOURCE musl/src/ipc/*.c)
+
+file(GLOB MUSL_CTYPE_SOURCE musl/src/ctype/*.c)
+
+list(APPEND MULS_SOURCE ${MUSL_CTYPE_SOURCE})
 
 # 当前不支持功能，不提供该接口
 list(REMOVE_ITEM MUSL_TIME_SOURCE
@@ -240,7 +270,17 @@ endif()
         ${MUSL_STRING_SOURCE}
         ${MUSL_PRNG_SOURCE}
     )
+if(${CONFIG_OS_OPTION_LOCALE})
+    list(APPEND MULS_SOURCE
+        ${MUSL_LOCALE_SOURCE}
+        ${MUSL_MULTIBYTE_SOURCE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/time/strftime.c
+    )
+    list(REMOVE_ITEM LITELIBC_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/time/strftime.c
 
+)
+endif()
 if(${CONFIG_OS_OPTION_NUTTX_UART})
 list(APPEND MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c)

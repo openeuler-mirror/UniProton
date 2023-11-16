@@ -8,6 +8,7 @@
 #define STATUS_WAITING     1
 
 #ifndef NO_STD_HEADERS
+#include <wctype.h>
 #include <bits/alltypes.h>
 #include <poll.h>
 #include <netdb.h>

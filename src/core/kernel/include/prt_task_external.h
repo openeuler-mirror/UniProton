@@ -40,6 +40,9 @@
 #if defined(OS_OPTION_LINUX)
 #include <linux/kthread.h>
 #endif
+#if defined(OS_OPTION_LOCALE)
+#include <locale.h>
+#endif
 #endif
 
 struct TagOsRunQue {
@@ -136,6 +139,9 @@ struct TagTskCb {
     /* 保存任务的原SP */
     void *oldStackPointer;
     int holdSignal;
+#if defined(OS_OPTION_LOCALE)
+    locale_t locale;
+#endif
 #if defined(OS_OPTION_LINUX)
     struct task_struct *kthreadTsk;
 #endif
