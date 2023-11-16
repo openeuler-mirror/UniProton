@@ -5,13 +5,13 @@
 
 locale_t __uselocale(locale_t new)
 {
-	locale_t *old = PRT_LocaleCurrent();
-	locale_t global = &libc.global_locale;
+    locale_t *old = PRT_LocaleCurrent();
+    locale_t global = &libc.global_locale;
 
-	if (new) {
+    if (new) {
         *old = new == LC_GLOBAL_LOCALE ? global : new;
     }
-	return *old == global ? LC_GLOBAL_LOCALE : *old;
+    return *old == global ? LC_GLOBAL_LOCALE : *old;
 }
 
 weak_alias(__uselocale, uselocale);

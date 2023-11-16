@@ -278,8 +278,7 @@ if(${CONFIG_OS_OPTION_LOCALE})
     )
     list(REMOVE_ITEM LITELIBC_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/time/strftime.c
-
-)
+    )
 endif()
 if(${CONFIG_OS_OPTION_NUTTX_UART})
 list(APPEND MULS_SOURCE
