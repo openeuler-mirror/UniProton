@@ -51,6 +51,10 @@ int TestOpenamp()
 }
 #endif
 
+#if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
+int xml2_test_entry();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -74,6 +78,10 @@ void TestTaskEntry()
     }
     printf("[TEST] detect slave\n");
     test_ethercat_main();
+#endif
+
+#if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
+    xml2_test_entry();
 #endif
 
 #if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)

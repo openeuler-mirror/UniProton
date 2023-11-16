@@ -20,3 +20,6 @@
 
 ## 代理接口支持
 如果需要支持代理接口，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_OPTION_PROXY
+
+## libxml2支持
+如果需要支持代理接口，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_LIBXML2

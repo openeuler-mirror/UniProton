@@ -42,11 +42,12 @@ int posix_fallocate(int, off_t, off_t);
 
 #define O_ACCMODE (03|O_SEARCH)
 /* From Nuttx fcntl.h */
-#define O_RDONLY  01
-#define O_WRONLY  02
-#define O_RDWR    03
-#define O_RDOK    O_RDONLY        /* Read access is permitted (non-standard) */
-#define O_WROK    O_WRONLY        /* Write access is permitted (non-standard) */
+#define O_RDOK    01        /* Read access is permitted (non-standard) */
+#define O_WROK    02        /* Write access is permitted (non-standard) */
+
+#define O_RDONLY  00
+#define O_WRONLY  01
+#define O_RDWR    02
 
 #define F_OFD_GETLK 36
 #define F_OFD_SETLK 37

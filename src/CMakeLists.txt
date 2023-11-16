@@ -26,3 +26,7 @@ endif()
 if(${CONFIG_LOSCFG_SHELL})
     add_subdirectory(shell)
 endif()
+
+if(${CONFIG_OS_SUPPORT_LIBXML2})
+    add_subdirectory(component/libxml2)
+endif()

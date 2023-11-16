@@ -51,3 +51,15 @@ U32 PRT_Printf(const char *format, ...)
     
     return count;
 }
+
+int printf(const char *format, ...)
+{
+    va_list vaList;
+    S32 count;
+
+    va_start(vaList, format);
+    count = TestPrintf(format, vaList);
+    va_end(vaList);
+
+    return (int)count;
+}

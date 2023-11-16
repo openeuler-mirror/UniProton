@@ -93,6 +93,13 @@ if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
     add_executable(${APP} ${OBJS})
 endif()
 
+if (${APP} STREQUAL "UniPorton_test_libxml2_interface")
+    add_subdirectory(${HOME_PATH}/testsuites/libxml2-test tmp)
+    target_compile_options(ethercat PUBLIC -DLIBXML2_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:libxml2Test>)
+    add_executable(${APP} ${OBJS})
+endif()
+
 if (${APP} STREQUAL "linuxTest")
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
     target_compile_options(ethercat PUBLIC -DLINUX_TESTCASE)

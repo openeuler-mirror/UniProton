@@ -14,6 +14,8 @@ extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
 extern int workers_init(struct rpmsg_endpoint *ept);
 #endif
 
+extern char *g_printf_buffer;
+
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
     rpmsg_destroy_ept(ep);
@@ -46,6 +48,7 @@ void example_init()
         ret = is_rpmsg_ept_ready(&g_ept);
         __asm__ __volatile__ ("mfence");
     }
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
 #ifdef OS_SUPPORT_ETHERCAT
     workers_init(&g_ept);
 #endif

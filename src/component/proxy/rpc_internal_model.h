@@ -4,7 +4,7 @@
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- * 	http://license.coscl.org.cn/MulanPSL2
+ *     http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * See the Mulan PSL v2 for more details.
@@ -56,6 +56,10 @@
 #define PUTC_ID           37UL
 #define UNGETWC_ID        38UL
 
+#define STAT_ID           39UL
+#define GETCWD_ID         40UL
+#define LSTAT_ID          41UL
+
 #define NCPYWRITE_ID      43UL
 #define NCPYREAD_ID       44UL
 
@@ -91,12 +95,26 @@
 #define MAX_STRING_LEN    MAX_SBUF_LEN
 #define MAX_FILE_NAME_LEN 128
 #define MAX_POLL_FDS      32
+#define MAX_PATH_LEN      1024
 
 #define MAX_FILE_MODE_LEN 6
 
 #ifndef MAX_FUNC_ID_LEN
 #define MAX_FUNC_ID_LEN sizeof(unsigned long)
 #endif
+
+/* RPMSG_CONSOLE_BUFFER_SIZE = 2048
+ * sizeof(struct rpmsg_hdr) = 16
+ * RPMSG_CONSOLE_BUFFER_SIZE - sizeof(struct rpmsg_hdr) - 1 = 2031
+ * Aligning to 64 bits -> 2024UL
+ */
+#define PROXY_MAX_BUF_LEN    2024UL
+
+struct rpmsg_proxy_answer {
+    uint32_t id;
+    int32_t status;
+    unsigned char params[PROXY_MAX_BUF_LEN];
+};
 
 typedef struct iaddrinfo {
     int ai_flags;
@@ -1002,5 +1020,61 @@ typedef rpc_ungetc_req_t rpc_putc_req_t;
 typedef rpc_common_resp_t rpc_putc_resp_t;
 
 typedef rpc_common_outp_t rpc_putc_outp_t;
+
+/* stat */
+typedef struct rpc_stat_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char path[MAX_PATH_LEN];
+} rpc_stat_req_t;
+
+typedef struct rpc_stat_resp {
+    rpc_resp_base_t super;
+    int ret;
+
+    unsigned long st_dev;
+    unsigned long st_ino;
+    unsigned long st_nlink;
+
+    unsigned st_mode;
+    unsigned st_uid;
+    unsigned st_gid;
+    unsigned long st_rdev;
+    long st_size;
+    long st_blksize;
+    long st_blocks;
+
+    long st_atime_sec;
+    long st_atime_nsec;
+    long st_mtime_sec;
+    long st_mtime_nsec;
+    long st_ctime_sec;
+    long st_ctime_nsec;
+} rpc_stat_resp_t;
+
+typedef struct rpc_stat_outp {
+    rpc_outp_base_t super;
+    int ret;
+    struct stat *statbuf;
+} rpc_stat_outp_t;
+
+/* getcwd */
+typedef struct rpc_getcwd_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    size_t size;
+} rpc_getcwd_req_t;
+
+typedef struct rpc_getcwd_resp {
+    rpc_resp_base_t super;
+    int isNull;
+    char buf[MAX_PATH_LEN];
+} rpc_getcwd_resp_t;
+
+typedef struct rpc_getcwd_outp {
+    rpc_outp_base_t super;
+    char *buf;
+    size_t size;
+} rpc_getcwd_outp_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */

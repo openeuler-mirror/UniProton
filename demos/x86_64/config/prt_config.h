@@ -76,7 +76,11 @@ extern "C" {
 /* 私有FSC内存分区起始地址 */
 #define OS_MEM_FSC_PT_ADDR                              (uintptr_t)&g_memRegion00[0]
 /* 私有FSC内存分区大小 */
+#ifdef OS_SUPPORT_LIBXML2 /* libxml测试套需要4MB内存*/ // 16MB
+#define OS_MEM_FSC_PT_SIZE                              0x1000000
+#else
 #define OS_MEM_FSC_PT_SIZE                              0x80000
+#endif
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */

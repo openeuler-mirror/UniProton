@@ -162,6 +162,10 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/fenv/${CMAKE_SYSTEM_PROCESSOR}/)
     list(APPEND MUSL_MATH_SOURCE ${MUSL_FENV_ARCH_SOURCE})
 endif()
 
+# 查找ctype编译文件
+file(GLOB MUSL_CTYPE_SOURCE musl/src/ctype/*.c)
+# 查找multibyte编译文件
+file(GLOB MUSL_MULTIB_SOURCE musl/src/multibyte/*.c)
 # 查找regex编译文件
 file(GLOB MUSL_REGEX_SOURCE musl/src/regex/*.c)
 # 查找prng编译文件
@@ -195,7 +199,6 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/internal/shgetc.c
     musl/src/internal/intscan.c
     musl/src/internal/floatscan.c
-    musl/src/ctype/iswspace.c
     musl/src/string/wcschr.c
     musl/src/string/wcslen.c
 )
@@ -224,13 +227,7 @@ list(APPEND MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memcmp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strcoll.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strstr.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isalnum.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/toupper.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/isxdigit.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/random.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/tolower.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/ispunct.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/localeconv.c
@@ -269,7 +266,15 @@ endif()
         ${MUSL_REGEX_SOURCE}
         ${MUSL_STRING_SOURCE}
         ${MUSL_PRNG_SOURCE}
+        ${MUSL_CTYPE_SOURCE}
     )
+
+if(${CONFIG_OS_SUPPORT_LIBXML2})
+    list(APPEND MULS_SOURCE
+        ${MUSL_MULTIB_SOURCE}
+    )
+endif()
+
 if(${CONFIG_OS_OPTION_LOCALE})
     list(APPEND MULS_SOURCE
         ${MUSL_LOCALE_SOURCE}
@@ -279,10 +284,6 @@ if(${CONFIG_OS_OPTION_LOCALE})
     list(REMOVE_ITEM LITELIBC_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/time/strftime.c
     )
-endif()
-if(${CONFIG_OS_OPTION_NUTTX_UART})
-list(APPEND MULS_SOURCE
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/ctype/iscntrl.c)
 endif()
 
 if(${CONFIG_OS_OPTION_STM32F407_UART})
