@@ -1,0 +1,1791 @@
+diff -urN libxml2-2.9.14/CMakeLists.txt libxml2-m/CMakeLists.txt
+--- libxml2-2.9.14/CMakeLists.txt	2022-05-02 18:52:45.000000000 +0800
++++ libxml2-m/CMakeLists.txt	2023-11-16 11:16:09.399191865 +0800
+@@ -1,344 +1,61 @@
+-cmake_minimum_required(VERSION 3.15)
+-
+-file(STRINGS "configure.ac" CONFIGURE_AC_LINES)
+-foreach(line ${CONFIGURE_AC_LINES})
+-	if(line MATCHES [[^m4_define\(\[(MAJOR_VERSION|MINOR_VERSION|MICRO_VERSION)\],[ \t]*([0-9]+)\)$]])
+-		set(LIBXML_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+-	elseif(line MATCHES "^(LIBXML_MAJOR_VERSION|LIBXML_MINOR_VERSION|LIBXML_MICRO_VERSION)=([0-9]+)$")
+-		set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+-	endif()
+-endforeach()
+-set(VERSION "${LIBXML_MAJOR_VERSION}.${LIBXML_MINOR_VERSION}.${LIBXML_MICRO_VERSION}")
+-
+-project(libxml2 VERSION ${VERSION} LANGUAGES C)
+-
+-include(CheckCSourceCompiles)
+-include(CheckFunctionExists)
+-include(CheckIncludeFiles)
+-include(CheckLibraryExists)
+-include(CheckStructHasMember)
+-include(CheckSymbolExists)
+-include(CMakePackageConfigHelpers)
+-include(GNUInstallDirs)
+-
+-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+-set(LIBXML2_WITH_AUTOMATA ON)
+-option(LIBXML2_WITH_C14N "Add the Canonicalization support" ON)
+-option(LIBXML2_WITH_CATALOG "Add the Catalog support" ON)
+-option(LIBXML2_WITH_DEBUG "Add the debugging module" ON)
+-option(LIBXML2_WITH_DOCB "Add Docbook SGML support" ON)
+-set(LIBXML2_WITH_EXPR ON)
+-option(LIBXML2_WITH_FTP "Add the FTP support" ON)
+-option(LIBXML2_WITH_HTML "Add the HTML support" ON)
+-option(LIBXML2_WITH_HTTP "Add the HTTP support" ON)
+-option(LIBXML2_WITH_ICONV "Add ICONV support" ON)
+-option(LIBXML2_WITH_ICU "Add ICU support" OFF)
+-option(LIBXML2_WITH_ISO8859X "Add ISO8859X support if no iconv" ON)
+-option(LIBXML2_WITH_LEGACY "Add deprecated APIs for compatibility" ON)
+-option(LIBXML2_WITH_LZMA "Use liblzma" ON)
+-option(LIBXML2_WITH_MEM_DEBUG "Add the memory debugging module" OFF)
+-option(LIBXML2_WITH_MODULES "Add the dynamic modules support" ON)
+-option(LIBXML2_WITH_OUTPUT "Add the serialization support" ON)
+-option(LIBXML2_WITH_PATTERN "Add the xmlPattern selection interface" ON)
+-option(LIBXML2_WITH_PROGRAMS "Build programs" ON)
+-option(LIBXML2_WITH_PUSH "Add the PUSH parser interfaces" ON)
+-option(LIBXML2_WITH_PYTHON "Build Python bindings" ON)
+-option(LIBXML2_WITH_READER "Add the xmlReader parsing interface" ON)
+-option(LIBXML2_WITH_REGEXPS "Add Regular Expressions support" ON)
+-option(LIBXML2_WITH_RUN_DEBUG "Add the runtime debugging module" OFF)
+-option(LIBXML2_WITH_SAX1 "Add the older SAX1 interface" ON)
+-option(LIBXML2_WITH_SCHEMAS "Add Relax-NG and Schemas support" ON)
+-option(LIBXML2_WITH_SCHEMATRON "Add Schematron support" ON)
+-option(LIBXML2_WITH_TESTS "Build tests" ON)
+-option(LIBXML2_WITH_THREADS "Add multithread support" ON)
+-option(LIBXML2_WITH_THREAD_ALLOC "Add per-thread memory" OFF)
+-option(LIBXML2_WITH_TREE "Add the DOM like tree manipulation APIs" ON)
++set(LIBXML2_WITH_SAX1 ON)
+ set(LIBXML2_WITH_TRIO OFF)
+-set(LIBXML2_WITH_UNICODE ON)
+-option(LIBXML2_WITH_VALID "Add the DTD validation support" ON)
+-option(LIBXML2_WITH_WRITER "Add the xmlWriter saving interface" ON)
+-option(LIBXML2_WITH_XINCLUDE "Add the XInclude support" ON)
+-option(LIBXML2_WITH_XPATH "Add the XPATH support" ON)
+-option(LIBXML2_WITH_XPTR "Add the XPointer support" ON)
+-option(LIBXML2_WITH_ZLIB "Use libz" ON)
+-set(LIBXML2_XMLCONF_WORKING_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Working directory for XML Conformance Test Suite")
+-
+-if(LIBXML2_WITH_ICONV)
+-	find_package(Iconv REQUIRED)
+-endif()
+-
+-if(LIBXML2_WITH_ICU)
+-	find_package(ICU REQUIRED COMPONENTS data i18n uc)
+-endif()
+-
+-if(LIBXML2_WITH_LZMA)
+-	find_package(LibLZMA REQUIRED)
+-endif()
+-
+-if(LIBXML2_WITH_PYTHON)
+-	check_include_files(unistd.h HAVE_UNISTD_H)
+-	check_symbol_exists(F_GETFL fcntl.h HAVE_F_GETFL)
+-	if(HAVE_UNISTD_H AND HAVE_F_GETFL)
+-		find_package(Python COMPONENTS Interpreter Development REQUIRED)
+-	else()
+-		find_package(Python2 COMPONENTS Interpreter Development REQUIRED)
+-		add_library(Python::Python ALIAS Python2::Python)
+-		set(Python_EXECUTABLE ${Python2_EXECUTABLE})
+-		set(Python_SITEARCH ${Python2_SITEARCH})
+-	endif()
+-	set(LIBXML2_PYTHON_INSTALL_DIR ${Python_SITEARCH} CACHE PATH "Python bindings install directory")
+-endif()
+-
+-if(LIBXML2_WITH_THREADS)
+-	find_package(Threads REQUIRED)
+-endif()
+-
+-if(LIBXML2_WITH_ZLIB)
+-	find_package(ZLIB REQUIRED)
+-endif()
+-
+-foreach(VARIABLE IN ITEMS WITH_AUTOMATA WITH_C14N WITH_CATALOG WITH_DEBUG WITH_DOCB WITH_EXPR WITH_FTP WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_LEGACY WITH_LZMA WITH_MEM_DEBUG WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RUN_DEBUG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_TREE WITH_TRIO WITH_UNICODE WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
+-	if(LIBXML2_${VARIABLE})
+-		set(${VARIABLE} 1)
+-	else()
+-		set(${VARIABLE} 0)
+-	endif()
+-endforeach()
+-
+-set(LIBXML_VERSION ${VERSION})
+-set(LIBXML_VERSION_EXTRA "")
+-math(EXPR LIBXML_VERSION_NUMBER "
+-    ${LIBXML_MAJOR_VERSION} * 10000 +
+-    ${LIBXML_MINOR_VERSION} * 100 +
+-    ${LIBXML_MICRO_VERSION}
+-")
+-
+-set(MODULE_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+-
+-set(PACKAGE "libxml2")
+-set(PACKAGE_BUGREPORT "xml@gnome.org")
+-set(PACKAGE_NAME "libxml2")
+-set(PACKAGE_STRING "libxml2 ${VERSION}")
+-set(PACKAGE_TARNAME "libxml2")
+-set(PACKAGE_URL "https://gitlab.gnome.org/GNOME/libxml2")
+-set(PACKAGE_VERSION ${VERSION})
+-
+-if(LIBLZMA_FOUND)
+-	list(APPEND CMAKE_REQUIRED_LIBRARIES LibLZMA::LibLZMA)
+-endif()
+ 
+-if(Threads_FOUND)
+-	list(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads)
+-endif()
+-
+-if(ZLIB_FOUND)
+-	list(APPEND CMAKE_REQUIRED_LIBRARIES ZLIB::ZLIB)
+-endif()
+ 
+-if(MSVC)
+-	configure_file(include/win32config.h config.h COPYONLY)
+-else()
+-	check_c_source_compiles("
+-		void __attribute__((destructor))
+-		f(void) {}
+-		int main(void) { return 0; }
+-	" HAVE_ATTRIBUTE_DESTRUCTOR)
+-	if(HAVE_ATTRIBUTE_DESTRUCTOR)
+-		set(ATTRIBUTE_DESTRUCTOR "__attribute__((destructor))")
+-	endif()
+-	check_c_source_compiles("
+-		#include <netdb.h>
+-		int main() { (void) gethostbyname((const char*) \"\"); return 0; }
+-	" GETHOSTBYNAME_ARG_CAST_CONST)
+-	if(NOT GETHOSTBYNAME_ARG_CAST_CONST)
+-		set(GETHOSTBYNAME_ARG_CAST "(char *)")
+-	else()
+-		set(GETHOSTBYNAME_ARG_CAST "/**/")
+-	endif()
+-	check_include_files(arpa/inet.h HAVE_ARPA_INET_H)
+-	check_include_files(arpa/nameser.h HAVE_ARPA_NAMESER_H)
+-	check_struct_has_member("struct sockaddr_storage" ss_family "sys/socket.h;sys/types.h" HAVE_SS_FAMILY)
+-	check_struct_has_member("struct sockaddr_storage" __ss_family "sys/socket.h;sys/types.h" HAVE_BROKEN_SS_FAMILY)
+-	if(HAVE_BROKEN_SS_FAMILY)
+-		set(ss_family __ss_family)
+-	endif()
+-	check_function_exists(class HAVE_CLASS)
+-	check_include_files(ctype.h HAVE_CTYPE_H)
+-	check_include_files(dlfcn.h HAVE_DLFCN_H)
+-	check_library_exists(dl dlopen "" HAVE_DLOPEN)
+-	check_include_files(dl.h HAVE_DL_H)
+-	check_include_files(errno.h HAVE_ERRNO_H)
+-	check_include_files(fcntl.h HAVE_FCNTL_H)
+-	check_include_files(float.h HAVE_FLOAT_H)
+-	check_function_exists(fpclass HAVE_FPCLASS)
+-	check_function_exists(fprintf HAVE_FPRINTF)
+-	check_function_exists(ftime HAVE_FTIME)
+-	check_function_exists(getaddrinfo HAVE_GETADDRINFO)
+-	check_function_exists(gettimeofday HAVE_GETTIMEOFDAY)
+-	check_include_files(inttypes.h HAVE_INTTYPES_H)
+-	check_function_exists(isascii HAVE_ISASCII)
+-	check_library_exists(history append_history "" HAVE_LIBHISTORY)
+-	check_library_exists(readline readline "" HAVE_LIBREADLINE)
+-	check_include_files(limits.h HAVE_LIMITS_H)
+-	check_function_exists(localtime HAVE_LOCALTIME)
+-	check_include_files(malloc.h HAVE_MALLOC_H)
+-	check_include_files(math.h HAVE_MATH_H)
+-	check_function_exists(mmap HAVE_MMAP)
+-	check_function_exists(munmap HAVE_MUNMAP)
+-	check_include_files(netdb.h HAVE_NETDB_H)
+-	check_include_files(netinet/in.h HAVE_NETINET_IN_H)
+-	check_include_files(poll.h HAVE_POLL_H)
+-	check_function_exists(printf HAVE_PRINTF)
+-	check_include_files(pthread.h HAVE_PTHREAD_H)
+-	check_function_exists(putenv HAVE_PUTENV)
+-	check_function_exists(rand HAVE_RAND)
+-	check_function_exists(rand_r HAVE_RAND_R)
+-	check_include_files(resolv.h HAVE_RESOLV_H)
+-	check_library_exists(dld shl_load "" HAVE_SHLLOAD)
+-	check_include_files(signal.h HAVE_SIGNAL_H)
+-	check_function_exists(snprintf HAVE_SNPRINTF)
+-	check_function_exists(sprintf HAVE_SPRINTF)
+-	check_function_exists(srand HAVE_SRAND)
+-	check_function_exists(sscanf HAVE_SSCANF)
+-	check_function_exists(stat HAVE_STAT)
+-	check_include_files(stdarg.h HAVE_STDARG_H)
+-	check_include_files(stdint.h HAVE_STDINT_H)
+-	check_include_files(stdlib.h HAVE_STDLIB_H)
+-	check_function_exists(strftime HAVE_STRFTIME)
+-	check_include_files(strings.h HAVE_STRINGS_H)
+-	check_include_files(string.h HAVE_STRING_H)
+-	check_include_files(sys/mman.h HAVE_SYS_MMAN_H)
+-	check_include_files(sys/select.h HAVE_SYS_SELECT_H)
+-	check_include_files(sys/socket.h HAVE_SYS_SOCKET_H)
+-	check_include_files(sys/stat.h HAVE_SYS_STAT_H)
+-	check_include_files(sys/timeb.h HAVE_SYS_TIMEB_H)
+-	check_include_files(sys/time.h HAVE_SYS_TIME_H)
+-	check_include_files(sys/types.h HAVE_SYS_TYPES_H)
+-	check_function_exists(time HAVE_TIME)
+-	check_include_files(time.h HAVE_TIME_H)
+-	check_include_files(unistd.h HAVE_UNISTD_H)
+-	check_function_exists(va_copy HAVE_VA_COPY)
+-	check_function_exists(vfprintf HAVE_VFPRINTF)
+-	check_function_exists(vsnprintf HAVE_VSNPRINTF)
+-	check_function_exists(vsprintf HAVE_VSPRINTF)
+-	check_function_exists(__va_copy HAVE___VA_COPY)
+-	check_c_source_compiles("
+-		#include <stdlib.h>
+-		#include <iconv.h>
+-		extern
+-		#ifdef __cplusplus
+-		\"C\"
+-		#endif
+-		#if defined(__STDC__) || defined(__cplusplus)
+-		size_t iconv(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
+-		#else
+-		size_t iconv();
+-		#endif
+-		int main() { return 0; }
+-	" ICONV_CONST_TEST)
+-	if(NOT ICONV_CONST_TEST)
+-		set(ICONV_CONST "const")
+-	endif()
+-	set(LT_OBJDIR ".libs/")
+-	check_c_source_compiles("
+-		#include <sys/socket.h>
+-		#include <sys/types.h>
+-		int main() { (void) send(1, (const char*) \"\", 1, 1); return 0; }
+-	" SEND_ARG2_CAST_CONST)
+-	if(NOT SEND_ARG2_CAST_CONST)
+-		set(SEND_ARG2_CAST "(char *)")
+-	else()
+-		set(SEND_ARG2_CAST "/**/")
+-	endif()
+-	check_include_files("float.h;stdarg.h;stdlib.h;string.h" STDC_HEADERS)
+-	check_c_source_compiles("
+-		#include <stdarg.h>
+-		void a(va_list* ap) {};
+-		int main() { va_list ap1, ap2; a(&ap1); ap2 = (va_list) ap1; return 0; }
+-	" VA_LIST_IS_ARRAY_TEST)
+-	if(VA_LIST_IS_ARRAY_TEST)
+-		set(VA_LIST_IS_ARRAY FALSE)
+-	else()
+-		set(VA_LIST_IS_ARRAY TRUE)
+-	endif()
+-	check_c_source_compiles("
+-		#include <stddef.h>
+-		#include <sys/socket.h>
+-		#include <sys/types.h>
+-		int main() { (void) getsockopt(1, 1, 1, NULL, (socklen_t*) NULL); return 0; }
+-	" XML_SOCKLEN_T_SOCKLEN_T)
+-	if(XML_SOCKLEN_T_SOCKLEN_T)
+-		set(XML_SOCKLEN_T socklen_t)
+-	else()
+-		check_c_source_compiles("
+-			#include <stddef.h>
+-			#include <sys/socket.h>
+-			#include <sys/types.h>
+-			int main() { (void) getsockopt(1, 1, 1, NULL, (size_t*) NULL); return 0; }
+-		" XML_SOCKLEN_T_SIZE_T)
+-		if(XML_SOCKLEN_T_SIZE_T)
+-			set(XML_SOCKLEN_T size_t)
+-		else()
+-			check_c_source_compiles("
+-				#include <stddef.h>
+-				#include <sys/socket.h>
+-				#include <sys/types.h>
+-				int main() { (void) getsockopt (1, 1, 1, NULL, (int*) NULL); return 0; }
+-			" XML_SOCKLEN_T_INT)
+-			set(XML_SOCKLEN_T int)
+-		endif()
+-	endif()
+-	configure_file(config.h.cmake.in config.h)
+-endif()
++include_directories(
++	./include/
++	./
++)
+ 
+ set(
+ 	LIBXML2_HDRS
+-	include/libxml/c14n.h
+-	include/libxml/catalog.h
+-	include/libxml/chvalid.h
+-	include/libxml/debugXML.h
+-	include/libxml/dict.h
+-	include/libxml/DOCBparser.h
+-	include/libxml/encoding.h
+-	include/libxml/entities.h
+-	include/libxml/globals.h
+-	include/libxml/hash.h
+-	include/libxml/HTMLparser.h
+-	include/libxml/HTMLtree.h
+-	include/libxml/list.h
+-	include/libxml/nanoftp.h
+-	include/libxml/nanohttp.h
+-	include/libxml/parser.h
+-	include/libxml/parserInternals.h
+-	include/libxml/pattern.h
+-	include/libxml/relaxng.h
+-	include/libxml/SAX.h
+-	include/libxml/SAX2.h
+-	include/libxml/schemasInternals.h
+-	include/libxml/schematron.h
+-	include/libxml/threads.h
+-	include/libxml/tree.h
+-	include/libxml/uri.h
+-	include/libxml/valid.h
+-	include/libxml/xinclude.h
+-	include/libxml/xlink.h
+-	include/libxml/xmlIO.h
+-	include/libxml/xmlautomata.h
+-	include/libxml/xmlerror.h
+-	include/libxml/xmlexports.h
+-	include/libxml/xmlmemory.h
+-	include/libxml/xmlmodule.h
+-	include/libxml/xmlreader.h
+-	include/libxml/xmlregexp.h
+-	include/libxml/xmlsave.h
+-	include/libxml/xmlschemas.h
+-	include/libxml/xmlschemastypes.h
+-	include/libxml/xmlstring.h
+-	include/libxml/xmlunicode.h
+-	include/libxml/xmlwriter.h
+-	include/libxml/xpath.h
+-	include/libxml/xpathInternals.h
+-	include/libxml/xpointer.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/c14n.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/catalog.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/chvalid.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/debugXML.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/dict.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/DOCBparser.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/encoding.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/entities.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/globals.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/hash.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/HTMLparser.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/HTMLtree.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/list.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/nanoftp.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/nanohttp.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/parser.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/parserInternals.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/pattern.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/relaxng.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/SAX.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/SAX2.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/schemasInternals.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/schematron.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/threads.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/tree.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/uri.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/valid.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xinclude.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xlink.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlIO.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlautomata.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlerror.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlexports.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlmemory.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlmodule.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlreader.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlregexp.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlsave.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlschemas.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlschemastypes.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlstring.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlunicode.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlwriter.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xmlversion.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xpath.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xpathInternals.h
++	${CMAKE_CURRENT_SOURCE_DIR}/include/libxml/xpointer.h
+ )
+ 
+ set(
+@@ -387,20 +104,13 @@
+ 	xpath.c
+ 	xpointer.c
+ 	xzlib.c
++	testapi.c
++	testchar.c
++	testdict.c
++	testrecurse.c
++	# runtest.c
+ )
+ 
+-if(WIN32)
+-	list(APPEND LIBXML2_SRCS win32/libxml2.rc)
+-	file(
+-		WRITE
+-		${CMAKE_CURRENT_BINARY_DIR}/rcVersion.h
+-		"#define LIBXML_MAJOR_VERSION ${LIBXML_MAJOR_VERSION}\n"
+-		"#define LIBXML_MINOR_VERSION ${LIBXML_MINOR_VERSION}\n"
+-		"#define LIBXML_MICRO_VERSION ${LIBXML_MICRO_VERSION}\n"
+-		"#define LIBXML_DOTTED_VERSION \"${VERSION}\"\n"
+-	)
+-endif()
+-
+ if(LIBXML2_WITH_SAX1)
+ 	list(APPEND LIBXML2_SRCS DOCBparser.c)
+ endif()
+@@ -409,350 +119,46 @@
+ 	list(APPEND LIBXML2_SRCS trio.c triostr.c)
+ endif()
+ 
+-add_library(LibXml2 ${LIBXML2_HDRS} ${LIBXML2_SRCS})
+-add_library(LibXml2::LibXml2 ALIAS LibXml2)
+-
+-if(NOT BUILD_SHARED_LIBS)
+-	target_compile_definitions(LibXml2 INTERFACE LIBXML_STATIC)
+-	set(XML_CFLAGS "-DLIBXML_STATIC")
+-endif()
+-
+-if(LIBXML2_WITH_THREADS)
+-	target_compile_definitions(LibXml2 PRIVATE _REENTRANT)
+-	if(WIN32)
+-		target_compile_definitions(LibXml2 PRIVATE HAVE_WIN32_THREADS)
+-	endif()
+-endif()
+-
+-target_include_directories(
+-	LibXml2
+-	PUBLIC
+-	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+-	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/libxml2>
+-)
+-
+-if(HAVE_DLOPEN)
+-	target_link_libraries(LibXml2 PRIVATE dl)
+-	set(MODULE_PLATFORM_LIBS "-ldl")
+-endif()
+-
+-if(HAVE_SHLLOAD)
+-	target_link_libraries(LibXml2 PRIVATE dld)
+-	set(MODULE_PLATFORM_LIBS "-ldld")
+-endif()
+-
+-if(UNIX)
+-	target_link_libraries(LibXml2 PRIVATE m)
+-	set(M_LIBS "-lm")
+-endif()
+-
+-if(WIN32)
+-	target_link_libraries(LibXml2 PRIVATE ws2_32)
+-	set(WIN32_EXTRA_LIBADD "-lws2_32")
+-endif()
+-
+-if(LIBXML2_WITH_ICONV)
+-	target_link_libraries(LibXml2 PUBLIC Iconv::Iconv)
+-	if(NOT Iconv_IS_BUILT_IN)
+-		set(ICONV_LIBS "-liconv")
+-	endif()
+-endif()
+-
+-if(LIBXML2_WITH_ICU)
+-	target_link_libraries(LibXml2 PRIVATE ICU::data ICU::i18n ICU::uc)
+-	if(WIN32)
+-		set(ICU_LIBS "-licudt -licuin -licuuc")
+-	else()
+-		set(ICU_LIBS "-licudata -licui18n -licuuc")
+-	endif()
+-endif()
+-
+-if(LIBXML2_WITH_LZMA)
+-	target_link_libraries(LibXml2 PRIVATE LibLZMA::LibLZMA)
+-	set(LZMA_LIBS "-llzma")
+-endif()
+-
+-if(LIBXML2_WITH_THREADS)
+-	target_link_libraries(LibXml2 PRIVATE Threads::Threads)
+-	set(THREAD_LIBS ${CMAKE_THREAD_LIBS_INIT})
+-endif()
+-
+-if(LIBXML2_WITH_ZLIB)
+-	target_link_libraries(LibXml2 PRIVATE ZLIB::ZLIB)
+-	set(Z_LIBS "-lz")
+-endif()
+-
+-set_target_properties(
+-	LibXml2
+-	PROPERTIES
+-	IMPORT_PREFIX lib
+-	OUTPUT_NAME xml2
+-	POSITION_INDEPENDENT_CODE ON
+-	PREFIX lib
+-	VERSION ${PROJECT_VERSION}
+-)
+-
+-if(MSVC)
+-	if(BUILD_SHARED_LIBS)
+-		set_target_properties(
+-			LibXml2
+-			PROPERTIES
+-			DEBUG_POSTFIX d
+-		)
+-	else()
+-		set_target_properties(
+-			LibXml2
+-			PROPERTIES
+-			DEBUG_POSTFIX sd
+-			MINSIZEREL_POSTFIX s
+-			RELEASE_POSTFIX s
+-			RELWITHDEBINFO_POSTFIX s
+-		)
+-	endif()
+-endif()
+-
+-install(FILES ${LIBXML2_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+-
+-install(
+-	TARGETS	LibXml2
+-	EXPORT LibXml2
+-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT development
+-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime NAMELINK_COMPONENT development
+-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
+-)
+-
+-if(MSVC AND BUILD_SHARED_LIBS)
+-	install(FILES $<TARGET_PDB_FILE:LibXml2> DESTINATION ${CMAKE_INSTALL_BINDIR} CONFIGURATIONS Debug RelWithDebInfo COMPONENT debug)
+-endif()
+-
+-if(LIBXML2_WITH_PROGRAMS)
+-	set(
+-		PROGRAMS
+-		xmlcatalog
+-		xmllint
+-	)
+-	foreach(PROGRAM ${PROGRAMS})
+-		add_executable(${PROGRAM} ${PROGRAM}.c)
+-		add_executable(LibXml2::${PROGRAM} ALIAS ${PROGRAM})
+-		target_link_libraries(${PROGRAM} LibXml2)
+-		if(HAVE_LIBHISTORY)
+-			target_link_libraries(${PROGRAM} history)
+-		endif()
+-		if(HAVE_LIBREADLINE)
+-			target_link_libraries(${PROGRAM} readline)
+-		endif()
+-		install(TARGETS	${PROGRAM} EXPORT LibXml2 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT programs)
+-	endforeach()
+-endif()
+-
+-if(LIBXML2_WITH_TESTS)
+-	enable_testing()
+-	set(
+-		TESTS
+-		runxmlconf
+-		runsuite
+-		testapi
+-		testAutomata
+-		testC14N
+-		testchar
+-		testdict
+-		testHTML
+-		testModule
+-		testlimits
+-		testReader
+-		testrecurse
+-		testRegexp
+-		testRelax
+-		testSAX
+-		testSchemas
+-		testURI
+-		testXPath
+-	)
+-	foreach(TEST ${TESTS})
+-		add_executable(${TEST} ${TEST}.c)
+-		target_link_libraries(${TEST} LibXml2)
+-	endforeach()
+-	if(EXISTS ${LIBXML2_XMLCONF_WORKING_DIR}/xmlconf/xmlconf.xml)
+-		add_test(NAME runxmlconf COMMAND runxmlconf WORKING_DIRECTORY ${LIBXML2_XMLCONF_WORKING_DIR})
+-	endif()
+-	if(NOT WIN32)
+-		add_test(NAME testapi COMMAND testapi)
+-	endif()
+-	add_test(NAME testchar COMMAND testchar)
+-	add_test(NAME testdict COMMAND testdict)
+-	add_test(NAME testrecurse COMMAND testrecurse WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+-	if(Threads_FOUND)
+-		set(
+-			TESTS_THREADS
+-			runtest
+-			testThreads
+-		)
+-		foreach(TEST ${TESTS_THREADS})
+-			add_executable(${TEST} ${TEST}.c)
+-			if(WIN32)
+-				target_compile_definitions(${TEST} PRIVATE HAVE_WIN32_THREADS)
+-			endif()
+-			target_link_libraries(${TEST} LibXml2 Threads::Threads)
+-		endforeach()
+-		add_test(NAME runtest COMMAND runtest --out ${CMAKE_CURRENT_BINARY_DIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+-		add_test(NAME testThreads COMMAND testThreads WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+-	endif()
+-endif()
++add_library(libxml2 OBJECT ${LIBXML2_SRCS})
++list(APPEND ALL_OBJECT_LIBRARYS libxml2)
++set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
+ 
+-if(LIBXML2_WITH_PYTHON)
+-	execute_process(
+-		COMMAND
+-		${Python_EXECUTABLE}
+-		${CMAKE_CURRENT_SOURCE_DIR}/python/generator.py
+-		${CMAKE_CURRENT_SOURCE_DIR}/doc/libxml2-api.xml
+-		${CMAKE_CURRENT_SOURCE_DIR}/python/libxml2-python-api.xml
+-		WORKING_DIRECTORY
+-		${CMAKE_CURRENT_BINARY_DIR}
+-	)
+-	file(READ python/libxml.py LIBXML_PY)
+-	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/libxml2.py.in "${LIBXML_PY}")
+-	file(READ ${CMAKE_CURRENT_BINARY_DIR}/libxml2class.py LIBXML2CLASS_PY)
+-	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/libxml2.py.in "${LIBXML2CLASS_PY}")
+-	configure_file(${CMAKE_CURRENT_BINARY_DIR}/libxml2.py.in libxml2.py COPYONLY)
+-	add_library(
+-		LibXml2Mod
+-		libxml2-py.c
+-		libxml2-py.h
+-		python/libxml.c
+-		python/libxml_wrap.h
+-		python/types.c
+-	)
+-	target_include_directories(
+-		LibXml2Mod
+-		PUBLIC
+-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/python>
+-	)
+-	target_link_libraries(LibXml2Mod LibXml2 Python::Python)
+-	set_target_properties(
+-		LibXml2Mod
+-		PROPERTIES
+-		IMPORT_PREFIX lib
+-		OUTPUT_NAME xml2mod
+-		PREFIX lib
+-		VERSION ${PROJECT_VERSION}
+-	)
+-	install(
+-		TARGETS	LibXml2Mod
+-		ARCHIVE DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} COMPONENT development
+-		LIBRARY DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} COMPONENT runtime NAMELINK_COMPONENT development
+-		RUNTIME DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} COMPONENT runtime
+-	)
+-	if(MSVC AND BUILD_SHARED_LIBS)
+-		install(FILES $<TARGET_PDB_FILE:LibXml2Mod> DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} CONFIGURATIONS Debug RelWithDebInfo COMPONENT debug)
+-	endif()
+-	install(FILES python/drv_libxml2.py DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} COMPONENT runtime)
+-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml2.py DESTINATION ${LIBXML2_PYTHON_INSTALL_DIR} COMPONENT runtime)
+-endif()
+-
+-install(FILES libxml.3 DESTINATION ${CMAKE_INSTALL_MANDIR}/man3 COMPONENT documentation)
+-install(FILES doc/xmlcatalog.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT documentation)
+-install(FILES doc/xmllint.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT documentation)
+-install(DIRECTORY doc/ DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/libxml2 COMPONENT documentation PATTERN Makefile.* EXCLUDE)
+-
+-configure_package_config_file(
+-	libxml2-config.cmake.cmake.in libxml2-config.cmake
+-	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libxml2-${PROJECT_VERSION}
+-)
+-
+-install(
+-	FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml2-config.cmake
+-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libxml2-${PROJECT_VERSION}
+-	COMPONENT development
+-)
+-
+-write_basic_package_version_file(
+-	${CMAKE_CURRENT_BINARY_DIR}/libxml2-config-version.cmake
+-	VERSION ${PROJECT_VERSION}
+-	COMPATIBILITY ExactVersion
+-)
+-
+-install(
+-	FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml2-config-version.cmake
+-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libxml2-${PROJECT_VERSION}
+-	COMPONENT development
+-)
+-
+-install(
+-	EXPORT LibXml2
+-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libxml2-${PROJECT_VERSION}
+-	NAMESPACE LibXml2::
+-	FILE libxml2-export.cmake
+-	COMPONENT development
+-)
+-
+-configure_file(include/libxml/xmlversion.h.in libxml/xmlversion.h)
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+-
+-if(LIBXML2_WITH_PYTHON)
+-	set(prefix "${CMAKE_INSTALL_PREFIX}")
+-	configure_file(python/setup.py.in setup.py @ONLY)
+-endif()
+-
+-set(XML_INCLUDEDIR "-I\${includedir}/libxml2")
+-set(XML_LIBDIR "-L\${libdir}")
+-set(XML_LIBS "-lxml2")
+-set(XML_PRIVATE_LIBS "${Z_LIBS} ${LZMA_LIBS} ${THREAD_LIBS} ${ICONV_LIBS} ${ICU_LIBS} ${M_LIBS}")
+-
+-file(RELATIVE_PATH PACKAGE_RELATIVE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig" "${CMAKE_INSTALL_PREFIX}")
+-string(REGEX REPLACE "/$" "" PACKAGE_RELATIVE_PATH "${PACKAGE_RELATIVE_PATH}")
+-
+-set(prefix "\${pcfiledir}/${PACKAGE_RELATIVE_PATH}")
+-set(exec_prefix "\${prefix}")
+-set(libdir "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+-set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+-configure_file(libxml-2.0.pc.in libxml-2.0.pc @ONLY)
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml-2.0.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT development)
+-
+-set(prefix "\$(cd \"\$(dirname \"\$0\")\"; pwd -P)/..")
+-configure_file(xml2-config.in xml2-config @ONLY)
+-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/xml2-config DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT development)
+-
+-set(XML_INCLUDEDIR "-I${CMAKE_INSTALL_FULL_INCLUDEDIR}/libxml2")
+-set(XML_LIBDIR "-L${CMAKE_INSTALL_FULL_LIBDIR}")
+-configure_file(xml2Conf.sh.in xml2Conf.sh @ONLY)
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/xml2Conf.sh DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT development)
+-
+-set(CPACK_COMPONENT_DEVELOPMENT_DEPENDS runtime)
+-set(CPACK_COMPONENT_PROGRAMS_DEPENDS runtime)
+-set(CPACK_DEB_COMPONENT_INSTALL ON)
+-set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_DEPENDS "${PACKAGE_TARNAME}")
+-set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_NAME "${PACKAGE_TARNAME}-dev")
+-set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_SECTION "libdevel")
+-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${PACKAGE_URL})
+-set(CPACK_DEBIAN_PACKAGE_NAME ${PACKAGE_TARNAME})
+-set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+-set(CPACK_DEBIAN_PROGRAMS_PACKAGE_DEPENDS "${PACKAGE_TARNAME}")
+-set(CPACK_DEBIAN_PROGRAMS_PACKAGE_NAME "${PACKAGE_TARNAME}-utils")
+-set(CPACK_DEBIAN_PROGRAMS_PACKAGE_SECTION "utils")
+-set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME ${PACKAGE_TARNAME})
+-set(CPACK_DEBIAN_RUNTIME_PACKAGE_RECOMMENDS "${PACKAGE_TARNAME}-utils")
+-set(CPACK_DEBIAN_RUNTIME_PACKAGE_SECTION "libs")
+-set(CPACK_NSIS_PACKAGE_NAME ${PACKAGE_STRING})
+-set(CPACK_NSIS_URL_INFO_ABOUT ${PACKAGE_URL})
+-set(CPACK_PACKAGE_CONTACT ${PACKAGE_BUGREPORT})
+-set(CPACK_PACKAGE_DISPLAY_NAME ${PACKAGE_STRING})
+-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PACKAGE_TARNAME}-${PACKAGE_VERSION}")
+-set(CPACK_PACKAGE_NAME ${PACKAGE_TARNAME})
+-set(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION})
+-set(CPACK_PACKAGE_VERSION_MAJOR ${LIBXML_MAJOR_VERSION})
+-set(CPACK_PACKAGE_VERSION_MINOR ${LIBXML_MINOR_VERSION})
+-set(CPACK_PACKAGE_VERSION_PATCH ${LIBXML_MICRO_VERSION})
+-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/Copyright)
+-set(CPACK_RPM_COMPONENT_INSTALL ON)
+-set(CPACK_RPM_development_PACKAGE_NAME "${PACKAGE_NAME}-devel")
+-set(CPACK_RPM_development_PACKAGE_REQUIRES "${PACKAGE_NAME}")
+-set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+-set(CPACK_RPM_PACKAGE_NAME ${PACKAGE_TARNAME})
+-set(CPACK_RPM_PACKAGE_URL ${PACKAGE_URL})
+-set(CPACK_RPM_programs_PACKAGE_NAME "${PACKAGE_NAME}-utils")
+-set(CPACK_RPM_programs_PACKAGE_REQUIRES "${PACKAGE_NAME}")
+-set(CPACK_RPM_runtime_PACKAGE_NAME "${PACKAGE_NAME}")
+-set(CPACK_RPM_runtime_PACKAGE_SUGGESTS "${PACKAGE_NAME}-utils")
++set(
++	TESTS
++	runxmlconf
++	runsuite
++	testapi
++	testAutomata
++	testC14N
++	testchar
++	testdict
++	testHTML
++	testModule
++	testlimits
++	testReader
++	testrecurse
++	testRegexp
++	testRelax
++	testSAX
++	testSchemas
++	testURI
++	testXPath
++)
++
++target_compile_options(libxml2 PUBLIC 
++        -Wno-bad-function-cast
++        -Wno-unused-value
++        -Wno-switch-default
++        -Wno-float-equal
++        -Wno-unused-but-set-variable
++        -Wno-discarded-qualifiers
++        -Wno-implicit-fallthrough
++        -Wno-cast-function-type
++        -Werror=incompatible-pointer-types
++        -Werror=missing-parameter-type
++        -Werror=implicit-function-declaration
++        -Werror=return-type
++        )
+ 
+-include(CPack)
++# install header
++install(FILES ${LIBXML2_HDRS} DESTINATION libxml2/include/libxml/)
+diff -urN libxml2-2.9.14/config.h libxml2-m/config.h
+--- libxml2-2.9.14/config.h	1970-01-01 08:00:00.000000000 +0800
++++ libxml2-m/config.h	2023-11-16 11:16:09.399191865 +0800
+@@ -0,0 +1,256 @@
++/* config.h.  Generated from config.h.in by configure.  */
++/* config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* Define if __attribute__((destructor)) is accepted */
++#define ATTRIBUTE_DESTRUCTOR __attribute__((destructor))
++
++/* Type cast for the gethostbyname() argument */
++#define GETHOSTBYNAME_ARG_CAST /**/
++
++/* Define to 1 if you have the <arpa/inet.h> header file. */
++#define HAVE_ARPA_INET_H 1
++
++/* Define to 1 if you have the <arpa/nameser.h> header file. */
++#define HAVE_ARPA_NAMESER_H 1
++
++/* Whether struct sockaddr::__ss_family exists */
++/* #undef HAVE_BROKEN_SS_FAMILY */
++
++/* Define to 1 if you have the <ctype.h> header file. */
++#define HAVE_CTYPE_H 1
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#define HAVE_DLFCN_H 1
++
++/* Have dlopen based dso */
++#define HAVE_DLOPEN 1
++
++/* Define to 1 if you have the <dl.h> header file. */
++/* #undef HAVE_DL_H */
++
++/* Define to 1 if you have the <errno.h> header file. */
++#define HAVE_ERRNO_H 1
++
++/* Define to 1 if you have the <fcntl.h> header file. */
++#define HAVE_FCNTL_H 1
++
++/* Define to 1 if you have the <float.h> header file. */
++#define HAVE_FLOAT_H 1
++
++/* Define to 1 if you have the `fprintf' function. */
++#define HAVE_FPRINTF 1
++
++/* Define to 1 if you have the `ftime' function. */
++#define HAVE_FTIME 1
++
++/* Define if getaddrinfo is there */
++#define HAVE_GETADDRINFO 1
++
++/* Define to 1 if you have the `gettimeofday' function. */
++#define HAVE_GETTIMEOFDAY 1
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the `isascii' function. */
++#define HAVE_ISASCII 1
++
++/* Define if history library is there (-lhistory) */
++/* #undef HAVE_LIBHISTORY */
++
++/* Define if readline library is there (-lreadline) */
++/* #undef HAVE_LIBREADLINE */
++
++/* Define to 1 if you have the <limits.h> header file. */
++#define HAVE_LIMITS_H 1
++
++/* Define to 1 if you have the `localtime' function. */
++#define HAVE_LOCALTIME 1
++
++/* Define to 1 if you have the <malloc.h> header file. */
++#define HAVE_MALLOC_H 1
++
++/* Define to 1 if you have the <math.h> header file. */
++#define HAVE_MATH_H 1
++
++/* Define to 1 if you have the `mmap' function. */
++#define HAVE_MMAP 1
++
++/* Define to 1 if you have the `munmap' function. */
++#define HAVE_MUNMAP 1
++
++/* mmap() is no good without munmap() */
++#if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
++#  undef /**/ HAVE_MMAP
++#endif
++
++/* Define to 1 if you have the <netdb.h> header file. */
++#define HAVE_NETDB_H 1
++
++/* Define to 1 if you have the <netinet/in.h> header file. */
++#define HAVE_NETINET_IN_H 1
++
++/* Define to 1 if you have the <poll.h> header file. */
++#define HAVE_POLL_H 1
++
++/* Define to 1 if you have the `printf' function. */
++#define HAVE_PRINTF 1
++
++/* Define if <pthread.h> is there */
++#define HAVE_PTHREAD_H 1
++
++/* Define to 1 if you have the `putenv' function. */
++/* #undef HAVE_PUTENV */
++
++/* Define to 1 if you have the `rand' function. */
++#define HAVE_RAND 1
++
++/* Define to 1 if you have the `rand_r' function. */
++#define HAVE_RAND_R 1
++
++/* Define to 1 if you have the <resolv.h> header file. */
++#define HAVE_RESOLV_H 1
++
++/* Have shl_load based dso */
++/* #undef HAVE_SHLLOAD */
++
++/* Define to 1 if you have the <signal.h> header file. */
++#define HAVE_SIGNAL_H 1
++
++/* Define to 1 if you have the `snprintf' function. */
++#define HAVE_SNPRINTF 1
++
++/* Define to 1 if you have the `sprintf' function. */
++#define HAVE_SPRINTF 1
++
++/* Define to 1 if you have the `srand' function. */
++#define HAVE_SRAND 1
++
++/* Define to 1 if you have the `sscanf' function. */
++#define HAVE_SSCANF 1
++
++/* Define to 1 if you have the `stat' function. */
++#define HAVE_STAT 1
++
++/* Define to 1 if you have the <stdarg.h> header file. */
++#define HAVE_STDARG_H 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the `strftime' function. */
++#define HAVE_STRFTIME 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/mman.h> header file. */
++#define HAVE_SYS_MMAN_H 1
++
++/* Define to 1 if you have the <sys/select.h> header file. */
++#define HAVE_SYS_SELECT_H 1
++
++/* Define to 1 if you have the <sys/socket.h> header file. */
++#define HAVE_SYS_SOCKET_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/timeb.h> header file. */
++#define HAVE_SYS_TIMEB_H 1
++
++/* Define to 1 if you have the <sys/time.h> header file. */
++#define HAVE_SYS_TIME_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the `time' function. */
++#define HAVE_TIME 1
++
++/* Define to 1 if you have the <time.h> header file. */
++#define HAVE_TIME_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Whether va_copy() is available */
++/* #undef HAVE_VA_COPY */
++
++/* Define to 1 if you have the `vfprintf' function. */
++#define HAVE_VFPRINTF 1
++
++/* Define to 1 if you have the `vsnprintf' function. */
++#define HAVE_VSNPRINTF 1
++
++/* Define to 1 if you have the `vsprintf' function. */
++#define HAVE_VSPRINTF 1
++
++/* Define to 1 if you have the <zlib.h> header file. */
++/* #undef HAVE_ZLIB_H */
++
++/* Whether __va_copy() is available */
++/* #undef HAVE___VA_COPY */
++
++/* Define as const if the declaration of iconv() needs const. */
++#define ICONV_CONST 
++
++/* Define to the sub-directory where libtool stores uninstalled libraries. */
++#define LT_OBJDIR ".libs/"
++
++/* Name of package */
++#define PACKAGE "libxml2"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT "xml@gnome.org"
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "libxml2"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "libxml2 2.9.14"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "libxml2"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL "https://gitlab.gnome.org/GNOME/libxml2"
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "2.9.14"
++
++/* Type cast for the send() function 2nd arg */
++#define SEND_ARG2_CAST /**/
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Support for IPv6 */
++/* #undef SUPPORT_IP6 */
++
++/* Define if va_list is an array type */
++#define VA_LIST_IS_ARRAY 1
++
++/* Version number of package */
++#define VERSION "2.9.14"
++
++/* Determine what socket length (socklen_t) data type is */
++#define XML_SOCKLEN_T socklen_t
++
++/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
++   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
++   #define below would cause a syntax error. */
++/* #undef _UINT32_T */
++
++/* ss_family is not defined here, use __ss_family instead */
++/* #undef ss_family */
++
++/* Define to the type of an unsigned integer type of width exactly 32 bits if
++   such a type exists and the standard includes do not define it. */
++/* #undef uint32_t */
+diff -urN libxml2-2.9.14/include/libxml/xmlversion.h libxml2-m/include/libxml/xmlversion.h
+--- libxml2-2.9.14/include/libxml/xmlversion.h	2022-05-02 19:42:37.000000000 +0800
++++ libxml2-m/include/libxml/xmlversion.h	2023-11-16 11:16:09.409191874 +0800
+@@ -50,7 +50,7 @@
+  *
+  * extra version information, used to show a git commit description
+  */
+-#define LIBXML_VERSION_EXTRA "-GITv2.9.13-22-g7846b0a67"
++#define LIBXML_VERSION_EXTRA ""
+ 
+ /**
+  * LIBXML_TEST_VERSION:
+@@ -171,7 +171,7 @@
+  *
+  * Whether the FTP support is configured in
+  */
+-#if 1
++#if 0
+ #define LIBXML_FTP_ENABLED
+ #endif
+ 
+@@ -180,7 +180,7 @@
+  *
+  * Whether the HTTP support is configured in
+  */
+-#if 1
++#if 0
+ #define LIBXML_HTTP_ENABLED
+ #endif
+ 
+@@ -225,7 +225,7 @@
+  *
+  * Whether the Catalog support is configured in
+  */
+-#if 1
++#if 0
+ #define LIBXML_CATALOG_ENABLED
+ #endif
+ 
+@@ -270,7 +270,7 @@
+  *
+  * Whether iconv support is available
+  */
+-#if 1
++#if 0
+ #define LIBXML_ICONV_ENABLED
+ #endif
+ 
+@@ -297,7 +297,7 @@
+  *
+  * Whether Debugging module is configured in
+  */
+-#if 1
++#if 0
+ #define LIBXML_DEBUG_ENABLED
+ #endif
+ 
+@@ -362,7 +362,7 @@
+  *
+  * Whether the Schemas validation interfaces are compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_SCHEMAS_ENABLED
+ #endif
+ 
+@@ -380,7 +380,7 @@
+  *
+  * Whether the module interfaces are compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_MODULES_ENABLED
+ /**
+  * LIBXML_MODULE_EXTENSION:
+@@ -395,7 +395,7 @@
+  *
+  * Whether the Zlib support is compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_ZLIB_ENABLED
+ #endif
+ 
+@@ -404,7 +404,7 @@
+  *
+  * Whether the Lzma support is compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_LZMA_ENABLED
+ #endif
+ 
+@@ -448,7 +448,7 @@
+ 
+ #ifndef LIBXML_ATTR_FORMAT
+ # if ((__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 3)))
+-#  define LIBXML_ATTR_FORMAT(fmt,args) __attribute__((__format__(__printf__,fmt,args)))
++#  define LIBXML_ATTR_FORMAT(fmt,args)
+ # else
+ #  define LIBXML_ATTR_FORMAT(fmt,args)
+ # endif
+diff -urN libxml2-2.9.14/runtest.c libxml2-m/runtest.c
+--- libxml2-2.9.14/runtest.c	2022-05-02 18:52:45.000000000 +0800
++++ libxml2-m/runtest.c	2023-11-16 11:16:09.459191918 +0800
+@@ -4627,7 +4627,7 @@
+ }
+ 
+ int
+-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
++uniproton_runtest(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+     int i, a, ret = 0;
+     int subset = 0;
+ 
+diff -urN libxml2-2.9.14/testapi.c libxml2-m/testapi.c
+--- libxml2-2.9.14/testapi.c	2022-05-02 18:52:43.000000000 +0800
++++ libxml2-m/testapi.c	2023-11-16 11:16:09.479191935 +0800
+@@ -117,7 +117,7 @@
+ 
+ static int quiet = 0;
+ 
+-int main(int argc, char **argv) {
++int uniproton_testapi(int argc, char **argv) {
+     int ret;
+     int blocks, mem;
+ 
+@@ -1485,7 +1485,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = htmlCreateMemoryParserCtxt((const char *)buffer, size);
+         desret_htmlParserCtxtPtr(ret_val);
+@@ -1555,7 +1555,7 @@
+         enc = gen_xmlCharEncoding(n_enc, 5);
+         if ((chunk != NULL) &&
+             (size > (int) strlen((const char *) chunk) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = htmlCreatePushParserCtxt(sax, user_data, (const char *)chunk, size, filename, enc);
+         desret_htmlParserCtxtPtr(ret_val);
+@@ -1732,7 +1732,7 @@
+         options = gen_int(n_options, 5);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = htmlCtxtReadMemory(ctxt, (const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_htmlDocPtr(ret_val);
+@@ -2292,7 +2292,7 @@
+         terminate = gen_int(n_terminate, 3);
+         if ((chunk != NULL) &&
+             (size > (int) strlen((const char *) chunk) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = htmlParseChunk(ctxt, (const char *)chunk, size, terminate);
+         if (ctxt != NULL) {xmlFreeDoc(ctxt->myDoc); ctxt->myDoc = NULL;}
+@@ -2638,7 +2638,7 @@
+         options = gen_int(n_options, 4);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = htmlReadMemory((const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_htmlDocPtr(ret_val);
+@@ -3890,7 +3890,7 @@
+         len = gen_int(n_len, 2);
+         if ((value != NULL) &&
+             (len > (int) strlen((const char *) value) + 1))
+-            continue;
++            len = 0;
+ 
+         xmlSAX2CDataBlock(ctx, (const xmlChar *)value, len);
+         call_tests++;
+@@ -3937,7 +3937,7 @@
+         len = gen_int(n_len, 2);
+         if ((ch != NULL) &&
+             (len > (int) strlen((const char *) ch) + 1))
+-            continue;
++            len = 0;
+ 
+         xmlSAX2Characters(ctx, (const xmlChar *)ch, len);
+         call_tests++;
+@@ -4580,7 +4580,7 @@
+         len = gen_int(n_len, 2);
+         if ((ch != NULL) &&
+             (len > (int) strlen((const char *) ch) + 1))
+-            continue;
++            len = 0;
+ 
+         xmlSAX2IgnorableWhitespace(ctx, (const xmlChar *)ch, len);
+         call_tests++;
+@@ -8250,7 +8250,7 @@
+         len = gen_int(n_len, 2);
+         if ((name != NULL) &&
+             (len > (int) strlen((const char *) name) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlDictExists(dict, (const xmlChar *)name, len);
+         desret_const_xmlChar_ptr(ret_val);
+@@ -8309,7 +8309,7 @@
+         len = gen_int(n_len, 2);
+         if ((name != NULL) &&
+             (len > (int) strlen((const char *) name) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlDictLookup(dict, (const xmlChar *)name, len);
+         desret_const_xmlChar_ptr(ret_val);
+@@ -12800,7 +12800,7 @@
+         filename = gen_fileoutput(n_filename, 4);
+         if ((chunk != NULL) &&
+             (size > (int) strlen((const char *) chunk) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlCreatePushParserCtxt(sax, user_data, (const char *)chunk, size, filename);
+         desret_xmlParserCtxtPtr(ret_val);
+@@ -12981,7 +12981,7 @@
+         options = gen_parseroptions(n_options, 5);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlCtxtReadMemory(ctxt, (const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_xmlDocPtr(ret_val);
+@@ -13077,7 +13077,7 @@
+         encoding = gen_const_char_ptr(n_encoding, 4);
+         if ((chunk != NULL) &&
+             (size > (int) strlen((const char *) chunk) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlCtxtResetPush(ctxt, (const char *)chunk, size, filename, (const char *)encoding);
+         desret_int(ret_val);
+@@ -13791,7 +13791,7 @@
+         terminate = gen_int(n_terminate, 3);
+         if ((chunk != NULL) &&
+             (size > (int) strlen((const char *) chunk) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlParseChunk(ctxt, (const char *)chunk, size, terminate);
+         if (ctxt != NULL) {xmlFreeDoc(ctxt->myDoc); ctxt->myDoc = NULL;}
+@@ -14251,7 +14251,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlParseMemory((const char *)buffer, size);
+         desret_xmlDocPtr(ret_val);
+@@ -14666,7 +14666,7 @@
+         options = gen_parseroptions(n_options, 4);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlReadMemory((const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_xmlDocPtr(ret_val);
+@@ -14791,7 +14791,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlRecoverMemory((const char *)buffer, size);
+         desret_xmlDocPtr(ret_val);
+@@ -15095,7 +15095,7 @@
+         recovery = gen_int(n_recovery, 3);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlSAXParseMemory(sax, (const char *)buffer, size, recovery);
+         desret_xmlDocPtr(ret_val);
+@@ -15159,7 +15159,7 @@
+         data = gen_userdata(n_data, 4);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlSAXParseMemoryWithData(sax, (const char *)buffer, size, recovery, data);
+         desret_xmlDocPtr(ret_val);
+@@ -15277,7 +15277,7 @@
+         size = gen_int(n_size, 3);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+         
+ #ifdef LIBXML_SAX1_ENABLED
+         if (sax == (xmlSAXHandlerPtr)&xmlDefaultSAXHandler) user_data = NULL;
+@@ -16051,7 +16051,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlCreateMemoryParserCtxt((const char *)buffer, size);
+         desret_xmlParserCtxtPtr(ret_val);
+@@ -16709,7 +16709,7 @@
+         end3 = gen_xmlChar(n_end3, 6);
+         if ((str != NULL) &&
+             (len > (int) strlen((const char *) str) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStringLenDecodeEntities(ctxt, (const xmlChar *)str, len, what, end, end2, end3);
+         desret_xmlChar_ptr(ret_val);
+@@ -17682,7 +17682,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlRelaxNGNewMemParserCtxt((const char *)buffer, size);
+         desret_xmlRelaxNGParserCtxtPtr(ret_val);
+@@ -17961,7 +17961,7 @@
+         len = gen_int(n_len, 2);
+         if ((data != NULL) &&
+             (len > (int) strlen((const char *) data) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlRelaxNGValidatePushCData(ctxt, (const xmlChar *)data, len);
+         desret_int(ret_val);
+@@ -18679,7 +18679,7 @@
+         len = gen_int(n_len, 2);
+         if ((str != NULL) &&
+             (len > (int) strlen((const char *) str) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlBufferAdd(buf, (const xmlChar *)str, len);
+         desret_int(ret_val);
+@@ -18728,7 +18728,7 @@
+         len = gen_int(n_len, 2);
+         if ((str != NULL) &&
+             (len > (int) strlen((const char *) str) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlBufferAddHead(buf, (const xmlChar *)str, len);
+         desret_int(ret_val);
+@@ -19303,7 +19303,7 @@
+         len = gen_int(n_len, 3);
+         if ((prefix != NULL) &&
+             (len > (int) strlen((const char *) prefix) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlBuildQName((const xmlChar *)ncname, (const xmlChar *)prefix, memory, len);
+         if ((ret_val != NULL) && (ret_val != ncname) &&
+@@ -21077,7 +21077,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlNewCDataBlock(doc, (const xmlChar *)content, len);
+         desret_xmlNodePtr(ret_val);
+@@ -21653,7 +21653,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlNewDocTextLen(doc, (const xmlChar *)content, len);
+         desret_xmlNodePtr(ret_val);
+@@ -22199,7 +22199,7 @@
+         len = gen_int(n_len, 1);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlNewTextLen((const xmlChar *)content, len);
+         desret_xmlNodePtr(ret_val);
+@@ -22315,7 +22315,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         xmlNodeAddContentLen(cur, (const xmlChar *)content, len);
+         call_tests++;
+@@ -22868,7 +22868,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         xmlNodeSetContentLen(cur, (const xmlChar *)content, len);
+         call_tests++;
+@@ -23935,7 +23935,7 @@
+         len = gen_int(n_len, 2);
+         if ((value != NULL) &&
+             (len > (int) strlen((const char *) value) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStringLenGetNodeList((const xmlDoc *)doc, (const xmlChar *)value, len);
+         desret_xmlNodePtr(ret_val);
+@@ -23984,7 +23984,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlTextConcat(node, (const xmlChar *)content, len);
+         desret_int(ret_val);
+@@ -27243,7 +27243,7 @@
+         len = gen_int(n_len, 2);
+         if ((data != NULL) &&
+             (len > (int) strlen((const char *) data) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlValidatePushCData(ctxt, (const xmlChar *)data, len);
+         desret_int(ret_val);
+@@ -28782,7 +28782,7 @@
+         buf = gen_const_char_ptr(n_buf, 2);
+         if ((buf != NULL) &&
+             (len > (int) strlen((const char *) buf) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlOutputBufferWrite(out, len, (const char *)buf);
+         desret_int(ret_val);
+@@ -29011,7 +29011,7 @@
+         enc = gen_xmlCharEncoding(n_enc, 2);
+         if ((mem != NULL) &&
+             (size > (int) strlen((const char *) mem) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlParserInputBufferCreateMem((const char *)mem, size, enc);
+         desret_xmlParserInputBufferPtr(ret_val);
+@@ -29060,7 +29060,7 @@
+         enc = gen_xmlCharEncoding(n_enc, 2);
+         if ((mem != NULL) &&
+             (size > (int) strlen((const char *) mem) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlParserInputBufferCreateStatic((const char *)mem, size, enc);
+         desret_xmlParserInputBufferPtr(ret_val);
+@@ -29148,7 +29148,7 @@
+         buf = gen_const_char_ptr(n_buf, 2);
+         if ((buf != NULL) &&
+             (len > (int) strlen((const char *) buf) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlParserInputBufferPush(in, len, (const char *)buf);
+         desret_int(ret_val);
+@@ -30361,7 +30361,7 @@
+         options = gen_parseroptions(n_options, 4);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlReaderForMemory((const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_xmlTextReaderPtr(ret_val);
+@@ -30547,7 +30547,7 @@
+         options = gen_parseroptions(n_options, 5);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlReaderNewMemory(reader, (const char *)buffer, size, URL, (const char *)encoding, options);
+         desret_int(ret_val);
+@@ -34587,7 +34587,7 @@
+         size = gen_int(n_size, 1);
+         if ((buffer != NULL) &&
+             (size > (int) strlen((const char *) buffer) + 1))
+-            continue;
++            size = 0;
+ 
+         ret_val = xmlSchemaNewMemParserCtxt((const char *)buffer, size);
+         desret_xmlSchemaParserCtxtPtr(ret_val);
+@@ -36464,7 +36464,7 @@
+         len = gen_int(n_len, 1);
+         if ((cur != NULL) &&
+             (len > (int) strlen((const char *) cur) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlCharStrndup((const char *)cur, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -36906,7 +36906,7 @@
+         len = gen_int(n_len, 2);
+         if ((str2 != NULL) &&
+             (len > (int) strlen((const char *) str2) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStrncasecmp((const xmlChar *)str1, (const xmlChar *)str2, len);
+         desret_int(ret_val);
+@@ -36955,7 +36955,7 @@
+         len = gen_int(n_len, 2);
+         if ((str2 != NULL) &&
+             (len > (int) strlen((const char *) str2) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStrncatNew((const xmlChar *)str1, (const xmlChar *)str2, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -37004,7 +37004,7 @@
+         len = gen_int(n_len, 2);
+         if ((str2 != NULL) &&
+             (len > (int) strlen((const char *) str2) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStrncmp((const xmlChar *)str1, (const xmlChar *)str2, len);
+         desret_int(ret_val);
+@@ -37049,7 +37049,7 @@
+         len = gen_int(n_len, 1);
+         if ((cur != NULL) &&
+             (len > (int) strlen((const char *) cur) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStrndup((const xmlChar *)cur, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -37134,10 +37134,10 @@
+         len = gen_int(n_len, 2);
+         if ((str != NULL) &&
+             (start > (int) strlen((const char *) str) + 1))
+-            continue;
++            start = 0;
+         if ((str != NULL) &&
+             (len > (int) strlen((const char *) str) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlStrsub((const xmlChar *)str, start, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -37324,7 +37324,7 @@
+         len = gen_int(n_len, 1);
+         if ((utf != NULL) &&
+             (len > (int) strlen((const char *) utf) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlUTF8Strndup((const xmlChar *)utf, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -37405,7 +37405,7 @@
+         len = gen_int(n_len, 1);
+         if ((utf != NULL) &&
+             (len > (int) strlen((const char *) utf) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlUTF8Strsize((const xmlChar *)utf, len);
+         desret_int(ret_val);
+@@ -37451,10 +37451,10 @@
+         len = gen_int(n_len, 2);
+         if ((utf != NULL) &&
+             (start > (int) strlen((const char *) utf) + 1))
+-            continue;
++            start = 0;
+         if ((utf != NULL) &&
+             (len > (int) strlen((const char *) utf) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlUTF8Strsub((const xmlChar *)utf, start, len);
+         desret_xmlChar_ptr(ret_val);
+@@ -44769,10 +44769,10 @@
+         len = gen_int(n_len, 3);
+         if ((data != NULL) &&
+             (start > (int) strlen((const char *) data) + 1))
+-            continue;
++            start = 0;
+         if ((data != NULL) &&
+             (len > (int) strlen((const char *) data) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlTextWriterWriteBase64(writer, (const char *)data, start, len);
+         desret_int(ret_val);
+@@ -44830,10 +44830,10 @@
+         len = gen_int(n_len, 3);
+         if ((data != NULL) &&
+             (start > (int) strlen((const char *) data) + 1))
+-            continue;
++            start = 0;
+         if ((data != NULL) &&
+             (len > (int) strlen((const char *) data) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlTextWriterWriteBinHex(writer, (const char *)data, start, len);
+         desret_int(ret_val);
+@@ -45766,7 +45766,7 @@
+         len = gen_int(n_len, 2);
+         if ((content != NULL) &&
+             (len > (int) strlen((const char *) content) + 1))
+-            continue;
++            len = 0;
+ 
+         ret_val = xmlTextWriterWriteRawLen(writer, (const xmlChar *)content, len);
+         desret_int(ret_val);
+diff -urN libxml2-2.9.14/testchar.c libxml2-m/testchar.c
+--- libxml2-2.9.14/testchar.c	2022-05-02 18:52:43.000000000 +0800
++++ libxml2-m/testchar.c	2023-11-16 11:16:09.479191935 +0800
+@@ -584,7 +584,7 @@
+     xmlFreeParserCtxt(ctxt);
+ }
+ 
+-int main(void) {
++int uniproton_testchar(void) {
+ 
+     /*
+      * this initialize the library and check potential ABI mismatches
+diff -urN libxml2-2.9.14/testdict.c libxml2-m/testdict.c
+--- libxml2-2.9.14/testdict.c	2020-06-26 20:29:18.000000000 +0800
++++ libxml2-m/testdict.c	2023-11-16 11:16:09.479191935 +0800
+@@ -422,7 +422,7 @@
+     return(ret);
+ }
+ 
+-int main(void)
++int uniproton_testdict(void)
+ {
+     int ret;
+ 
+diff -urN libxml2-2.9.14/testrecurse.c libxml2-m/testrecurse.c
+--- libxml2-2.9.14/testrecurse.c	2022-05-02 18:52:43.000000000 +0800
++++ libxml2-m/testrecurse.c	2023-11-16 11:16:09.479191935 +0800
+@@ -924,7 +924,7 @@
+ }
+ 
+ int
+-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
++uniproton_testrecurse(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+     int i, a, ret = 0;
+     int subset = 0;
+ 
+diff -urN libxml2-2.9.14/xmlIO.c libxml2-m/xmlIO.c
+--- libxml2-2.9.14/xmlIO.c	2022-05-02 18:52:43.000000000 +0800
++++ libxml2-m/xmlIO.c	2023-11-16 11:16:09.489191944 +0800
+@@ -986,8 +986,24 @@
+ 
+     if ((context == NULL) || (buffer == NULL))
+         return(-1);
+-    items = fwrite(&buffer[0], len, 1, (FILE *) context);
+-    if ((items == 0) && (ferror((FILE *) context))) {
++
++    char *ptr = &buffer[0];
++    int lenRemain = len;
++    int lenWrite = 0;
++    while (lenRemain > 0)
++    {
++        lenWrite = fwrite(ptr, sizeof(char), lenRemain, (FILE *) context);
++        if (lenWrite == 0) {
++            break;
++        }
++        if (lenRemain < lenWrite) {
++            printf("FWRITE MORE!!!\n");
++        }
++        lenRemain -= lenWrite;
++        ptr += (lenWrite / sizeof(char));
++    }
++    if ((lenRemain != 0) && (ferror((FILE *) context))) {
++        printf("FWRITE error\n");
+         xmlIOErr(0, "fwrite()");
+ 	return(-1);
+     }
+diff -urN libxml2-2.9.14/xmlmemory.c libxml2-m/xmlmemory.c
+--- libxml2-2.9.14/xmlmemory.c	2022-05-02 18:52:43.000000000 +0800
++++ libxml2-m/xmlmemory.c	2023-11-16 11:16:09.489191944 +0800
+@@ -978,6 +978,7 @@
+      xmlMemInitialized = 1;
+      xmlMemMutex = xmlNewMutex();
+ 
++#if 0
+ #ifdef HAVE_STDLIB_H
+      breakpoint = getenv("XML_MEM_BREAKPOINT");
+      if (breakpoint != NULL) {
+@@ -990,6 +991,7 @@
+          sscanf(breakpoint, "%p", &xmlMemTraceBlockAt);
+      }
+ #endif
++#endif
+ 
+ #ifdef DEBUG_MEMORY
+      xmlGenericError(xmlGenericErrorContext,
