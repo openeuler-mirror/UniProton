@@ -7,6 +7,13 @@ message(${CMAKE_SYSTEM_PROCESSOR})
 # 所有litelibc中适配的.c文件
 file(GLOB_RECURSE LITELIBC_SOURCE litelibc/src/*.c litelibc/internal/*.c)
 
+file(GLOB_RECURSE LITELIBC_DEP_SIGNAL_SOURCE litelibc/src/signal/*.c litelibc/src/exit/*)
+if (NOT CONFIG_OS_OPTION_POSIX_SIGNAL)
+list(REMOVE_ITEM LITELIBC_SOURCE
+    ${LITELIBC_DEP_SIGNAL_SOURCE}
+)
+endif()
+
 # 需要编译的musl的.c文件
 set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/sleep.c
@@ -211,13 +218,42 @@ set(MUSL_STDIO_SOURCE
 )
 
 # 需要编译的signal相关.c文件
-set(MULS_SIGNAL_SOURCE
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigfillset.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigemptyset.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigaddset.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigdelset.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigismember.c
+file(GLOB MUSL_SIGNAL_SOURCE musl/src/signal/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/${CMAKE_SYSTEM_PROCESSOR})
+    file(GLOB MUSL_SIGNAL_ARCH_SOURCE musl/src/setjmp/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_SIGNAL_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}/" "/" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_SIGNAL_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_SIGNAL_SOURCE ${tmp_replace_source})
+        endif()
+    endforeach()
+    list(APPEND MUSL_SIGNAL_SOURCE ${MUSL_SIGNAL_ARCH_SOURCE})
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/${CMAKE_SYSTEM_PROCESSOR}/arch.mak)
+    list(APPEND  MUSL_SIGNAL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/getitimer_time32.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/setitimer_time32.c
     )
+endif()
+# 查找setjmp编译文件 - signal依赖
+file(GLOB MUSL_SETJMP_SOURCE musl/src/setjmp/*.c)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/${CMAKE_SYSTEM_PROCESSOR})
+    file(GLOB MUSL_SETJMP_ARCH_SOURCE musl/src/setjmp/${CMAKE_SYSTEM_PROCESSOR}/*.[csS])
+    foreach(tmp_one_source ${MUSL_SETJMP_ARCH_SOURCE})
+        string(REPLACE "/${CMAKE_SYSTEM_PROCESSOR}/" "/" tmp_replace_source ${tmp_one_source})
+        string(REPLACE ".s" ".c" tmp_replace_source ${tmp_replace_source})
+        string(REPLACE ".S" ".c" tmp_replace_source ${tmp_replace_source})
+        list(FIND MUSL_SETJMP_SOURCE ${tmp_replace_source} tmp_find_result)
+        if(${tmp_find_result} GREATER_EQUAL 0)
+            list(REMOVE_ITEM MUSL_SETJMP_SOURCE ${tmp_replace_source})
+        endif()
+    endforeach()
+    list(APPEND MUSL_SETJMP_SOURCE ${MUSL_SETJMP_ARCH_SOURCE})
+endif()
+
 
 # lua依赖的相关.c文件
 if(${CPU_TYPE} STREQUAL "rk3568_jailhouse")
@@ -245,39 +281,46 @@ list(APPEND MULS_SOURCE
     )
 endif()
 
-    file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
-    list(REMOVE_ITEM MUSL_EXIT_SOURCE
-        # 暂不支持文件系统，删除该接口
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/assert.c
-    )
-    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
-        list(APPEND MUSL_EXIT_SOURCE
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/arm/__aeabi_atexit.c
-        )
-    endif()
-    # 临时解决缺少__libc_malloc, 回合主线时如果malloc文件夹已合入则可删除
+file(GLOB MUSL_EXIT_SOURCE musl/src/exit/*.c)
+list(REMOVE_ITEM MUSL_EXIT_SOURCE
+    # 暂不支持文件系统，删除该接口
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/assert.c
+)
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
     list(APPEND MUSL_EXIT_SOURCE
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/exit/arm/__aeabi_atexit.c
     )
+endif()
 
-    list(APPEND MULS_SOURCE
-        ${MUSL_TIME_SOURCE}
-        ${MUSL_THREAD_SOURCE}
-        ${MULS_SIGNAL_SOURCE}
-        ${MUSL_EXIT_SOURCE}
-        ${MUSL_MATH_SOURCE}
-        ${MUSL_FENV_SOURCE}
-        ${MUSL_STDLIB_SOURCE}
-        ${MUSL_IPC_SOURCE}
-        ${MUSL_REGEX_SOURCE}
-        ${MUSL_STRING_SOURCE}
-        ${MUSL_PRNG_SOURCE}
-        ${MUSL_CTYPE_SOURCE}
-        ${MUSL_LOCALE_SOURCE}
-        ${MUSL_MULTIBYTE_SOURCE}
-        ${MUSL_STDIO_SOURCE}
-    )
+# 解决缺少__libc_malloc
+list(APPEND MULS_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/libc_calloc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/malloc/replaced.c
+)
+
+list(APPEND MULS_SOURCE
+    ${MUSL_TIME_SOURCE}
+    ${MUSL_THREAD_SOURCE}
+    ${MUSL_MATH_SOURCE}
+    ${MUSL_FENV_SOURCE}
+    ${MUSL_STDLIB_SOURCE}
+    ${MUSL_IPC_SOURCE}
+    ${MUSL_REGEX_SOURCE}
+    ${MUSL_STRING_SOURCE}
+    ${MUSL_PRNG_SOURCE}
+    ${MUSL_LOCALE_SOURCE}
+    ${MUSL_SETJMP_SOURCE}
+    ${MUSL_CTYPE_SOURCE}
+    ${MUSL_MULTIBYTE_SOURCE}
+    ${MUSL_STDIO_SOURCE}
+)
+
+if(${CONFIG_OS_OPTION_POSIX_SIGNAL})
+list(APPEND MULS_SOURCE
+    ${MUSL_SIGNAL_SOURCE}
+    ${MUSL_EXIT_SOURCE}
+)
+endif()
 
 if(${CONFIG_OS_SUPPORT_LIBXML2})
     list(APPEND MULS_SOURCE

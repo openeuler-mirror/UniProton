@@ -77,6 +77,12 @@ include_directories(
 	./platform/libboundscheck/include
 )
 
+if (${CONFIG_OS_OPTION_POSIX_SIGNAL})
+    if (NOT CONFIG_OS_OPTION_POSIX)
+        message(FATAL_ERROR "if config CONFIG_OS_OPTION_POSIX_SIGNAL must config CONFIG_OS_OPTION_POSIX")
+    endif()
+endif()
+
 if (${CONFIG_OS_OPTION_POSIX})
 set(muslsrcdir ${CMAKE_CURRENT_SOURCE_DIR}/src/libc/musl)
 execute_process(

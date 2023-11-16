@@ -22,34 +22,42 @@
 
 #define SIGTOTEST SIGABRT
 
-void handler(int signo)
+static int handler_flag = 0;
+
+static void handler(int signo)
 {
-	printf("Caught signal being tested!\n");
-	printf("Test PASSED\n");
-	exit(0);
+    printf("Caught signal being tested!\n");
+    printf("Test PASSED\n");
+    handler_flag = 1;
 }
 
-int main()
+int raise_1_1()
 {
-	struct sigaction act;
+    struct sigaction act;
 
-	act.sa_handler=handler;
-	act.sa_flags=0;
-	if (sigemptyset(&act.sa_mask) == -1) {
-		perror("Error calling sigemptyset\n");
-		return PTS_UNRESOLVED;
-	}
-	if (sigaction(SIGTOTEST, &act, 0) == -1) {
-		perror("Error calling sigaction\n");
-		return PTS_UNRESOLVED;
-	}
-	if (raise(SIGTOTEST) != 0) {
-		printf("Could not raise signal being tested\n");
-		return PTS_FAIL;
-	}
+    act.sa_handler=handler;
+    act.sa_flags=0;
+    if (sigemptyset(&act.sa_mask) == -1) {
+        perror("Error calling sigemptyset\n");
+        return PTS_UNRESOLVED;
+    }
+    if (sigaction(SIGTOTEST, &act, 0) == -1) {
+        perror("Error calling sigaction\n");
+        return PTS_UNRESOLVED;
+    }
+    if (raise(SIGTOTEST) != 0) {
+        printf("Could not raise signal being tested\n");
+        return PTS_FAIL;
+    }
 
-	printf("Should have exited from signal handler\n");
-	printf("Test FAILED\n");
-	return PTS_FAIL;
+    sleep(1);
+
+    if(handler_flag != 1) {
+        printf("Should have exited from signal handler\n");
+        printf("Test FAILED\n");
+        return PTS_FAIL;
+    }
+
+    return PTS_PASS;
 }
 

@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include "posixtest.h"
 
-int main()
+int sigignore_6_2()
 {
 	if (sigignore(SIGSTOP) == -1) {
 		if (EINVAL == errno) {

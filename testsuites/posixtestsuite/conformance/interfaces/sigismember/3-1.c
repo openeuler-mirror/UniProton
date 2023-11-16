@@ -13,7 +13,7 @@
 #include <signal.h>
 #include "posixtest.h"
 
-int main() {
+int sigismember_3_1() {
 
 	sigset_t signalset;
 

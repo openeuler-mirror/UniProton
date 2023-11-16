@@ -15,7 +15,7 @@
 #include <signal.h>
 #include "posixtest.h"
 
-int main()
+int sighold_2_1()
 {
 
 	if ((int)sighold(SIGABRT) != 0) {

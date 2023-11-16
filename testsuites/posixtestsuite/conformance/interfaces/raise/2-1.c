@@ -32,48 +32,48 @@
 #define BEFOREHANDLER 1
 #define INHANDLER 2
 #define LEAVINGHANDLER 3
-int globalStatus = BEFOREHANDLER;
+static int globalStatus = BEFOREHANDLER;
 
-void handler(int signo)
+static void handler(int signo)
 {
-	globalStatus = INHANDLER;
-	printf("Caught signal being tested!\n");
-	printf("Sleeping...\n");
-	sleep(2);
-	globalStatus = LEAVINGHANDLER;
+    globalStatus = INHANDLER;
+    printf("Caught signal being tested!\n");
+    printf("Sleeping...\n");
+    sleep(2);
+    globalStatus = LEAVINGHANDLER;
 }
 
-int main()
+int raise_2_1()
 {
-	struct sigaction act;
+    struct sigaction act;
 
-	act.sa_handler=handler;
-	act.sa_flags=0;
-	if (sigemptyset(&act.sa_mask) == -1) {
-		perror("Error calling sigemptyset\n");
-		return PTS_UNRESOLVED;
-	}
-	if (sigaction(SIGTOTEST, &act, 0) == -1) {
-		perror("Error calling sigaction\n");
-		return PTS_UNRESOLVED;
-	}
-	if (raise(SIGTOTEST) != 0) {
-		printf("Could not raise signal being tested\n");
-		return PTS_FAIL;
-	}
+    act.sa_handler=handler;
+    act.sa_flags=0;
+    if (sigemptyset(&act.sa_mask) == -1) {
+        perror("Error calling sigemptyset\n");
+        return PTS_UNRESOLVED;
+    }
+    if (sigaction(SIGTOTEST, &act, 0) == -1) {
+        perror("Error calling sigaction\n");
+        return PTS_UNRESOLVED;
+    }
+    if (raise(SIGTOTEST) != 0) {
+        printf("Could not raise signal being tested\n");
+        return PTS_FAIL;
+    }
 
-	if ( (INHANDLER == globalStatus) ||
-		(BEFOREHANDLER == globalStatus) ) {
-		printf("Test FAILED\n");
-		return PTS_FAIL;
-	}
+    if ( (INHANDLER == globalStatus) ||
+        (BEFOREHANDLER == globalStatus) ) {
+        printf("Test FAILED\n");
+        return PTS_FAIL;
+    }
 
-	if (LEAVINGHANDLER == globalStatus) {
-		printf ("Test PASSED\n");
-		return PTS_PASS;
-	}
+    if (LEAVINGHANDLER == globalStatus) {
+        printf ("Test PASSED\n");
+        return PTS_PASS;
+    }
 
-	printf("Should not reach here\n");
-	return PTS_UNRESOLVED;
+    printf("Should not reach here\n");
+    return PTS_UNRESOLVED;
 }
 

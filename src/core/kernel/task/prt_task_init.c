@@ -319,14 +319,17 @@ OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *
     taskCb->retval = NULL;
     taskCb->joinCount = 0;
     taskCb->joinableSem = 0;
+#if defined(OS_OPTION_POSIX_SIGNAL)
     taskCb->sigMask = 0;
     taskCb->sigWaitMask = 0;
     taskCb->sigPending = 0;
+    taskCb->itimer = 0;
+    INIT_LIST_OBJECT(&taskCb->sigInfoList);
+    OsInitSigVectors(taskCb);
+#endif
 #if defined(OS_OPTION_LOCALE)
     taskCb->locale = (locale_t)libc_global_locale;
 #endif
-    INIT_LIST_OBJECT(&taskCb->sigInfoList);
-    OsInitSigVectors(taskCb);
 #endif
 
     return;

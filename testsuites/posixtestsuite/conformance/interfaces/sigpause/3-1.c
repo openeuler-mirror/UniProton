@@ -29,15 +29,15 @@
 #define INTHREAD 0
 #define INMAIN 1
 
-int result = 2;
-int sem = INMAIN;
+static int result = 2;
+static int sem = INMAIN;
 
-void handler() {
+static void handler() {
 	printf("signal was called\n");
 	return;
 }
 
-void *a_thread_func()
+static void *a_thread_func()
 {
 	int return_value = 0;
 	struct sigaction act;
@@ -67,7 +67,7 @@ void *a_thread_func()
 	return NULL;
 }
 
-int main()
+int sigpause_3_1()
 {
 	pthread_t new_th;
 

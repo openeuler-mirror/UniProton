@@ -12,13 +12,25 @@
  * Create: 2023-06-08
  * Description: posix sigaction功能实现
  */
+#include <errno.h>
 #include "signal.h"
 #include "prt_signal.h"
 #include "prt_signal_external.h"
 
-int sigaction(int signum, const struct sigaction *__restrict act, struct sigaction *__restrict oldact)
+int __sigaction(int signum, const struct sigaction *__restrict act, struct sigaction *__restrict oldact)
 {
+    if (signum == SIGKILL || signum == SIGSTOP) {
+        errno = EINVAL;
+        return -1;
+    }
+
     if (!sigValid(signum)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (act->sa_flags == SA_SIGINFO) {
+        errno = ENOTSUP;
         return -1;
     }
 
@@ -33,6 +45,8 @@ int sigaction(int signum, const struct sigaction *__restrict act, struct sigacti
         return 0;
     }
 
+    runTsk->sigMask |= act->sa_mask.__bits[0];
+
     _sa_handler handler = act->sa_handler;
     if (handler == SIG_IGN) {
         runTsk->sigVectors[signum] = NULL;
@@ -46,3 +60,5 @@ int sigaction(int signum, const struct sigaction *__restrict act, struct sigacti
 
     return 0;
 }
+
+weak_alias(__sigaction, sigaction);

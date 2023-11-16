@@ -20,14 +20,14 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-int handler_called = 0;
+static int handler_called = 0;
 
-void handler(int signo)
+static void handler(int signo)
 {
 	handler_called = 1;
 }
 
-int main()
+int sighold_1_1()
 {
 	struct sigaction act;
 	

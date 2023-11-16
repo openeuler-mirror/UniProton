@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <signal.h>
 
 #define SST_SIZE (_NSIG/8/sizeof(long))

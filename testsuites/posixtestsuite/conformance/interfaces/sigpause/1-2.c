@@ -31,14 +31,14 @@
 
 #define SIGTOTEST SIGABRT
 
-int returned = 0;
+static int returned = 0;
 
-void handler() {
+static void handler() {
 	printf("signal was called\n");
 	return;
 }
 
-void *a_thread_func()
+static void *a_thread_func()
 {
 	struct sigaction act;
 	act.sa_flags = 0;
@@ -50,7 +50,7 @@ void *a_thread_func()
 	return NULL;
 }
 
-int main()
+int sigpause_1_2()
 {
 	pthread_t new_th;
 	int i;

@@ -21,7 +21,7 @@
 
 #define SIGTOTEST SIGABRT
 
-int main()
+int sigpause_4_1()
 {
 	int return_value = 0;
         int result;

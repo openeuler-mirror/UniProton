@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-int main()
+int sigpending_2_1()
 {
 	sigset_t blockset;
 	sigset_t prevset;

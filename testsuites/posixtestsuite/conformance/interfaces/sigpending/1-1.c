@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-int main()
+int sigpending_1_1()
 {
 	sigset_t blockset;
 	sigset_t prevset;
@@ -71,6 +71,10 @@ int main()
 		}
 	}
 	printf("Not all pending signals found\n");
+
+    sigemptyset(&blockset);
+    sigprocmask(SIG_SETMASK, &blockset, NULL);
+
 	return PTS_FAIL;
 }
 
