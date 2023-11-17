@@ -36,8 +36,6 @@
 #include <nuttx/lib/lib.h>
 #include <nuttx/tls.h>
 
-#include "libc.h"
-
 #if defined(CONFIG_BUILD_FLAT) || defined(__KERNEL__)
 
 /****************************************************************************

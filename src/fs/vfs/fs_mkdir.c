@@ -31,6 +31,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_stat.h>
 
 #include "inode/inode.h"
 

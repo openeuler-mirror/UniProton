@@ -97,11 +97,6 @@ int mknodat(int, const char *, mode_t, dev_t);
 int futimens(int, const struct timespec [2]);
 int utimensat(int, const char *, const struct timespec [2], int);
 
-/* From Nuttx stat.h */
-int utimens(const char *path, const struct timespec times[2]);
-int lutimens(const char *path, const struct timespec times[2]);
-mode_t getumask(void);
-
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 int lchmod(const char *, mode_t);
 #define S_IREAD S_IRUSR

@@ -22,8 +22,8 @@
  * Included Files
  ****************************************************************************/
 
-#include <sys/stat.h>
-#include <nuttx/tls.h>
+#include <nuttx/config.h>
+#include <nuttx/sys/sys_stat.h>
 
 /****************************************************************************
  * Private Data
@@ -38,7 +38,7 @@ static mode_t g_umask;
  ****************************************************************************/
 
 /****************************************************************************
- * Name: umask
+ * Name: sys_umask
  *
  * Description:
  *    Set and get the file mode creation mask
@@ -51,7 +51,7 @@ static mode_t g_umask;
  *
  ****************************************************************************/
 
-mode_t umask(mode_t mask)
+mode_t sys_umask(mode_t mask)
 {
   mode_t prev;
 #ifndef CONFIG_BUILD_KERNEL
