@@ -16,10 +16,10 @@
 #include "prt_typedef.h"
 #include "pcie_config.h"
 
-uint32_t __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
+bool __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
 {
     if (bus_no >= PCI_BUS_NUM_MAX) {
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }

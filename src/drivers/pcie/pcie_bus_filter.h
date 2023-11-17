@@ -18,6 +18,6 @@
 
 #include "prt_typedef.h"
 
-uint32_t pci_bus_accessible(uint32_t bus_no);
+bool pci_bus_accessible(uint32_t bus_no);
 
 #endif

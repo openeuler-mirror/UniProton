@@ -81,6 +81,18 @@ OS_SEC_TEXT void OsGicrDisableInt(U32 coreId, U32 intId)
 }
 
 /*
+ * 描述: 清除指定中断号的pending位, 调用者保证入参的有效性
+ */
+OS_SEC_TEXT void OsGicrClearPendingBit(U32 coreId, U32 intId)
+{
+    // 每个寄存器对应32个中断，写1去使能中断，写0无效
+    OsGicSetReg(GICR_ICPENDR0_ADDR + coreId * GICR_ADDR_OFFSET_PER_CORE,
+                GIC_IENABLE_INT_NUM, intId, 1);
+
+    OsGicrWaitCfgWork(coreId);  // 确保操作生效
+}
+
+/*
  * 描述: 设置SGI, PPI, NNSPI中断的优先级, 调用者保证入参的有效性
  */
 OS_SEC_L4_TEXT void OsGicrSetPriority(U32 coreId, U32 intId, U32 priority)

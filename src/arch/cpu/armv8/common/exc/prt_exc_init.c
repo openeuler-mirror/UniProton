@@ -14,6 +14,9 @@
  */
 #include "prt_exc_internal.h"
 #include "prt_err_external.h"
+#if defined(OS_OPTION_POWEROFF)
+#include "prt_task_external.h"
+#endif
 
 /*
  * 描述: 获取异常类型
@@ -125,6 +128,15 @@ INIT_SEC_L4_TEXT void OsExcHandleEntry(U32 excType, struct ExcRegInfo *excRegs)
     OsExcHookHandle();
 }
 
+#if defined(OS_OPTION_POWEROFF)
+#define OS_EXC_STOP_CORE_HWI_NUM OS_HWI_IPI_NO_02
+
+void OsExcIrqHandler(void)
+{
+    OsAsmIll(); /* 主动进入异常，最终会调用 OsCpuPowerOff */
+}
+#endif
+
 /*
  * 描述: EXC模块的初始化
  */
@@ -133,6 +145,27 @@ OS_SEC_L4_TEXT U32 OsExcConfigInit(void)
 #if defined(OS_OPTION_CDA)
     OsCdaExcInit();
 #endif
+
+#if defined(OS_OPTION_POWEROFF)
+    U32 ret;
+    ret = PRT_HwiSetAttr(OS_EXC_STOP_CORE_HWI_NUM, 0, OS_HWI_MODE_ENGROSS);
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+    ret = PRT_HwiCreate(OS_EXC_STOP_CORE_HWI_NUM, (HwiProcFunc)OsExcIrqHandler, 0);
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+#if (OS_GIC_VER == 3)
+    ret = PRT_HwiEnable(OS_EXC_STOP_CORE_HWI_NUM);
+    if (ret != OS_OK) {
+        return ret;
+    }
+#endif
+#endif
+
     return OS_OK;
 }
 

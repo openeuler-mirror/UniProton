@@ -18,6 +18,8 @@
 
 #include "prt_typedef.h"
 
+#define PCIE_DBG_LOG
+
 #ifdef PCIE_DBG_LOG
 #define PCIE_DBG_PRINTF(...) printf(__VA_ARGS__)
 #else
@@ -100,7 +102,7 @@ struct pci_driver;
 #define PCI_SLOT(devfn) (((devfn) >> 3) & 0x1f)
 #define PCI_FUNC(devfn) ((devfn) & 0x07)
 
-#define	PCI_ANY_ID              -1U
+#define	PCI_ANY_ID              ((uint16_t)0xffff)
 #define	PCI_VENDOR_ID_INTEL     0x8086
 #define	PCI_VENDOR_ID_HUAWEI    0x19e5
 
@@ -150,10 +152,10 @@ struct pci_dev {
 };
 
 struct pci_device_id {
-    uint32_t vendor;
-    uint32_t device;
-    uint32_t subvendor;
-    uint32_t subdevice;
+    uint16_t vendor;
+    uint16_t device;
+    uint16_t subvendor;
+    uint16_t subdevice;
     uint32_t class;
     uint32_t class_mask;
     uintptr_t driver_data;

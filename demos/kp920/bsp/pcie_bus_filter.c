@@ -27,15 +27,15 @@ const struct pcie_bus_range_s g_pci_ecam_range[] = {
 uint32_t g_pci_ecam_range_num = sizeof(g_pci_ecam_range) / sizeof(g_pci_ecam_range[0]);
 
 /* PCIE的配置空间，不连续时，有些bus的配置空间访问出发异常，需要跳过 */
-uint32_t pci_bus_accessible(uint32_t bus_no)
+bool pci_bus_accessible(uint32_t bus_no)
 {
     int i;
     for (i = 0; i < g_pci_ecam_range_num; i++) {
         if (bus_no >= g_pci_ecam_range[i].bus_start &&
             bus_no <= g_pci_ecam_range[i].bus_end) {
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }

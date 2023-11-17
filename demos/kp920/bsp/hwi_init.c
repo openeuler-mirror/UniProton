@@ -235,6 +235,16 @@ void OsSicSetGroup(U32 intId, enum SicGroupType groupId)
     }
 }
 
+void OsSicClearPendingBit(U32 intId)
+{
+    U32 coreId = OsGetCoreID();
+    enum GicIntState state;
+    
+    if (intId < MIN_GIC_SPI_NUM) {
+        OsGicrClearPendingBit(coreId, intId);
+    }
+}
+
 /* 这里记录下了cpu redistributor的两个配置表的基地址，
  * LPI配置信息表基地址(PROPBASER) 和 LPI状态信息表基地址（PENDBASER）
  * 其中 PROPBASER 要求所有core的配置一致
@@ -297,6 +307,12 @@ U32 OsSicInitLocal(void)
     for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
         OsSicSetGroup(intId, SIC_GROUP_G1NS);
     }
+
+    for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
+        OsSicClearPendingBit(intId);
+    }
+
+    PRT_DMB();
 
     return OS_OK;
 }

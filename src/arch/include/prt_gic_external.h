@@ -166,6 +166,7 @@ extern U32 OsGicdGetPriority(U32 intId);
 extern enum GicIntState OsGicrGetIntState(U32 coreId, U32 intId);
 extern void OsGicrEnableInt(U32 coreId, U32 intId);
 extern void OsGicrDisableInt(U32 coreId, U32 intId);
+extern void OsGicrClearPendingBit(U32 coreId, U32 intId);
 extern void OsGicrSetPriority(U32 coreId, U32 intId, U32 priority);
 extern U32 OsGicrGetPriority(U32 coreId, U32 intId);
 extern bool OsGicIsSpi(U32 intId);

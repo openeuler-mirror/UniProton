@@ -159,6 +159,7 @@ void test_pcie_demo(void)
     // 根据 dev_tbl 查找所有设备， 并调用 挂接的 probe 函数
     ret = pci_register_driver(&hpm_driver);
     if (ret != ok) {
+        printf("test pcie demo pci register driver fail, ret:0x%x", ret);
         return;
     }
 

@@ -192,7 +192,6 @@ OS_SEC_L4_TEXT U32 PRT_HwiSetAttr(HwiHandle hwiNum, HwiPrior hwiPrio, HwiMode mo
     uintptr_t intSave;
     U32 irqNum;
     U32 ret;
-    HwiPrior hwiPrioOri;
 
     ret = OsHwiSetAttrParaCheck(hwiNum, hwiPrio, mode);
     if (ret != OS_OK) {
@@ -211,10 +210,11 @@ OS_SEC_L4_TEXT U32 PRT_HwiSetAttr(HwiHandle hwiNum, HwiPrior hwiPrio, HwiMode mo
     }
 #endif
 
-    hwiPrioOri = OsHwiPriorityGet(hwiNum);
-    if (hwiPrioOri != hwiPrio) {
+#if defined(OS_OPTION_HWI_PRIORITY)
+    if (OsHwiPriorityGet(hwiNum) != hwiPrio) {
         OsHwiPrioritySet(hwiNum, hwiPrio);
     }
+#endif
 
     OsHwiAttrSet(irqNum, hwiPrio, mode);
 
@@ -435,7 +435,7 @@ OS_SEC_L4_TEXT U32 PRT_HwiDelete(HwiHandle hwiNum)
     return OS_OK;
 }
 
-OS_SEC_L4_TEXT void PRT_HwiDisableAll(void)
+OS_SEC_L4_TEXT void OsHwiDisableAll(void)
 {
     U32 hwiNum;
     for (hwiNum = 0; hwiNum < OS_HWI_MAX_NUM; hwiNum++) {

@@ -8,6 +8,9 @@
 #include "prt_task.h"
 #include "test.h"
 #include "cpu_config.h"
+#if defined(OS_OPTION_POWEROFF)
+#include "psci.h"
+#endif
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -32,12 +35,9 @@ int TestOpenamp()
 }
 #endif
 
-uint32_t g_power_off_flag = 0;
-extern U32 OsCpuPowerOff(void);
-void OsPowerOff(void)
-{
-    g_power_off_flag = 1;
-}
+#if defined(OS_OPTION_POWEROFF)
+extern uint32_t g_sysPowerOffFlag;
+#endif
 
 void TestTaskEntry()
 {
@@ -54,11 +54,13 @@ void TestTaskEntry()
     do {
         PRT_TaskDelay(1000);
         printf("TestTaskEntry\r\n");
-        if (g_power_off_flag) {
+#if defined(OS_OPTION_POWEROFF)
+        if (g_sysPowerOffFlag) {
             PRT_TaskDelay(500);
             OsCpuPowerOff();
         }
-    } while(1);
+#endif
+    } while (1);
 }
 
 U32 OsTestInit(void)
@@ -73,6 +75,8 @@ U32 OsTestInit(void)
     param.name = "TestTask";
     param.stackSize = 0x2000;
     
+    OsPowerOffFuncHook(OsCpuPowerOff);
+
     ret = PRT_TaskCreate(&g_testTskHandle, &param);
     if (ret) {
         return ret;
