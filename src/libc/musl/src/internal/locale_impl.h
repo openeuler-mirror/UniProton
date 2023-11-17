@@ -6,6 +6,9 @@
 #include "libc.h"
 #include "pthread_impl.h"
 
+#if defined(OS_OPTION_LOCALE)
+#include "prt_posix_ext.h"
+#endif
 #define LOCALE_NAME_MAX 23
 
 struct __locale_map {
@@ -37,9 +40,17 @@ hidden char *__gettextdomain(void);
 #define C_LOCALE ((locale_t)&__c_locale)
 #define UTF8_LOCALE ((locale_t)&__c_dot_utf8_locale)
 
+#if defined(OS_OPTION_LOCALE)
+
+#define CURRENT_LOCALE (*PRT_LocaleCurrent())
+
+#define CURRENT_UTF8 (!!CURRENT_LOCALE->cat[LC_CTYPE])
+
+#else
 #define CURRENT_LOCALE (__pthread_self()->locale)
 
 #define CURRENT_UTF8 (!!__pthread_self()->locale->cat[LC_CTYPE])
+#endif
 
 #undef MB_CUR_MAX
 #define MB_CUR_MAX (CURRENT_UTF8 ? 4 : 1)

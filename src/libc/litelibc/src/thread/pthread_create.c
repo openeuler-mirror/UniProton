@@ -20,7 +20,9 @@
 #include "../../../core/kernel/task/prt_task_internal.h"
 #include "prt_err_external.h"
 #include "prt_signal_external.h"
-
+#if defined(OS_OPTION_POSIX_LOCALE)
+#include "prt_posix_ext.h"
+#endif
 static U32 OsPthreadCreatParaCheck(TskHandle *newthread, const pthread_attr_t *attrp,
     prt_pthread_startroutine routine, pthread_attr_t *attr)
 {
@@ -121,6 +123,9 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
     tskCb->sigMask = 0;
     tskCb->sigWaitMask = 0;
     tskCb->sigPending = 0;
+#if defined(OS_OPTION_POSIX_LOCALE)
+    tskCb->locale = (locale_t)libc_global_locale;
+#endif
     INIT_LIST_OBJECT(&tskCb->sigInfoList);
     OsInitSigVectors(tskCb);
 }

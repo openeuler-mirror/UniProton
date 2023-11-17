@@ -15,7 +15,6 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_SYSTEM_SOURCE 
 
-#include "prt_cplusplus_adapter.hpp"
 #include <boost/system/config.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/cerrno.hpp>

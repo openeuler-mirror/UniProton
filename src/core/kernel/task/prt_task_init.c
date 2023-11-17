@@ -16,7 +16,9 @@
 #include "prt_task_internal.h"
 #include "prt_amp_task_internal.h"
 #include "prt_signal_external.h"
-
+#if defined(OS_OPTION_LOCALE)
+#include "prt_posix_ext.h"
+#endif
 /* Unused TCBs and ECBs that can be allocated. */
 OS_SEC_DATA struct TagListObject g_tskCbFreeList = LIST_OBJECT_INIT(g_tskCbFreeList);
 OS_SEC_DATA struct TagListObject g_tskRecyleList = LIST_OBJECT_INIT(g_tskRecyleList);
@@ -320,6 +322,9 @@ OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *
     taskCb->sigMask = 0;
     taskCb->sigWaitMask = 0;
     taskCb->sigPending = 0;
+#if defined(OS_OPTION_LOCALE)
+    taskCb->locale = (locale_t)libc_global_locale;
+#endif
     INIT_LIST_OBJECT(&taskCb->sigInfoList);
     OsInitSigVectors(taskCb);
 #endif
@@ -379,3 +384,17 @@ OS_SEC_L4_TEXT U32 PRT_TaskCreate(TskHandle *taskPid, struct TskInitParam *initP
 {
     return OsTaskCreateOnly(taskPid, initParam);
 }
+
+
+#if defined(OS_OPTION_LOCALE)
+OS_SEC_L4_TEXT locale_t *PRT_LocaleCurrent(void)
+{
+    struct TagTskCb *tskCb = RUNNING_TASK;
+
+    if (!tskCb) {
+        return NULL;
+    }
+
+    return &tskCb->locale;
+}
+#endif

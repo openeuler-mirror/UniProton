@@ -87,6 +87,8 @@
 #define DEF_CONVERT(name)  \
     static void CONVERT(name) (void *from, void *to)
 
+#define STDFILE_BASE 1
+
 typedef void (*resp2outp_fn) (void *from, void *to);
 typedef struct rpc_record {
     uint32_t trace_id;
@@ -207,6 +209,18 @@ static void common_cb(int status, void *data, size_t len)
     }
     /* to clear the flag set in the caller function */
     set_status(idx, STATUS_READY);
+}
+
+static fileHandle file2handle(FILE *f)
+{
+    if (f == stdout) {
+        return STDOUT_FILENO + STDFILE_BASE;
+    } else if (f == stdin) {
+        return STDIN_FILENO + STDFILE_BASE;
+    } else if (f == stderr) {
+        return STDERR_FILENO + STDFILE_BASE;
+    }
+    return (fileHandle)f;
 }
 
 DEF_CONVERT(common)
@@ -404,6 +418,13 @@ DEF_CONVERT(getdents64)
         return;
     }
     memcpy_s(outp->buf, outp->bufsize, resp->buf, resp->ret);
+}
+
+DEF_CONVERT(getwc)
+{
+    DEFINE_CB_VARS(getwc)
+
+    outp->ret = resp->ret;
 }
 
 static void resp2outp_fread(void *from, void *to)
@@ -909,7 +930,6 @@ struct hostent *PRT_ProxyGetHostByName(const char *name)
 int PRT_ProxyPoll(struct pollfd *fds, nfds_t nfds, int timeout)
 {
     DEFINE_COMMON_RPC_VAR(poll)
-
     CHECK_INIT()
     CHECK_ARG(nfds > MAX_POLL_FDS, EINVAL);
     CHECK_ARG(fds == NULL, EFAULT);
@@ -1598,7 +1618,7 @@ int PRT_ProxyFclose(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = FCLOSE_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1637,7 +1657,7 @@ size_t PRT_ProxyFread(void *buffer, size_t size, size_t count, FILE *f)
     req.func_id = FREAD_ID;
     req.size = size;
     req.count = cnt;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_fread;
 
@@ -1674,12 +1694,12 @@ size_t PRT_ProxyFwrite(const void *buffer, size_t size, size_t count, FILE *f)
     req.func_id = FWRITE_ID;
     req.size = size;
     req.count = cnt;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     (void)memcpy_s(req.buf, totalSize, buffer, totalSize);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_fwrite;
 
-    int ret = wait4resp(slot_idx, &req, sizeof(req));
+    int ret = wait4resp(slot_idx, &req, sizeof(req) - sizeof(req.buf) + totalSize);
     if (ret < 0) {
         return ret;
     }
@@ -1716,7 +1736,7 @@ FILE *PRT_ProxyFreopen(const char *filename, const char *mode, FILE *f)
     req.func_id = FREOPEN_ID;
     (void)memcpy_s(req.filename, flen, filename, flen);
     (void)memcpy_s(req.mode, mlen, mode, mlen);
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
 
@@ -1753,7 +1773,7 @@ int PRT_ProxyFputs(const char *str, FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = FPUTS_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     (void)memcpy_s(req.str, len, str, len);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
@@ -1792,7 +1812,7 @@ char *PRT_ProxyFgets(char *str, int n, FILE *f)
     outp.size = n;
     outp.str = str;
     req.func_id = FGETS_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.size = n;
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_fgets;
@@ -1824,7 +1844,7 @@ int PRT_ProxyFeof(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = FEOF_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1850,7 +1870,7 @@ static int __fprintf(FILE *f, const char *format, va_list list)
 
     req.func_id = FPRINTF_ID;
     req.len = len;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
 
     ret = rpmsg_send(g_ept, &req, len + hlen);
 
@@ -1891,7 +1911,7 @@ int PRT_ProxyGetc(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = GETC_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1922,7 +1942,7 @@ int PRT_ProxyFerror(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = FERROR_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1953,7 +1973,7 @@ int PRT_ProxyGetcUnlocked(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = GETC_UNLOCK_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -1984,7 +2004,7 @@ int PRT_ProxyPclose(FILE *f)
 
     outp.super.errnum = 0;
     req.func_id = PCLOSE_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2037,7 +2057,7 @@ void PRT_ProxyClearerr(FILE *f)
     }
 
     req.func_id = CLEARERR_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
 
     (void)rpmsg_send(g_ept, &req, sizeof(req));
 
@@ -2103,7 +2123,7 @@ int PRT_ProxyUngetc(int c, FILE *f)
     outp.super.errnum = 0;
     req.func_id = UNGETC_ID;
     req.c = c;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2135,9 +2155,9 @@ int PRT_ProxyFseeko(FILE *f, off_t offset, int whence)
 
     outp.super.errnum = 0;
     req.func_id = FSEEKO_ID;
-    req.a = offset;
-    req.b = whence;
-    req.fhandle = (fileHandle)f;
+    req.offset = offset;
+    req.whence = whence;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
@@ -2169,7 +2189,7 @@ long PRT_ProxyFtello(FILE * f)
 
     outp.super.errnum = 0;
     req.func_id = FTELLO_ID;
-    req.fhandle = (fileHandle)f;
+    req.fhandle = file2handle(f);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = resp2outp_ftello;
 
@@ -2288,6 +2308,124 @@ int PRT_ProxyMkstemp(char *template)
     return outp.ret;
 }
 
+int PRT_ProxyFflush(FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(fflush)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = FFLUSH_ID;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
+wint_t PRT_ProxyGetwc(FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(getwc)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = GETWC_ID;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(getwc);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
+wint_t PRT_ProxyPutwc(wchar_t wc, FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(putwc)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = PUTWC_ID;
+    req.wc = wc;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(getwc);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
+int PRT_ProxyPutc(int c, FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(putc)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = PUTC_ID;
+    req.c = c;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
+wint_t PRT_ProxyUngetwc(wint_t wc, FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(ungetwc)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = UNGETWC_ID;
+    req.wc = wc;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(getwc);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
 #ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyRead, read);
@@ -2339,4 +2477,10 @@ WEAK_ALIAS(PRT_ProxyFtello, ftello);
 WEAK_ALIAS(PRT_ProxyRename, rename);
 WEAK_ALIAS(PRT_ProxyRemove, remove);
 WEAK_ALIAS(PRT_ProxyMkstemp, mkstemp);
+
+WEAK_ALIAS(PRT_ProxyFflush, fflush);
+WEAK_ALIAS(PRT_ProxyGetwc, getwc);
+WEAK_ALIAS(PRT_ProxyPutwc, putwc);
+WEAK_ALIAS(PRT_ProxyPutc, putc);
+WEAK_ALIAS(PRT_ProxyUngetwc, ungetwc);
 #endif

@@ -10,7 +10,7 @@ set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-as)
 set(CC_OPTION "-g -O2 -mcmodel=large -static -nostdlib -nostdinc -fno-builtin -funwind-tables -nostartfiles -nodefaultlibs -mpreferred-stack-boundary=3 -mno-3dnow -mno-avx -mno-red-zone -Wl,--build-id=none -fno-builtin -fno-PIE -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -fno-stack-protector -funsigned-char -fno-PIC")
 set(AS_OPTION "-c")
 set(AR_OPTION "-r")
-set(LD_OPTION "-static -Wl,-melf_x86_64 -Wl,--no-relax -Wl,-gc-sections -Wl,--wrap=memset -Wl,--wrap=memcpy -Wl,--wrap=strlen -Wl,--wrap=strnlen -Wl,--wrap=memchr -Wl,--wrap=strncpy  -Wl,--wrap=memcmp -Wl,--wrap=strcmp -Wl,--wrap=strncmp")
+set(LD_OPTION "-static -Wl,-melf_x86_64 -Wl,--no-relax -Wl,-gc-sections -Wl,--wrap=memset -Wl,--wrap=memcpy -Wl,--wrap=strlen -Wl,--wrap=strnlen -Wl,--wrap=memchr -Wl,--wrap=strncpy  -Wl,--wrap=memcmp -Wl,--wrap=strcmp -Wl,--wrap=strncmp -Wl,--eh-frame-hdr")
 set(CMAKE_C_FLAGS "${CC_OPTION}")
 set(CMAKE_CXX_FLAGS "${CC_OPTION}  -nostdinc++")
 set(CMAKE_ASM_FLAGS "${AS_OPTION}")
@@ -34,8 +34,7 @@ include_directories(
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
-    ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/
-    ${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/include/c++/10.3.1/x86_64-openeuler-linux-gnu
+    ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
     ${HOME_PATH}/output/libc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/cplusplus/boost_1_54_0
 )
@@ -49,7 +48,7 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
-    "${TOOLCHAIN_PATH}/x86_64-openeuler-linux-gnu/lib64/libstdc++.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
     "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
     "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
     -Wl,--end-group
@@ -106,9 +105,21 @@ if (${APP} STREQUAL "ethercatTest")
     add_executable(${APP} ${OBJS})
 endif()
 
+if (${APP} STREQUAL "cxxTest")
+    if ("${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y" AND "${CONFIG_OS_OPTION_LOCALE}" STREQUAL "y")
+        add_subdirectory(../../testsuites/cxx-test tmp)
+        target_compile_options(ethercat PUBLIC -DCXX_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost> $<TARGET_OBJECTS:cxxtest>)
+        add_executable(${APP} ${OBJS})
+    else()
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_CXX AND CONFIG_OS_OPTION_LOCALE")
+        return()
+    endif()
+endif()
+
 #rpmsg
 if (${APP} MATCHES "x86_64")
-    if (${CONFIG_OS_SUPPORT_CXX})
+    if ("${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y" AND "${CONFIG_OS_OPTION_LOCALE}" STREQUAL "y")
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
         add_executable(${APP} ${OBJS})
     else()
