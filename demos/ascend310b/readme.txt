@@ -1,7 +1,8 @@
 本目录下放置的是UniProton实时部分版本。
 
 ├─apps            # 基于UniProton实时OS编程的demo程序；     
-│  └─openamp      # openamp示例程序；
+│  └─openamp      # 基于openamp部署的示例程序，通过设置CONFIG_OS_OPTION_OPENAMP使用；
+│  └─helloworld   # 基于虚拟化底座部署的示例程序，通过设置CONFIG_GUEST_OS使用；
 ├─bsp             # 提供的板级驱动与OS对接；
 ├─build           # 提供编译脚本编译出最终镜像；
 ├─component       # 适配openamp框架patch文件，openamp源码下载存放路径;
