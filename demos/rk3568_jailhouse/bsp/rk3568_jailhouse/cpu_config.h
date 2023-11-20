@@ -4,6 +4,7 @@
 #include "cache_asm.h"
 
 #define UART_BASE_ADDR             0xfe660000ULL
+#define MMU_OPENAMP_ADDR           0x11020000ULL
 
 #define TEST_CLK_INT               30
 

@@ -303,10 +303,18 @@ int DeviceInit(struct IvshmemDeviceData *d)
     return OS_OK;
 }
 
+#if defined(OS_OPTION_OPENAMP)
+extern void rpmsg_hwi_handler(U32 intNum);
+#endif
+
 void ShmemHandler(U32 intNum)
 {
     irqCounter += 1;
     PRT_Printf("\n ShmemHandler: got interrupt %d (#%d)\n", intNum, irqCounter);
+    #if defined(OS_OPTION_OPENAMP)
+    rpmsg_hwi_handler(intNum);
+    #endif
+
     PrintShmem(&dev);
 }
 

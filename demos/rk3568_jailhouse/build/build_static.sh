@@ -9,6 +9,7 @@ pushd ./../../../
 python build.py $1
 cp output/UniProton/lib/$1/* demos/$1/libs
 cp output/libboundscheck/lib/$1/* demos/$1/libs
+cp -r output/libc demos/$1/include
 cp -r src/include/uapi/* demos/$1/include
-cp build/uniproton_config/config_armv8_rk3568_jailhouse/prt_buildef.h demos/$1/include/
+cp -r build/uniproton_config/config_armv8_rk3568_jailhouse/prt_buildef.h demos/$1/include/
 popd
