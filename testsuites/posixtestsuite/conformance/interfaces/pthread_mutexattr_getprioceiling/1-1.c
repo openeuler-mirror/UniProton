@@ -43,7 +43,7 @@ int pthread_mutexattr_getprioceiling_1_1()
 	/* Get the prioceiling mutex attr. */
 	if(pthread_mutexattr_getprioceiling(&mta, &prioceiling) != 0)
 	{
-		fprintf(stderr,"Error obtaining the attribute process-shared\n");
+		printf("Error obtaining the attribute process-shared\n");
 		return PTS_UNRESOLVED;
 	}
 	

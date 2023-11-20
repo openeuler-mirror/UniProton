@@ -20,6 +20,9 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/rand_r.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__stack_chk_fail.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
     )
 
 if(NOT ${CONFIG_OS_OPTION_PROXY})
@@ -60,12 +63,6 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
-if (${CPU_TYPE} STREQUAL "m4")
-    list(REMOVE_ITEM LITELIBC_SOURCE
-        ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/errno/strerror.c
-    )
-endif()
-
 set(MUSL_LOCALE_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/wcscoll.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strxfrm.c
@@ -88,6 +85,7 @@ set(MUSL_MULTIBYTE_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctob.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/btowc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/internal.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbtowc.c
 )
 
 if (${CPU_TYPE} STREQUAL "x86_64")
@@ -203,6 +201,11 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/string/wcslen.c
 )
 
+# 适配stdio
+set(MUSL_STDIO_SOURCE 
+    musl/src/stdio/snprintf.c
+)
+
 # 需要编译的signal相关.c文件
 set(MULS_SIGNAL_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/signal/sigfillset.c
@@ -267,6 +270,9 @@ endif()
         ${MUSL_STRING_SOURCE}
         ${MUSL_PRNG_SOURCE}
         ${MUSL_CTYPE_SOURCE}
+        ${MUSL_LOCALE_SOURCE}
+        ${MUSL_MULTIBYTE_SOURCE}
+        ${MUSL_STDIO_SOURCE}
     )
 
 if(${CONFIG_OS_SUPPORT_LIBXML2})
@@ -302,6 +308,8 @@ if(${CONFIG_OS_OPTION_PROXY})
     list(APPEND MULS_SOURCE    ${MUSL_FS_SOURCE})
 endif()
 
+list(REMOVE_DUPLICATES MULS_SOURCE)
+list(REMOVE_DUPLICATES LITELIBC_SOURCE)
 add_library(musllibc OBJECT ${MULS_SOURCE} ${LITELIBC_SOURCE})
 target_compile_options(musllibc PUBLIC 
         -Wno-bad-function-cast

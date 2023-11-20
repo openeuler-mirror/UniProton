@@ -21,9 +21,9 @@ set(CXX_LIB ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crti.o
 
 if("${SIM}" STREQUAL "_SIM_")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D${SIM}")
-    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${CMAKE_CURRENT_SOURCE_DIR}/build/qemu_m4.ld")
+    set(CMAKE_EXE_LINKER_FLAGS "-nostdlib -Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${CMAKE_CURRENT_SOURCE_DIR}/build/qemu_m4.ld")
 else()
-    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${CMAKE_CURRENT_SOURCE_DIR}/build/examples.ld")
+    set(CMAKE_EXE_LINKER_FLAGS "-nostdlib -Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${CMAKE_CURRENT_SOURCE_DIR}/build/examples.ld")
 endif()
 
 # 公共函数定义导入
@@ -44,7 +44,7 @@ include_directories(
 set(M4_UNIPROTON_LIB ${OUTPUT_PATH}/UniProton/lib/cortex_m4/libCortexM4.a)
 set(M4_PLATFORM_LIB ${OUTPUT_PATH}/libboundscheck/lib/cortex_m4/libCortexMXsec_c.lib)
 link_libraries(${M4_UNIPROTON_LIB} ${M4_PLATFORM_LIB} ${M4_UNIPROTON_LIB} ${M4_PLATFORM_LIB})
-link_libraries(-lm -lc_nano -lnosys -lgcc)
+link_libraries(-lgcc)
 
 add_subdirectory(${HOME_PATH}/demos/m4/bsp bsp)
 add_subdirectory(config)

@@ -53,7 +53,7 @@ int pthread_mutexattr_getpshared_1_3()
 	/* Get 'pshared'.  It should be PTHREAD_PROCESS_PRIVATE. */
 	if(pthread_mutexattr_getpshared(&mta, &pshared) != 0)
 	{
-		fprintf(stderr,"Error obtaining the attribute process-shared\n");
+		printf("Error obtaining the attribute process-shared\n");
 		return PTS_UNRESOLVED;
 	}
 	
