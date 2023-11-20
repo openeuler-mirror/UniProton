@@ -19,7 +19,7 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 
 #define TEST_TASK_NUM 2
 
-TskHandle g_testTskHandle[TEST_TASK_NUM];
+TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 struct IvshmemDeviceData dev;
 int irqCounter;
@@ -36,10 +36,10 @@ void TestTask1()
     }
 }
 
-void TestTask2()
+void TestTaskEntry()
 {
     int ret;
-    PRT_Printf("TestTask2 enter.\n");
+    PRT_Printf("TestTask enter.\n");
     int bdf = PciDeviceFind(VENDORID, DEVICEID, 0);
     if (bdf == -1) {
         PRT_Printf("IVSHMEM: No PCI devices found .. nothing to do.\n");
@@ -73,10 +73,19 @@ void TestTask2()
     dev.rwSection[dev.id] = 0;
     dev.outSection[0] = 0;
 
+#if defined(OS_OPTION_OPENAMP)
+    ret = rpmsg_service_init();
+    if (ret) {
+        return;
+    }
+#endif
+
     while (1) {
-        PRT_Printf("TestTask2 run! \n");
+        PRT_Printf("TestTask run! \n");
         PRT_TaskDelay(1000);
+        #if !defined(OS_OPTION_OPENAMP)
         IrqSend(&dev);
+        #endif
     }
 }
 
@@ -86,36 +95,19 @@ U32 OsTestInit(void)
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
 
-    // create task1
+    // create task
     param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)TestTask1;
-    param.taskPrio = 25;
-    param.name = "TestTask1";
-    param.stackSize = 0x2000;
-
-    ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
-    if (ret) {
-        return ret;
-    }
-
-    ret = PRT_TaskResume(g_testTskHandle[0]);
-    if (ret) {
-        return ret;
-    }
-
-    // create task2
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)TestTask2;
+    param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = 30;
-    param.name = "TestTask2";
+    param.name = "TestTask";
     param.stackSize = 0x2000;
 
-    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
+    ret = PRT_TaskCreate(&g_testTskHandle, &param);
     if (ret) {
         return ret;
     }
 
-    ret = PRT_TaskResume(g_testTskHandle[1]);
+    ret = PRT_TaskResume(g_testTskHandle);
     if (ret) {
         return ret;
     }

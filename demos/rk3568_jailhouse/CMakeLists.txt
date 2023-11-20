@@ -28,6 +28,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/ivshmem
     ${HOME_PATH}/output/libc/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -36,6 +38,8 @@ link_libraries(
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRK3568_JAILHOUSE.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblua.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     -Wl,--end-group
     -lgcc
 )

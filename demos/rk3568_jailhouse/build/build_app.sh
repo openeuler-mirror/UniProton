@@ -4,6 +4,7 @@ export TOOLCHAIN_GCC_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-no
 export ALL="rk3568_jailhouse"
 
 sh ./build_static.sh rk3568_jailhouse
+sh ./build_openamp.sh $TOOLCHAIN_PATH
 
 pushd ./../../../src/component/lua-5.3.4/src
     make posix
