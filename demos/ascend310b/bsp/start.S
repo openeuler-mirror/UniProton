@@ -1,7 +1,11 @@
 #include "prt_buildef.h"
 
     .global   OsResetVector
+#ifdef OS_OPTION_OPENAMP
+    .global   mmu_init
 
+    .type     mmu_init, function
+#endif
     .type     start, function
     .section  .text.bspinit, "ax"
     .balign   4
@@ -78,6 +82,10 @@ OsEl2SwitchToEl1:
 Start:
     LDR    x1, =__os_sys_sp_end
     BIC    sp, x1, #0xf
+
+#ifdef OS_OPTION_OPENAMP
+    BL     mmu_init
+#endif
 
     MRS    x10, CNTKCTL_EL1
     ORR    x10, x10, #0x3

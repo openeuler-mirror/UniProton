@@ -32,10 +32,16 @@ CONFIG_INTERNAL_OS_BYTE_ORDER_LE=y
 CONFIG_OS_BYTE_ORDER="OS_LITTLE_ENDIAN"
 # CONFIG_OS_OPTION_DCACHE is not set
 CONFIG_OS_CACHE_LINE_SIZE=64
-CONFIG_GUEST_OS=y
+
 #
-# Core Modules Configuration
+# Openamp Modules Configuration, mutually exclusive with Guest
 #
+CONFIG_OS_OPTION_OPENAMP=y
+
+#
+# Guest Modules Configuration, mutually exclusive with Openamp
+#
+# CONFIG_GUEST_OS is not set
 
 #
 # IPC Modules Configuration
@@ -127,8 +133,3 @@ CONFIG_OS_OPTION_CPUP_WARN=y
 CONFIG_OS_OPTION_POSIX=y
 CONFIG_OS_POSIX_TYPE_NEWLIB=y
 CONFIG_OS_POSIX_SET_TZDST=y
-
-#
-# Openamp Modules Configuration
-#
-# CONFIG_OS_OPTION_OPENAMP is not set
