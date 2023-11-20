@@ -32,10 +32,6 @@ long sysconf(int name)
     }
 }
 
-uid_t getuid(void) {
-    return 0;
-}
-
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     int runCount = 0;

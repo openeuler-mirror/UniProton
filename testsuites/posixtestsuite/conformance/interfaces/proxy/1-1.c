@@ -1053,6 +1053,28 @@ static int test_FILE_fs_posix3()
         return -1;
     }
 
+    dprintf("\nUP>test stdin stdout stderr\n");
+    ret = fprintf(stdin, "test stdin\n");
+    if (ret < 0) {
+        dprintf("\nUP>fprintf fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fprintf(stdout, "test stdout\n");
+    if (ret < 0) {
+        dprintf("\nUP>fprintf fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fprintf(stderr, "test stderr\n");
+    if (ret < 0) {
+        dprintf("\nUP>fprintf fail.\n");
+        fclose(fp);
+        return -1;
+    }
+
     ret = fseeko(fp, 0, SEEK_SET);
     if (ret != 0) {
         dprintf("\nUP>fseeko fail, ret %d\r\n", ret);
@@ -1212,6 +1234,7 @@ static int test_FILE_fs_posix6()
     FILE *fp;
     int ret = 0;
     char rbuff[100];
+    struct stat statbuff = {0}; 
 
     dprintf("\nUP>Creating a file on host and writing to it..\r\n");
     fp = fopen(fname, "w+");
@@ -1221,6 +1244,14 @@ static int test_FILE_fs_posix6()
     }
     dprintf("\nUP>fopened file '%s' with fp = %lu\r\n", fname, (unsigned long)fp);
 
+    ret = stat(fname, &statbuff);
+    if (ret != 0) {
+        dprintf("\nUP>stat fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>get file stat, size:%ld, access time:%ld\r\n",statbuff.st_blksize, statbuff.st_atim.tv_sec);
+
     size_t slen = strlen(str);
     ret = fputs(str, fp);
     if (ret < 0) {
@@ -1229,6 +1260,21 @@ static int test_FILE_fs_posix6()
         return -1;
     }
     dprintf("\nUP>fputs to fp = %lu, content = %s\r\n", (unsigned long)fp, str);
+
+    ret = fflush(fp);
+    if (ret != 0) {
+        dprintf("\nUP>fflush fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    ret = stat(fname, &statbuff);
+    if (ret != 0) {
+        dprintf("\nUP>stat fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+    dprintf("\nUP>get file stat, size:%ld, access time:%ld\r\n",statbuff.st_blksize, statbuff.st_atim.tv_sec);
 
     ret = fseeko(fp, 0, SEEK_SET);
     if (ret != 0) {
@@ -1270,6 +1316,7 @@ static int test_FILE_fs_posix7()
 {
     FILE *fp;
     char buffer[100] = {0};
+    struct stat statbuff = {0}; 
 
     fp = popen("pwd", "r");
     if (fp == 0) {
@@ -1281,8 +1328,50 @@ static int test_FILE_fs_posix7()
         dprintf("%s", buffer);
     }
 
-    int ret = pclose(fp);
+    int ret = stat("./none123321.txt", &statbuff);
+    if (ret != -1 || errno != ENOENT) {
+        dprintf("\nUP>stat should ENOENT, but get ret:%p, errstr:%s\r\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = pclose(fp);
     return (ret == 0 ? 0 : -1);
+}
+
+static int test_getcwd()
+{
+    char buff_short[1] = {0};
+    char buff_norm[200] = {0};
+    char *buf = getcwd(NULL, 0);
+    if (buf == NULL) {
+        dprintf("\nUP>getcwd null fail, %s\r\n", strerror(errno));
+        return -1;
+    }
+    dprintf("\nUP>getcwd null buff: %s\r\n", buf);
+
+    buf = getcwd(buff_norm, sizeof(buff_norm));
+    if (buf == NULL) {
+        dprintf("\nUP>getcwd norm fail, %s\r\n", strerror(errno));
+        return -1;
+    }
+    if (buf != &(buff_norm[0])) {
+        dprintf("\nUP>getcwd norm fail pointer not same\r\n");
+        return -1;
+    }
+    dprintf("\nUP>getcwd norm buff: %s\r\n", buff_norm);
+
+    buf = getcwd(buff_short, sizeof(buff_short));
+    if (buf != NULL || errno != ERANGE) {
+        dprintf("\nUP>getcwd short should ERANGE, but get buf:%p, errstr:%s\r\n", buf, strerror(errno));
+        return -1;
+    }
+
+    buf = getcwd(buff_norm, 0);
+    if (buf != NULL || errno != EINVAL) {
+        dprintf("\nUP>getcwd(NULL, 100) should EINVAL, but get buf:%p, errstr:%s\r\n", buf, strerror(errno));
+        return -1;
+    }
+    return 0;
 }
 
 typedef int (*test_fn)();
@@ -1332,6 +1421,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_FILE_fs_posix5),
     TEST_CASE_Y(test_FILE_fs_posix6),
     TEST_CASE_Y(test_FILE_fs_posix7),
+    TEST_CASE_Y(test_getcwd),
 };
 
 int rpc_test_entry()

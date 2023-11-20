@@ -12,6 +12,8 @@ extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
                     uint32_t src, void *priv);
 extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
 
+extern char *g_printf_buffer;
+
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
     rpmsg_destroy_ept(ep);
@@ -39,6 +41,7 @@ int rpmsg_endpoint_init(struct rpmsg_device *rdev)
 
 void example_init()
 {
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
     send_message((void *)&g_receivedMsg, sizeof(U32));
 
     while (!g_openampFlag);

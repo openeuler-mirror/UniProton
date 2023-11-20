@@ -31,6 +31,7 @@
 #include "rpc_err.h"
 #include "prt_buildef.h"
 #include "prt_queue.h"
+#include "prt_proxy_ext.h"
 
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT    97
@@ -88,6 +89,7 @@
     static void CONVERT(name) (void *from, void *to)
 
 #define STDFILE_BASE 1
+char *g_printf_buffer = NULL;
 
 typedef void (*resp2outp_fn) (void *from, void *to);
 typedef struct rpc_record {
@@ -427,6 +429,46 @@ DEF_CONVERT(getwc)
     outp->ret = resp->ret;
 }
 
+DEF_CONVERT(stat)
+{
+    DEFINE_CB_VARS(stat)
+    if (outp->statbuf == NULL) {
+        return;
+    }
+    struct stat *statbuf = outp->statbuf;
+
+    outp->ret = resp->ret;
+
+    statbuf->st_dev = resp->st_dev;
+    statbuf->st_ino = resp->st_ino;
+    statbuf->st_nlink = resp->st_nlink;
+
+    statbuf->st_mode = resp->st_mode;
+    statbuf->st_uid = resp->st_uid;
+    statbuf->st_gid = resp->st_gid;
+    statbuf->st_rdev = resp->st_rdev;
+    statbuf->st_size = resp->st_size;
+    statbuf->st_blksize = resp->st_blksize;
+    statbuf->st_blocks = resp->st_blocks;
+
+    statbuf->st_atim.tv_sec = resp->st_atime_sec;
+    statbuf->st_atim.tv_nsec = resp->st_atime_nsec;
+    statbuf->st_mtim.tv_sec = resp->st_mtime_sec;
+    statbuf->st_mtim.tv_nsec = resp->st_mtime_nsec;
+    statbuf->st_ctim.tv_sec = resp->st_ctime_sec;
+    statbuf->st_ctim.tv_nsec = resp->st_ctime_nsec;
+}
+
+DEF_CONVERT(getcwd)
+{
+    DEFINE_CB_VARS(getcwd)
+    if (outp->buf == NULL || outp->size > MAX_PATH_LEN || resp->isNull) {
+        outp->buf = NULL;
+        return;
+    }
+    memcpy_s(outp->buf, outp->size, resp->buf, outp->size);
+}
+
 static void resp2outp_fread(void *from, void *to)
 {
     rpc_fread_resp_t *resp = (rpc_fread_resp_t *)from;
@@ -481,13 +523,13 @@ int rpmsg_client_cb(struct rpmsg_endpoint *ept,
                     void *data, size_t len,
                     uint32_t src, void *priv)
 {
-    struct rpmsg_rpc_answer *msg;
+    struct rpmsg_proxy_answer *msg;
     UNUSED(priv);
     UNUSED(src);
 
     CHECK_COND(data == NULL, RPMSG_ERR_ADDR)
     CHECK_COND(ept == NULL, RPMSG_ERR_INIT)
-    msg = (struct rpmsg_rpc_answer *)data;
+    msg = (struct rpmsg_proxy_answer *)data;
     dprintf("==(%x,%d)", src, msg->id);
 
     if (msg->id == 0) {
@@ -572,10 +614,12 @@ int PRT_ProxyOpen(const char *filename, int flags, ...)
 {
     mode_t mode = 0;
 
-    va_list ap;
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
+    if ((flags & O_CREAT) || (flags & O_TMPFILE) == O_TMPFILE) {
+        va_list ap;
+        va_start(ap, flags);
+        mode = va_arg(ap, mode_t);
+        va_end(ap);
+    }
 
     return __open(filename, flags, mode);
 }
@@ -1640,6 +1684,9 @@ size_t PRT_ProxyFread(void *buffer, size_t size, size_t count, FILE *f)
         errno = EINVAL;
         return -1;
     }
+    if (size == 0) {
+        return 0;
+    }
 
     size_t totalSize = size * count;
     totalSize = MIN(totalSize, MAX_STRING_LEN);
@@ -1679,6 +1726,9 @@ size_t PRT_ProxyFwrite(const void *buffer, size_t size, size_t count, FILE *f)
         errno = EINVAL;
         return -1;
     }
+    if (size == 0) {
+        return 0;
+    }
 
     size_t totalSize = size * count;
     totalSize = MIN(totalSize, MAX_STRING_LEN);
@@ -1707,6 +1757,30 @@ size_t PRT_ProxyFwrite(const void *buffer, size_t size, size_t count, FILE *f)
     free_slot(slot_idx);
 
     return outp.ret;
+}
+
+// 无法保证串行化
+size_t PRT_ProxyFwriteLoop(const void *buffer, size_t size, size_t count, FILE *f) {
+    if (size == 0) {
+        return 0;
+    }
+    size_t lenRemain = size * count;
+    size_t lenWrite = 0;
+    while (lenRemain > 0)
+    {
+        lenWrite = PRT_ProxyFwrite(buffer, 1, lenRemain, (FILE *)f);
+        if (lenWrite == 0) {
+            printf("fwrite fail, %s\n", strerror(errno));
+        }
+        if (lenRemain < lenWrite) {
+            printf("FWRITE MORE!!!, %lu, %lu, %s\n", lenRemain, lenWrite, strerror(errno));
+            lenRemain = 0;
+            break;
+        }
+        lenRemain -= lenWrite;
+        buffer += lenWrite;
+    }
+	return (size * count - lenRemain) / size;
 }
 
 FILE *PRT_ProxyFreopen(const char *filename, const char *mode, FILE *f)
@@ -1863,18 +1937,20 @@ static int __fprintf(FILE *f, const char *format, va_list list)
     rpc_fprintf_req_t req;
     int ret = 0;
     int hlen = sizeof(req.func_id) + sizeof(req.len) + sizeof(req.fhandle);
-    int len = vsnprintf(req.buf, sizeof(req.buf), format, list);
+    if (g_printf_buffer == NULL) {
+        return -1;
+    }
+    int len = vsnprintf(g_printf_buffer, PRINTF_BUFFER_LEN, format, list);
     if (len < 0) {
         return len;
     }
 
-    req.func_id = FPRINTF_ID;
-    req.len = len;
-    req.fhandle = file2handle(f);
-
-    ret = rpmsg_send(g_ept, &req, len + hlen);
-
-    return ret - hlen;
+    size_t size = PRT_ProxyFwriteLoop(g_printf_buffer, (size_t)(len), 1, f);
+    if (size == 1) {
+        return len;
+    } else {
+        return -1;
+    }
 }
 
 int PRT_ProxyFprintf(FILE *f, const char *format, ...)
@@ -1891,6 +1967,20 @@ int PRT_ProxyFprintf(FILE *f, const char *format, ...)
     len = __fprintf(f, format, list);
     va_end(list);
 
+    if (len < 0) {
+        printf("fprintf error, caller:%p, errno:%s\n", __builtin_return_address(0), strerror(errno));
+    }
+    return len;
+}
+
+int PRT_ProxyVfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
+{
+    if (g_ept == NULL || f == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    int len = __fprintf(f, fmt, ap);
     return len;
 }
 
@@ -2059,7 +2149,10 @@ void PRT_ProxyClearerr(FILE *f)
     req.func_id = CLEARERR_ID;
     req.fhandle = file2handle(f);
 
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
     (void)rpmsg_send(g_ept, &req, sizeof(req));
+    PRT_HwiRestore(intSave);
 
     return;
 }
@@ -2426,6 +2519,101 @@ wint_t PRT_ProxyUngetwc(wint_t wc, FILE *f)
     return outp.ret;
 }
 
+int PRT_ProxyStat(const char *restrict pathname, struct stat *restrict statbuf)
+{
+    DEFINE_COMMON_RPC_VAR(stat)
+
+    CHECK_INIT()
+    CHECK_ARG(pathname == NULL || statbuf == NULL, EINVAL)
+    int len = strlen(pathname) + 1;
+    CHECK_ARG(len > sizeof(req.path), ENAMETOOLONG)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    outp.statbuf = statbuf;
+
+    req.func_id = STAT_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    (void)memcpy_s(req.path, MAX_PATH_LEN, pathname, len);
+    RECORD_AT(slot_idx).cb = CONVERT(stat);
+    payload_size = payload_size - sizeof(req.path) + len;
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+int PRT_ProxyLstat(const char *restrict pathname, struct stat *restrict statbuf)
+{
+    DEFINE_COMMON_RPC_VAR(stat)
+
+    CHECK_INIT()
+    CHECK_ARG(pathname == NULL || statbuf == NULL, EINVAL)
+    int len = strlen(pathname) + 1;
+    CHECK_ARG(len > sizeof(req.path), ENAMETOOLONG)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    outp.statbuf = statbuf;
+
+    req.func_id = LSTAT_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    (void)memcpy_s(req.path, MAX_PATH_LEN, pathname, len);
+    RECORD_AT(slot_idx).cb = CONVERT(stat);
+    payload_size = payload_size - sizeof(req.path) + len;
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+/* can't malloc buf of size exceed MAX_PATH_LEN */
+char *PRT_ProxyGetcwd(char *buf, size_t size)
+{
+    DEFINE_COMMON_RPC_VAR(getcwd)
+
+    CHECK_RET_NULL(g_ept == NULL)
+    CHECK_AND_SET_ERRNO(buf != NULL && size == 0, NULL, EINVAL)
+    int isNull = 0;
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET_NULL(slot_idx < 0)
+    if ((buf == NULL && size == 0) || size > MAX_PATH_LEN) {
+        size = MAX_PATH_LEN;
+    }
+
+    if (buf == NULL) {
+        outp.buf = malloc(size);
+        if (outp.buf == NULL) {
+            errno = ENOMEM;
+            goto getcwd_exit;
+        }
+        isNull = 1;
+    } else {
+        outp.buf = buf;
+    }
+    outp.size = size;
+
+    req.func_id = GETCWD_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.size = size;
+    RECORD_AT(slot_idx).cb = CONVERT(getcwd);
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET_NULL(ret < 0)
+    errno = outp.super.errnum;
+    if (outp.super.errnum == ERANGE && size == MAX_PATH_LEN) {
+        errno = ENAMETOOLONG;
+    }
+getcwd_exit:
+    free_slot(slot_idx);
+    return outp.buf;
+}
+
 #ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyRead, read);
@@ -2458,7 +2646,7 @@ WEAK_ALIAS(PRT_ProxySocket, socket);
 WEAK_ALIAS(PRT_ProxyFopen, fopen);
 WEAK_ALIAS(PRT_ProxyFclose, fclose);
 WEAK_ALIAS(PRT_ProxyFread, fread);
-WEAK_ALIAS(PRT_ProxyFwrite, fwrite);
+WEAK_ALIAS(PRT_ProxyFwriteLoop, fwrite);
 WEAK_ALIAS(PRT_ProxyFreopen, freopen);
 WEAK_ALIAS(PRT_ProxyFputs, fputs);
 WEAK_ALIAS(PRT_ProxyFgets, fgets);
@@ -2477,10 +2665,13 @@ WEAK_ALIAS(PRT_ProxyFtello, ftello);
 WEAK_ALIAS(PRT_ProxyRename, rename);
 WEAK_ALIAS(PRT_ProxyRemove, remove);
 WEAK_ALIAS(PRT_ProxyMkstemp, mkstemp);
-
-WEAK_ALIAS(PRT_ProxyFflush, fflush);
 WEAK_ALIAS(PRT_ProxyGetwc, getwc);
 WEAK_ALIAS(PRT_ProxyPutwc, putwc);
 WEAK_ALIAS(PRT_ProxyPutc, putc);
 WEAK_ALIAS(PRT_ProxyUngetwc, ungetwc);
+WEAK_ALIAS(PRT_ProxyFflush, fflush);
+WEAK_ALIAS(PRT_ProxyStat, stat);
+WEAK_ALIAS(PRT_ProxyGetcwd, getcwd);
+WEAK_ALIAS(PRT_ProxyVfprintf, vfprintf);
+WEAK_ALIAS(PRT_ProxyLstat, lstat);
 #endif
