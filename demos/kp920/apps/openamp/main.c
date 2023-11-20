@@ -14,6 +14,11 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
 
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+extern U64 g_timerFrequency;
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
 #if defined(OS_OPTION_PCIE)
 extern void test_pcie_demo(void);
 #endif
@@ -36,6 +41,10 @@ void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
+#endif
+#if defined(RHEALSTONE_TESTCASE)
+    printf("RHEALSTONE_TESTCASE TestTaskEntry(Freq:%llu)\r\n", g_timerFrequency);
+    Init(0, 0, 0, 0);
 #endif
     for (int i = 0; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
