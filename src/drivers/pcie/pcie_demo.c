@@ -126,6 +126,15 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
         }
     }
 
+    dma_addr_t iova0;
+    void *va0;
+    va0 = dma_alloc_coherent(dev, 0x200, &iova0, 0);
+    printf("dma alloc: va0:%llx iova0:%llx\r\n", va0, iova0);
+
+    dma_addr_t iova1;
+    void *va1;
+    va1 = dma_alloc_coherent(dev, 0x400, &iova1, 0);
+    printf("dma alloc: va1:%llx iova1:%llx\r\n", va1, iova1);
 
     return 0;
 }
