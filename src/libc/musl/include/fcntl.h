@@ -41,9 +41,11 @@ int posix_fallocate(int, off_t, off_t);
 #define O_TTY_INIT 0
 
 #define O_ACCMODE (03|O_SEARCH)
-/* From Nuttx fcntl.h */
-#define O_RDOK    01        /* Read access is permitted (non-standard) */
-#define O_WROK    02        /* Write access is permitted (non-standard) */
+/**
+ * nuttx中的O_RDONLY以1开始，而musl以0开始。
+ * 这里以musl为基准对nuttx源码进行修改
+*/
+#define O_RWMASK  03        /* RD mask (non-standard) */
 
 #define O_RDONLY  00
 #define O_WRONLY  01

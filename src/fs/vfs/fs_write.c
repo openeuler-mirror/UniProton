@@ -71,7 +71,7 @@ ssize_t file_write(FAR struct file *filep, FAR const void *buf,
 
   /* Was this file opened for write access? */
 
-  if ((filep->f_oflags & O_WROK) == 0)
+  if ((filep->f_oflags & O_RWMASK) != O_WRONLY && (filep->f_oflags & O_RWMASK) != O_RDWR)
     {
       return -EACCES;
     }
