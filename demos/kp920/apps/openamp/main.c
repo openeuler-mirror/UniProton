@@ -36,7 +36,7 @@ int TestOpenamp()
 #endif
 
 #if defined(OS_OPTION_POWEROFF)
-extern uint32_t g_sysPowerOffFlag;
+extern bool g_sysPowerOffFlag;
 #endif
 
 void TestTaskEntry()

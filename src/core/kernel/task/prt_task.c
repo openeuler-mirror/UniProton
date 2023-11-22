@@ -17,12 +17,12 @@
 #include "prt_amp_task_internal.h"
 
 #if defined(OS_OPTION_POWEROFF)
-U32 g_sysPowerOffFlag = 0;
+bool g_sysPowerOffFlag = false;
 PowerOffFuncT g_sysPowerOffHook = NULL;
 
 OS_SEC_TEXT void OsPowerOffSetFlag(void)
 {
-    g_sysPowerOffFlag = 1;
+    g_sysPowerOffFlag = true;
 }
 OS_SEC_TEXT void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc)
 {
