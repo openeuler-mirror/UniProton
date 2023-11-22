@@ -17,6 +17,10 @@
 #define MMU_ITS1_ADDR               0x2000A8100000ULL
 #define MMU_ITS_ADDR_LEN            0x100000ULL /* 1MB */
 
+#ifdef OS_GDB_STUB
+#define MMU_GDB_STUB_ADDR          0x202780030000ULL
+#endif
+
 #define MMU_INVALID_ADDR            0x0ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
@@ -48,6 +52,8 @@
 #define GICR_IGROUPR0_ADDR         (GICR_BASE1 + 0x0080U)
 #define GICR_ISENABLER0_ADDR       (GICR_BASE1 + 0x0100U)
 #define GICR_ICENABLER0_ADDR       (GICR_BASE1 + 0x0180U)
+#define GICR_ISPENDR0_ADDR         (GICR_BASE1 + 0x0200U)
+#define GICR_ICPENDR0_ADDR         (GICR_BASE1 + 0x0280U)
 #define GICR_IGRPMODR0_ADDR        (GICR_BASE1 + 0x0D00U)
 
 #define GITS_BASE                  MMU_ITS_ADDR

@@ -18,6 +18,8 @@
 
 #include "prt_typedef.h"
 
+#define PCIE_DBG_LOG
+
 #ifdef PCIE_DBG_LOG
 #define PCIE_DBG_PRINTF(...) printf(__VA_ARGS__)
 #else
@@ -100,7 +102,7 @@ struct pci_driver;
 #define PCI_SLOT(devfn) (((devfn) >> 3) & 0x1f)
 #define PCI_FUNC(devfn) ((devfn) & 0x07)
 
-#define	PCI_ANY_ID              -1U
+#define	PCI_ANY_ID              ((uint16_t)0xffff)
 #define	PCI_VENDOR_ID_INTEL     0x8086
 #define	PCI_VENDOR_ID_HUAWEI    0x19e5
 
@@ -150,10 +152,10 @@ struct pci_dev {
 };
 
 struct pci_device_id {
-    uint32_t vendor;
-    uint32_t device;
-    uint32_t subvendor;
-    uint32_t subdevice;
+    uint16_t vendor;
+    uint16_t device;
+    uint16_t subvendor;
+    uint16_t subdevice;
     uint32_t class;
     uint32_t class_mask;
     uintptr_t driver_data;
@@ -186,9 +188,5 @@ void pci_release_regions(struct pci_dev *pdev);
 #define pci_resource_flags(dev, bar)    ((dev)->resource[(bar)].flags)
 #define pci_resource_len(dev, bar) ((pci_resource_end((dev), (bar)) == 0) ? \
     0 : (pci_resource_end((dev), (bar)) - pci_resource_start((dev), (bar)) + 1))
-
-typedef uint32_t (*pci_bus_accessible_pfn)(uint32_t bus_no);
-
-extern pci_bus_accessible_pfn pci_bus_accessible_fn;
 
 #endif

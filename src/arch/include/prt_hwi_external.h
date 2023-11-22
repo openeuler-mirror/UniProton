@@ -32,5 +32,6 @@ extern void OsHwiGICInit(void);
 extern U32 OsHwiPriorityGet(HwiHandle hwiNum);
 extern void OsHwiPrioritySet(HwiHandle hwiNum, HwiPrior hwiPrio);
 extern void OsHwiMcTrigger(U32 coreMask, U32 hwiNum);
+extern void OsHwiDisableAll(void);
 
 #endif /* PRT_HWI_EXTERNAL_H */

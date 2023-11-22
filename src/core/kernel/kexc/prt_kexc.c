@@ -46,6 +46,10 @@ OS_SEC_L4_TEXT U32 PRT_ExcRegHook(ExcProcFunc hook)
 
 OS_SEC_L4_TEXT void PRT_SysReboot(void)
 {
+#if defined(OS_OPTION_POWEROFF)
+    OsCpuPowerOff();
+#endif
+
     while (1) {
         /* Wait for HWWDG to reboot board. */
     }

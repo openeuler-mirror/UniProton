@@ -143,3 +143,13 @@ CONFIG_OS_OPTION_PCIE=y
 # GIC_LPI Modules Configuration
 #
 CONFIG_OS_OPTION_GIC_LPI=y
+
+#
+# Gdb Stub Option Configuration
+#
+# CONFIG_OS_GDB_STUB is not set
+
+#
+# PowerOff option Configuration
+#
+CONFIG_OS_OPTION_POWEROFF=y

@@ -21,6 +21,7 @@
 #include "prt_mem.h"
 #include "pcie.h"
 #include "pcie_config.h"
+#include "pcie_bus_filter.h"
 
 #define IORESOURCE_IO   0x00000100	/* PCI/ISA I/O ports */
 #define IORESOURCE_MEM  0x00000200
@@ -39,25 +40,12 @@ int pci_frame_init(uint64_t pci_cfg_base)
     return 0;
 }
 
-pci_bus_accessible_pfn pci_bus_accessible_fn = NULL;
-
-static uint32_t pci_bus_accessible(uint32_t bus_no)
-{
-    if (pci_bus_accessible_fn != NULL) {
-        return pci_bus_accessible_fn(bus_no);
-    }
-
-    if (bus_no >= PCI_BUS_NUM_MAX) {
-        return 0;
-    }
-    return 1;
-}
-
 /* 根据 pci_drv 中的 pci_device_id 匹配所有pci设备，若果能匹配到，则执行挂接probe函数 */
 int pci_register_driver(struct pci_driver *pci_drv)
 {
+    int match = -1;
     int ret = OS_OK;
-    int b, d, f;
+    uint32_t b, d, f;
     uint32_t bdf;
     struct pci_device_id *pci_dev_id_tbl;
     struct pci_device_id *pci_dev_id;
@@ -69,14 +57,17 @@ int pci_register_driver(struct pci_driver *pci_drv)
 
     pci_dev_id_tbl = pci_drv->id_table;
     for (b = 0; b < PCI_BUS_NUM_MAX; b++) {
-        if (pci_bus_accessible(b) == 0) {
+        if (pci_bus_accessible(b) == false) {
             continue;
         }
         for (d = 0; d < PCI_DEIVCE_NUM_MAX; d++) {
             for (f = 0; f < PCI_FUNCTION_NUM_MAX; f++) {
-                bdf = PCI_BDF(b, d, f);
+                bdf = (uint32_t)PCI_BDF(b, d, f);
                 ret = pci_match_dev(pci_dev_id_tbl, bdf, &pci_dev_id);
-                PCIE_DBG_PRINTF("bdf:0x%x match ret:%u\r\n", bdf, ret);
+                if (match != ret) {
+                    PCIE_DBG_PRINTF("bdf:0x%x match ret:%u\r\n", bdf, ret);
+                    match = ret;
+                }
                 if (ret == FALSE) {
                     continue;
                 }
@@ -99,7 +90,7 @@ int pci_match_dev(struct pci_device_id *pci_dev_id_tbl, uint32_t bdf,
     struct pci_device_id **pci_dev_id)
 {
     uint32_t ret;
-    uint32_t vendor, device, subvendor, subdevice, headertype;
+    uint16_t vendor, device, subvendor, subdevice, headertype;
     struct pci_device_id *pdid;
 
     pcie_device_cfg_read_halfword(bdf, PCI_VENDOR_ID, &vendor);
@@ -303,7 +294,7 @@ void pci_dev_add(struct pci_dev *pdev)
 }
 
 #define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
-extern int proxybash_exec(char *cmdline, char *result_buf, unsigned int buf_len);
+extern int proxybash_exec_lock(char *cmdline, char *result_buf, unsigned int buf_len);
 
 int pci_irq_parse(char *buff, int *irq, int irq_num)
 {
@@ -336,9 +327,9 @@ int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
     int ret;
 
     sprintf(cmdline, "ls %s%04x", UNIPROTON_NODE_PATH, dev->bdf);
-    ret = proxybash_exec(cmdline, result_buf, sizeof(result_buf));
+    ret = proxybash_exec_lock(cmdline, result_buf, sizeof(result_buf));
     if (ret < 0) {
-        PCIE_DBG_PRINTF("proxybash_exec ret:%x", ret);
+        PCIE_DBG_PRINTF("proxybash_exec_lock ret:%x", ret);
         return -1;
     }
 

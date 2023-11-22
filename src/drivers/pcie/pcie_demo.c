@@ -100,7 +100,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
         printf("%08x\r\n", *((unsigned int*)(bar0 + i)));
     }
 
-    printf("resource0 dump:\r\n");
+    printf("resource2 dump:\r\n");
     for (int i = 0; i < bar2_size && i < 0x20; i += 4) {
         printf("%08x\r\n", *((unsigned int*)(bar2 + i)));
     }
@@ -146,14 +146,9 @@ static struct pci_driver hpm_driver = {
 #define MMU_ECAM_ADDR 0xd0000000ULL
 #endif
 
-extern uint32_t pci_bus_accessible(uint32_t bus_no);
-
 void test_pcie_demo(void)
 {
     int ret;
-
-    // __attribute__((weak)) 属性用不了，这里挂一下函数
-    pci_bus_accessible_fn = pci_bus_accessible;
 
     // 由系统初始化调用
     ret = pci_frame_init(MMU_ECAM_ADDR);
@@ -164,6 +159,7 @@ void test_pcie_demo(void)
     // 根据 dev_tbl 查找所有设备， 并调用 挂接的 probe 函数
     ret = pci_register_driver(&hpm_driver);
     if (ret != ok) {
+        printf("test pcie demo pci register driver fail, ret:0x%x", ret);
         return;
     }
 

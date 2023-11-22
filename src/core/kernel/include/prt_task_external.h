@@ -193,6 +193,13 @@ extern TaskNameGetFunc g_taskNameGet;
 
 extern volatile TskCoresleep g_taskCoreSleep;
 
+#if defined(OS_OPTION_POWEROFF)
+typedef void (*PowerOffFuncT)(void);
+extern void OsPowerOffSetFlag(void);
+extern void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc);
+extern void OsCpuPowerOff(void); /* hook之前异常, 需实现该函数 */
+#endif
+
 #define OS_TSK_PARA_0   0
 #define OS_TSK_PARA_1   1
 #define OS_TSK_PARA_2   2
