@@ -1,0 +1,2013 @@
+diff --git a/.gitignore b/.gitignore
+index fb2272f0..a2e19505 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -24,7 +24,6 @@ Makefile
+ Makefile.in
+ autoconf
+ autom4te.cache/
+-config.h
+ config.h.in
+ config.log
+ config.status
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 00000000..2be332ea
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,41 @@
++message("PROJECT_NAME = ${PROJECT_NAME}")
++if("${PROJECT_NAME}" STREQUAL "UniProton")
++    include_directories(
++        ./include
++        ./
++    )
++
++    add_subdirectory(master)
++    add_subdirectory(devices)
++    add_subdirectory(lib)
++
++    list(APPEND ALL_OBJECT_LIBRARYS igh_master igh_devices igh_lib)
++    set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
++
++    install(FILES
++        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecrt.h
++        DESTINATION ethercat/include/
++    )
++else()
++    cmake_minimum_required(VERSION 3.19)
++
++    project(openeuler_ethercat_cmd LANGUAGES C CXX)
++
++    set(CMAKE_C_FLAGS "-g -O2 -Wall -fno-strict-aliasing")
++    set(CMAKE_CXX_FLAGS "-g -O2 -Wall -fno-strict-aliasing")
++
++    include_directories(
++        ./include
++        ./master
++    )
++
++    add_subdirectory(tool)
++
++    add_executable(ethercat $<TARGET_OBJECTS:ethercat_obj>)
++
++    set_target_properties(ethercat PROPERTIES
++        SUFFIX ""
++    )
++
++    install(TARGETS ethercat DESTINATION bin)
++endif()
+\ No newline at end of file
+diff --git a/build.sh b/build.sh
+new file mode 100755
+index 00000000..503aea70
+--- /dev/null
++++ b/build.sh
+@@ -0,0 +1,5 @@
++rm -rf build
++cmake -S . -B build -DCMAKE_INSTALL_PREFIX=./
++cd build
++make all
++cd ../
+\ No newline at end of file
+diff --git a/config.h b/config.h
+new file mode 100644
+index 00000000..96439dbb
+--- /dev/null
++++ b/config.h
+@@ -0,0 +1,106 @@
++/* config.h.  Generated from config.h.in by configure.  */
++/* config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* Debug interfaces enabled */
++/* #undef EC_DEBUG_IF */
++
++/* Debug ring enabled */
++/* #undef EC_DEBUG_RING */
++
++/* EoE support enabled */
++/* #undef EC_EOE */
++
++/* Use CPU timestamp counter */
++/* #undef EC_HAVE_CYCLES */
++
++/* Use vendor id / product code wildcards */
++/* #undef EC_IDENT_WILDCARDS */
++
++/* Use loop control registers */
++/* #undef EC_LOOP_CONTROL */
++
++/* Max. number of Ethernet devices per master */
++#define EC_MAX_NUM_DEVICES 1
++
++/* Force refclk to OP */
++/* #undef EC_REFCLKOP */
++
++/* Read alias adresses from register */
++/* #undef EC_REGALIAS */
++
++/* RTDM interface enabled */
++/* #undef EC_RTDM */
++
++/* Output to syslog in RT context */
++/* #undef EC_RT_SYSLOG */
++
++/* Assign SII to PDI */
++// #define EC_SII_ASSIGN 1
++
++/* Use hrtimer for scheduling */
++/* #undef EC_USE_HRTIMER */
++
++/* Use rtmutex for synchronization */
++/* #undef EC_USE_RTMUTEX */
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#define HAVE_DLFCN_H 1
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdio.h> header file. */
++#define HAVE_STDIO_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Define to the sub-directory where libtool stores uninstalled libraries. */
++#define LT_OBJDIR ".libs/"
++
++/* Name of package */
++#define PACKAGE "ethercat"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT "fp@igh.de"
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "ethercat"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "ethercat 1.6.0-rc1"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "ethercat"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL ""
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "1.6.0-rc1"
++
++/* Define to 1 if all of the C90 standard headers exist (not just the ones
++   required in a freestanding environment). This macro is provided for
++   backward compatibility; new code need not use it. */
++#define STDC_HEADERS 1
++
++/* Version number of package */
++#define VERSION "1.6.0-rc1"
+diff --git a/devices/CMakeLists.txt b/devices/CMakeLists.txt
+new file mode 100644
+index 00000000..98726831
+--- /dev/null
++++ b/devices/CMakeLists.txt
+@@ -0,0 +1,27 @@
++set(IGH_NET_SRC
++    generic.c
++)
++
++add_library(igh_devices OBJECT ${IGH_NET_SRC})
++
++target_compile_options(igh_devices PUBLIC
++        -Wno-bad-function-cast
++        -Wno-unused-value
++        -Wno-switch-default
++        -Wno-float-equal
++        -Wno-unused-but-set-variable
++        -Wno-discarded-qualifiers
++        -Wno-implicit-fallthrough
++        -Wno-cast-function-type
++        -Werror=incompatible-pointer-types
++        # -Werror=missing-prototypes
++        -Werror=missing-parameter-type
++        # -Werror=missing-declarations
++        -Werror=implicit-function-declaration
++        -Werror=return-type
++        )
++
++target_compile_options(igh_devices PUBLIC
++    -DIGH_CUT -DCODE_SUBTITU
++    -include ${CMAKE_CURRENT_SOURCE_DIR}/../include/change_name.h
++)
+\ No newline at end of file
+diff --git a/devices/generic.c b/devices/generic.c
+index 4d4d9bbd..088c6612 100644
+--- a/devices/generic.c
++++ b/devices/generic.c
+@@ -43,6 +43,11 @@
+ #include "../globals.h"
+ #include "ecdev.h"
+ 
++#ifdef IGH_CUT
++#include "i210.h"
++#include "prt_typedef.h"
++#endif
++
+ #define PFX "ec_generic: "
+ 
+ #define ETH_P_ETHERCAT 0x88A4
+@@ -58,10 +63,12 @@ void __exit ec_gen_cleanup_module(void);
+ 
+ /** \cond */
+ 
++#ifndef IGH_CUT
+ MODULE_AUTHOR("Florian Pose <fp@igh-essen.com>");
+ MODULE_DESCRIPTION("EtherCAT master generic Ethernet device module");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(EC_MASTER_VERSION);
++#endif
+ 
+ /** \endcond */
+ 
+@@ -71,7 +78,9 @@ typedef struct {
+     struct list_head list;
+     struct net_device *netdev;
+     struct net_device *used_netdev;
++#ifndef IGH_CUT
+     struct socket *socket;
++#endif
+     ec_device_t *ecdev;
+     uint8_t *rx_buf;
+ } ec_gen_device_t;
+@@ -146,7 +155,9 @@ int ec_gen_device_init(
+     char null = 0x00;
+ 
+     dev->ecdev = NULL;
++#ifndef IGH_CUT
+     dev->socket = NULL;
++#endif
+     dev->rx_buf = NULL;
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
+@@ -185,9 +196,11 @@ void ec_gen_device_clear(
+         ecdev_close(dev->ecdev);
+         ecdev_withdraw(dev->ecdev);
+     }
++#ifndef IGH_CUT
+     if (dev->socket) {
+         sock_release(dev->socket);
+     }
++#endif
+     free_netdev(dev->netdev);
+ 
+     if (dev->rx_buf) {
+@@ -204,14 +217,17 @@ int ec_gen_device_create_socket(
+         ec_gen_interface_desc_t *desc
+         )
+ {
++#ifndef IGH_CUT
+     int ret;
+     struct sockaddr_ll sa;
++#endif
+ 
+     dev->rx_buf = kmalloc(EC_GEN_RX_BUF_SIZE, GFP_KERNEL);
+     if (!dev->rx_buf) {
+         return -ENOMEM;
+     }
+ 
++#ifndef IGH_CUT
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+     ret = sock_create_kern(&init_net, PF_PACKET, SOCK_RAW,
+             htons(ETH_P_ETHERCAT), &dev->socket);
+@@ -239,6 +255,7 @@ int ec_gen_device_create_socket(
+         dev->socket = NULL;
+         return ret;
+     }
++#endif /* IGH_CUT */
+ 
+     return 0;
+ }
+@@ -302,6 +319,21 @@ int ec_gen_device_stop(
+ 
+ /*****************************************************************************/
+ 
++#ifdef CODE_SUBTITU
++int ec_gen_device_start_xmit(
++        ec_gen_device_t *dev,
++        struct sk_buff *skb
++        )
++{
++    size_t len = skb->len;
++    int ret;
++
++    ecdev_set_link(dev->ecdev, netif_carrier_ok(dev->used_netdev));
++
++    ret = i210_packet_send((unsigned char *)skb->data, (int)len);
++    return ret == OS_OK ? NETDEV_TX_OK : NETDEV_TX_BUSY;
++}
++#else
+ int ec_gen_device_start_xmit(
+         ec_gen_device_t *dev,
+         struct sk_buff *skb
+@@ -322,6 +354,7 @@ int ec_gen_device_start_xmit(
+ 
+     return ret == len ? NETDEV_TX_OK : NETDEV_TX_BUSY;
+ }
++#endif
+ 
+ /*****************************************************************************/
+ 
+@@ -331,19 +364,25 @@ void ec_gen_device_poll(
+         ec_gen_device_t *dev
+         )
+ {
++#ifndef IGH_CUT
+     struct msghdr msg;
+     struct kvec iov;
++#endif
+     int ret, budget = 10; // FIXME
+ 
+     ecdev_set_link(dev->ecdev, netif_carrier_ok(dev->used_netdev));
+ 
+     do {
++#ifndef IGH_CUT
+         iov.iov_base = dev->rx_buf;
+         iov.iov_len = EC_GEN_RX_BUF_SIZE;
+         memset(&msg, 0, sizeof(msg));
+ 
+         ret = kernel_recvmsg(dev->socket, &msg, &iov, 1, iov.iov_len,
+                 MSG_DONTWAIT);
++#else
++        ret = i210_packet_recv((unsigned char *)dev->rx_buf, EC_GEN_RX_BUF_SIZE);
++#endif /* IGH_CUT */
+         if (ret > 0) {
+             ecdev_receive(dev->ecdev, dev->rx_buf, ret);
+         } else if (ret < 0) {
+@@ -407,6 +446,52 @@ void clear_devices(void)
+  * Initializes \a master_count masters.
+  * \return 0 on success, else < 0
+  */
++#ifdef CODE_SUBTITU
++int __init ec_gen_init_module(void)
++{
++    int ret = 0;
++    ec_gen_interface_desc_t *desc;
++    char name[IFNAMSIZ] = "tmpName";
++
++    printk(KERN_INFO PFX "EtherCAT master generic Ethernet device module %s\n",
++            EC_MASTER_VERSION);
++    INIT_LIST_HEAD(&generic_devices);
++
++    printk("[TEST] i210 init\n");
++    i210_init();
++    printk("[TEST] malloc desc\n");
++    desc = kmalloc(sizeof(ec_gen_interface_desc_t), GFP_ATOMIC);
++    if (!desc) {
++        ret = -ENOMEM;
++        goto out_err;
++    }
++    // ifindex不用管，重点是 dev_addr 要用到
++    strncpy(desc->name, name, IFNAMSIZ);
++    desc->netdev = NULL;
++    desc->ifindex = 0;
++
++    printk("[TEST] get mac address\n");
++    ret = i210_get_mac_address(desc->dev_addr, ETH_ALEN);
++    if (ret) {
++        printk("[TEST] get mac address fail\n");
++    }
++
++    printk("[TEST] offer device\n");
++    ret = offer_device(desc);
++    if (ret) {
++        kfree(desc);
++        goto out_err;
++    }
++    kfree(desc);
++    printk("[TEST] generic init finish\n");
++    return ret;
++
++out_err:
++    printk("[TEST] EtherCAT master generic Ethernet device module init fail\n");
++    clear_devices();
++    return ret;
++}
++#else
+ int __init ec_gen_init_module(void)
+ {
+     int ret = 0;
+@@ -455,6 +540,7 @@ out_err:
+     clear_devices();
+     return ret;
+ }
++#endif /* CODE_SUBTITU */
+ 
+ /*****************************************************************************/
+ 
+@@ -472,8 +558,10 @@ void __exit ec_gen_cleanup_module(void)
+ 
+ /** \cond */
+ 
++#ifndef IGH_CUT
+ module_init(ec_gen_init_module);
+ module_exit(ec_gen_cleanup_module);
++#endif
+ 
+ /** \endcond */
+ 
+diff --git a/include/change_name.h b/include/change_name.h
+new file mode 100644
+index 00000000..4c11a7e3
+--- /dev/null
++++ b/include/change_name.h
+@@ -0,0 +1,108 @@
++#define ec_master               KERN_ec_master
++#define ec_slave_config         KERN_ec_slave_config
++#define ec_domain               KERN_ec_domain
++#define ec_sdo_request          KERN_ec_sdo_request
++#define ec_voe_handler          KERN_ec_voe_handler
++#define ec_reg_request          KERN_ec_reg_request
++#define ec_sdo_request_clear    KERN_ec_sdo_request_clear
++#define ec_reg_request_clear    KERN_ec_reg_request_clear
++
++#define ec_master_clear         KERN_ec_master_clear
++#define ec_master_clear_config  KERN_ec_master_clear_config
++#define ec_slave_config_clear   KERN_ec_slave_config_clear
++#define ec_voe_handler_clear    KERN_ec_voe_handler_clear
++#define ec_domain_clear         KERN_ec_domain_clear
++
++#define ecrt_version_magic                                KERN_ecrt_version_magic
++#define ecrt_request_master                               KERN_ecrt_request_master
++#define ecrt_open_master                                  KERN_ecrt_open_master
++#define ecrt_release_master                               KERN_ecrt_release_master
++#define ecrt_master_reserve                               KERN_ecrt_master_reserve
++#define ecrt_master_callbacks                             KERN_ecrt_master_callbacks
++#define ecrt_master_create_domain                         KERN_ecrt_master_create_domain
++#define ecrt_master_setup_domain_memory                   KERN_ecrt_master_setup_domain_memory
++#define ecrt_master_slave_config                          KERN_ecrt_master_slave_config
++#define ecrt_master_select_reference_clock                KERN_ecrt_master_select_reference_clock
++#define ecrt_master                                       KERN_ecrt_master
++#define ecrt_master_get_slave                             KERN_ecrt_master_get_slave
++#define ecrt_master_get_sync_manager                      KERN_ecrt_master_get_sync_manager
++#define ecrt_master_get_pdo                               KERN_ecrt_master_get_pdo
++#define ecrt_master_get_pdo_entry                         KERN_ecrt_master_get_pdo_entry
++#define ecrt_master_sdo_download                          KERN_ecrt_master_sdo_download
++#define ecrt_master_sdo_download_complete                 KERN_ecrt_master_sdo_download_complete
++#define ecrt_master_sdo_upload                            KERN_ecrt_master_sdo_upload
++#define ecrt_master_write_idn                             KERN_ecrt_master_write_idn
++#define ecrt_master_read_idn                              KERN_ecrt_master_read_idn
++#define ecrt_master_activate                              KERN_ecrt_master_activate
++#define ecrt_master_deactivate_slaves                     KERN_ecrt_master_deactivate_slaves
++#define ecrt_master_deactivate                            KERN_ecrt_master_deactivate
++#define ecrt_master_set_send_interval                     KERN_ecrt_master_set_send_interval
++#define ecrt_master_send                                  KERN_ecrt_master_send
++#define ecrt_master_receive                               KERN_ecrt_master_receive
++#define ecrt_master_send_ext                              KERN_ecrt_master_send_ext
++#define ecrt_master_state                                 KERN_ecrt_master_state
++#define ecrt_master_link_state                            KERN_ecrt_master_link_state
++#define ecrt_master_application_time                      KERN_ecrt_master_application_time
++#define ecrt_master_sync_reference_clock                  KERN_ecrt_master_sync_reference_clock
++#define ecrt_master_sync_reference_clock_to               KERN_ecrt_master_sync_reference_clock_to
++#define ecrt_master_sync_slave_clocks                     KERN_ecrt_master_sync_slave_clocks
++#define ecrt_master_reference_clock_time                  KERN_ecrt_master_reference_clock_time
++#define ecrt_master_64bit_reference_clock_time_queue      KERN_ecrt_master_64bit_reference_clock_time_queue
++#define ecrt_master_64bit_reference_clock_time            KERN_ecrt_master_64bit_reference_clock_time
++#define ecrt_master_sync_monitor_queue                    KERN_ecrt_master_sync_monitor_queue
++#define ecrt_master_sync_monitor_process                  KERN_ecrt_master_sync_monitor_process
++#define ecrt_master_reset                                 KERN_ecrt_master_reset
++#define ecrt_slave_config_sync_manager                    KERN_ecrt_slave_config_sync_manager
++#define ecrt_slave_config_watchdog                        KERN_ecrt_slave_config_watchdog
++#define ecrt_slave_config_overlapping_pdos                KERN_ecrt_slave_config_overlapping_pdos
++#define ecrt_slave_config_pdo_assign_add                  KERN_ecrt_slave_config_pdo_assign_add
++#define ecrt_slave_config_pdo_assign_clear                KERN_ecrt_slave_config_pdo_assign_clear
++#define ecrt_slave_config_pdo_mapping_add                 KERN_ecrt_slave_config_pdo_mapping_add
++#define ecrt_slave_config_pdo_mapping_clear               KERN_ecrt_slave_config_pdo_mapping_clear
++#define ecrt_slave_config_pdos                            KERN_ecrt_slave_config_pdos
++#define ecrt_slave_config_reg_pdo_entry                   KERN_ecrt_slave_config_reg_pdo_entry
++#define ecrt_slave_config_reg_pdo_entry_pos               KERN_ecrt_slave_config_reg_pdo_entry_pos
++#define ecrt_slave_config_dc                              KERN_ecrt_slave_config_dc
++#define ecrt_slave_config_sdo                             KERN_ecrt_slave_config_sdo
++#define ecrt_slave_config_sdo8                            KERN_ecrt_slave_config_sdo8
++#define ecrt_slave_config_sdo16                           KERN_ecrt_slave_config_sdo16
++#define ecrt_slave_config_sdo32                           KERN_ecrt_slave_config_sdo32
++#define ecrt_slave_config_complete_sdo                    KERN_ecrt_slave_config_complete_sdo
++#define ecrt_slave_config_emerg_size                      KERN_ecrt_slave_config_emerg_size
++#define ecrt_slave_config_emerg_pop                       KERN_ecrt_slave_config_emerg_pop
++#define ecrt_slave_config_emerg_clear                     KERN_ecrt_slave_config_emerg_clear
++#define ecrt_slave_config_emerg_overruns                  KERN_ecrt_slave_config_emerg_overruns
++#define ecrt_slave_config_create_sdo_request              KERN_ecrt_slave_config_create_sdo_request
++#define ecrt_slave_config_create_voe_handler              KERN_ecrt_slave_config_create_voe_handler
++#define ecrt_slave_config_create_reg_request              KERN_ecrt_slave_config_create_reg_request
++#define ecrt_slave_config_state                           KERN_ecrt_slave_config_state
++#define ecrt_slave_config_idn                             KERN_ecrt_slave_config_idn
++#define ecrt_slave_config_flag                            KERN_ecrt_slave_config_flag
++#define ecrt_domain_reg_pdo_entry_list                    KERN_ecrt_domain_reg_pdo_entry_list
++#define ecrt_domain_size                                  KERN_ecrt_domain_size
++#define ecrt_domain_external_memory                       KERN_ecrt_domain_external_memory
++#define ecrt_domain_data                                  KERN_ecrt_domain_data
++#define ecrt_domain_process                               KERN_ecrt_domain_process
++#define ecrt_domain_queue                                 KERN_ecrt_domain_queue
++#define ecrt_domain_state                                 KERN_ecrt_domain_state
++#define ecrt_sdo_request_index                            KERN_ecrt_sdo_request_index
++#define ecrt_sdo_request_timeout                          KERN_ecrt_sdo_request_timeout
++#define ecrt_sdo_request_data                             KERN_ecrt_sdo_request_data
++#define ecrt_sdo_request_data_size                        KERN_ecrt_sdo_request_data_size
++#define ecrt_sdo_request_state                            KERN_ecrt_sdo_request_state
++#define ecrt_sdo_request_state                            KERN_ecrt_sdo_request_state
++#define ecrt_sdo_request_write                            KERN_ecrt_sdo_request_write
++#define ecrt_sdo_request_read                             KERN_ecrt_sdo_request_read
++#define ecrt_voe_handler_send_header                      KERN_ecrt_voe_handler_send_header
++#define ecrt_voe_handler_received_header                  KERN_ecrt_voe_handler_received_header
++#define ecrt_voe_handler_data                             KERN_ecrt_voe_handler_data
++#define ecrt_voe_handler_data_size                        KERN_ecrt_voe_handler_data_size
++#define ecrt_voe_handler_write                            KERN_ecrt_voe_handler_write
++#define ecrt_voe_handler_read                             KERN_ecrt_voe_handler_read
++#define ecrt_voe_handler_read_nosync                      KERN_ecrt_voe_handler_read_nosync
++#define ecrt_voe_handler_execute                          KERN_ecrt_voe_handler_execute
++#define ecrt_reg_request_data                             KERN_ecrt_reg_request_data
++#define ecrt_reg_request_state                            KERN_ecrt_reg_request_state
++#define ecrt_reg_request_state                            KERN_ecrt_reg_request_state
++#define ecrt_reg_request_write                            KERN_ecrt_reg_request_write
++#define ecrt_reg_request_read                             KERN_ecrt_reg_request_read
+\ No newline at end of file
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+new file mode 100644
+index 00000000..13aead82
+--- /dev/null
++++ b/lib/CMakeLists.txt
+@@ -0,0 +1,26 @@
++file(GLOB_RECURSE IGH_LIB_SRE
++    *.c
++)
++
++add_library(igh_lib OBJECT ${IGH_LIB_SRE})
++
++target_compile_options(igh_lib PUBLIC
++        -Wno-bad-function-cast
++        -Wno-unused-value
++        -Wno-switch-default
++        -Wno-float-equal
++        -Wno-unused-but-set-variable
++        -Wno-discarded-qualifiers
++        -Wno-implicit-fallthrough
++        -Wno-cast-function-type
++        -Werror=incompatible-pointer-types
++        # -Werror=missing-prototypes
++        -Werror=missing-parameter-type
++        # -Werror=missing-declarations
++        -Werror=implicit-function-declaration
++        -Werror=return-type
++)
++
++target_compile_options(igh_lib PUBLIC
++    -DIGH_CUT -DCODE_SUBTITU
++)
+diff --git a/lib/common.c b/lib/common.c
+index 86a38586..e570b832 100644
+--- a/lib/common.c
++++ b/lib/common.c
+@@ -41,6 +41,10 @@
+ #include "ioctl.h"
+ #include "master.h"
+ 
++#ifdef CODE_SUBTITU
++int stub_open();
++#endif
++
+ /*****************************************************************************/
+ 
+ unsigned int ecrt_version_magic(void)
+@@ -98,8 +102,13 @@ ec_master_t *ecrt_open_master(unsigned int master_index)
+ 
+ #ifdef USE_RTDM
+     master->fd = rt_dev_open(path, O_RDWR | O_CLOEXEC);
++#else
++#ifdef CODE_SUBTITU
++    // 完成 eccdev_open 的功能
++    master->fd = stub_open();
+ #else
+     master->fd = open(path, O_RDWR | O_CLOEXEC);
++#endif
+ #endif
+     if (EC_IOCTL_IS_ERROR(master->fd)) {
+         EC_PRINT_ERR("Failed to open %s: %s\n", path,
+diff --git a/lib/ioctl.h b/lib/ioctl.h
+index 7f387e4a..bb9a011e 100644
+--- a/lib/ioctl.h
++++ b/lib/ioctl.h
+@@ -60,15 +60,25 @@
+ 
+ #else
+ 
++#ifdef CODE_SUBTITU
++int stub_ioctl(int fd, int request,  ...);
++#define ioctl stub_ioctl
++#else
+ #define ioctl ioctl
++#endif
+ 
+ /* libc's ioctl() always returns -1 on error and sets errno */
+ #define EC_IOCTL_IS_ERROR(X) ((X) == -1)
+ #define EC_IOCTL_ERRNO(X) (errno)
+ 
+ /* print errors to stderr */
++#ifdef CODE_SUBTITU
++#define EC_PRINT_ERR(fmt, args...) \
++    printf(fmt, ##args)
++#else
+ #define EC_PRINT_ERR(fmt, args...) \
+     fprintf(stderr, fmt, ##args)
++#endif
+ 
+ #include <errno.h>
+ 
+diff --git a/lib/master.c b/lib/master.c
+index f4410a95..1d3c6dbe 100644
+--- a/lib/master.c
++++ b/lib/master.c
+@@ -37,6 +37,10 @@
+ #include "master.h"
+ #include "domain.h"
+ #include "slave_config.h"
++#ifdef CODE_SUBTITU
++void stub_close(int fd);
++uint8_t *stub_mmap(int fd);
++#endif
+ 
+ /****************************************************************************/
+ 
+@@ -59,7 +63,9 @@ void ec_master_clear_config(ec_master_t *master)
+     ec_slave_config_t *c, *next_c;
+ 
+     if (master->process_data)  {
++#ifndef IGH_CUT
+         munmap(master->process_data, master->process_data_size);
++#endif
+         master->process_data = NULL;
+     }
+ 
+@@ -82,7 +88,9 @@ void ec_master_clear_config(ec_master_t *master)
+     master->first_config = NULL;
+ 
+     if (master->process_data)  {
++#ifndef IGH_CUT
+         munmap(master->process_data, master->process_data_size);
++#endif
+         master->process_data = NULL;
+         master->process_data_size = 0;
+     }
+@@ -97,8 +105,13 @@ void ec_master_clear(ec_master_t *master)
+     if (master->fd != -1) {
+ #if USE_RTDM
+         rt_dev_close(master->fd);
++#else
++    // 完成 eccdev_release 的功能
++#ifdef CODE_SUBTITU
++        stub_close(master->fd);
+ #else
+         close(master->fd);
++#endif
+ #endif
+         master->fd = -1;
+     }
+@@ -559,6 +572,9 @@ int ecrt_master_setup_domain_memory(ec_master_t *master)
+          * provided in the ioctl data.
+          */
+         master->process_data = io.process_data;
++#else
++#ifdef CODE_SUBTITU
++        master->process_data = stub_mmap(master->fd);
+ #else
+         master->process_data = mmap(0, master->process_data_size,
+                 PROT_READ | PROT_WRITE, MAP_SHARED, master->fd, 0);
+@@ -569,6 +585,7 @@ int ecrt_master_setup_domain_memory(ec_master_t *master)
+             master->process_data_size = 0;
+             return -errno;
+         }
++#endif /* CODE_SUBTITU */
+ #endif
+ 
+         // Access the mapped region to cause the initial page fault
+@@ -601,6 +618,9 @@ int ecrt_master_activate(ec_master_t *master)
+          * provided in the ioctl data.
+          */
+         master->process_data = io.process_data;
++#else
++#ifdef CODE_SUBTITU
++        master->process_data = stub_mmap(master->fd);
+ #else
+         master->process_data = mmap(0, master->process_data_size,
+                 PROT_READ | PROT_WRITE, MAP_SHARED, master->fd, 0);
+@@ -611,6 +631,7 @@ int ecrt_master_activate(ec_master_t *master)
+             master->process_data_size = 0;
+             return -errno;
+         }
++#endif /* CODE_SUBTITU */
+ #endif
+ 
+         // Access the mapped region to cause the initial page fault
+diff --git a/lib/slave_config.c b/lib/slave_config.c
+index 74b2e9f9..71c693b1 100644
+--- a/lib/slave_config.c
++++ b/lib/slave_config.c
+@@ -812,8 +812,12 @@ int ecrt_slave_config_flag(ec_slave_config_t *sc, const char *key,
+ 
+     io.key = malloc(io.key_size + 1);
+     if (!io.key) {
++#ifdef CODE_SUBTITU
++        printf("Failed to allocate %zu bytes of flag key memory.\n", io.key_size);
++#else
+         fprintf(stderr, "Failed to allocate %zu bytes of flag key memory.\n",
+                 io.key_size);
++#endif
+         return -ENOMEM;
+     }
+ 
+@@ -822,8 +826,12 @@ int ecrt_slave_config_flag(ec_slave_config_t *sc, const char *key,
+ 
+     ret = ioctl(sc->master->fd, EC_IOCTL_SC_FLAG, &io);
+     if (EC_IOCTL_IS_ERROR(ret)) {
++#ifdef CODE_SUBTITU
++        printf("Failed to configure feature flag: %s\n", strerror(EC_IOCTL_ERRNO(ret)));
++#else
+         fprintf(stderr, "Failed to configure feature flag: %s\n",
+                 strerror(EC_IOCTL_ERRNO(ret)));
++#endif
+         return -EC_IOCTL_ERRNO(ret);
+     }
+ 
+diff --git a/lib/stub_cdev.c b/lib/stub_cdev.c
+new file mode 100644
+index 00000000..b1a8f7d5
+--- /dev/null
++++ b/lib/stub_cdev.c
+@@ -0,0 +1,164 @@
++#define __KERNEL__
++#include "../include/change_name.h"
++#include <stdarg.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <linux/vmalloc.h>
++#include <errno.h>
++#include <sys/mman.h>
++#include "../master/ioctl.h"
++#include "prt_cpu_external.h"
++
++// 默认只有一个master (master_count = 1)
++#define MAX_OPEN_FILE 20
++
++struct ec_file {
++    int in_use;
++    ec_ioctl_context_t ctx;
++};
++
++static struct ec_file filp[MAX_OPEN_FILE] = {0};
++
++ec_master_t *ec_get_master(int master_index);
++
++// 替代 ioctl, eccdev_ioctl
++int stub_ioctl(int fd, int request,  ...)
++{
++    void *arg;
++    va_list ap;
++    va_start(ap, request);
++    arg = va_arg(ap, void *);
++    va_end(ap);
++
++    if (fd < 0 || fd > MAX_OPEN_FILE || !filp[fd].in_use) {
++        printk("[TEST] wrong fd:%d\n", fd);
++        errno = EBADF;
++        return -1;
++    }
++
++    //获取master，默认只有一个master
++    long ret = ec_ioctl(ec_get_master(0), &(filp[fd].ctx), request, arg);
++    if (ret < 0) {
++        errno = (int)(-ret);
++        return -1;
++    }
++    return (int)ret;
++}
++
++// 替代 open, eccdev_open
++int is_ethercat_int();
++
++int stub_open()
++{
++    int i = 0;
++    ec_ioctl_context_t* ctx = NULL;
++    if (!is_ethercat_int()) {
++        errno = ENODEV;
++        return -1;
++    }
++
++    uintptr_t intSave = OsIntLock();
++    for (i = 0; i < MAX_OPEN_FILE; i++) {
++        if (!filp[i].in_use) {
++            filp[i].in_use = 1;
++            ctx = &(filp[i].ctx);
++            break;
++        }
++    }
++    OsIntRestore(intSave);
++
++    if (!ctx) {
++        errno = EMFILE;
++        return -1;
++    }
++
++    ctx->writable = 1;
++    ctx->requested = 0;
++    ctx->process_data = NULL;
++    ctx->process_data_size = 0;
++    printk("[TEST] context open, fd:%d\n", i);
++    return i;
++}
++
++// 替代 close, eccdev_release
++void stub_close(int fd)
++{
++    if (fd < 0 || fd > MAX_OPEN_FILE || !filp[fd].in_use) {
++        errno = EBADF;
++        return;
++    }
++
++    if (filp[fd].ctx.requested) {
++        ecrt_release_master(ec_get_master(0));
++    }
++
++    if (filp[fd].ctx.process_data) {
++        vfree(filp[fd].ctx.process_data);
++    }
++    filp[fd].in_use = 0;
++    printk("[TEST] context close\n");
++}
++
++// 替代 mmap, eccdev_mmap
++uint8_t *stub_mmap(int fd)
++{
++    if (fd < 0 || fd > MAX_OPEN_FILE || !filp[fd].in_use) {
++        errno = EBADF;
++        return MAP_FAILED;
++    }
++
++    if (filp[fd].ctx.process_data == NULL) {
++        printk("[TEST] mmap fail\n");
++        return MAP_FAILED;
++    }
++    printk("[TEST] mmap success\n");
++    return filp[fd].ctx.process_data;
++}
++
++int is_special_request(unsigned int request)
++{
++    return (
++        request == EC_IOCTL_SLAVE_SDO_UPLOAD ||
++        request == EC_IOCTL_SLAVE_SDO_DOWNLOAD ||
++        request == EC_IOCTL_SLAVE_SII_READ ||
++        request == EC_IOCTL_SLAVE_SII_WRITE ||
++        request == EC_IOCTL_SLAVE_REG_READ ||
++        request == EC_IOCTL_SLAVE_REG_WRITE ||
++        request == EC_IOCTL_SLAVE_FOE_READ ||
++        request == EC_IOCTL_SLAVE_FOE_WRITE ||
++        request == EC_IOCTL_SLAVE_SOE_READ ||
++        request == EC_IOCTL_SLAVE_SOE_WRITE
++        );
++}
++
++void set_extra_mem_ptr(unsigned int request, void *arg)
++{
++    switch (request)
++    {
++        case EC_IOCTL_SLAVE_SDO_UPLOAD:
++            ((ec_ioctl_slave_sdo_upload_t *)arg)->target = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_sdo_upload_t);
++            return;
++        case EC_IOCTL_SLAVE_SDO_DOWNLOAD:
++            ((ec_ioctl_slave_sdo_download_t *)arg)->data = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_sdo_download_t);
++            return;
++        case EC_IOCTL_SLAVE_SII_READ:
++        case EC_IOCTL_SLAVE_SII_WRITE:
++            ((ec_ioctl_slave_sii_t *)arg)->words = (uint16_t *)(((uint8_t *)arg) + sizeof(ec_ioctl_slave_sii_t));
++            return;
++        case EC_IOCTL_SLAVE_REG_READ:
++        case EC_IOCTL_SLAVE_REG_WRITE:
++            ((ec_ioctl_slave_reg_t *)arg)->data = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_reg_t);
++            return;
++        case EC_IOCTL_SLAVE_FOE_READ:
++        case EC_IOCTL_SLAVE_FOE_WRITE:
++            ((ec_ioctl_slave_foe_t *)arg)->buffer = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_foe_t);
++            return;
++        case EC_IOCTL_SLAVE_SOE_READ:
++            ((ec_ioctl_slave_soe_read_t *)arg)->data = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_soe_read_t);
++            return;
++        case EC_IOCTL_SLAVE_SOE_WRITE:
++            ((ec_ioctl_slave_soe_write_t *)arg)->data = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_soe_write_t);
++            return;
++    }
++    return;
++}
+\ No newline at end of file
+diff --git a/lib/user_init.c b/lib/user_init.c
+new file mode 100644
+index 00000000..3545c955
+--- /dev/null
++++ b/lib/user_init.c
+@@ -0,0 +1,126 @@
++#include "ecrt.h"
++#include "prt_sys.h"
++#include <limits.h>
++#include <linux/sched.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <time.h>
++
++#define frequency 100
++
++struct period_info {
++    struct timespec next_period;
++    long period_ns;
++    long period_s;
++};
++
++static void inc_period(struct period_info *pinfo)
++{
++    pinfo->next_period.tv_nsec += pinfo->period_ns;
++    pinfo->next_period.tv_sec += pinfo->period_s;
++
++    while (pinfo->next_period.tv_nsec >= OS_SYS_NS_PER_SECOND) {
++        /* timespec nsec overflow */
++        pinfo->next_period.tv_sec++;
++        pinfo->next_period.tv_nsec -= OS_SYS_NS_PER_SECOND;
++    }
++}
++
++static void periodic_task_init(struct period_info *pinfo)
++{
++    /* for simplicity, hardcoding a 10ms period */
++    pinfo->period_ns = OS_SYS_NS_PER_SECOND / frequency;
++    pinfo->period_s = 0;
++
++    /* find timestamp to first run */
++    clock_gettime(CLOCK_REALTIME, &(pinfo->next_period));
++}
++
++static void wait_rest_of_period(struct period_info *pinfo)
++{
++    inc_period(pinfo);
++
++    /* for simplicity, ignoring possibilities of signal wakes */
++    int ret = clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &pinfo->next_period, NULL);
++    if (ret != 0) {
++        printf("[DEMO] sleep fail, ret:%d\n", ret);
++    }
++}
++
++
++// 等待从站回复，10s
++bool wait_for_slave_respond()
++{
++    int count = 0;
++    struct period_info pinfo;
++    ec_master_state_t master_state = {0};
++
++    ec_master_t *master_tmp = ecrt_open_master(0);
++    if (!master_tmp) {
++        printf("[TEST] open master fail\n");
++        return false;
++    }
++
++    periodic_task_init(&pinfo);
++    pinfo.period_s = 1;
++    printf("[TEST] slave respond wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
++
++    // wait for slave responding
++    ecrt_master_state(master_tmp, &master_state);
++    printf("[TEST] start wait, get master state, wait count:%d, num:%u, al_state:0x%x, linkup:%u\n", count,
++           master_state.slaves_responding, master_state.al_states, master_state.link_up);
++    while (master_state.slaves_responding == 0 && count < 10) {
++        count++;
++        wait_rest_of_period(&pinfo);
++        ecrt_master_state(master_tmp, &master_state);
++    }
++    printf("[TEST] finish wait, get master state, wait count:%d, num:%u, al_state:0x%x, linkup:%u\n", count,
++           master_state.slaves_responding, master_state.al_states, master_state.link_up);
++
++    ecrt_release_master(master_tmp);
++
++    return master_state.slaves_responding != 0;
++}
++
++// 等待从站扫描结束，10s
++bool wait_for_slave_scan_complete()
++{
++    int ret = 0, count = 0;
++    struct period_info pinfo;
++    ec_master_info_t master_info = {0};
++    ec_slave_info_t slave_info = {0};
++
++    ec_master_t *master_tmp = ecrt_open_master(0);
++    if (!master_tmp) {
++        printf("[TEST] open master fail\n");
++        return false;
++    }
++
++    periodic_task_init(&pinfo);
++    pinfo.period_s = 1;
++    printf("[TEST] slave scan wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
++
++    // wait for slave scan completion
++    ret = ecrt_master(master_tmp, &master_info);
++    printf("[TEST] start wait, get master info, scan_busy:%u, slave_count:%u, ret:%d\n", master_info.scan_busy,
++           master_info.slave_count, ret);
++    ret = ecrt_master_get_slave(master_tmp, 0, &slave_info);
++    printf("[TEST] start wait, get slave info, vendor_id:%lx, product_code:%lx, current_on_ebus:%d, al_state:%u, "
++           "sdo_count:%u\n",
++           slave_info.vendor_id, slave_info.product_code, slave_info.current_on_ebus, slave_info.al_state,
++           slave_info.sdo_count);
++    while ((master_info.scan_busy || !slave_info.sdo_count || !master_info.slave_count) && count < 10) {
++        count++;
++        wait_rest_of_period(&pinfo);
++        (void)ecrt_master(master_tmp, &master_info);
++        (void)ecrt_master_get_slave(master_tmp, 0, &slave_info);
++    }
++    printf("[TEST] finish wait, get master info, scan_busy:%u, , slave_count:%u, wait count:%d\n",
++           master_info.scan_busy, master_info.slave_count, count);
++    printf("[TEST] finish wait, get slave info, current_on_ebus:%d, al_state:%u, sdo_count:%u\n",
++           slave_info.current_on_ebus, slave_info.al_state, slave_info.sdo_count);
++
++    ecrt_release_master(master_tmp);
++
++    return !master_info.scan_busy && slave_info.sdo_count && master_info.slave_count;
++}
+\ No newline at end of file
+diff --git a/master/CMakeLists.txt b/master/CMakeLists.txt
+new file mode 100644
+index 00000000..592f80a5
+--- /dev/null
++++ b/master/CMakeLists.txt
+@@ -0,0 +1,66 @@
++# 根据 Kbuild.in, ec_master-objs 选择源文件
++set(IGH_MASTER_SRC
++    init.c
++    # cdev.c
++    coe_emerg_ring.c
++    datagram.c
++    datagram_pair.c
++    device.c
++    domain.c
++    flag.c
++    fmmu_config.c
++    foe_request.c
++    fsm_change.c
++    fsm_coe.c
++    fsm_foe.c
++    fsm_master.c
++    fsm_pdo.c
++    fsm_pdo_entry.c
++    fsm_sii.c
++    fsm_slave.c
++    fsm_slave_config.c
++    fsm_slave_scan.c
++    fsm_soe.c
++    ioctl.c
++    mailbox.c
++    master.c
++    module.c
++    pdo.c
++    pdo_entry.c
++    pdo_list.c
++    reg_request.c
++    sdo.c
++    sdo_entry.c
++    sdo_request.c
++    slave.c
++    slave_config.c
++    soe_errors.c
++    soe_request.c
++    sync.c
++    sync_config.c
++    voe_handler.c
++)
++
++add_library(igh_master OBJECT ${IGH_MASTER_SRC})
++
++target_compile_options(igh_master PUBLIC
++        -Wno-bad-function-cast
++        -Wno-unused-value
++        -Wno-switch-default
++        -Wno-float-equal
++        -Wno-unused-but-set-variable
++        -Wno-discarded-qualifiers
++        -Wno-implicit-fallthrough
++        -Wno-cast-function-type
++        -Werror=incompatible-pointer-types
++        # -Werror=missing-prototypes
++        -Werror=missing-parameter-type
++        # -Werror=missing-declarations
++        -Werror=implicit-function-declaration
++        -Werror=return-type
++        )
++
++target_compile_options(igh_master PUBLIC
++    -DIGH_CUT -D__KERNEL__
++    -include ${CMAKE_CURRENT_SOURCE_DIR}/../include/change_name.h
++)
+diff --git a/master/cdev.h b/master/cdev.h
+index a06bb1c9..ca237d83 100644
+--- a/master/cdev.h
++++ b/master/cdev.h
+@@ -34,6 +34,7 @@
+ 
+ /*****************************************************************************/
+ 
++#ifndef IGH_CUT
+ #ifndef __EC_CDEV_H__
+ #define __EC_CDEV_H__
+ 
+@@ -59,3 +60,4 @@ void ec_cdev_clear(ec_cdev_t *);
+ /*****************************************************************************/
+ 
+ #endif
++#endif /* IGH_CUT */
+diff --git a/master/init.c b/master/init.c
+new file mode 100644
+index 00000000..37a8dae8
+--- /dev/null
++++ b/master/init.c
+@@ -0,0 +1,54 @@
++#include <stdio.h>
++#define MAX_MASTERS 32 /**< Maximum number of masters. */
++
++int ec_gen_init_module(void);
++void ec_gen_cleanup_module(void);
++int ec_init_module(void);
++void ec_cleanup_module(void);
++
++static int ethercat_init_success = 0;
++
++static char main[] = "ff:ff:ff:ff:ff:ff";
++
++static char *main_devices[MAX_MASTERS]; /**< Main devices parameter. */
++// static unsigned int master_count; /**< Number of masters. */
++// static char *backup_devices[MAX_MASTERS]; /**< Backup devices parameter. */
++// static unsigned int backup_count; /**< Number of backup devices. */
++// static unsigned int debug_level;  /**< Debug level parameter. */
++
++int ec_set_module_param(char **main_devices_param, unsigned int master_count_param, char **backup_devices_param,
++    unsigned int backup_count_param, unsigned int debug_level_param);
++
++int ethercat_init()
++{
++    int ret;
++    main_devices[0] = main;
++    printf("[TEST] enter init\n");
++    ret = ec_set_module_param(main_devices, 1, 0, 0, 1);
++    if (ret) return ret;
++    printf("[TEST] init module\n");
++    ret = ec_init_module();
++    if (ret) return ret;
++    printf("[TEST] init gen\n");
++    ret = ec_gen_init_module();
++    if (ret) {
++        printf("[TEST] init fail\n");
++        ec_cleanup_module();
++        return ret;
++    }
++    ethercat_init_success = 1;
++    printf("[TEST] init success\n");
++    return 0;
++}
++
++void ethercat_exit()
++{
++    ec_cleanup_module();
++    ec_gen_cleanup_module();
++    ethercat_init_success = 0;
++}
++
++int is_ethercat_int()
++{
++    return ethercat_init_success;
++}
+\ No newline at end of file
+diff --git a/master/master.c b/master/master.c
+index 5ba49378..d5b355c6 100644
+--- a/master/master.c
++++ b/master/master.c
+@@ -332,6 +332,7 @@ int ec_master_init(ec_master_t *master, /**< EtherCAT master */
+     master->dc_ref_config = NULL;
+     master->dc_ref_clock = NULL;
+ 
++#ifndef IGH_CUT
+     // init character device
+     ret = ec_cdev_init(&master->cdev, master, device_number);
+     if (ret)
+@@ -359,6 +360,7 @@ int ec_master_init(ec_master_t *master, /**< EtherCAT master */
+         ret = PTR_ERR(master->class_device);
+         goto out_clear_cdev;
+     }
++#endif /* IGH_CUT */
+ 
+ #ifdef EC_RTDM
+     // init RTDM device
+@@ -379,7 +381,9 @@ out_unregister_class_device:
+ #endif
+ #endif
+ out_clear_cdev:
++#ifndef IGH_CUT
+     ec_cdev_clear(&master->cdev);
++#endif
+ out_clear_sync_mon:
+     ec_datagram_clear(&master->sync_mon_datagram);
+ out_clear_sync64:
+@@ -415,6 +419,7 @@ void ec_master_clear(
+     ec_rtdm_dev_clear(&master->rtdm_dev);
+ #endif
+ 
++#ifndef IGH_CUT
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
+     device_unregister(master->class_device);
+ #else
+@@ -422,6 +427,7 @@ void ec_master_clear(
+ #endif
+ 
+     ec_cdev_clear(&master->cdev);
++#endif /* IGH_CUT */
+ 
+ #ifdef EC_EOE
+     ec_master_clear_eoe_handlers(master);
+diff --git a/master/master.h b/master/master.h
+index 9541df5b..250e3626 100644
+--- a/master/master.h
++++ b/master/master.h
+@@ -190,12 +190,14 @@ struct ec_master {
+     unsigned int index; /**< Index. */
+     unsigned int reserved; /**< \a True, if the master is in use. */
+ 
++#ifndef IGH_CUT
+     ec_cdev_t cdev; /**< Master character device. */
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
+     struct device *class_device; /**< Master class device. */
+ #else
+     struct class_device *class_device; /**< Master class device. */
+ #endif
++#endif /* IGH_CUT */
+ 
+ #ifdef EC_RTDM
+     ec_rtdm_dev_t rtdm_dev; /**< RTDM device. */
+diff --git a/master/module.c b/master/module.c
+index 24fe036f..53d235bf 100644
+--- a/master/module.c
++++ b/master/module.c
+@@ -74,6 +74,7 @@ char *ec_master_version_str = EC_MASTER_VERSION; /**< Version string. */
+ 
+ /** \cond */
+ 
++#ifndef IGH_CUT
+ MODULE_AUTHOR("Florian Pose <fp@igh-essen.com>");
+ MODULE_DESCRIPTION("EtherCAT master driver module");
+ MODULE_LICENSE("GPL");
+@@ -85,11 +86,48 @@ module_param_array(backup_devices, charp, &backup_count, S_IRUGO);
+ MODULE_PARM_DESC(backup_devices, "MAC addresses of backup devices");
+ module_param_named(debug_level, debug_level, uint, S_IRUGO);
+ MODULE_PARM_DESC(debug_level, "Debug level");
++#endif
+ 
+ /** \endcond */
+ 
+ /*****************************************************************************/
+ 
++#ifdef IGH_CUT
++int ec_set_module_param(char **main_devices_param, unsigned int master_count_param, char **backup_devices_param,
++    unsigned int backup_count_param, unsigned int debug_level_param)
++{
++    master_count = master_count_param;
++    backup_count = backup_count_param;
++
++    if (master_count == 0 || master_count > MAX_MASTERS || main_devices_param == NULL ||
++        backup_count > MAX_MASTERS || (backup_count != 0 && backup_devices_param == NULL)) {
++        return EINVAL;
++    }
++
++    for (int i = 0; i < master_count; i++) {
++        main_devices[i] = main_devices_param[i];
++        if (main_devices[i] == NULL) {
++            return EINVAL;
++        }
++    }
++
++    for (int i = 0; i < backup_count; i++) {
++        backup_devices[i] = backup_devices_param[i];
++        if (backup_devices[i] == NULL) {
++            return EINVAL;
++        }
++    }
++    debug_level = debug_level_param;
++    return 0;
++}
++
++ec_master_t *ec_get_master(int master_index)
++{
++    return &masters[master_index];
++}
++
++#endif
++
+ /** Module initialization.
+  *
+  * Initializes \a master_count masters.
+@@ -103,6 +141,7 @@ int __init ec_init_module(void)
+ 
+     ec_lock_init(&master_sem);
+ 
++#ifndef IGH_CUT
+     if (master_count) {
+         if (alloc_chrdev_region(&device_number,
+                     0, master_count, "EtherCAT")) {
+@@ -122,6 +161,7 @@ int __init ec_init_module(void)
+         ret = PTR_ERR(class);
+         goto out_cdev;
+     }
++#endif /* IGH_CUT */
+ 
+     // zero MAC addresses
+     memset(macs, 0x00, sizeof(uint8_t) * MAX_MASTERS * 2 * ETH_ALEN);
+@@ -168,10 +208,14 @@ out_free_masters:
+         ec_master_clear(&masters[i]);
+     kfree(masters);
+ out_class:
++#ifndef IGH_CUT
+     class_destroy(class);
++#endif
+ out_cdev:
++#ifndef IGH_CUT
+     if (master_count)
+         unregister_chrdev_region(device_number, master_count);
++#endif /* IGH_CUT */
+ out_return:
+     return ret;
+ }
+@@ -192,12 +236,12 @@ void __exit ec_cleanup_module(void)
+ 
+     if (master_count)
+         kfree(masters);
+-
++#ifndef IGH_CUT
+     class_destroy(class);
+ 
+     if (master_count)
+         unregister_chrdev_region(device_number, master_count);
+-
++#endif /* IGH_CUT */
+     EC_INFO("Master module cleaned up.\n");
+ }
+ 
+@@ -668,8 +712,10 @@ const ec_request_state_t ec_request_state_translation_table[] = {
+ 
+ /** \cond */
+ 
++#ifndef IGH_CUT
+ module_init(ec_init_module);
+ module_exit(ec_cleanup_module);
++#endif
+ 
+ EXPORT_SYMBOL(ecdev_offer);
+ 
+diff --git a/test_cmd.sh b/test_cmd.sh
+new file mode 100644
+index 00000000..d12a5462
+--- /dev/null
++++ b/test_cmd.sh
+@@ -0,0 +1,115 @@
++################# read #################
++# 7.1.22
++echo -e "\n[cmd] ethercat version"
++ethercat version
++
++# 7.1.13
++echo -e "\n[cmd] ethercat master"
++ethercat master
++
++# 7.1.19
++echo -e "\n[cmd] ethercat slaves"
++ethercat slaves
++
++# 7.1.14
++echo -e "\n[cmd] ethercat pdos"
++ethercat pdos
++
++# 7.1.5
++echo -e "\n[cmd] ethercat cstruct"
++ethercat cstruct
++
++# 7.1.17
++echo -e "\n[cmd] ethercat sdos"
++ethercat sdos
++
++# 7.1.4
++echo -e "\n[cmd] ethercat crc"
++ethercat crc
++
++# 7.1.3 ??? 运动起来之后？
++echo -e "\n[cmd] ethercat config"
++ethercat config
++
++# 7.1.6 ??? 运动起来之后？
++echo -e "\n[cmd] ethercat data"
++ethercat data
++
++# 7.1.8 ??? 运动起来之后？
++echo -e "\n[cmd] ethercat domains"
++ethercat domains
++
++# 7.1.12
++echo -e "\n[cmd] ethercat graph"
++ethercat graph
++
++# 7.1.15
++echo -e "\n[cmd] ethercat reg_read 0x00 32"
++ethercat reg_read 0x00 32
++
++# 7.1.23
++echo -e "\n[cmd] ethercat xml"
++ethercat xml
++########################################
++
++
++################# write #################
++# 7.1.2
++echo -e "\n[cmd] ethercat alias -p 0 16"
++ethercat alias -p 0 16
++echo -e "\n[cmd] ethercat slaves"
++ethercat slaves
++echo -e "\n[cmd] ethercat alias -p 0 0"
++ethercat alias -p 0 0
++echo -e "\n[cmd] ethercat slaves"
++ethercat slaves
++
++# 7.1.9 change speed
++echo -e "\n[cmd] ethercat upload 0x6081 0"
++ethercat upload 0x6081 0
++echo -e "\n[cmd] ethercat download 0x6081 0 100000"
++ethercat download 0x6081 0 100000
++echo -e "\n[cmd] ethercat upload 0x6081 0"
++ethercat upload 0x6081 0
++echo -e "\n[cmd] ethercat download 0x6081 0 1000000"
++ethercat download 0x6081 0 1000000
++
++# 7.1.21
++echo -e "\n[cmd] ethercat states OP"
++ethercat states OP
++sleep 2
++echo -e "\n[cmd] ethercat slaves"
++ethercat slaves
++echo -e "\n[cmd] ethercat states PREOP"
++ethercat states PREOP
++sleep 2
++echo -e "\n[cmd] ethercat slaves"
++ethercat slaves
++#########################################
++
++
++################# action #################
++# 7.1.7 7.1.16
++dmesg -c > discard.txt
++echo -e "\n[cmd] ethercat debug 1, rescan, dmesg"
++ethercat debug 1
++ethercat rescan
++sleep 2
++dmesg -c
++echo -e "\n[cmd] ethercat debug 0, rescan, dmesg"
++ethercat debug 0
++ethercat rescan
++sleep 2
++dmesg -c
++##########################################
++
++
++################# not support #################
++# 7.1.10 not support
++# ethercat eoe
++# ethercat foe_read
++
++#7.1.18
++# ethercat sii_read
++###############################################
++
+diff --git a/tool/CMakeLists.txt b/tool/CMakeLists.txt
+new file mode 100644
+index 00000000..201e9ac3
+--- /dev/null
++++ b/tool/CMakeLists.txt
+@@ -0,0 +1,42 @@
++# 根据 Kbuild.in, ec_master-objs 选择源文件
++set(IGH_MASTER_SRC
++    ioctl_rpc.c
++    Command.cpp
++    CommandAlias.cpp
++    CommandCrc.cpp
++    CommandCStruct.cpp
++    CommandConfig.cpp
++    CommandData.cpp
++    CommandDebug.cpp
++    CommandDomains.cpp
++    CommandDownload.cpp
++    CommandFoeRead.cpp
++    CommandFoeWrite.cpp
++    CommandGraph.cpp
++    CommandMaster.cpp
++    CommandPdos.cpp
++    CommandRegRead.cpp
++    CommandRegWrite.cpp
++    CommandRescan.cpp
++    CommandSdos.cpp
++    CommandSiiRead.cpp
++    CommandSiiWrite.cpp
++    CommandSlaves.cpp
++    CommandSoeRead.cpp
++    CommandSoeWrite.cpp
++    CommandStates.cpp
++    CommandUpload.cpp
++    CommandVersion.cpp
++    CommandXml.cpp
++    DataTypeHandler.cpp
++    FoeCommand.cpp
++    MasterDevice.cpp
++    NumberListParser.cpp
++    SdoCommand.cpp
++    SoeCommand.cpp
++    main.cpp
++    sii_crc.cpp
++)
++
++
++add_library(ethercat_obj OBJECT ${IGH_MASTER_SRC})
+diff --git a/tool/MasterDevice.cpp b/tool/MasterDevice.cpp
+index d5faa524..da8ded7a 100644
+--- a/tool/MasterDevice.cpp
++++ b/tool/MasterDevice.cpp
+@@ -34,6 +34,9 @@
+ 
+ #include <sstream>
+ #include <iomanip>
++extern "C" {
++#include "rpc_stub_ioctl.h"
++}
+ using namespace std;
+ 
+ #include "MasterDevice.h"
+@@ -71,8 +74,7 @@ void MasterDevice::open(Permissions perm)
+         ec_ioctl_module_t module_data;
+         deviceName << "/dev/EtherCAT" << index;
+ 
+-        if ((fd = ::open(deviceName.str().c_str(),
+-                        perm == ReadWrite ? O_RDWR : O_RDONLY)) == -1) {
++        if ((fd = stub_open()) == -1) {
+             stringstream err;
+             err << "Failed to open master device " << deviceName.str() << ": "
+                 << strerror(errno);
+@@ -102,7 +104,7 @@ void MasterDevice::open(Permissions perm)
+ void MasterDevice::close()
+ {
+     if (fd != -1) {
+-        ::close(fd);
++        stub_close(fd);
+         fd = -1;
+     }
+ }
+diff --git a/tool/ioctl_rpc.c b/tool/ioctl_rpc.c
+new file mode 100644
+index 00000000..804a013f
+--- /dev/null
++++ b/tool/ioctl_rpc.c
+@@ -0,0 +1,340 @@
++#include "ioctl_rpc.h"
++#include "../master/ioctl.h"
++#include <errno.h>
++#include <fcntl.h>
++#include <mqueue.h>
++#include <stdarg.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <unistd.h>
++
++static mqd_t send_mq = -1;
++static mqd_t receive_mq = -1;
++static char receive_mq_name[48];
++static pid_t self_pid = -1;
++static long mq_maxsize = 0;
++
++#ifdef CMD_DEBUG_ON
++#define CMD_DEBUG(fmt, args...) \
++    printf(fmt, ##args)
++#else
++#define CMD_DEBUG(fmt, args...)
++#endif
++
++int init_mq()
++{
++    struct mq_attr attr = {0};
++    self_pid = getpid();
++
++    sprintf(receive_mq_name, MQ_NAME_FORMATE, self_pid);
++    CMD_DEBUG("mq name: %s\n", receive_mq_name);
++    send_mq = mq_open(MQ_MASTER_NAME, O_WRONLY, 0, NULL);
++    if (send_mq == -1) {
++        CMD_DEBUG("open master mq fail %d, %s\n", errno, strerror(errno));
++        return 0;
++    }
++
++    receive_mq = mq_open(receive_mq_name, O_CREAT | O_EXCL | O_RDONLY, S_IRUSR | S_IWUSR, NULL);
++    if (receive_mq == -1 && errno == EEXIST) {
++        CMD_DEBUG("unlink and create\n");
++        mq_unlink(receive_mq_name);
++        receive_mq = mq_open(receive_mq_name, O_CREAT | O_EXCL | O_RDONLY, S_IRUSR | S_IWUSR, NULL);
++    }
++    if (receive_mq == -1) {
++        CMD_DEBUG("open slave mq fail %d, %s\n", errno, strerror(errno));
++        mq_close(send_mq);
++        return 0;
++    }
++
++    mq_getattr(receive_mq, &attr);
++    CMD_DEBUG("max msg size: %ld, max msg num: %ld\n", attr.mq_msgsize, attr.mq_maxmsg);
++    mq_maxsize = attr.mq_msgsize;
++    return 0;
++}
++
++void release_mq()
++{
++    CMD_DEBUG("release mq\n");
++    if (send_mq != -1) {
++        mq_close(send_mq);
++    }
++
++    if (receive_mq != -1) {
++        mq_close(receive_mq);
++        mq_unlink(receive_mq_name);
++    }
++    return;
++}
++
++static int send_req_and_wait_resp(cmd_base_req_t *rpc_request, cmd_base_resp_t *rpc_respond, size_t payload_size,
++    unsigned long func_id, unsigned long timeout_sec)
++{
++    struct timespec timeout_time;
++    clock_gettime(CLOCK_REALTIME, &timeout_time);
++    timeout_time.tv_sec += timeout_sec;
++    if (!rpc_request || !rpc_respond) {
++        CMD_DEBUG("[ERROR] null input");
++        return -1;
++    }
++
++    int ret = mq_timedsend(send_mq, (char *)rpc_request, payload_size, 0, &timeout_time);
++    if (ret == -1) {
++        CMD_DEBUG("send msg fail, %s\n", strerror(errno));
++        return -1;
++    }
++
++    rpc_respond->func_id = 0;
++    while (rpc_respond->func_id != func_id) {
++        CMD_DEBUG("wait for msg, prev func_id:%lu...\n", rpc_respond->func_id);
++        ret = mq_timedreceive(receive_mq, (char *)rpc_respond, mq_maxsize, NULL, &timeout_time);
++        if (ret == -1) {
++            CMD_DEBUG("receive msg fail, %s\n", strerror(errno));
++            return -1;
++        }
++    }
++    return 0;
++}
++
++static inline int rpc_malloc(void **rpc_request, void **rpc_respond, size_t payload_size)
++{
++    *rpc_request = malloc(payload_size);
++    if (!(*rpc_request)) {
++        return -1;
++    }
++    *rpc_respond = malloc(mq_maxsize);
++    if (!(*rpc_respond)) {
++        free(*rpc_request);
++        return -1;
++    }
++    return 0;
++}
++
++static inline void rpc_free(void *rpc_request, void *rpc_respond)
++{
++    if (rpc_request != NULL) free(rpc_request);
++    if (rpc_respond != NULL) free(rpc_respond);
++}
++
++static int inline is_special_request(unsigned int request)
++{
++    return (
++        request == EC_IOCTL_SLAVE_SDO_UPLOAD ||
++        request == EC_IOCTL_SLAVE_SDO_DOWNLOAD ||
++        request == EC_IOCTL_SLAVE_SII_READ ||
++        request == EC_IOCTL_SLAVE_SII_WRITE ||
++        request == EC_IOCTL_SLAVE_REG_READ ||
++        request == EC_IOCTL_SLAVE_REG_WRITE ||
++        request == EC_IOCTL_SLAVE_FOE_READ ||
++        request == EC_IOCTL_SLAVE_FOE_WRITE ||
++        request == EC_IOCTL_SLAVE_SOE_READ ||
++        request == EC_IOCTL_SLAVE_SOE_WRITE
++        );
++}
++
++static void get_extra_mem(unsigned int request, void *arg, void** ptr, size_t* size)
++{
++    *ptr = NULL;
++    *size = 0;
++    switch (request)
++    {
++        case EC_IOCTL_SLAVE_SDO_UPLOAD:
++            *size = ((ec_ioctl_slave_sdo_upload_t *)arg)->target_size;
++            *ptr = ((ec_ioctl_slave_sdo_upload_t *)arg)->target;
++            return;
++        case EC_IOCTL_SLAVE_SDO_DOWNLOAD:
++            *size = ((ec_ioctl_slave_sdo_download_t *)arg)->data_size;
++            *ptr = ((ec_ioctl_slave_sdo_download_t *)arg)->data;
++            return;
++        case EC_IOCTL_SLAVE_SII_READ:
++        case EC_IOCTL_SLAVE_SII_WRITE:
++            *size = (((ec_ioctl_slave_sii_t *)arg)->nwords * sizeof(uint16_t));
++            *ptr = ((ec_ioctl_slave_sii_t *)arg)->words;
++            return;
++        case EC_IOCTL_SLAVE_REG_READ:
++        case EC_IOCTL_SLAVE_REG_WRITE:
++            *size = ((ec_ioctl_slave_reg_t *)arg)->size;
++            *ptr = ((ec_ioctl_slave_reg_t *)arg)->data;
++            return;
++        case EC_IOCTL_SLAVE_FOE_READ:
++        case EC_IOCTL_SLAVE_FOE_WRITE:
++            *size = ((ec_ioctl_slave_foe_t *)arg)->buffer_size;
++            *ptr = ((ec_ioctl_slave_foe_t *)arg)->buffer;
++            return;
++        case EC_IOCTL_SLAVE_SOE_READ:
++            *size = ((ec_ioctl_slave_soe_read_t *)arg)->mem_size;
++            *ptr = ((ec_ioctl_slave_soe_read_t *)arg)->data;
++            return;
++        case EC_IOCTL_SLAVE_SOE_WRITE:
++            *size = ((ec_ioctl_slave_soe_write_t *)arg)->data_size;
++            *ptr = ((ec_ioctl_slave_soe_write_t *)arg)->data;
++            return;
++    }
++    return;
++}
++
++void set_extra_mem_ptr(unsigned int request, void *arg, void* ptr)
++{
++    switch (request)
++    {
++        case EC_IOCTL_SLAVE_SDO_UPLOAD:
++            ((ec_ioctl_slave_sdo_upload_t *)arg)->target = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_SDO_DOWNLOAD:
++            ((ec_ioctl_slave_sdo_download_t *)arg)->data = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_SII_READ:
++        case EC_IOCTL_SLAVE_SII_WRITE:
++            ((ec_ioctl_slave_sii_t *)arg)->words = (uint16_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_REG_READ:
++        case EC_IOCTL_SLAVE_REG_WRITE:
++            ((ec_ioctl_slave_reg_t *)arg)->data = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_FOE_READ:
++        case EC_IOCTL_SLAVE_FOE_WRITE:
++            ((ec_ioctl_slave_foe_t *)arg)->buffer = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_SOE_READ:
++            ((ec_ioctl_slave_soe_read_t *)arg)->data = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_SLAVE_SOE_WRITE:
++            ((ec_ioctl_slave_soe_write_t *)arg)->data = (uint8_t *)ptr;
++            return;
++    }
++    return;
++}
++
++// 替代 ioctl, eccdev_ioctl
++int stub_ioctl(int fd, int request, ...)
++{
++    void *arg;
++    int ret = 0;
++    cmd_ioctl_req_t *rpc_request = NULL;
++    cmd_ioctl_resp_t *rpc_respond = NULL;
++    size_t extra_mem_size = 0;
++    void* extra_mem_ptr = NULL;
++    int is_special = is_special_request(request);
++
++    CMD_DEBUG("enter ioctl\n");
++
++    va_list ap;
++    va_start(ap, request);
++    arg = va_arg(ap, void *);
++    va_end(ap);
++
++    // 获取master，默认只有一个master，不管fd是多少
++    size_t arg_size = _IOC_SIZE(request);
++    size_t payload_size = arg_size + sizeof(cmd_ioctl_req_t);
++    if (arg_size == 0) {
++        payload_size += sizeof(void *);
++    } else if (is_special) {
++        get_extra_mem(request, arg, &extra_mem_ptr, &extra_mem_size);
++        payload_size += extra_mem_size;
++    }
++
++    ret = rpc_malloc((void **)&rpc_request, (void **)&rpc_respond, payload_size);
++    if (ret) {
++        CMD_DEBUG("malloc fail\n");
++        return ret;
++    }
++
++    rpc_request->func_id = IGH_IOCTL_ID;
++    rpc_request->pid = self_pid;
++    rpc_request->request = (unsigned int)request;
++    rpc_request->arg_size = (int)(arg_size + extra_mem_size);
++    rpc_request->fd = fd;
++    if (arg_size == 0) {
++        CMD_DEBUG("no arg, param:%lu\n", arg);
++        memcpy(rpc_request->arg, &arg, sizeof(void *));
++    } else {
++        memcpy(rpc_request->arg, arg, arg_size);
++        if (is_special) {
++            memcpy(&(rpc_request->arg[arg_size]), extra_mem_ptr, extra_mem_size);
++        }
++    }
++
++    CMD_DEBUG("send request: func_id: %lu, arg_size: %d, request: %u, fd:%d\n",
++        rpc_request->func_id, rpc_request->arg_size, rpc_request->request, fd);
++    ret = send_req_and_wait_resp((cmd_base_req_t *)rpc_request, (cmd_base_resp_t *)rpc_respond, payload_size, IGH_IOCTL_ID, 10);
++    if (ret == 0) {
++        ret = rpc_respond->ret;
++        errno = rpc_respond->remote_errno;
++        if (ret >= 0 && arg_size != 0) {
++            CMD_DEBUG("recevie respond: func_id: %lu, arg_size %d, ret: %d\n",
++                rpc_respond->func_id, rpc_respond->arg_size, rpc_respond->ret);
++            memcpy(arg, rpc_respond->arg, arg_size);
++            if (is_special) {
++                memcpy(extra_mem_ptr, &(rpc_respond->arg[arg_size]), extra_mem_size);
++                set_extra_mem_ptr(request, arg, extra_mem_ptr);
++            }
++        }
++    }
++    rpc_free(rpc_request, rpc_respond);
++    return ret;
++}
++
++int stub_open() {
++    init_mq();
++
++    int ret = 0;
++    cmd_base_req_t *rpc_request = NULL;
++    cmd_base_resp_t *rpc_respond = NULL;
++
++    CMD_DEBUG("enter open\n");
++
++    size_t payload_size = sizeof(cmd_base_req_t);
++    ret = rpc_malloc((void **)&rpc_request, (void **)&rpc_respond, payload_size);
++    if (ret) {
++        CMD_DEBUG("malloc fail\n");
++        return ret;
++    }
++    rpc_request->func_id = IGH_OPEN_ID;
++    rpc_request->pid = self_pid;
++
++    CMD_DEBUG("send request: func_id: %lu\n", rpc_request->func_id);
++    ret = send_req_and_wait_resp((cmd_base_req_t *)rpc_request, (cmd_base_resp_t *)rpc_respond, payload_size, IGH_OPEN_ID, 10);
++    if (ret == 0) {
++        CMD_DEBUG("recevie respond: func_id: %lu, ret: %d\n", rpc_respond->func_id, rpc_respond->ret);
++        ret = rpc_respond->ret;
++        errno = rpc_respond->remote_errno;
++    }
++
++    rpc_free(rpc_request, rpc_respond);
++    // TODO 换成 ret
++    return ret;
++}
++
++void stub_close(int fd) {
++    int ret = 0;
++    cmd_close_req_t *rpc_request = NULL;
++    cmd_base_resp_t *rpc_respond = NULL;
++
++    CMD_DEBUG("enter close\n");
++
++    size_t payload_size = sizeof(cmd_close_req_t);
++    ret = rpc_malloc((void **)&rpc_request, (void **)&rpc_respond, payload_size);
++    if (ret) {
++        CMD_DEBUG("malloc fail\n");
++        return;
++    }
++    rpc_request->func_id = IGH_CLOSE_ID;
++    rpc_request->pid = self_pid;
++    rpc_request->fd = fd;
++
++    CMD_DEBUG("send request: func_id: %lu\n", rpc_request->func_id);
++    ret = send_req_and_wait_resp((cmd_base_req_t *)rpc_request, (cmd_base_resp_t *)rpc_respond, payload_size, IGH_CLOSE_ID, 10);
++    if (ret == 0) {
++        CMD_DEBUG("recevie respond\n");
++        if (rpc_respond->ret < 0) {
++            CMD_DEBUG("[ERROR] close msg send fail!, %s\n", strerror(rpc_respond->remote_errno));
++        }
++    }
++
++    rpc_free(rpc_request, rpc_respond);
++    release_mq();
++    return;
++}
+\ No newline at end of file
+diff --git a/tool/ioctl_rpc.h b/tool/ioctl_rpc.h
+new file mode 100644
+index 00000000..225bf358
+--- /dev/null
++++ b/tool/ioctl_rpc.h
+@@ -0,0 +1,50 @@
++#ifndef _IOCTL_RPC_H
++#define _IOCTL_RPC_H
++
++#include <sys/types.h>
++
++#define IGH_IOCTL_ID        301UL
++#define IGH_OPEN_ID         302UL
++#define IGH_CLOSE_ID        303UL
++
++#define MQ_NAME_FORMATE "/mq_slave_%d"
++#define MQ_MASTER_NAME "/mq_0"
++
++typedef struct {
++    unsigned long func_id;
++    pid_t pid;
++} cmd_base_req_t; // open can just use base req
++
++typedef struct {
++    unsigned long func_id;
++    int ret;
++    int remote_errno;
++} cmd_base_resp_t; // open and close can just use base resp
++
++typedef struct {
++    unsigned long func_id;
++    pid_t pid;
++    int fd;
++} cmd_close_req_t;
++
++typedef struct {
++    unsigned long func_id;
++    pid_t pid;
++    int fd;
++    unsigned int request;
++    int arg_size;
++    char arg[]; // flexible arg
++} cmd_ioctl_req_t;
++
++typedef struct {
++    unsigned long func_id;
++    int ret;
++    int remote_errno;
++    int arg_size;
++    char resv[4]; // 8字节对齐
++    char arg[]; // flexible arg
++} cmd_ioctl_resp_t;
++
++#define is_valid_cmd_func_id(func_id) ((func_id) >= IGH_IOCTL_ID && (func_id) <= IGH_CLOSE_ID)
++
++#endif /* _IOCTL_RPC_H */
+\ No newline at end of file
+diff --git a/tool/rpc_stub_ioctl.h b/tool/rpc_stub_ioctl.h
+new file mode 100644
+index 00000000..5c3f3dff
+--- /dev/null
++++ b/tool/rpc_stub_ioctl.h
+@@ -0,0 +1,9 @@
++#ifndef _RPC_STUB_IOCTL_H
++#define _RPC_STUB_IOCTL_H
++
++#define ioctl stub_ioctl
++int stub_open();
++void stub_close(int fd);
++int stub_ioctl(int fd, int request, ...);
++
++#endif /* _RPC_STUB_IOCTL_H */
+\ No newline at end of file
