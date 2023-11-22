@@ -476,8 +476,10 @@ static void resp2outp_fread(void *from, void *to)
     if (outp->buf == NULL) {
         return;
     }
-    size_t buflen = outp->totalSize;
-    (void)memcpy_s(outp->buf, buflen, resp->buf, buflen);
+    size_t buflen = MIN(sizeof(resp->buf), resp->ret);
+    if (buflen > 0) {
+        (void)memcpy_s(outp->buf, buflen, resp->buf, buflen);
+    }
     outp->ret = resp->ret;
 }
 
@@ -654,6 +656,34 @@ ssize_t PRT_ProxyRead(int fd, void *buf, size_t count)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return sret;
+}
+
+// 无法保证串行化
+ssize_t PRT_ProxyReadLoop(int fd, void *buf, size_t count) {
+    if (count == 0) {
+        return 0;
+    }
+    size_t lenRemain = count;
+    ssize_t lenRead = 0;
+    while (lenRemain > 0)
+    {
+        lenRead = PRT_ProxyRead(fd, buf, lenRemain);
+        if (lenRead == 0) {
+            break;
+        }
+        if (lenRead < 0) {
+            printf("READ FAIL!!, %lu, %lu, %s\n", lenRemain, lenRead, strerror(errno));
+            return lenRead;
+        }
+        if (lenRemain < lenRead) {
+            printf("READ FAIL!!!, %lu, %lu, %s\n", lenRemain, lenRead, strerror(errno));
+            lenRemain = 0;
+            break;
+        }
+        lenRemain -= (size_t)lenRead;
+        buf += lenRead;
+    }
+	return count - lenRemain;
 }
 
 ssize_t PRT_ProxyWrite(int fd, const void *buf, size_t count)
@@ -1718,6 +1748,30 @@ size_t PRT_ProxyFread(void *buffer, size_t size, size_t count, FILE *f)
     return outp.ret;
 }
 
+// 无法保证串行化
+size_t PRT_ProxyFreadLoop(void *buffer, size_t size, size_t count, FILE *f) {
+    if (size == 0) {
+        return 0;
+    }
+    size_t lenRemain = size * count;
+    size_t lenRead = 0;
+    while (lenRemain > 0)
+    {
+        lenRead = PRT_ProxyFread(buffer, 1, lenRemain, (FILE *)f);
+        if (lenRead == 0) {
+            break;
+        }
+        if (lenRemain < lenRead) {
+            printf("FREAD MORE!!!, %lu, %lu, %s\n", lenRemain, lenRead, strerror(errno));
+            lenRemain = 0;
+            break;
+        }
+        lenRemain -= lenRead;
+        buffer += lenRead;
+    }
+	return (size * count - lenRemain) / size;
+}
+
 size_t PRT_ProxyFwrite(const void *buffer, size_t size, size_t count, FILE *f)
 {
     rpc_fwrite_req_t req = {0};
@@ -1941,7 +1995,7 @@ static int __fprintf(FILE *f, const char *format, va_list list)
         return -1;
     }
     int len = vsnprintf(g_printf_buffer, PRINTF_BUFFER_LEN, format, list);
-    if (len < 0) {
+    if (len <= 0) {
         return len;
     }
 
@@ -2616,7 +2670,7 @@ getcwd_exit:
 
 #ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
-WEAK_ALIAS(PRT_ProxyRead, read);
+WEAK_ALIAS(PRT_ProxyReadLoop, read);
 WEAK_ALIAS(PRT_ProxyWrite, write);
 WEAK_ALIAS(PRT_ProxyClose, close);
 WEAK_ALIAS(PRT_ProxyLseek, lseek);
@@ -2645,7 +2699,7 @@ WEAK_ALIAS(PRT_ProxyShutdown, shutdown);
 WEAK_ALIAS(PRT_ProxySocket, socket);
 WEAK_ALIAS(PRT_ProxyFopen, fopen);
 WEAK_ALIAS(PRT_ProxyFclose, fclose);
-WEAK_ALIAS(PRT_ProxyFread, fread);
+WEAK_ALIAS(PRT_ProxyFreadLoop, fread);
 WEAK_ALIAS(PRT_ProxyFwriteLoop, fwrite);
 WEAK_ALIAS(PRT_ProxyFreopen, freopen);
 WEAK_ALIAS(PRT_ProxyFputs, fputs);

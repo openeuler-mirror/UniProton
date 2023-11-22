@@ -1,6 +1,6 @@
 diff -urN libxml2-2.9.14/CMakeLists.txt libxml2-m/CMakeLists.txt
 --- libxml2-2.9.14/CMakeLists.txt	2022-05-02 18:52:45.000000000 +0800
-+++ libxml2-m/CMakeLists.txt	2023-11-17 22:44:23.936442891 +0800
++++ libxml2-m/CMakeLists.txt	2023-11-21 19:19:30.115342279 +0800
 @@ -1,344 +1,61 @@
 -cmake_minimum_required(VERSION 3.15)
 -
@@ -818,7 +818,7 @@ diff -urN libxml2-2.9.14/CMakeLists.txt libxml2-m/CMakeLists.txt
 +install(FILES ${LIBXML2_HDRS} DESTINATION libxml2/include/libxml/)
 diff -urN libxml2-2.9.14/config.h libxml2-m/config.h
 --- libxml2-2.9.14/config.h	1970-01-01 08:00:00.000000000 +0800
-+++ libxml2-m/config.h	2023-11-17 22:44:23.946442872 +0800
++++ libxml2-m/config.h	2023-11-21 19:19:30.115342279 +0800
 @@ -0,0 +1,256 @@
 +/* config.h.  Generated from config.h.in by configure.  */
 +/* config.h.in.  Generated from configure.ac by autoheader.  */
@@ -1078,7 +1078,7 @@ diff -urN libxml2-2.9.14/config.h libxml2-m/config.h
 +/* #undef uint32_t */
 diff -urN libxml2-2.9.14/include/libxml/xmlversion.h libxml2-m/include/libxml/xmlversion.h
 --- libxml2-2.9.14/include/libxml/xmlversion.h	2022-05-02 19:42:37.000000000 +0800
-+++ libxml2-m/include/libxml/xmlversion.h	2023-11-17 22:44:23.956442853 +0800
++++ libxml2-m/include/libxml/xmlversion.h	2023-11-21 19:19:30.155342028 +0800
 @@ -50,7 +50,7 @@
   *
   * extra version information, used to show a git commit description
@@ -1180,7 +1180,25 @@ diff -urN libxml2-2.9.14/include/libxml/xmlversion.h libxml2-m/include/libxml/xm
  # endif
 diff -urN libxml2-2.9.14/runtest.c libxml2-m/runtest.c
 --- libxml2-2.9.14/runtest.c	2022-05-02 18:52:45.000000000 +0800
-+++ libxml2-m/runtest.c	2023-11-17 22:44:23.996442776 +0800
++++ libxml2-m/runtest.c	2023-11-21 19:19:30.225341590 +0800
+@@ -2772,7 +2772,7 @@
+              const char *base) {
+     char *temp;
+     FILE *o, *f;
+-    char str[1024];
++    char str[400];
+     int res = 0, i, ret;
+ 
+     temp = resultFilename(filename, temp_directory, ".res");
+@@ -3570,7 +3570,7 @@
+     xmlPatternPtr patternc = NULL;
+     xmlStreamCtxtPtr patstream = NULL;
+     FILE *o, *f;
+-    char str[1024];
++    char str[400];
+     char xml[500];
+     char result[500];
+     int len, i;
 @@ -4627,7 +4627,7 @@
  }
  
@@ -1192,7 +1210,7 @@ diff -urN libxml2-2.9.14/runtest.c libxml2-m/runtest.c
  
 diff -urN libxml2-2.9.14/testapi.c libxml2-m/testapi.c
 --- libxml2-2.9.14/testapi.c	2022-05-02 18:52:43.000000000 +0800
-+++ libxml2-m/testapi.c	2023-11-17 22:44:24.016442737 +0800
++++ libxml2-m/testapi.c	2023-11-21 19:19:30.245341465 +0800
 @@ -117,7 +117,7 @@
  
  static int quiet = 0;
@@ -1706,7 +1724,7 @@ diff -urN libxml2-2.9.14/testapi.c libxml2-m/testapi.c
          desret_int(ret_val);
 diff -urN libxml2-2.9.14/testchar.c libxml2-m/testchar.c
 --- libxml2-2.9.14/testchar.c	2022-05-02 18:52:43.000000000 +0800
-+++ libxml2-m/testchar.c	2023-11-17 22:44:24.016442737 +0800
++++ libxml2-m/testchar.c	2023-11-21 19:19:30.245341465 +0800
 @@ -584,7 +584,7 @@
      xmlFreeParserCtxt(ctxt);
  }
@@ -1718,7 +1736,7 @@ diff -urN libxml2-2.9.14/testchar.c libxml2-m/testchar.c
       * this initialize the library and check potential ABI mismatches
 diff -urN libxml2-2.9.14/testdict.c libxml2-m/testdict.c
 --- libxml2-2.9.14/testdict.c	2020-06-26 20:29:18.000000000 +0800
-+++ libxml2-m/testdict.c	2023-11-17 22:44:24.016442737 +0800
++++ libxml2-m/testdict.c	2023-11-21 19:19:30.245341465 +0800
 @@ -422,7 +422,7 @@
      return(ret);
  }
@@ -1730,7 +1748,7 @@ diff -urN libxml2-2.9.14/testdict.c libxml2-m/testdict.c
  
 diff -urN libxml2-2.9.14/testrecurse.c libxml2-m/testrecurse.c
 --- libxml2-2.9.14/testrecurse.c	2022-05-02 18:52:43.000000000 +0800
-+++ libxml2-m/testrecurse.c	2023-11-17 22:44:24.016442737 +0800
++++ libxml2-m/testrecurse.c	2023-11-21 19:19:30.245341465 +0800
 @@ -924,7 +924,7 @@
  }
  
@@ -1742,7 +1760,7 @@ diff -urN libxml2-2.9.14/testrecurse.c libxml2-m/testrecurse.c
  
 diff -urN libxml2-2.9.14/xmlmemory.c libxml2-m/xmlmemory.c
 --- libxml2-2.9.14/xmlmemory.c	2022-05-02 18:52:43.000000000 +0800
-+++ libxml2-m/xmlmemory.c	2023-11-17 22:44:24.016442737 +0800
++++ libxml2-m/xmlmemory.c	2023-11-21 19:19:30.245341465 +0800
 @@ -978,6 +978,7 @@
       xmlMemInitialized = 1;
       xmlMemMutex = xmlNewMutex();

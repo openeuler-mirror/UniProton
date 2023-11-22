@@ -14,7 +14,7 @@ static int uniproton_testdict_arg(int argc, char **argv) {
     return uniproton_testdict();
 }
 
-// int uniproton_runtest(int argc, char **argv);
+int uniproton_runtest(int argc, char **argv);
 
 typedef int (*test_fn)(int argc, char **argv);
 
@@ -34,7 +34,7 @@ typedef struct test_case {
 #define TEST_CASE_N(func) TEST_CASE(func, 1)
 
 static test_case_t g_cases[] = {
-    // TEST_CASE_Y(uniproton_runtest),
+    TEST_CASE_Y(uniproton_runtest),
     TEST_CASE_Y(uniproton_testrecurse),
     TEST_CASE_Y(uniproton_testchar_arg),
     TEST_CASE_Y(uniproton_testdict_arg),
