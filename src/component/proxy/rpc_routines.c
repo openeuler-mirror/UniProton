@@ -505,15 +505,6 @@ static void resp2outp_ftello(void *from, void *to)
     outp->ret = resp->ret;
 }
 
-static void resp2outp_setvbuf(void *from, void *to)
-{
-    rpc_setvbuf_resp_t *resp = (rpc_setvbuf_resp_t *)from;
-    rpc_setvbuf_outp_t *outp = (rpc_setvbuf_outp_t *)to;
-    if (!outp->isNullbuf) {
-        (void)memcpy_s(outp->buf, outp->size, resp->buf, outp->size);
-    }
-}
-
 void rpmsg_set_default_ept(struct rpmsg_endpoint *ept)
 {
     if (ept == NULL)
@@ -2668,6 +2659,100 @@ getcwd_exit:
     return outp.buf;
 }
 
+int PRT_ProxyFstat(int fd, struct stat *restrict statbuf)
+{
+    DEFINE_COMMON_RPC_VAR(fstat)
+
+    CHECK_INIT()
+    CHECK_ARG(statbuf == NULL, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    outp.statbuf = statbuf;
+
+    req.func_id = FSTAT_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.fd = fd;
+    RECORD_AT(slot_idx).cb = CONVERT(stat);
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+FILE *PRT_ProxyFdopen(int fd, const char *mode)
+{
+    DEFINE_COMMON_RPC_VAR(fdopen)
+    CHECK_RET_NULL(g_ept == NULL)
+    CHECK_AND_SET_ERRNO(mode == NULL, NULL, EINVAL)
+    int mlen = strlen(mode) + 1;
+    CHECK_AND_SET_ERRNO(mlen > sizeof(req.mode), NULL, EINVAL)
+    slot_idx = new_slot(&outp);
+    CHECK_AND_SET_ERRNO(slot_idx < 0, NULL, EBUSY)
+
+    req.func_id = FDOPEN_ID;
+    (void)memcpy_s(req.mode, mlen, mode, mlen);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(fcommon);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET_NULL(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return (FILE *)(outp.fhandle);
+}
+
+int PRT_ProxyFileno(FILE *f)
+{
+    DEFINE_COMMON_RPC_VAR(fileno)
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL, EINVAL)
+    fileHandle fhandle = file2handle(f);
+    if (fhandle >= STDIN_FILENO + STDFILE_BASE &&
+        fhandle <= STDERR_FILENO + STDFILE_BASE) {
+        return fhandle - STDFILE_BASE;
+    }
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    req.func_id = FILENO_ID;
+    req.fhandle = fhandle;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+int PRT_ProxySetvbuf(FILE *f, char *buf, int mode, size_t size)
+{
+    DEFINE_COMMON_RPC_VAR(setvbuf)
+    UNUSED(buf);
+    UNUSED(size);
+
+    CHECK_INIT()
+    CHECK_ARG(f == NULL || mode != _IONBF, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    req.func_id = SETVBUF_ID;
+    req.fhandle = file2handle(f);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+
+    ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
 #ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
@@ -2722,10 +2807,15 @@ WEAK_ALIAS(PRT_ProxyMkstemp, mkstemp);
 WEAK_ALIAS(PRT_ProxyGetwc, getwc);
 WEAK_ALIAS(PRT_ProxyPutwc, putwc);
 WEAK_ALIAS(PRT_ProxyPutc, putc);
+WEAK_ALIAS(PRT_ProxyPutc, fputc);
 WEAK_ALIAS(PRT_ProxyUngetwc, ungetwc);
 WEAK_ALIAS(PRT_ProxyFflush, fflush);
 WEAK_ALIAS(PRT_ProxyStat, stat);
 WEAK_ALIAS(PRT_ProxyGetcwd, getcwd);
 WEAK_ALIAS(PRT_ProxyVfprintf, vfprintf);
 WEAK_ALIAS(PRT_ProxyLstat, lstat);
+WEAK_ALIAS(PRT_ProxyFstat, fstat);
+WEAK_ALIAS(PRT_ProxyFileno, fileno);
+WEAK_ALIAS(PRT_ProxyFdopen, fdopen);
+WEAK_ALIAS(PRT_ProxySetvbuf, setvbuf);
 #endif

@@ -1374,6 +1374,57 @@ static int test_getcwd()
     return 0;
 }
 
+static int test_FILE_fs_posix8()
+{
+    char *fname = "/tmp/remote.file8";
+    char *str = "A Test string being written to file..";
+    int fd = 0;
+    int ret = 0;
+    off_t off = 0;
+    char rbuff[100];
+    struct stat statbuff = {0};
+
+    dprintf("\nUP>Creating a file on host and writing to it..\r\n");
+    fd = open(fname, REDEF_O_CREAT | REDEF_O_RDWR | REDEF_O_APPEND,
+           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        dprintf("\nUP>Open file '%s' fail, ret: %d\r\n", fname, fd);
+        return fd;
+    }
+    dprintf("\nUP>Opened file '%s' with fd = %d\r\n", fname, fd);
+
+    ret = write(fd, str, strlen(str));
+    if (ret < 0) {
+        dprintf("\nUP>write fail, ret: %d\r\n", ret);
+        goto close_file;
+    }
+
+    FILE *f = fdopen(fd, "r+");
+    if (f == NULL) {
+        dprintf("\nUP>fdopen '%s' fail, ret: %d\r\n", fname, fd);
+        ret = -1;
+        goto close_file;
+    }
+
+    ret = fstat(fd, &statbuff);
+    if (ret < 0) {
+        dprintf("\nUP>fstat failed, but get ret:%p, errstr:%s\r\n", ret, strerror(errno));
+        goto close_file;
+    }
+
+    ret = fileno(f);
+    if (ret < 0 || ret != fd) {
+        dprintf("\nUP>fileno failed, ret:%d, errstr:%s\r\n", ret, strerror(errno));
+        ret = -1;
+        goto close_file;
+    }
+
+close_file:
+    close(fd);
+    dprintf("\nUP>Closed fd = %d\r\n", fd);
+    return ret >= 0 ? 0 : -1;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1421,6 +1472,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_FILE_fs_posix5),
     TEST_CASE_Y(test_FILE_fs_posix6),
     TEST_CASE_Y(test_FILE_fs_posix7),
+    TEST_CASE_Y(test_FILE_fs_posix8),
     TEST_CASE_Y(test_getcwd),
 };
 
