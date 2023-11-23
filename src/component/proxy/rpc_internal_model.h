@@ -59,9 +59,13 @@
 #define STAT_ID           39UL
 #define GETCWD_ID         40UL
 #define LSTAT_ID          41UL
+#define FSTAT_ID          42UL
 
 #define NCPYWRITE_ID      43UL
 #define NCPYREAD_ID       44UL
+#define FDOPEN_ID         45UL
+#define FILENO_ID         46UL
+#define SETVBUF_ID        46UL
 
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
@@ -909,30 +913,6 @@ typedef rpc_common_resp_t rpc_ungetc_resp_t;
 
 typedef rpc_common_outp_t rpc_ungetc_outp_t;
 
-/* setvbuf */
-typedef struct rpc_setvbuf_req {
-    unsigned long func_id;
-    uint32_t trace_id;
-    fileHandle fhandle;
-    int type;
-    size_t size;
-    int isNullbuf;
-} rpc_setvbuf_req_t;
-
-typedef struct rpc_setvbuf_resp {
-    rpc_resp_base_t super;
-    int ret;
-    char buf[MAX_STRING_LEN];
-} rpc_setvbuf_resp_t;
-
-typedef struct rpc_setvbuf_outp {
-    rpc_outp_base_t super;
-    int ret;
-    char *buf;
-    size_t size;
-    int isNullbuf;
-} rpc_setvbuf_outp_t;
-
 /* fseeko */
 typedef struct rpc_fseeko_req {
     unsigned long func_id;
@@ -1077,4 +1057,44 @@ typedef struct rpc_getcwd_outp {
     size_t size;
 } rpc_getcwd_outp_t;
 
+/* fileno */
+typedef rpc_fcommon_req_t rpc_fileno_req_t;
+
+typedef rpc_common_resp_t rpc_fileno_resp_t;
+
+typedef rpc_common_outp_t rpc_fileno_outp_t;
+
+/* fdopen */
+typedef struct rpc_fdopen_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int fd;
+    char mode[MAX_FILE_MODE_LEN];
+} rpc_fdopen_req_t;
+
+typedef rpc_fcommon_resp_t rpc_fdopen_resp_t;
+
+typedef rpc_fcommon_outp_t rpc_fdopen_outp_t;
+
+/* fstat */
+typedef struct rpc_fstat_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int fd;
+} rpc_fstat_req_t;
+
+typedef rpc_stat_resp_t rpc_fstat_resp_t;
+
+typedef rpc_stat_outp_t rpc_fstat_outp_t;
+
+/* setvbuf */
+typedef struct rpc_setvbuf_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    fileHandle fhandle;
+} rpc_setvbuf_req_t;
+
+typedef rpc_common_resp_t rpc_setvbuf_resp_t;
+
+typedef rpc_common_outp_t rpc_setvbuf_outp_t;
 #endif  /* _RPC_INTERNAL_MODEL_H */
