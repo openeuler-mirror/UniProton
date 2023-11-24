@@ -10,29 +10,25 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Create: 2023-08-25
- * Description: shell console 适配头文件。
+ * Description: shell uart 适配实现。
  */
-#ifndef _CONSOLE_H
-#define _CONSOLE_H
+#include <unistd.h>
+#include "uart.h"
+#include "prt_task_external.h"
+#include "nuttx/arch.h"
 
-#include "prt_buildef.h"
-#ifdef OS_OPTION_NUTTX_VFS
-#include "nuttx/config.h"
-#endif
-#include "los_printf.h"
-
-#ifdef __cplusplus
-#if __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-#endif /* __cplusplus */
-
-#define SHELL_PATH "/dev/console"
-
-#ifdef __cplusplus
-#if __cplusplus
+ssize_t UartRead(int fd, void *str, ssize_t n)
+{
+    return read(fd, str, n);
 }
-#endif /* __cplusplus */
-#endif /* __cplusplus */
 
-#endif /* _CONSOLE_H */
+VOID UartPuts(const CHAR *s, UINT32 len, BOOL isLock)
+{
+    UINT32 i;
+    for (i = 0; i < len; i++) {
+        if (*(s + i) == '\n') {
+            up_putc('\r');
+        }
+        up_putc(*(s + i));
+    }
+}

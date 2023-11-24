@@ -69,6 +69,7 @@ SECTIONS
     .data : {
         *(.data)
         *(.data.*)
+        KEEP(*( SORT (.uniproton.table.*)));
         *(.tdata)
         __os_stub_data_start = .;
         *(.stub.data)

@@ -49,10 +49,10 @@ extern "C" {
 typedef BOOL (*CmdVerifyTransID)(UINT32 transId);
 
 typedef struct {
-    CmdType cmdType;
+    CmdCallBackFunc cmdHook;
     CHAR *cmdKey;
     UINT32 paraNum;
-    CmdCallBackFunc cmdHook;
+    CmdType cmdType;
 } CmdItem;
 
 typedef struct {
@@ -77,10 +77,10 @@ typedef struct {
 
 #define SHELLCMD_ENTRY(l, cmdType, cmdKey, paraNum, cmdHook)    \
     CmdItem l LOS_HAL_TABLE_ENTRY(shellcmd) = {                 \
-        cmdType,                                                \
+        cmdHook,                                                \
         (char *)cmdKey,                                         \
         paraNum,                                                \
-        cmdHook                                                 \
+        cmdType                                                 \
     }
 
 #define NEED_NEW_LINE(timesPrint, lineCap) ((timesPrint) % (lineCap) == 0)

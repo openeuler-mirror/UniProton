@@ -10,6 +10,11 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shell.h"
+#include "show.h"
+#endif
+
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
@@ -51,6 +56,35 @@ int TestOpenamp()
 }
 #endif
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+static int osShellCmdTstReg(int argc, const char **argv)
+{
+    printf("tstreg: get %d arguments\n", argc);
+    for(int i = 0; i < argc; i++) {
+        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    }
+
+    return 0;
+}
+
+void micaShellInit()
+{
+    int ret = OsShellInit(0);
+    ShellCB *shellCB = OsGetShellCB();
+    if (ret != 0 || shellCB == NULL) {
+        printf("shell init fail\n");
+        return;
+    }
+    (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
+    if (ret == 0) {
+        printf("[INFO]: reg cmd 'tstreg' successed!\n");
+    } else {
+        printf("[INFO]: reg cmd 'tstreg' failed!\n");
+    }
+}
+#endif
+
 #if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
 int xml2_test_entry();
 #endif
@@ -61,6 +95,10 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
+#endif
 
 #if defined(OS_SUPPORT_ETHERCAT)
     ethercat_init();

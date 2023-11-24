@@ -699,8 +699,9 @@ LITE_OS_SEC_TEXT_MINOR VOID OsShellHistoryShow(UINT32 value, ShellCB *shellCB)
     CmdKeyLink *cmdNode = shellCB->cmdHistoryKeyLink;
     CmdKeyLink *cmdMask = shellCB->cmdMaskKeyLink;
     errno_t ret;
-
+#ifndef LOSCFG_SHELL_MICA_INPUT
     (VOID)pthread_mutex_lock(&shellCB->historyMutex);
+#endif
     if (value == CMD_KEY_DOWN) {
         if (cmdMask == cmdNode) {
             goto END;
@@ -735,7 +736,9 @@ LITE_OS_SEC_TEXT_MINOR VOID OsShellHistoryShow(UINT32 value, ShellCB *shellCB)
     shellCB->cmdMaskKeyLink = (VOID *)cmdMask;
 
 END:
+#ifndef LOSCFG_SHELL_MICA_INPUT
     (VOID)pthread_mutex_unlock(&shellCB->historyMutex);
+#endif
     return;
 }
 

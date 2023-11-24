@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C CXX ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set(OUTPUT_PATH ${HOME_PATH}/output)
 
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-g++)
@@ -37,6 +38,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
     ${HOME_PATH}/output/libc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/cplusplus/boost_1_54_0
+    ${OUTPUT_PATH}/shell/include/
+    ${OUTPUT_PATH}/shell/adapter/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
