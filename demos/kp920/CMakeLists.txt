@@ -31,6 +31,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/arch/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/utility/lib/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/drivers/pcie
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
