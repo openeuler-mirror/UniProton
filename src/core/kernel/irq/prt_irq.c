@@ -210,7 +210,7 @@ OS_SEC_L4_TEXT U32 PRT_HwiSetAttr(HwiHandle hwiNum, HwiPrior hwiPrio, HwiMode mo
     }
 #endif
 
-#if defined(OS_OPTION_HWI_PRIORITY)
+#if defined(OS_OPTION_HWI_PRIORITY) && (OS_GIC_VER == 3)
     if (OsHwiPriorityGet(hwiNum) != hwiPrio) {
         OsHwiPrioritySet(hwiNum, hwiPrio);
     }
