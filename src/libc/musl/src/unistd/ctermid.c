@@ -3,5 +3,5 @@
 
 char *ctermid(char *s)
 {
-	return s ? strcpy(s, "/dev/tty") : "/dev/tty";
+    return s ? strcpy(s, "/dev/tty") : "/dev/tty";
 }

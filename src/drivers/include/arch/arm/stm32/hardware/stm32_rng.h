@@ -59,4 +59,4 @@
 #define RNG_SR_CEIS               (1 << 5) /* Bit 5: Clock error interrupt status */
 #define RNG_SR_SEIS               (1 << 6) /* Bit 6: Seed error interrupt status */
 
-#endif	/* __ARCH_ARM_SRC_STM32_HARDWARE_STM32_RNG_H */
+#endif    /* __ARCH_ARM_SRC_STM32_HARDWARE_STM32_RNG_H */

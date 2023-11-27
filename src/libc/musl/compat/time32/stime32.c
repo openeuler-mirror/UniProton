@@ -4,5 +4,5 @@
 
 int __stime32(const time32_t *t)
 {
-	return stime(&(time_t){*t});
+    return stime(&(time_t){*t});
 }

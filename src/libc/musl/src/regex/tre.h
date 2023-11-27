@@ -44,7 +44,7 @@ typedef wchar_t tre_char_t;
 
 #define DPRINT(msg) do { } while(0)
 
-#define elementsof(x)	( sizeof(x) / sizeof(x[0]) )
+#define elementsof(x)    ( sizeof(x) / sizeof(x[0]) )
 
 #define tre_mbrtowc(pwc, s, n, ps) (mbtowc((pwc), (s), (n)))
 
@@ -115,16 +115,16 @@ struct tnfa_transition {
 
 
 /* Assertions. */
-#define ASSERT_AT_BOL		  1   /* Beginning of line. */
-#define ASSERT_AT_EOL		  2   /* End of line. */
-#define ASSERT_CHAR_CLASS	  4   /* Character class in `class'. */
-#define ASSERT_CHAR_CLASS_NEG	  8   /* Character classes in `neg_classes'. */
-#define ASSERT_AT_BOW		 16   /* Beginning of word. */
-#define ASSERT_AT_EOW		 32   /* End of word. */
-#define ASSERT_AT_WB		 64   /* Word boundary. */
-#define ASSERT_AT_WB_NEG	128   /* Not a word boundary. */
-#define ASSERT_BACKREF		256   /* A back reference in `backref'. */
-#define ASSERT_LAST		256
+#define ASSERT_AT_BOL          1   /* Beginning of line. */
+#define ASSERT_AT_EOL          2   /* End of line. */
+#define ASSERT_CHAR_CLASS      4   /* Character class in `class'. */
+#define ASSERT_CHAR_CLASS_NEG      8   /* Character classes in `neg_classes'. */
+#define ASSERT_AT_BOW         16   /* Beginning of word. */
+#define ASSERT_AT_EOW         32   /* End of word. */
+#define ASSERT_AT_WB         64   /* Word boundary. */
+#define ASSERT_AT_WB_NEG    128   /* Not a word boundary. */
+#define ASSERT_BACKREF        256   /* A back reference in `backref'. */
+#define ASSERT_LAST        256
 
 /* Tag directions. */
 typedef enum {
@@ -214,9 +214,9 @@ hidden void *tre_mem_alloc_impl(tre_mem_t mem, int provided, void *provided_bloc
 #define tre_mem_newa() \
   tre_mem_new_impl(1, alloca(sizeof(struct tre_mem_struct)))
 
-#define tre_mem_alloca(mem, size)					      \
-  ((mem)->n >= (size)							      \
-   ? tre_mem_alloc_impl((mem), 1, NULL, 0, (size))			      \
+#define tre_mem_alloca(mem, size)                          \
+  ((mem)->n >= (size)                                  \
+   ? tre_mem_alloc_impl((mem), 1, NULL, 0, (size))                  \
    : tre_mem_alloc_impl((mem), 1, alloca(TRE_MEM_BLOCK_SIZE), 0, (size)))
 #endif /* TRE_USE_ALLOCA */
 

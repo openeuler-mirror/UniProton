@@ -6,8 +6,8 @@
 
 int fstat(int fd, struct stat *st)
 {
-	if (fd<0) return __syscall_ret(-EBADF);
-	return fstatat(fd, "", st, AT_EMPTY_PATH);
+    if (fd<0) return __syscall_ret(-EBADF);
+    return fstatat(fd, "", st, AT_EMPTY_PATH);
 }
 
 #if !_REDIR_TIME64

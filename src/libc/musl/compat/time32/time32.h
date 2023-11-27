@@ -6,23 +6,23 @@
 typedef long time32_t;
 
 struct timeval32 {
-	long tv_sec;
-	long tv_usec;
+    long tv_sec;
+    long tv_usec;
 };
 
 struct itimerval32 {
-	struct timeval32 it_interval;
-	struct timeval32 it_value;
+    struct timeval32 it_interval;
+    struct timeval32 it_value;
 };
 
 struct timespec32 {
-	long tv_sec;
-	long tv_nsec;
+    long tv_sec;
+    long tv_nsec;
 };
 
 struct itimerspec32 {
-	struct timespec32 it_interval;
-	struct timespec32 it_value;
+    struct timespec32 it_interval;
+    struct timespec32 it_value;
 };
 
 int __adjtime32() __asm__("adjtime");

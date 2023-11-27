@@ -3,5 +3,5 @@
 
 pid_t setsid(void)
 {
-	return syscall(SYS_setsid);
+    return syscall(SYS_setsid);
 }

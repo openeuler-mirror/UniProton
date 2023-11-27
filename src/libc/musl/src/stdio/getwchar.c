@@ -3,7 +3,7 @@
 
 wint_t getwchar(void)
 {
-	return fgetwc(stdin);
+    return fgetwc(stdin);
 }
 
 weak_alias(getwchar, getwchar_unlocked);

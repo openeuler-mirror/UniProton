@@ -3,5 +3,5 @@
 
 int getchar(void)
 {
-	return do_getc(stdin);
+    return do_getc(stdin);
 }

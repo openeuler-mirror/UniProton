@@ -3,5 +3,5 @@
 
 int sched_yield()
 {
-	return syscall(SYS_sched_yield);
+    return syscall(SYS_sched_yield);
 }

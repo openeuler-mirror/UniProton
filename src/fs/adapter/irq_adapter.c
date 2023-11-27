@@ -2,7 +2,7 @@
 #include "prt_irq_internal.h"
 
 #define OS_NXAL_IRQ_2_PTR(irq) ((irq) - OS_MX_SYS_VECTOR_CNT)
-#define HWI_DEFAULT_PRIOR	1
+#define HWI_DEFAULT_PRIOR    1
 
 int irq_attach(int irq, xcpt_t isr, FAR void *arg)
 {

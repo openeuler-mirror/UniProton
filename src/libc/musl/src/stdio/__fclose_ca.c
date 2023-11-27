@@ -2,5 +2,5 @@
 
 int __fclose_ca(FILE *f)
 {
-	return f->close(f);
+    return f->close(f);
 }

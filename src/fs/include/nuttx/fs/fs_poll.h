@@ -29,7 +29,7 @@ typedef uint32_t pollevent_t;
 typedef void (*pollcb_t)(struct __pollfd *fds);
 
 struct __pollfd {
-	struct pollfd pollfd;
+    struct pollfd pollfd;
 
     void        *arg;       /* The poll callback function argument */
     pollcb_t    cb;         /* The poll callback function */

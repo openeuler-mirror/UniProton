@@ -3,5 +3,5 @@
 
 void setlinebuf(FILE *f)
 {
-	setvbuf(f, 0, _IOLBF, 0);
+    setvbuf(f, 0, _IOLBF, 0);
 }

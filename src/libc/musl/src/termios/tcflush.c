@@ -3,5 +3,5 @@
 
 int tcflush(int fd, int queue)
 {
-	return ioctl(fd, TCFLSH, queue);
+    return ioctl(fd, TCFLSH, queue);
 }

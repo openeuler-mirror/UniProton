@@ -87,7 +87,7 @@ tre_mem_destroy(tre_mem_t mem)
    allocated block or NULL if an underlying malloc() failed. */
 void *
 tre_mem_alloc_impl(tre_mem_t mem, int provided, void *provided_block,
-		   int zero, size_t size)
+           int zero, size_t size)
 {
   void *ptr;
 
@@ -99,47 +99,47 @@ tre_mem_alloc_impl(tre_mem_t mem, int provided, void *provided_block,
   if (mem->n < size)
     {
       /* We need more memory than is available in the current block.
-	 Allocate a new block. */
+     Allocate a new block. */
       tre_list_t *l;
       if (provided)
-	{
-	  if (provided_block == NULL)
-	    {
-	      mem->failed = 1;
-	      return NULL;
-	    }
-	  mem->ptr = provided_block;
-	  mem->n = TRE_MEM_BLOCK_SIZE;
-	}
+    {
+      if (provided_block == NULL)
+        {
+          mem->failed = 1;
+          return NULL;
+        }
+      mem->ptr = provided_block;
+      mem->n = TRE_MEM_BLOCK_SIZE;
+    }
       else
-	{
-	  int block_size;
-	  if (size * 8 > TRE_MEM_BLOCK_SIZE)
-	    block_size = size * 8;
-	  else
-	    block_size = TRE_MEM_BLOCK_SIZE;
-	  l = xmalloc(sizeof(*l));
-	  if (l == NULL)
-	    {
-	      mem->failed = 1;
-	      return NULL;
-	    }
-	  l->data = xmalloc(block_size);
-	  if (l->data == NULL)
-	    {
-	      xfree(l);
-	      mem->failed = 1;
-	      return NULL;
-	    }
-	  l->next = NULL;
-	  if (mem->current != NULL)
-	    mem->current->next = l;
-	  if (mem->blocks == NULL)
-	    mem->blocks = l;
-	  mem->current = l;
-	  mem->ptr = l->data;
-	  mem->n = block_size;
-	}
+    {
+      int block_size;
+      if (size * 8 > TRE_MEM_BLOCK_SIZE)
+        block_size = size * 8;
+      else
+        block_size = TRE_MEM_BLOCK_SIZE;
+      l = xmalloc(sizeof(*l));
+      if (l == NULL)
+        {
+          mem->failed = 1;
+          return NULL;
+        }
+      l->data = xmalloc(block_size);
+      if (l->data == NULL)
+        {
+          xfree(l);
+          mem->failed = 1;
+          return NULL;
+        }
+      l->next = NULL;
+      if (mem->current != NULL)
+        mem->current->next = l;
+      if (mem->blocks == NULL)
+        mem->blocks = l;
+      mem->current = l;
+      mem->ptr = l->data;
+      mem->n = block_size;
+    }
     }
 
   /* Make sure the next pointer will be aligned. */

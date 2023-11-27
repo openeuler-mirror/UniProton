@@ -2,5 +2,5 @@
 
 double atof(const char *s)
 {
-	return strtod(s, 0);
+    return strtod(s, 0);
 }

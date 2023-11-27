@@ -6,6 +6,6 @@
 
 char *gcvt(double x, int n, char *b)
 {
-	sprintf(b, "%.*g", n, x);
-	return b;
+    sprintf(b, "%.*g", n, x);
+    return b;
 }

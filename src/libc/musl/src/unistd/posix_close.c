@@ -2,5 +2,5 @@
 
 int posix_close(int fd, int flags)
 {
-	return close(fd);
+    return close(fd);
 }

@@ -3,5 +3,5 @@
 
 int putw(int x, FILE *f)
 {
-	return (int)fwrite(&x, sizeof x, 1, f)-1;
+    return (int)fwrite(&x, sizeof x, 1, f)-1;
 }
