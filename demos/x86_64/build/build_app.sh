@@ -36,13 +36,14 @@ function build()
 
     cp ./$TMP_DIR/$APP $APP.elf
 
-    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objcopy -O binary ./$APP.elf $APP.bin
-    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objdump -S ./$APP.elf > $APP.asm
-
     if [ "${APP}" == "cxxTest" ]
     then
         python ./bin_helper.py -f ./$APP.elf --nocopy
     fi
+
+    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objcopy -O binary ./$APP.elf $APP.bin
+    $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objdump -S ./$APP.elf > $APP.asm
+
     rm -rf $TMP_DIR
 }
 
