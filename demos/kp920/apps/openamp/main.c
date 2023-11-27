@@ -22,6 +22,12 @@ extern U64 g_timerFrequency;
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
+void kthreadTest(void);
+void schedTest(void);
+void waitTest(void);
+#endif
+
 #if defined(OS_OPTION_PCIE)
 extern void test_pcie_demo(void);
 #endif
@@ -56,6 +62,13 @@ void TestTaskEntry()
     for (int i = 0; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
     }
+
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
+    kthreadTest();
+    schedTest();
+    waitTest();
+#endif
+
 #if defined(OS_OPTION_PCIE)
     test_pcie_demo(); /* 依赖openamp实现的代理bash，放在TestOpenamp之后 */
 #endif
