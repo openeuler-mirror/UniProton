@@ -1,7 +1,7 @@
 #include "shm_pub.h"
 #include "test.h"
 
-int uniproton_shm_send_ipi(int fd, struct cpu_info info)
+int uniproton_shm_send_ipi(struct cpu_info info)
 {
     unsigned int vmId = info.vmId;
     unsigned int ret = 0;
@@ -13,9 +13,6 @@ int uniproton_shm_send_ipi(int fd, struct cpu_info info)
                  : [result]"=r"(ret) : [vmid]"r"(vmId) : "x0");
     if (ret != 0) {
         PRT_Printf("send ipi to vm(%u) fail\n", vmId);
-        return -1;
-    } else {
-        PRT_Printf("send ipi to vm(%u) \n", vmId);
     }
     return 0;
 }

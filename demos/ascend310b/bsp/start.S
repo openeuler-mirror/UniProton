@@ -9,7 +9,7 @@
     .type     start, function
     .section  .text.bspinit, "ax"
     .balign   4
-    
+
 #define HCR_EL2_FMO         (1 << 3)
 #define HCR_EL2_IMO         (1 << 4)
 #define HCR_EL2_AMO         (1 << 5)
@@ -45,11 +45,11 @@ OsEl2Entry:
     MRS    x1, MPIDR_EL1
     MSR    VPIDR_EL2, x10
     MSR    VMPIDR_EL2, x1
-    
+
     MOV    x10, #0x33ff
     MSR    CPTR_EL2, x10
     MSR    HSTR_EL2, xzr
-    
+
     MOV    x10, #(HCR_EL2_RW)
     ORR    x10, x10, #(HCR_EL2_HCD)
     BIC    x10, x10, #(HCR_EL2_TVM)
@@ -60,25 +60,25 @@ OsEl2Entry:
     BIC    x10, x10, #(HCR_EL2_FMO)
     BIC    x10, x10, #(HCR_EL2_TWI)
     BIC    x10, x10, #(HCR_EL2_TWE)
-    
+
     MSR    HCR_EL2, x10
-    
+
 OsEl2SwitchToEl1:
     ADR    x0, Start
     MSR    SP_EL1, XZR
     MSR    ELR_EL2, x0
     MOV    x0, XZR
-    
+
     LDR    x20, =(SPSR_DBG_MASK | SPSR_SERR_MASK | \
                   SPSR_IRQ_MASK | SPSR_FIQ_MASK | SPSR_M_EL1H)
     MSR    SPSR_EL2, x20
-    
+
     TLBI   ALLE1IS
     IC     IALLU
     DSB    SY
     ISB
     ERET
-    
+
 Start:
     LDR    x1, =__os_sys_sp_end
     BIC    sp, x1, #0xf
@@ -101,6 +101,6 @@ Start:
 
 OsEnterReset:
     B      OsEnterReset
-    
+
     .section .text, "ax"
     .balign 4
