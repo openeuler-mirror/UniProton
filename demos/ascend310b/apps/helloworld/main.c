@@ -20,7 +20,7 @@ void TestTaskEntry()
     U64 n = 0;
     while (1) {
         n++;
-        PRT_TaskDelay(OS_TICK_PER_SECOND * 10);
+        PRT_TaskDelay(OS_TICK_PER_SECOND * 10); // 每10秒触发一次打印
         PRT_Printf("[uniproton] test [%llu]\n", n);
     }
     return;

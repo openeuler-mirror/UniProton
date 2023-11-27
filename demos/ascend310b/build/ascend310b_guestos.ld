@@ -5,7 +5,7 @@ _heap_size = 0x10000;
 
 MEMORY
 {
-    IMU_SRAM (rwx) : ORIGIN = 0x2BA00000, LENGTH = 0x300000
+    IMU_SRAM (rwx) : ORIGIN = 0x2B000000, LENGTH = 0x1000000
 }
 
 SECTIONS
@@ -62,10 +62,10 @@ SECTIONS
 
     .stack (NOLOAD) :
     {
-        . = ALIGN(8);
+        . = ALIGN(16);
         PROVIDE (__os_sys_sp_start = .);
         . = . + _stack_size;
-        . = ALIGN(8);
+        . = ALIGN(16);
         PROVIDE (__os_sys_sp_end = .);
     } > IMU_SRAM
     end = .;

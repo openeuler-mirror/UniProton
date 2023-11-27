@@ -5,8 +5,8 @@
 #include "uniproton_shm_demo.h"
 
 #define SHM_IPI_NUM 10
-#define SHM_RD_ADDR 0x2BE00000
-#define SHM_WR_ADDR 0x2BF00000
+#define SHM_RD_ADDR 0x2A800000
+#define SHM_WR_ADDR 0x2AC00000
 #define IPI_TARGET 0
 
 void ShmSendEntry()
@@ -23,13 +23,13 @@ void ShmSendEntry()
     }
 
     /* 字符串发送测试 */
-    char str[] = "Hello open euler";
+    char str[] = "Hello openEuler";
     shm_write(str, sizeof(str), 1, shm_wr, IPI_TARGET);
     PRT_Printf("[uniproton] write string: %s\n", str);
     PRT_TaskDelay(OS_TICK_PER_SECOND);
 
     /* 通信响应测试 */
-    while(1) {
+    while (1) {
         shm_wr->used_size = sizeof(unsigned long long);
         shm_wr->resevered = 2;
         shm_wr->op_type = SHM_OP_READY_TO_READ;
@@ -66,7 +66,7 @@ U32 TestShmSend(void)
     return OS_OK;
 }
 
-char buf[0x2100] = {0};
+char g_buf[0x2100] = {0};
 void IpiHandle(uintptr_t para)
 {
     shm_info_s *shm_rd = (shm_info_s *)SHM_RD_ADDR;
@@ -81,13 +81,13 @@ void IpiHandle(uintptr_t para)
     switch (shm_rd->resevered) {
         case 0:
             /* 整数读取测试 */
-            shm_read(shm_rd, buf, sizeof(buf));
-            PRT_Printf("[uniproton]read from shm: %d\n", *(int *)buf);
+            shm_read(shm_rd, g_buf, sizeof(g_buf));
+            PRT_Printf("[uniproton]read from shm: %d\n", *(int *)g_buf);
             break;
         case 1:
             /* 字符串读取测试 */
-            shm_read(shm_rd, buf, sizeof(buf));
-            PRT_Printf("[uniproton]read len: 0x%lx, st: %s\n", shm_rd->used_size, buf);
+            shm_read(shm_rd, g_buf, sizeof(g_buf));
+            PRT_Printf("[uniproton]read len: 0x%lx, st: %s\n", shm_rd->used_size, g_buf);
             break;
         case 2:
             /* 通信响应测试 */

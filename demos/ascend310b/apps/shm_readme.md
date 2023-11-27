@@ -8,17 +8,17 @@
 
 `fusiondock`在物理地址上注册了两块共享内存区域。
 
-第一块区域的起始物理地址为0x2BE00000，长度当前为0x100000，根据需要可定制。
+第一块区域的起始物理地址为0x2A800000，长度当前为0x400000，根据需要可定制。
 
-第二块区域的起始物理地址为0x2BF00000，长度当前为0x100000，根据需要可定制。
+第二块区域的起始物理地址为0x2AC00000，长度当前为0x400000，根据需要可定制。
 
-使用两块共享内存，可以实现全双工的首发操作。一块共享内存用于VM0写入，VM1读取，一块用于VM0读取，VM1写入。权限当前为两个VM均开放读写，具体使用方式由客户端自行定义。
+使用两块共享内存，可以实现全双工的首发操作。一块共享内存用于VM0写入，VM1读取，一块用于VM0读取，VM1写入。权限当前为两个VM均开放读写，具体使用方式由用户端自行定义。
 
 ## 共享内存基本使用
 
-虚拟化底座本身完成了对共享内存的分配和映射，在VM上面可以直接访问该内存区域。`uniproton`侧可以通过物理地址的方式直接访问，Open Euler-rt`侧则需要通过文件系统功能访问物理内存。两类VM的操作方式demo详见后文描述。
+虚拟化底座本身完成了对共享内存的分配和映射，在VM上面可以直接访问该内存区域。`UniProton`侧可以通过物理地址的方式直接访问，Open Euler-rt`侧则需要通过文件系统功能访问物理内存。两类VM的操作方式demo详见后文描述。
 
-理论上讲，客户可以根据自身需要，直接操作内存实现业务功能。不过为了尽量减少一些问题，底座提供了一套用于共享内存访问和操作的头文件、和功能函数定义。
+理论上讲，用户可以根据自身需要，直接操作内存实现业务功能。不过为了尽量减少一些问题，底座提供了一套用于共享内存访问和操作的头文件、和功能函数定义。
 
 ## 公共头文件和功能函数
 
@@ -54,35 +54,35 @@ int shm_read(shm_info_s *shm, void *data, unsigned int len); // 读共享内存�
 通过函数`shm_write`可以将本地内存内容写入共享内存，`shm_read`可以将共享内存的数据读取到本地内存。如果若将一个整数写入共享内存，并在vm1读取，可以采用如下方法。
 
 ```c
-// VM0写入，VM0该共享内存地址映射为0x2BF00000
+// VM0写入，VM0该共享内存地址映射为0x2AC00000
 int i = 999;
-shm_info_s *shm_write = (shm_info_s *)0x2BF00000;
+shm_info_s *shm_write = (shm_info_s *)0x2AC00000;
 shm_write(&i, sizeof(i), 0, shm_write, 1); // 第三个参数当前用来与读取方对应数据的处理方式，即0号方式；第五个参数通知给VM1
 
-// VM1读取，VM1该共享内存地址映射为0x2BF00000
+// VM1读取，VM1该共享内存地址映射为0x2AC00000
 char buf[0x20]; // buf长度由业务自行把握。如果超出要读取数据的长度会报错
-shm_info_s *shm_read = (shm_info_s *)0x2BF00000;
+shm_info_s *shm_read = (shm_info_s *)0x2AC00000;
 if (shm_read(shm_read, buf, sizeof(buf) < 0) {
     /* 读取异常 */
     return -1;
 }
-if (shm_read->resevered == 0) {                    
+if (shm_read->resevered == 0) {
     int i = *(int *)buf;
 }
 ```
 
 
-## `Uniproton`端共享内存的操作
+## `UniProton`端共享内存的操作
 
 参考代码`uniproton_shm_demo.c`和`uniproton_shmIpi.c`，实现依赖公共文件`shm_pub.h`和`shm_pub.c`。
 
 ### 访问方式
 
-由于`uniproton`未使用2阶段页表翻译，可以直接访问IPA。因此由`fusiondock`注册给`uniproton`的共享内存地址可以直接在`uniproton`使用。
+由于`UniProton`未使用2阶段页表翻译，可以直接访问IPA。因此由`fusiondock`注册给`UniProton`的共享内存地址可以直接在`UniProton`使用。
 
 ```c
-#define SHM_RD_ADDR 0x2BE00000
-#define SHM_WR_ADDR 0x2BF00000
+#define SHM_RD_ADDR 0x2A800000
+#define SHM_WR_ADDR 0x2AC00000
 ```
 
 创建共享内存的访问结构体`shm_info_s`直接指向该内存地址，即可进行共享内存的访问。
@@ -99,14 +99,14 @@ shm_info_s *shm_wr = (shm_info_s *)SHM_WR_ADDR;
     int tmp = 8080808;
     for (int i = 0; i < 10; i++) {
         shm_write(&tmp, sizeof(tmp), 0, shm_wr, IPI_TARGET);
-        PRT_Printf("[uniproton] write to shm int: %d\n", tmp--);
+        PRT_Printf("[UniProton] write to shm int: %d\n", tmp--);
         PRT_TaskDelay(OS_TICK_PER_SECOND);
     }
 
     /* 字符串发送测试 */
-    char str[] = "Hello open euler";
+    char str[] = "Hello openEuler";
     shm_write(str, sizeof(str), 1, shm_wr, IPI_TARGET);
-    PRT_Printf("[uniproton] write to shm string: %s\n", str);
+    PRT_Printf("[UniProton] write to shm string: %s\n", str);
     PRT_TaskDelay(OS_TICK_PER_SECOND);
 
 ...
@@ -115,12 +115,12 @@ shm_info_s *shm_wr = (shm_info_s *)SHM_WR_ADDR;
         case 0:
             /* 整数读取测试 */
             shm_read(shm_rd, buf, sizeof(buf));
-            PRT_Printf("[uniproton]read from shm: %d\n", *(int *)buf);
+            PRT_Printf("[UniProton]read from shm: %d\n", *(int *)buf);
             break;
         case 1:
             /* 字符串读取测试 */
             shm_read(shm_rd, buf, sizeof(buf));
-            PRT_Printf("[uniproton]read len: 0x%lx, st: %s\n", shm_rd->used_size, buf);
+            PRT_Printf("[UniProton]read len: 0x%lx, st: %s\n", shm_rd->used_size, buf);
             break;
         case ...
     }
@@ -136,12 +136,11 @@ shm_wr->op_type = SHM_OP_READY_TO_READ;
 asm volatile ("mrs %0, CNTPCT_EL0\n" : "=r" (t));
 *(unsigned long long *)shm_wr->data = t;
 shm_send_ipi(IPI_TARGET);
-PRT_TaskDelay(OS_TICK_PER_SECOND * 5);
 ```
 
 
 
-## Open Euler-rt端共享内存的操作
+## openEuler-rt端共享内存的操作
 
 参考代码`linux_shm_demo.c`、`linux_shmIpi.c`，实现依赖公共文件`shm_pub.h`和`shm_pub.c`。
 
@@ -151,11 +150,11 @@ PRT_TaskDelay(OS_TICK_PER_SECOND * 5);
 
 ### 访问方式
 
-`Open Euler-rt`需要通过设备文件的方式来访问到物理内存。具体操作方式如下：
+`openEuler-rt`需要通过设备文件的方式来访问到物理内存。具体操作方式如下：
 
 ```c
-#define SHM_WR_ADDR 0x2BE00000
-#define SHM_RD_ADDR 0x2BF00000
+#define SHM_WR_ADDR 0x2A800000
+#define SHM_RD_ADDR 0x2AC00000
 
 int fd = open ("/dev/mem", O_RDWR | O_SYNC);
 if (fd == -1) {
@@ -186,7 +185,7 @@ if (r_mem == 0) {
 
 通过上述文件系统和`mmap`的方式，即可获得两块共享内存的访问指针。
 
-通过这两个访问指针，强转为共享内存信息结构体，即可使用公共接口实现共享内存访问，与`uniproton`侧类似，不再赘述。
+通过这两个访问指针，强转为共享内存信息结构体，即可使用公共接口实现共享内存访问，与`UniProton`侧类似，不再赘述。
 
 ```c
 shm_info_s *shm = (shm_info_s *)arg;
