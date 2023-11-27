@@ -253,6 +253,7 @@ struct pci_dev *pci_dev_create_by_bdf(uint32_t bdf)
         return NULL;
     }
 
+    (void)memset_s(pdev, sizeof(struct pci_dev), 0, sizeof(struct pci_dev));
     pcie_device_cfg_read_halfword(bdf, PCI_VENDOR_ID, &(pdev->vendor));
     pcie_device_cfg_read_halfword(bdf, PCI_DEVICE_ID, &(pdev->device));
     pcie_device_cfg_read_halfword(bdf, PCI_SUBSYSTEM_VENDOR_ID, &(pdev->subsystem_vendor));
@@ -359,6 +360,82 @@ int pci_irq_vector(struct pci_dev *dev, int i)
 }
 
 void pci_free_irq_vectors(struct pci_dev *dev)
+{
+    return;
+}
+
+int dma_info_get(struct pci_dev *dev)
+{
+    char result_buf[0x100];
+    char cmdline[0x100];
+    int ret;
+    char *ptr;
+    char *endptr;
+    unsigned long long addr;
+
+    if (dev->dma_size > 0) {
+        return OS_OK;
+    }
+
+    sprintf(cmdline, "ls %s%04x/dma/", UNIPROTON_NODE_PATH, dev->bdf);
+    ret = proxybash_exec_lock(cmdline, result_buf, sizeof(result_buf));
+    if (ret < 0) {
+        PCIE_DBG_PRINTF("proxybash_exec_lock ret:%x", ret);
+        return NULL;
+    }
+    PCIE_DBG_PRINTF("%s result:%s\r\n", cmdline, result_buf);
+
+    ptr = strstr(result_buf, "dma_va_");
+    if (ptr == NULL) {
+        PCIE_DBG_PRINTF("strstr find dma_va failed!\r\n");
+        return OS_FAIL;
+    }
+    ptr += strlen("dma_va_");
+    dev->dma_iova = (dma_addr_t)strtoull(ptr, &endptr, 10);
+
+    ptr = strstr(result_buf, "dma_pa_");
+    if (ptr == NULL) {
+        PCIE_DBG_PRINTF("strstr find dma_pa failed!\r\n");
+        return OS_FAIL;
+    }
+    ptr += strlen("dma_pa_");
+    dev->dma_pa = (phys_addr_t)strtoull(ptr, &endptr, 10);
+
+    ptr = strstr(result_buf, "dma_sz_");
+    if (ptr == NULL) {
+        PCIE_DBG_PRINTF("strstr find dma_sz failed!\r\n");
+        return OS_FAIL;
+    }
+    ptr += strlen("dma_sz_");
+    dev->dma_size = (size_t)strtoull(ptr, &endptr, 10);
+
+    dev->dma_used_size = 0;
+    return OS_OK;
+}
+
+void *dma_alloc_coherent(struct pci_dev *dev, size_t size, dma_addr_t *dma_handle, gfp_t gfp)
+{
+    int ret;
+    phys_addr_t pa;
+    (void)gfp;
+
+    ret = dma_info_get(dev);
+    if (ret != OS_OK) {
+        return NULL;
+    }
+
+    if ((dev->dma_size) < (dev->dma_used_size + size)) {
+        return NULL;
+    }
+
+    *dma_handle = dev->dma_iova + dev->dma_used_size;
+    pa = dev->dma_pa + dev->dma_used_size;
+    dev->dma_used_size += size;
+
+    return (void*)pa;
+}
+
+void dma_free_coherent(struct pci_dev *dev, size_t size, void *cpu_addr, dma_addr_t dma_handle)
 {
     return;
 }

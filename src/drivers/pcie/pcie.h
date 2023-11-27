@@ -92,6 +92,10 @@ static inline void list_del(struct list_head *entry)
 	entry->prev = (struct list_head*)LIST_POISON2;
 }
 
+typedef U64 dma_addr_t;
+typedef U64 phys_addr_t;
+typedef U32 gfp_t;
+
 struct pci_driver;
 
 #define PCI_BDF(b, d, f) ((((b) & 0xff) << 8) | (((d) & 0x1f) << 3) | ((f) & 0x7))
@@ -149,6 +153,10 @@ struct pci_dev {
     uint8_t revision;
     bool msi_enabled;
     struct resource resource[DEVICE_COUNT_RESOURCE]; /* I/O and memory regions */
+    dma_addr_t dma_iova;
+    phys_addr_t dma_pa;
+    size_t dma_size;
+    size_t dma_used_size;
 };
 
 struct pci_device_id {
@@ -182,6 +190,9 @@ int pci_disable_device(struct pci_dev *dev);
 void pci_set_master(struct pci_dev *dev);
 int pci_request_regions(struct pci_dev *pdev, const char *res_name);
 void pci_release_regions(struct pci_dev *pdev);
+
+void *dma_alloc_coherent(struct pci_dev *dev, size_t size, dma_addr_t *dma_handle, gfp_t gfp);
+void dma_free_coherent(struct pci_dev *dev, size_t size, void *cpu_addr, dma_addr_t dma_handle);
 
 #define pci_resource_start(dev, bar)    ((dev)->resource[(bar)].start)
 #define pci_resource_end(dev, bar)      ((dev)->resource[(bar)].end)

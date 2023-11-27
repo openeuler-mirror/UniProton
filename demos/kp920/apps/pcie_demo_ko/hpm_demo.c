@@ -10,6 +10,9 @@
 #include <linux/umh.h>
 #include "hpm_node.h"
 
+#define MMU_DMA_ADDR    0x202780100000ULL
+#define MMU_DMA_LENGTH  0x200000
+
 const char g_hpm_driver_name[] = "huawei_pci_model";
 
 static struct pci_device_id hpm_pci_tbl[] = {
@@ -26,6 +29,10 @@ typedef struct hpm_s {
     unsigned long bar0_len;
     void __iomem *bar2;
     unsigned long bar2_len;
+    phys_addr_t dma_pa; /* dma 物理地址 */
+    dma_addr_t  dma_iova; /* dma io虚拟地址 */
+    void *      dma_va; /* dma 虚拟地址 */
+    size_t      dma_size;
 } hpm_t;
 
 static irqreturn_t irq_handler_func(int irq, void *irq_instance)
@@ -102,6 +109,8 @@ static int hpm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
         goto err_dma;
     }
 
+    pci_set_drvdata(pdev, &(g_hpm_data[g_hpm_num]));
+
     /* 打印设备的BAR地址和大小 */
     bar_addr = (u8 __iomem *)pci_resource_start(pdev, 0);
     bar_size = pci_resource_len(pdev, 0);
@@ -148,21 +157,34 @@ static int hpm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
         printk(KERN_INFO "%08x ", *((unsigned int*)(bar + i)));
     }
 
-    pci_set_drvdata(pdev, &(g_hpm_data[g_hpm_num]));
     irq_num = irq_alloc_config_test(pdev);
     if (irq_num <= 0) {
         printk(KERN_INFO "irq_alloc_config_test failed:0x%x\n", irq_num);
         goto out_err;
     }
 
+    /* 对预留的物理内存MMU_DMA_ADDR,
+       进行smmu映射得到dma_iova, 配置给dev的dma寄存器, 供设备读写
+       进行mmu映射得到dma_va, 供软件/CPU访问
+    */
+    g_hpm_data[g_hpm_num].dma_size = MMU_DMA_LENGTH;
+    g_hpm_data[g_hpm_num].dma_pa = MMU_DMA_ADDR;
+    g_hpm_data[g_hpm_num].dma_iova = dma_map_resource(&pdev->dev,
+        g_hpm_data[g_hpm_num].dma_pa, g_hpm_data[g_hpm_num].dma_size,
+        DMA_BIDIRECTIONAL, 0);
+    g_hpm_data[g_hpm_num].dma_va = memremap(g_hpm_data[g_hpm_num].dma_pa,
+        g_hpm_data[g_hpm_num].dma_size, MEMREMAP_WT);
+
     g_hpm_data[g_hpm_num].pdev = pdev;
     g_hpm_data[g_hpm_num].nvec = irq_num;
-    g_hpm_num++;
 
     /* 额外增加 */
-    pci_var_node_create(pdev, intr_bind_cpu, irq_num);
+    pci_var_node_create(pdev, intr_bind_cpu, irq_num,
+        g_hpm_data[g_hpm_num].dma_pa, g_hpm_data[g_hpm_num].dma_iova,
+        g_hpm_data[g_hpm_num].dma_size);
     printk(KERN_INFO "~~~~~~~~~~~pci_var_node_create~~~~~~~~~~~\n");
 
+    g_hpm_num++;
     return 0;
 
 out_err:
@@ -183,11 +205,17 @@ static void hpm_remove(struct pci_dev *pdev)
     printk(KERN_INFO "~~~~~~~~~~~pci_var_node_destroy~~~~~~~~~~~\n");
 
     hpm_data = (hpm_t *)pci_get_drvdata(pdev);
-    pci_free_irq_vectors(pdev);
     if (hpm_data != NULL) {
         pci_iounmap(pdev, hpm_data->bar0);
         pci_iounmap(pdev, hpm_data->bar2);
+        for (i = 0; i < hpm_data->nvec; i++) {
+            pci_free_irq(pdev, i, (void*)hpm_data);
+        }
     }
+
+    dma_unmap_resource(&(pdev->dev), hpm_data->dma_iova, hpm_data->dma_size,
+        DMA_BIDIRECTIONAL, 0);
+    pci_free_irq_vectors(pdev);
 
     pci_release_regions(pdev);
     pci_disable_device(pdev);
