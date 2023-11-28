@@ -458,7 +458,7 @@ int timerfd_create(int clockid, int flags)
   /* Initialize the timer instance */
 
   new_dev->clock = clockid;
-  new_fd = file_allocate(&g_timerfd_inode, O_RDONLY | flags,
+  new_fd = file_allocate(&g_timerfd_inode, ((flags & O_RWMASK) == O_WRONLY) ? (flags + 1) : flags,
                          0, new_dev, 0, true);
   if (new_fd < 0)
     {

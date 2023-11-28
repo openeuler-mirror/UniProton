@@ -298,9 +298,9 @@ int inode_checkflags(FAR struct inode *inode, int oflags)
     {
       return -ENXIO;
     }
-
-  if (((oflags & O_RDOK) != 0 && !inode->u.i_ops->read) ||
-      ((oflags & O_WROK) != 0 && !inode->u.i_ops->write))
+  int fg = oflags & O_RWMASK;
+  if (((fg == O_RDONLY || fg == O_RDWR) && !inode->u.i_ops->read) ||
+      ((fg == O_WRONLY || fg == O_RDWR) && !inode->u.i_ops->write))
     {
       return -EACCES;
     }

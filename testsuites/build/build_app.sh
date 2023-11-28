@@ -49,6 +49,8 @@ UART_APP=(
 
 MATH_APP=("UniPorton_test_posix_math_interface")
 
+RWFLAG=("UniPorton_test_posix_rwflag_interface")
+
 ALL_APP="${POSIX_APP[*]} ${RHEALSTONE_APP[*]} ${MATH_APP[*]} ${UART_APP[*]} ${PROXY_APP[*]}"
 
 for one_arg in $*; do
@@ -63,6 +65,8 @@ for one_arg in $*; do
         ALL_APP=${MATH_APP[*]}
     elif [[ $one_arg == "uart" || $one_arg == "UART" ]]; then
         ALL_APP=${UART_APP[*]}
+    elif [[ $one_arg == "rwflag" || $one_arg == "RWFLAG" ]]; then
+        ALL_APP=${RWFLAG[*]}
     else
         LIB_RUN_TYPE=$one_arg
     fi

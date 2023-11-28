@@ -160,7 +160,7 @@ int block_proxy(FAR struct file *filep, FAR const char *blkdev, int oflags)
 
   /* Should this character driver be read-only? */
 
-  readonly = ((oflags & O_WRONLY) == 0);
+  readonly = ((oflags & O_RWMASK) != O_WRONLY && (oflags & O_RWMASK) != O_RDWR);
 
   /* Wrap the block driver with an instance of the BCH driver */
 

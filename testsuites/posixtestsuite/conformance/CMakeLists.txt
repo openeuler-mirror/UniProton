@@ -430,6 +430,8 @@ list(APPEND ALL_PROXY_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/proxy/1-1.c
 )
 
+file(GLOB_RECURSE ALL_RWFLAG_SRC ${CMAKE_CURRENT_SOURCE_DIR}/definitions/rwflag/*.c)
+
 file(GLOB_RECURSE ALL_EXIT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/interfaces/exit/*.c)
 
 if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse")
@@ -462,6 +464,9 @@ elseif(${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
 elseif(${APP} STREQUAL "UniPorton_test_posix_exit_interface")
     set(BUILD_APP "UniPorton_test_posix_exit_interface")
     set(ALL_SRC runExitTest.c ${ALL_EXIT_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_posix_rwflag_interface")
+    set(BUILD_APP "UniPorton_test_posix_rwflag_interface")
+    set(ALL_SRC runRwflagTest.c ${ALL_RWFLAG_SRC})
 else()
     return()
 endif()
