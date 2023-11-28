@@ -3,7 +3,9 @@ export APP=ascend310b
 export TMP_DIR=$APP
 
 sh ./build_static.sh ${APP}
-sh ./build_openamp.sh $TOOLCHAIN_PATH
+if [ -n "$CONFIG_OS_OPTION_OPENAMP" ]; then
+    sh ./build_openamp.sh $TOOLCHAIN_PATH
+fi
 
 echo "cmake start"
 cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
