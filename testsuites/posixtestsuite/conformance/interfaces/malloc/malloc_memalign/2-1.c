@@ -13,7 +13,7 @@
 int malloc_memalign_2_1()
 {
     for (size_t alignIndex = MEM_ADDR_ALIGN_004; alignIndex < MEM_ADDR_BUTT; alignIndex++) {
-        void *ptr = memalign(alignIndex, MALLOC_SIZE);
+        void *ptr = memalign(1UL << alignIndex, MALLOC_SIZE);
         if (ptr == NULL) {
             printf(TNAME " Error at memalign(): memalign failed.\n");
             return PTS_UNRESOLVED;

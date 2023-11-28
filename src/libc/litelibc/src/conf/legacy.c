@@ -9,14 +9,19 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2023-07-31
- * Description: memalign功能实现
+ * Create: 2023-11-28
+ * Description: get_nprocs_conf、get_nprocs功能实现功能实现
  */
-#include "stdlib.h"
-#include "prt_mem.h"
 
-void *memalign(size_t align, size_t len)
+#include <sys/sysinfo.h>
+#include <unistd.h>
+
+int get_nprocs_conf()
 {
-    return aligned_alloc(align, len);
+    return 1;
 }
 
+int get_nprocs()
+{
+    return 1;
+}
