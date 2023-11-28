@@ -1,7 +1,11 @@
 #include <nuttx/irq.h>
 #include "prt_irq_internal.h"
 
+#if defined(OS_ARCH_ARMV7_M)
 #define OS_NXAL_IRQ_2_PTR(irq) ((irq) - OS_MX_SYS_VECTOR_CNT)
+#else
+#define OS_NXAL_IRQ_2_PTR(irq) (irq)
+#endif
 #define HWI_DEFAULT_PRIOR    1
 
 int irq_attach(int irq, xcpt_t isr, FAR void *arg)
