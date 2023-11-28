@@ -233,6 +233,10 @@ list(REMOVE_ITEM ALL_TIME_SRC
 
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/timer_getoverrun/speculative/6-2.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/timer_getoverrun/speculative/6-3.c
+
+    # 尚未实现fork，kill，wait，先注释
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/nanosleep/1-2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/nanosleep/3-2.c
 )
 
 list(REMOVE_ITEM ALL_SEM_SRC 

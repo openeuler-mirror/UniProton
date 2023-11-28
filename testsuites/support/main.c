@@ -19,6 +19,41 @@
 
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 
+/* From newlib init.c */
+extern void (*__preinit_array_start []) (void) __attribute__((weak));
+extern void (*__preinit_array_end []) (void) __attribute__((weak));
+extern void (*__init_array_start []) (void) __attribute__((weak));
+extern void (*__init_array_end []) (void) __attribute__((weak));
+
+extern void _init (void);
+
+/* Iterate over all the init routines.  */
+void __libc_init_array (void)
+{
+    size_t count;
+    size_t i;
+
+    count = __preinit_array_end - __preinit_array_start;
+    for (i = 0; i < count; i++)
+        __preinit_array_start[i] ();
+
+    _init ();
+
+    count = __init_array_end - __init_array_start;
+    for (i = 0; i < count; i++)
+        __init_array_start[i] ();
+}
+
+// 尚未适配，暂时先实现
+int puts(const char *s)
+{
+    return printf("%s\n", s);
+}
+void perror(const char *s)
+{
+    printf("%s\n", s);
+}
+
 U32 PRT_AppInit(void)
 {
     U32 ret;
