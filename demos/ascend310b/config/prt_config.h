@@ -105,6 +105,15 @@ extern "C" {
 /* GIC地址可配置开关 */
 #define OS_INCLUDE_GIC_BASE_ADDR_CONFIG                 YES
 
+/* ************************* 驱动功能配置 *********************************** */
+#if defined(GUEST_OS)
+/* 使能SPI总线功能 */
+#define CONFIG_SPI_ENABLE NO
+
+/* 硬件设备为Atlas 200I DK A2，支持SPI0，否则支持SPI5 */
+#define CONFIG_DEVICE_DK_A2 NO
+#endif
+
 extern U8 g_memRegion00[];
 
 S32 OsConfigStart(void);

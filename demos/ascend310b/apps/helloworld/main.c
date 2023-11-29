@@ -11,6 +11,7 @@
 #include "hwi_init.h"
 #include "prt_config.h"
 #include "uniproton_shm_demo.h"
+#include "spi_1911.h"
 
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
@@ -18,10 +19,41 @@ TskHandle g_testTskHandle;
 void TestTaskEntry()
 {
     U64 n = 0;
-    while (1) {
-        n++;
-        PRT_TaskDelay(OS_TICK_PER_SECOND * 10); // 每10秒触发一次打印
+#if (CONFIG_SPI_ENABLE == YES)
+    int ret;
+    U8 txBuf[] = "Hello world!!! Hello UniProton!!!";
+    U8 rxBuf[sizeof(txBuf)];
+#if (CONFIG_DEVICE_DK_A2 == YES)
+    U32 spiId = 0;
+#else
+    U32 spiId = 5;
+#endif
+    struct TransferDataInfo transInfo;
+#endif
+
+    while (++n) {
         PRT_Printf("[uniproton] test [%llu]\n", n);
+        PRT_TaskDelay(OS_TICK_PER_SECOND);
+
+#if (CONFIG_SPI_ENABLE == YES)
+        PRT_Printf("[uniproton] Tx:%s\n", txBuf);
+        PRT_TaskDelay(OS_TICK_PER_SECOND);
+
+        transInfo.txBuf = (void *)txBuf;
+        transInfo.rxBuf = (void *)rxBuf;
+        transInfo.len = sizeof(txBuf);
+        transInfo.bitsPerWord = WIDTH_8_BITS;
+        transInfo.mode = SPI_LOOP; /* 环回自验模式 */
+        transInfo.chipSelect = 0;
+        transInfo.rxFifoLevel = SPI_RX_THR_32;
+        ret = SpiTransferProc(spiId, &transInfo);
+        if (ret != 0) {
+            PRT_Printf("[uniproton] Failed to transfer data by spi[%u], ret:%d\n", spiId, ret);
+        }
+
+        PRT_Printf("[uniproton] Rx:%s\n", rxBuf);
+        PRT_TaskDelay(OS_TICK_PER_SECOND);
+#endif
     }
     return;
 }
@@ -80,6 +112,14 @@ U32 PRT_HardDrvInit(void)
     if (ret) {
         return ret;
     }
+
+#if (CONFIG_SPI_ENABLE == YES)
+    ret = OsSpiInit();
+    if (ret) {
+        return ret;
+    }
+#endif
+
     return OS_OK;
 }
 
