@@ -2,9 +2,12 @@ echo "################# get libxml2 #################"
 pushd ../../../src/component
 rm -rf ./libxml2
 # wget https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.14.tar.xz
-git clone https://gitee.com/TianyuTim/tmp.git
-cp ./tmp/libxml2-2.9.14.tar.xz ./
-rm -rf ./tmp
+git clone https://gitee.com/src-openeuler/libxml2.git
+cd ./libxml2
+git checkout openEuler-22.03-LTS-SP2
+cd ../
+cp ./libxml2/libxml2-2.9.14.tar.xz ./
+rm -rf ./libxml2
 tar -xf libxml2-2.9.14.tar.xz
 rm libxml2-2.9.14.tar.xz
 mv ./libxml2-2.9.14 ./libxml2
@@ -15,9 +18,22 @@ popd
 
 echo "################# git clone ethercat #################"
 pushd ../../../src/net/
-git clone https://gitlab.com/Tim-Tianyu/ethercat.git
+rm -rf ./ethercat
+git clone --depth=1 --filter=blob:none --sparse https://gitee.com/openeuler/oee_archive.git
+cd oee_archive
+git sparse-checkout init --cone
+git sparse-checkout set "igh-ethercat"
+cp igh-ethercat/igh_master_20230720.tar.gz ../
+cd ../
+rm -rf oee_archive
+tar -zxf igh_master_20230720.tar.gz
+rm igh_master_20230720.tar.gz
+cp UniProton-patch-for-igh.patch ./ethercat
+cd ethercat
+patch -p1 -d . < UniProton-patch-for-igh.patch
 popd
 
+echo "################# git clone libboundscheck #################"
 git clone https://gitee.com/openeuler/libboundscheck.git
 cp libboundscheck/include/* ../../../platform/libboundscheck/include
 cp libboundscheck/include/* ../include

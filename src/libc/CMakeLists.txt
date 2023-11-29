@@ -93,7 +93,6 @@ if (${CPU_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vfprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sscanf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsscanf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbsinit.c
