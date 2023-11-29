@@ -10,7 +10,7 @@
 #ifdef OS_GDB_STUB
 #define MMU_GDB_STUB_ADDR          0x70040000ULL
 #endif
-#define UART_BASE_ADDR             0xFE201000ULL
+#define UART_BASE_ADDR             0xFE215040ULL
 
 #define TEST_CLK_INT               30
 
