@@ -17,6 +17,7 @@
 #define __SPI_1911_H__
 
 #include "prt_typedef.h"
+#include "prt_config.h"
 
 #define SPI_CS_CTRL_REG 0x000         /* CS control register */
 #define SPI_COMMON_CTRL_REG 0x004     /* General control register */
