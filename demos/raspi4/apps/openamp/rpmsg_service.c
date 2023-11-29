@@ -13,64 +13,147 @@
  */
 
 #include "rpmsg_backend.h"
+#include "prt_sem.h"
+#include "prt_proxy_ext.h"
+#include "pthread.h"
+#include "stdio.h"
 
-static struct virtio_device vdev;
-static struct rpmsg_virtio_device rvdev;
-static struct metal_io_region *io;
-struct rpmsg_device *g_rdev;
+struct rpmsg_rcv_msg {
+	void *data;
+	size_t len;
+};
 
-#define RPMSG_VIRTIO_CONSOLE_CONFIG            \
-    (&(const struct rpmsg_virtio_config) {     \
-        .h2r_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
-        .r2h_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
-        .split_shpool = false,             \
-})
+static struct rpmsg_device *rpdev;
 
-extern int rpmsg_endpoint_init(struct rpmsg_device *rdev);
+/* RPMsg rpc */
+#define RPMSG_RPC_EPT_NAME "rpmsg-rpc"
+static struct rpmsg_endpoint rpc_ept;
+extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
+			   void *data, size_t len,
+			   uint32_t src, void *priv);
+extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
 
-extern void example_init();
+/* RPMsg tty */
+#define RPMSG_TTY_EPT_NAME "rpmsg-tty"
+static SemHandle tty_sem;
+static struct rpmsg_endpoint tty_ept;
+static struct rpmsg_rcv_msg tty_msg;
 
-int openamp_init(void)
+static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
-    int32_t err;
-
-    err = rpmsg_backend_init(&io, &vdev);
-    if (err) {
-        return err;
-    }
-
-    err = rpmsg_init_vdev_with_config(&rvdev, &vdev, NULL, io, NULL, RPMSG_VIRTIO_CONSOLE_CONFIG);
-    if (err) {
-        return err;
-    }
-
-    g_rdev = rpmsg_virtio_get_rpmsg_device(&rvdev);
-
-    err = rpmsg_endpoint_init(g_rdev);
-
-    if (err) {
-        return err;
-    }
-
-    return OS_OK;
+	rpmsg_destroy_ept(ep);
 }
 
-void openamp_deinit(void)
+static void *rpmsg_rpc_task(void *arg)
 {
-    rpmsg_deinit_vdev(&rvdev);
-    if (io) {
-        free(io);
-    }
+	int ret;
+
+	ret = rpmsg_create_ept(&rpc_ept, rpdev, RPMSG_RPC_EPT_NAME,
+			       RPMSG_ADDR_ANY, RPMSG_ADDR_ANY,
+			       rpmsg_client_cb, rpmsg_service_unbind);
+	if (ret != 0) {
+		PRT_Printf("[openamp] failed to create rpc endpoint\n");
+		goto err;
+	}
+
+	rpmsg_set_default_ept(&rpc_ept);
+err:
+	pthread_exit(NULL);
+}
+
+static int rpmsg_rx_tty_callback(struct rpmsg_endpoint *ept, void *data,
+				   size_t len, uint32_t src, void *priv)
+{
+	struct rpmsg_rcv_msg *tty_msg = priv;
+
+	rpmsg_hold_rx_buffer(ept, data);
+	tty_msg->data = data;
+	tty_msg->len = len;
+	PRT_SemPost(tty_sem);
+
+	return 0;
+}
+
+static void *rpmsg_tty_task(void *arg)
+{
+	int ret;
+	char tx_buff[512];
+
+	ret = PRT_SemCreate(0, &tty_sem);
+	if (ret != OS_OK) {
+		PRT_Printf("[openamp] failed to create tty sem\n");
+		goto err;
+	}
+
+	PRT_Printf("[openamp] tty task started\n");
+
+	tty_ept.priv = &tty_msg;
+	ret = rpmsg_create_ept(&tty_ept, rpdev, RPMSG_TTY_EPT_NAME,
+			       RPMSG_ADDR_ANY, RPMSG_ADDR_ANY,
+			       rpmsg_rx_tty_callback, NULL);
+	if (ret != 0) {
+		PRT_Printf("[openamp] failed to create tty endpoint\n");
+		goto err;
+	}
+
+	while (tty_ept.addr !=  RPMSG_ADDR_ANY) {
+		PRT_SemPend(tty_sem, OS_WAIT_FOREVER);
+		if (tty_msg.len) {
+			ret = snprintf(tx_buff, 512, "Hello, UniProton! Recv: %s\r\n", tty_msg.data);
+			rpmsg_send(&tty_ept, tx_buff, ret);
+			rpmsg_release_rx_buffer(&tty_ept, tty_msg.data);
+		}
+		tty_msg.len = 0;
+		tty_msg.data = NULL;
+
+		/* TODO: add lifecycle */
+	}
+	rpmsg_destroy_ept(&tty_ept);
+err:
+	pthread_exit(NULL);
 }
 
 int rpmsg_service_init(void)
 {
-    int32_t err;
-    err = openamp_init();
-    if (err) {
-        return err;
-    }
+	int ret0, ret1;
+	pthread_attr_t attr;
+	pthread_t rpc_thread, tty_thread;
 
-    example_init();
-    return OS_OK;
+	/* init rpmsg device */
+	rpdev = rpmsg_backend_init();
+	if (!rpdev) {
+		PRT_Printf("[openamp] failed to init rpmsg device\n");
+		return OS_ERROR;
+	}
+
+	if (pthread_attr_init(&attr) != 0) {
+		PRT_Printf("[openamp] failed to init pthread_attr\n");
+		goto err;
+	}
+
+	if (pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {
+		pthread_attr_destroy(&attr);
+		PRT_Printf("[openamp] failed to set pthread_attr\n");
+		goto err;
+	}
+
+	/* create rpmsg task */
+	ret0 = pthread_create(&rpc_thread, &attr, rpmsg_rpc_task, NULL);
+	ret1 = pthread_create(&tty_thread, &attr, rpmsg_tty_task, NULL);
+	pthread_attr_destroy(&attr);
+	if (ret0 != 0 && ret1 != 0) {
+		/* If no rpmsg tasks, release the backend. */
+		PRT_Printf("[openamp] failed to create rpmsg task, ret: %d/%d\n", ret0, ret1);
+		goto err;
+	}
+
+	/* Waiting for messages from host */
+	while (1) {
+		receive_message();
+		/* TODO: add lifecycle */
+	}
+
+err:
+	rpmsg_backend_remove();
+	return OS_ERROR;
 }

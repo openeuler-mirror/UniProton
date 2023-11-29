@@ -19,23 +19,30 @@
 extern "C" {
 #endif
 
-#define RPMSG_CONSOLE_BUFFER_SIZE 2048
+#define RPMSG_VIRTIO_CONSOLE_CONFIG			\
+	(&(const struct rpmsg_virtio_config) {	 \
+		.h2r_buf_size = 512, \
+		.r2h_buf_size = 512, \
+		.split_shpool = false,			 \
+})
 
 extern int rpmsg_service_init(void);
 
-/*
- * @brief Initialize RPMsg backend
+/**
+ * rpmsg_backend_init - register rpmsg-virtio-device.
  *
- * @param io   Shared memory IO region. This is an output parameter providing
- *             a pointer to an actual shared memory IO region structure.
- *             Caller of this function shall pass an address at which the
- *             pointer to the shared memory IO region structure is stored.
- * @param vdev Pointer to the virtio device initialized by this function.
- *
- * @retval 0 Initialization successful
- * @retval <0 Initialization error reported by OpenAMP
+ * Return: pointer of rpmsg_device(rpdev) on success, NULL on failure.
  */
-extern int rpmsg_backend_init(struct metal_io_region **io, struct virtio_device *vdev);
+extern struct rpmsg_device *rpmsg_backend_init(void);
+
+/**
+ * rpmsg_backend_remove - remove the backend
+ */
+extern void rpmsg_backend_remove(void);
+/**
+ * receive_message - Call it to receive messages from host(linux)
+ */
+extern void receive_message(void);
 
 #ifdef __cplusplus
 }
