@@ -32,10 +32,11 @@ void TestTaskEntry()
 #endif
 
     while (++n) {
-        PRT_Printf("[uniproton] test [%llu]\n", n);
         PRT_TaskDelay(OS_TICK_PER_SECOND);
+        PRT_Printf("[uniproton] test [%llu]\n", n);
 
 #if (CONFIG_SPI_ENABLE == YES)
+        PRT_TaskDelay(OS_TICK_PER_SECOND);
         PRT_Printf("[uniproton] Tx:%s\n", txBuf);
         PRT_TaskDelay(OS_TICK_PER_SECOND);
 
@@ -52,7 +53,6 @@ void TestTaskEntry()
         }
 
         PRT_Printf("[uniproton] Rx:%s\n", rxBuf);
-        PRT_TaskDelay(OS_TICK_PER_SECOND);
 #endif
     }
     return;
