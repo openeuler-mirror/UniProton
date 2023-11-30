@@ -24,6 +24,7 @@
 #include <openamp/rpmsg.h>
 #include <openamp/rpmsg_rpc_client_server.h>
 
+#include "prt_hwi.h"
 #include "securec.h"
 #include "rpc_internal_common.h"
 #include "rpc_internal_model.h"
@@ -467,6 +468,16 @@ DEF_CONVERT(getcwd)
         return;
     }
     memcpy_s(outp->buf, outp->size, resp->buf, outp->size);
+}
+
+DEF_CONVERT(readlink)
+{
+    DEFINE_CB_VARS(readlink)
+    outp->ret = resp->ret;
+    if (outp->buf == NULL || outp->ret <= 0) {
+        return;
+    }
+    memcpy_s(outp->buf, outp->bufsiz, resp->buf, outp->ret);
 }
 
 static void resp2outp_fread(void *from, void *to)
@@ -1564,7 +1575,7 @@ int PRT_ProxyWriteStdOut(const char *buf, int len)
     return ret - hlen;
 }
 
-static int __printf(const char *format, va_list list)
+int PRT_ProxyVprintf(const char *format, va_list list)
 {
     rpc_printf_req_t req;
     int ret = 0;
@@ -1592,7 +1603,7 @@ int PRT_ProxyPrintf(const char *format, ...)
 
     CHECK_INIT()
     va_start(list, format);
-    len = __printf(format, list);
+    len = PRT_ProxyVprintf(format, list);
     va_end(list);
 
     return len;
@@ -2693,6 +2704,7 @@ FILE *PRT_ProxyFdopen(int fd, const char *mode)
     CHECK_AND_SET_ERRNO(slot_idx < 0, NULL, EBUSY)
 
     req.func_id = FDOPEN_ID;
+    req.fd = fd;
     (void)memcpy_s(req.mode, mlen, mode, mlen);
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
@@ -2747,6 +2759,51 @@ int PRT_ProxySetvbuf(FILE *f, char *buf, int mode, size_t size)
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
     ret = wait4resp(slot_idx, &req, sizeof(req));
+    CHECK_RET(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+int PRT_ProxySystem(const char *command)
+{
+    DEFINE_COMMON_RPC_VAR(system)
+
+    CHECK_INIT()
+    CHECK_ARG(command == NULL, EINVAL)
+    size_t len = strlen(command) + 1;
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    (void)memcpy_s(&req.buf, sizeof(req.buf), command, len);
+    req.func_id = SYSTEM_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+    payload_size = payload_size - sizeof(req.buf) + len;
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
+ssize_t PRT_ProxyReadLink(const char *pathname, char *buf, size_t bufsiz)
+{
+    DEFINE_COMMON_RPC_VAR(readlink)
+
+    CHECK_INIT()
+    CHECK_ARG(pathname == NULL || buf == NULL || !bufsiz, EINVAL)
+    size_t len = strlen(pathname) + 1;
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    (void)memcpy_s(&req.pathname, sizeof(req.pathname), pathname, len);
+    req.func_id = READLINK_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.bufsiz = MIN(MAX_STRING_LEN, bufsiz);
+    RECORD_AT(slot_idx).cb = CONVERT(readlink);
+    payload_size = payload_size - sizeof(req.pathname) + len;
+    outp.buf = buf;
+    outp.bufsiz = bufsiz;
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret < 0)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2818,4 +2875,8 @@ WEAK_ALIAS(PRT_ProxyFstat, fstat);
 WEAK_ALIAS(PRT_ProxyFileno, fileno);
 WEAK_ALIAS(PRT_ProxyFdopen, fdopen);
 WEAK_ALIAS(PRT_ProxySetvbuf, setvbuf);
+WEAK_ALIAS(PRT_ProxyVprintf, vprintf);
+WEAK_ALIAS(PRT_ProxyReadLink, readlink);
+WEAK_ALIAS(PRT_ProxySystem, system);
+
 #endif

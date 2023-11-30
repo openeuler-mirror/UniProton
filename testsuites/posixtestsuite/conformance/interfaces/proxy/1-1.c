@@ -1425,6 +1425,25 @@ close_file:
     return ret >= 0 ? 0 : -1;
 }
 
+static int test_link()
+{
+    char buf[20];
+    #define SLNK "/tmp/test"
+    #define SLNK_TARGET "/tmp/nonexist"
+    int ret = system("ln -sf /tmp/nonexist /tmp/test");
+    if (ret) {
+        printf("system error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+    ssize_t sret = readlink("/tmp/test", buf, sizeof(buf));
+    if(sret < 0 || strncmp(SLNK_TARGET, buf, sizeof(SLNK_TARGET))) {
+        printf("readlink error ret: %ld, errstr: %s\n", sret, strerror(errno));
+        return -1;
+    }
+    unlink(SLNK);
+    return 0;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1474,6 +1493,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_FILE_fs_posix7),
     TEST_CASE_Y(test_FILE_fs_posix8),
     TEST_CASE_Y(test_getcwd),
+    TEST_CASE_Y(test_link),
 };
 
 int rpc_test_entry()
