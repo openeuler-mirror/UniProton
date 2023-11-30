@@ -119,9 +119,6 @@
 #define  PCI_ROM_ADDRESS_ENABLE    0x01
 #define PCI_ROM_ADDRESS_MASK    (~0x7ffU)
 
-#ifndef MMU_ECAM_ADDR
-#define MMU_ECAM_ADDR 0xd0000000ULL
-#endif
 void pcie_config_base_addr_register(uintptr_t base_addr);
 
 #define PCI_CFG_ADDRESS(Bus, Device, Function, Offset) \
