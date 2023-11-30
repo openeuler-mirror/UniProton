@@ -30,8 +30,8 @@ diff -uprN ccl-0.1.1.orig/demo/test_entry.c ccl-0.1.1/demo/test_entry.c
 +
 +int test_ccl(const char *conf_path)
 +{
-+    struct ccl_t 			config;
-+    const struct ccl_pair_t 	*iter;
++    struct ccl_t             config;
++    const struct ccl_pair_t  *iter;
 +
 +    config.comment_char = '#';
 +    config.sep_char = '=';
