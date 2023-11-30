@@ -70,3 +70,15 @@ echo "################# git clone libcxx #################"
 pushd ../component
 git clone https://gitee.com/zuyiwen/libcxx.git
 popd
+
+echo "################# get ccl #################"
+pushd ../../../src/component
+rm -rf ./ccl
+wget https://files.sbooth.org/ccl-0.1.1.tar.gz
+tar -xf ccl-0.1.1.tar.gz
+rm ccl-0.1.1.tar.gz
+mv ccl-0.1.1 ccl
+cp UniProton-patch-for-ccl.patch ./ccl
+cd ./ccl
+patch -p1 -d . < UniProton-patch-for-ccl.patch
+popd

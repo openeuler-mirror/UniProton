@@ -55,6 +55,10 @@ int TestOpenamp()
 int xml2_test_entry();
 #endif
 
+#if defined(LIBCCL_TESTCASE)
+extern int test_ccl(const char *conf_path);
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -91,6 +95,9 @@ void TestTaskEntry()
 #endif
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
     Init(0, 0, 0, 0);
+#endif
+#if defined(LIBCCL_TESTCASE)
+    test_ccl(NULL);
 #endif
 }
 
