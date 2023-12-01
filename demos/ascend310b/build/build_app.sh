@@ -3,7 +3,8 @@ export APP=ascend310b
 export TMP_DIR=$APP
 
 sh ./build_static.sh ${APP}
-if [ -n "$CONFIG_OS_OPTION_OPENAMP" ]; then
+DEFCONFIG=../../../build/uniproton_config/config_armv8_ascend310b/defconfig
+if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then
     sh ./build_openamp.sh $TOOLCHAIN_PATH
 fi
 
