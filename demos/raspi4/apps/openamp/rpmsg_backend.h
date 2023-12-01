@@ -28,6 +28,8 @@ extern "C" {
 
 extern int rpmsg_service_init(void);
 
+extern void (*g_rpmsg_ipi_handler)(void);
+
 /**
  * rpmsg_backend_init - register rpmsg-virtio-device.
  *

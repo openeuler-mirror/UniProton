@@ -79,34 +79,9 @@ void receive_message(void)
 		rproc_virtio_notified(vdev, VRING1_ID);
 }
 
-static U32 rpmsg_ipi_init(void)
+static void rpmsg_ipi_init(void)
 {
-	U32 ret;
-
-	ret = PRT_HwiSetAttr(OS_OPENAMP_NOTIFY_HWI_NUM, OS_OPENAMP_NOTIFY_HWI_PRIO, OS_HWI_MODE_ENGROSS);
-	if (ret != OS_OK) {
-		return ret;
-	}
-
-	ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)rpmsg_ipi_handler, 0);
-	if (ret != OS_OK) {
-		return ret;
-	}
-
-	ret = PRT_SemCreate(0, &msg_sem);
-	if (ret != OS_OK) {
-		return ret;
-	}
-
-#if (OS_GIC_VER == 3)
-	ret = PRT_HwiEnable(OS_OPENAMP_NOTIFY_HWI_NUM);
-	if (ret != OS_OK) {
-		PRT_SemDelete(msg_sem);
-		return ret;
-	}
-#endif
-
-	return OS_OK;
+	g_rpmsg_ipi_handler = rpmsg_ipi_handler;
 }
 
 struct virtio_device *
@@ -167,11 +142,7 @@ struct rpmsg_device *rpmsg_backend_init(void)
 	struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
 	struct metal_device *device;
 
-	err = rpmsg_ipi_init();
-	if (err) {
-		PRT_Printf("[openamp] rpmsg_hwi_init failed %d\n", err);
-		return NULL;
-	}
+	rpmsg_ipi_init();
 
 	/* Libmetal setup */
 	err = metal_init(&metal_params);
