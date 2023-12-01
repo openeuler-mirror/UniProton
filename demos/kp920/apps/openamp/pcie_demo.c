@@ -13,6 +13,7 @@
  * Description: PCIE功能demo
  */
 
+#include "cpu_config.h"
 #include "pcie.h"
 #include "prt_hwi.h"
 
@@ -150,10 +151,6 @@ static struct pci_driver hpm_driver = {
     .probe      = hpm_probe,
     .remove     = hpm_remove,
 };
-
-#ifndef MMU_ECAM_ADDR
-#define MMU_ECAM_ADDR 0xd0000000ULL
-#endif
 
 void test_pcie_demo(void)
 {
