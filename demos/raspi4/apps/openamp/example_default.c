@@ -1,7 +1,11 @@
 #include "openamp/open_amp.h"
 #include "prt_proxy_ext.h"
 
+#ifdef OS_OPTION_RSC_TABLE
+#define RPMSG_ENDPOINT_NAME "rpmsg-tty"
+#else
 #define RPMSG_ENDPOINT_NAME "console"
+#endif
 
 static struct rpmsg_endpoint g_ept;
 static U32 g_receivedMsg;
