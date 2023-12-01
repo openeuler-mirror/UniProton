@@ -29,7 +29,7 @@ void Test1TaskEntry()
     TestOpenamp();
 #endif
     while (1) {
-        PRT_TaskDelay(2000);
+        PRT_TaskDelay(200);
         PRT_Printf("task 1 run.\n");
     }
 }
@@ -37,7 +37,7 @@ void Test1TaskEntry()
 void Test2TaskEntry()
 {
     while (1) {
-        PRT_TaskDelay(1000);
+        PRT_TaskDelay(100);
         PRT_Printf("task 2 run.\n");
     }
 }
