@@ -66,6 +66,8 @@
 #define FDOPEN_ID         45UL
 #define FILENO_ID         46UL
 #define SETVBUF_ID        46UL
+#define READLINK_ID       47UL
+#define SYSTEM_ID         48UL
 
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
@@ -1097,4 +1099,33 @@ typedef struct rpc_setvbuf_req {
 typedef rpc_common_resp_t rpc_setvbuf_resp_t;
 
 typedef rpc_common_outp_t rpc_setvbuf_outp_t;
+
+/* system */
+typedef rpc_unlink_req_t rpc_system_req_t;
+
+typedef rpc_common_resp_t rpc_system_resp_t;
+
+typedef rpc_common_outp_t rpc_system_outp_t;
+
+/* readlink */
+typedef struct rpc_readlink_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    size_t bufsiz;
+    char pathname[MAX_STRING_LEN];
+} rpc_readlink_req_t;
+
+typedef struct rpc_readlink_resp {
+    rpc_resp_base_t super;
+    ssize_t ret;
+    char buf[MAX_STRING_LEN];
+} rpc_readlink_resp_t;
+
+typedef struct rpc_readlink_outp {
+    rpc_outp_base_t super;
+    size_t bufsiz;
+    ssize_t ret;
+    void *buf;
+} rpc_readlink_outp_t;
+
 #endif  /* _RPC_INTERNAL_MODEL_H */

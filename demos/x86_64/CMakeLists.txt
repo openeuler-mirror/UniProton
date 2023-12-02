@@ -112,6 +112,13 @@ if (${APP} STREQUAL "ethercatTest")
     add_executable(${APP} ${OBJS})
 endif()
 
+if (${APP} STREQUAL "libcclTest")
+    add_subdirectory(${HOME_PATH}/src/component/ccl ccl)
+    target_compile_options(ethercat PUBLIC -DLIBCCL_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:ccl>)
+    add_executable(${APP} ${OBJS})
+endif()
+
 if (${APP} STREQUAL "cxxTest")
     if ("${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y" AND "${CONFIG_OS_OPTION_LOCALE}" STREQUAL "y")
         add_subdirectory(../../testsuites/cxx-test tmp)
