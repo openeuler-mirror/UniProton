@@ -674,11 +674,11 @@ ssize_t PRT_ProxyReadLoop(int fd, void *buf, size_t count) {
             break;
         }
         if (lenRead < 0) {
-            printf("READ FAIL!!, %lu, %lu, %s\n", lenRemain, lenRead, strerror(errno));
+            printf("READ FAIL!!, %lu, %ld, %s\n", lenRemain, lenRead, strerror(errno));
             return lenRead;
         }
         if (lenRemain < lenRead) {
-            printf("READ FAIL!!!, %lu, %lu, %s\n", lenRemain, lenRead, strerror(errno));
+            printf("READ FAIL!!!, %lu, %ld, %s\n", lenRemain, lenRead, strerror(errno));
             lenRemain = 0;
             break;
         }
@@ -754,6 +754,7 @@ int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len)
     req.fd = fd;
     req.request = request;
     req.len = MIN(len, sizeof(req.buf));
+    outp.buf = arg;
     payload_size -= sizeof(req.buf);
     if (arg != NULL && req.len > 0) {
         memcpy_s(req.buf, req.len, arg, req.len);
@@ -821,7 +822,7 @@ int PRT_ProxyFcntl(int fd, int cmd, ...)
     req.offset = offset;
     req.whence = whence;
 
-    RECORD_AT(slot_idx).cb = CONVERT(common);
+    RECORD_AT(slot_idx).cb = CONVERT(csret);
     ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
 
