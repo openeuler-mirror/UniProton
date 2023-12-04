@@ -52,7 +52,9 @@ typedef struct {
     CmdCallBackFunc cmdHook;
     CHAR *cmdKey;
     UINT32 paraNum;
-    CmdType cmdType;
+    UINT32 cmdType;
+    UINT32 resv1;
+    UINT32 resv2;
 } CmdItem;
 
 typedef struct {
@@ -77,10 +79,11 @@ typedef struct {
 
 #define SHELLCMD_ENTRY(l, cmdType, cmdKey, paraNum, cmdHook)    \
     CmdItem l LOS_HAL_TABLE_ENTRY(shellcmd) = {                 \
-        cmdHook,                                                \
+        (CmdCallBackFunc)cmdHook,                               \
         (char *)cmdKey,                                         \
-        paraNum,                                                \
-        cmdType                                                 \
+        (UINT32)paraNum,                                        \
+        (UINT32)cmdType,                                        \
+        (UINT32)0, (UINT32)0,                                   \
     }
 
 #define NEED_NEW_LINE(timesPrint, lineCap) ((timesPrint) % (lineCap) == 0)

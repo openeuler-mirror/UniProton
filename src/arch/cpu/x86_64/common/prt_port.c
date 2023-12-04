@@ -48,8 +48,7 @@ OS_SEC_L4_TEXT void *OsTskContextInit(U32 taskID, U32 stackSize, uintptr_t *topS
  */
 OS_SEC_L2_TEXT void OsTskContextGet(uintptr_t saveAddr, struct TskContext *context)
 {
-    (void)saveAddr;
-    (void)context;
+    *context = *((struct TskContext *)saveAddr);
     return;
 }
 
