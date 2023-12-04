@@ -4,7 +4,7 @@
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- * 	http://license.coscl.org.cn/MulanPSL2
+ *     http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * See the Mulan PSL v2 for more details.
@@ -33,20 +33,20 @@ extern "C" {
 #define VIRTIO_ID_RPMSG         7
 
 enum rsc_table_entries {
-	RSC_TABLE_VDEV_ENTRY,
-	RSC_TABLE_NUM_ENTRY
+    RSC_TABLE_VDEV_ENTRY,
+    RSC_TABLE_NUM_ENTRY
 };
 
 METAL_PACKED_BEGIN
 struct fw_resource_table {
-	unsigned int ver;
-	unsigned int num;
-	unsigned int reserved[2];
-	unsigned int offset[RSC_TABLE_NUM_ENTRY];
+    unsigned int ver;
+    unsigned int num;
+    unsigned int reserved[2];
+    unsigned int offset[RSC_TABLE_NUM_ENTRY];
 
-	struct fw_rsc_vdev vdev;
-	struct fw_rsc_vdev_vring vring0;
-	struct fw_rsc_vdev_vring vring1;
+    struct fw_rsc_vdev vdev;
+    struct fw_rsc_vdev_vring vring0;
+    struct fw_rsc_vdev_vring vring1;
 } METAL_PACKED_END;
 
 void rsc_table_get(void **table_ptr, int *length);

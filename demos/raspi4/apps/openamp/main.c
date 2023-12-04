@@ -22,7 +22,7 @@ int TestOpenamp()
     if (ret) {
         return ret;
     }
-    
+
     return OS_OK;
 }
 
@@ -30,32 +30,32 @@ void (*g_rpmsg_ipi_handler)(void);
 
 static void IrqHandler(void)
 {
-	if (g_rpmsg_ipi_handler)
-		g_rpmsg_ipi_handler();
+    if (g_rpmsg_ipi_handler)
+        g_rpmsg_ipi_handler();
 }
 
 static U32 RpmsgHwiInit(void)
 {
-	U32 ret;
+    U32 ret;
 
-	ret = PRT_HwiSetAttr(OS_OPENAMP_NOTIFY_HWI_NUM, OS_OPENAMP_NOTIFY_HWI_PRIO, OS_HWI_MODE_ENGROSS);
-	if (ret != OS_OK) {
-		return ret;
-	}
+    ret = PRT_HwiSetAttr(OS_OPENAMP_NOTIFY_HWI_NUM, OS_OPENAMP_NOTIFY_HWI_PRIO, OS_HWI_MODE_ENGROSS);
+    if (ret != OS_OK) {
+        return ret;
+    }
 
-	ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)IrqHandler, 0);
-	if (ret != OS_OK) {
-		return ret;
-	}
+    ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)IrqHandler, 0);
+    if (ret != OS_OK) {
+        return ret;
+    }
 
 #if (OS_GIC_VER == 3)
-	ret = PRT_HwiEnable(OS_OPENAMP_NOTIFY_HWI_NUM);
-	if (ret != OS_OK) {
-		return ret;
-	}
+    ret = PRT_HwiEnable(OS_OPENAMP_NOTIFY_HWI_NUM);
+    if (ret != OS_OK) {
+        return ret;
+    }
 #endif
 
-	return OS_OK;
+    return OS_OK;
 }
 #endif
 
@@ -71,18 +71,18 @@ U32 OsTestInit(void)
     U32 ret;
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
-    
+
     param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = 25;
     param.name = "TestTask";
     param.stackSize = 0x2000;
-    
+
     ret = PRT_TaskCreate(&g_testTskHandle, &param);
     if (ret) {
         return ret;
     }
-    
+
     ret = PRT_TaskResume(g_testTskHandle);
     if (ret) {
         return ret;
@@ -152,7 +152,7 @@ extern void *__wrap_memset(void *dest, int set, U32 len)
     if (dest == NULL || len == 0) {
         return NULL;
     }
-    
+
     char *ret = (char *)dest;
     for (int i = 0; i < len; ++i) {
         ret[i] = set;

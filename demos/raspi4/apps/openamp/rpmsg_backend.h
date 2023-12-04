@@ -4,7 +4,7 @@
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
- * 	http://license.coscl.org.cn/MulanPSL2
+ *     http://license.coscl.org.cn/MulanPSL2
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * See the Mulan PSL v2 for more details.
@@ -19,11 +19,11 @@
 extern "C" {
 #endif
 
-#define RPMSG_VIRTIO_CONSOLE_CONFIG			\
-	(&(const struct rpmsg_virtio_config) {	 \
-		.h2r_buf_size = 512, \
-		.r2h_buf_size = 512, \
-		.split_shpool = false,			 \
+#define RPMSG_VIRTIO_CONSOLE_CONFIG        \
+    (&(const struct rpmsg_virtio_config) { \
+        .h2r_buf_size = 512,  \
+        .r2h_buf_size = 512,  \
+        .split_shpool = false,\
 })
 
 extern int rpmsg_service_init(void);
