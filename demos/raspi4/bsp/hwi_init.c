@@ -307,8 +307,11 @@ void OsGicInitCpuInterface(void)
     U32 val;
 
     GIC_REG_WRITE(GICD_ICACTIVERn, 0xFFFFFFFF);
+    /*
+     * the Raspberry Pi 4B doesn't support writing
+     * the Clear-enable bit (GICD_ICENABLER) for sgi.
+     */
     GIC_REG_WRITE(GICD_ICENABLERn, 0xFFFF0000);
-    GIC_REG_WRITE(GICD_ISENABLERn, 0x0000FFFF);
 
     for (i = 0; i < 32; i += 4) {
         GIC_REG_WRITE(GICD_IPRIORITYn + i, 0xA0A0A0A0);
