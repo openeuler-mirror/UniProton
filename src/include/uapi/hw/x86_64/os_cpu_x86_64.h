@@ -18,18 +18,57 @@
 #include "prt_typedef.h"
 #include "prt_hwi.h"
 
-/*
- * 任务上下文的结构体定义。
- */
+struct TagOsStack {
+    U64 rax;
+    U64 rbx;
+    U64 rcx;
+    U64 rdx;
+    U64 rsi;
+    U64 rdi;
+    U64 rbp;
+    U64 r8;
+    U64 r9;
+    U64 r10;
+    U64 r11;
+    U64 r12;
+    U64 r13;
+    U64 r14;
+    U64 r15;
+    U64 intNumber;
+    U64 rbpFrame;
+    U64 ripFrame;
+    U64 error;
+    U64 rip;
+    U64 cs;
+    U64 rflags;
+    U64 rsp;
+    U64 ss;
+};
+
+struct OsFpuStack {
+    U16 fcw;
+    U16 fsw;
+    U8  ftw;
+    U8  reserve1;
+    U16 fop;
+    U32 fip;
+    U16 fcs;
+    U16 reserve2;
+    U32 fdp;
+    U16 fds;
+    U16 reserve3;
+    U32 mxcsr;
+    U32 mxcsrMask;
+    // fxsave/fsrstore 512 字节，后面栈初始化为0
+};
+
+#define OS_FPU_SIZE 512
+#define OS_CONTEXT_EMPTY_SAPCE (OS_FPU_SIZE - sizeof(struct OsFpuStack))
+
 struct TskContext {
-    /* 当前物理寄存器R0-R12 */
-    U32 r[13];
-    /* 程序计数器 */
-    U32 pc;
-    /* 即R14链接寄存器 */
-    U32 lr;
-    /* 当前程序状态寄存器 */
-    U32 cpsr;
+    struct OsFpuStack fpuStack;
+    char resv[OS_CONTEXT_EMPTY_SAPCE];
+    struct TagOsStack tagStack;
 };
 
 OS_SEC_ALW_INLINE INLINE U32 OsGetCoreID(void)

@@ -1,7 +1,21 @@
 
 message("======== Compile Shell dir  ========")
 
-file(GLOB_RECURSE SHELL_SOURCE full/*.c adapter/*.c)
+file(GLOB_RECURSE SHELL_SOURCE full/*.c adapter/src/los_*.c)
+
+if(${CONFIG_LOSCFG_SHELL_MICA_INPUT})
+    list(APPEND SHELL_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/adapter/src/uart_adap_mica.c
+    )
+elseif(${CONFIG_OS_OPTION_NUTTX_UART})
+    list(APPEND SHELL_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/adapter/src/uart_adap_nuttx.c
+    )
+else()
+    list(APPEND SHELL_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/adapter/src/uart_adap_empty.c
+    )
+endif()
 
 add_library(libshell OBJECT ${SHELL_SOURCE})
 

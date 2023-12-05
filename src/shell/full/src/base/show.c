@@ -33,7 +33,9 @@
 #include "los_sys.h"
 #include "shell.h"
 
+#ifdef OS_OPTION_NUTTX_VFS
 #include "nuttx/lib/lib.h"
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -79,11 +81,12 @@ STATIC UINT32 OsShellCreateTask(ShellCB *shellCB)
     if (ret != LOS_OK) {
         return ret;
     }
-
+#ifndef LOSCFG_SHELL_MICA_INPUT
     ret = ShellEntryInit(shellCB);
     if (ret != LOS_OK) {
         (VOID)LOS_TaskDelete(shellCB->shellTaskHandle);
     }
+#endif
     return ret;
 }
 
@@ -134,7 +137,9 @@ UINT32 OsShellInit(INT32 consoleId)
     if (ret != LOS_OK) {
         goto ERR_OUT2;
     }
+#ifdef CONFIG_FILE_STREAM
     lib_stream_initialize(RUNNING_TASK);
+#endif
 
     return LOS_OK;
 ERR_OUT2:
@@ -167,7 +172,9 @@ INT32 OsShellDeinit(INT32 consoleId)
 #endif
     ShellTaskDeinit(shellCB);
 
+#ifdef CONFIG_FILE_STREAM
     lib_stream_release(RUNNING_TASK);
+#endif
     return 0;
 }
 

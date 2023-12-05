@@ -405,6 +405,12 @@ STATIC INT32 OsTabMatchCmd(CHAR *cmdKey, UINT32 *len)
 
         if (count == 0) {
             cmdItemGuard = curCmdItem;
+        } else if (count == 1) {
+            PRINTK("\n");
+            PRINTK("%s  ", cmdItemGuard->cmd->cmdKey);
+            PRINTK("%s  ", curCmdItem->cmd->cmdKey);
+        } else {
+            PRINTK("%s  ", curCmdItem->cmd->cmdKey);
         }
         ++count;
     }
@@ -419,11 +425,6 @@ STATIC INT32 OsTabMatchCmd(CHAR *cmdKey, UINT32 *len)
 
     ret = count;
     if (count > 1) {
-        PRINTK("\n");
-        while (count--) {
-            PRINTK("%s  ", cmdItemGuard->cmd->cmdKey);
-            cmdItemGuard = LOS_DL_LIST_ENTRY(cmdItemGuard->list.next, CmdItemNode, list);
-        }
         PRINTK("\n");
     }
 
@@ -649,7 +650,13 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsShellSysCmdRegister(VOID)
 {
     UINT32 i;
     UINT8 *cmdItemGroup = NULL;
-    UINT32 index = ((UINTPTR)(&g_shellcmdEnd) - (UINTPTR)(&g_shellcmd[0])) / sizeof(CmdItem);
+    UINT32 shellcmdSize = (UINTPTR)(&g_shellcmdEnd) - (UINTPTR)(&g_shellcmd[0]);
+    UINT32 index = shellcmdSize / sizeof(CmdItem);
+#ifdef OS_ARCH_X86_64
+    UINT32 offset = shellcmdSize - (index * sizeof(CmdItem));
+#else
+    UINT32 offset = 0;
+#endif
     CmdItemNode *cmdItem = NULL;
 
     cmdItemGroup = (UINT8 *)LOS_MemAlloc(m_aucSysMem0, index * sizeof(CmdItemNode));
@@ -660,7 +667,7 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsShellSysCmdRegister(VOID)
 
     for (i = 0; i < index; ++i) {
         cmdItem = (CmdItemNode *)(cmdItemGroup + i * sizeof(CmdItemNode));
-        cmdItem->cmd = &g_shellcmd[i];
+        cmdItem->cmd = (CmdItem *)(((char *)&g_shellcmd[i]) + offset);
         OsCmdAscendingInsert(cmdItem);
     }
     g_cmdInfo.listNum += index;
@@ -699,8 +706,9 @@ LITE_OS_SEC_TEXT_MINOR VOID OsShellHistoryShow(UINT32 value, ShellCB *shellCB)
     CmdKeyLink *cmdNode = shellCB->cmdHistoryKeyLink;
     CmdKeyLink *cmdMask = shellCB->cmdMaskKeyLink;
     errno_t ret;
-
+#ifndef LOSCFG_SHELL_MICA_INPUT
     (VOID)pthread_mutex_lock(&shellCB->historyMutex);
+#endif
     if (value == CMD_KEY_DOWN) {
         if (cmdMask == cmdNode) {
             goto END;
@@ -735,7 +743,9 @@ LITE_OS_SEC_TEXT_MINOR VOID OsShellHistoryShow(UINT32 value, ShellCB *shellCB)
     shellCB->cmdMaskKeyLink = (VOID *)cmdMask;
 
 END:
+#ifndef LOSCFG_SHELL_MICA_INPUT
     (VOID)pthread_mutex_unlock(&shellCB->historyMutex);
+#endif
     return;
 }
 
