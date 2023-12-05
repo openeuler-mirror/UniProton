@@ -4,6 +4,8 @@
 #include <linux/kthread.h>
 #include <linux/err.h>
 #include <linux/current.h>
+#include <pthread.h>
+#include <signal.h>
 
 #include "prt_sys_external.h"
 #include "prt_buildef.h"
@@ -21,12 +23,19 @@ static int subThread(void *data)
     set_current_state(TASK_UNINTERRUPTIBLE);
     long ret = schedule_timeout(2000);
     printf("[sub%lu] ticks remains:%ld\n", pid, ret);
-    if (ret < 1100 && ret > 900) {
-        return (int)pid;
-    } else {
+    if (ret > 1100 || ret < 900) {
         printf("[sub%lu] wake up fail, not in time\n", pid);
         return OS_FAIL;
     }
+
+    set_current_state(TASK_INTERRUPTIBLE);
+    ret = schedule_timeout(2000);
+    printf("[sub%lu] ticks remains:%ld\n", pid, ret);
+    if (ret > 1100 || ret < 900) {
+        printf("[sub%lu] wake up fail, not in time\n", pid);
+        return OS_FAIL;
+    }
+    return (int)pid;
 }
 
 static int mainThread(void *data)
@@ -41,7 +50,7 @@ static int mainThread(void *data)
     }
 
     // task not yet sleep
-    printf("[main]wake up first time\n");
+    printf("[main] wake up first time\n");
     int ret = wake_up_process(sub1);
     if (ret != 0) {
         printf("[main] ret != 0, %d\n", ret);
@@ -49,11 +58,24 @@ static int mainThread(void *data)
     }
 
     // wait task to sleep
-    PRT_TaskDelay(1000);
-    printf("[main]wake up second time\n");
+    PRT_TaskDelay(500);
+    printf("[main] wake up second time\n");
+    // TASK_UNINTERRUPTIBLE 发送信号不应该有效果
+    ret = pthread_kill((pthread_t)sub1->pid, SIGABRT);
+    PRT_TaskDelay(500);
     ret = wake_up_process(sub1);
     if (ret != 1) {
         printf("[main] ret != 1, %d\n", ret);
+        return OS_FAIL;
+    }
+
+    // wait task to sleep
+    PRT_TaskDelay(1000);
+    printf("[main] wake up thrid time\n");
+    // 通过发送信号唤醒
+    ret = pthread_kill((pthread_t)sub1->pid, SIGABRT);
+    if (ret != 0) {
+        printf("[main] send signal fail, ret %d\n", ret);
         return OS_FAIL;
     }
     threadRet = kthread_stop(sub1);

@@ -428,6 +428,8 @@ list(APPEND ALL_SIGNAL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigaddset/sigaddset_test.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/sigdelset_test.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/signal_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/pause/pause_test.c
 )
 
 list(APPEND ALL_PROXY_SRC
