@@ -9,11 +9,63 @@
 #include <linux/uaccess.h>
 #include <linux/irq.h>
 #include <linux/interrupt.h>
+#include <linux/kprobes.h>
+#include <linux/version.h>
 
 static unsigned long intr_bind_cpu = 23; /* 设备中断设置到指定cpu上， 默认指定cpu23 */
 module_param(intr_bind_cpu, ulong, S_IRUSR);
 
 #define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+int noop_pre(struct kprobe *p, struct pt_regs *regs)
+{
+    return 0;
+}
+
+static int kprobe_fn_init_flag = 0;
+static struct kprobe kp_irq_affinity = {
+    .symbol_name = "__irq_set_affinity",
+    .pre_handler = noop_pre,
+};
+int (*irq_set_affinity_fn)(unsigned int irq, const struct cpumask *cpumask, bool force) = NULL;
+static int kprobe_fn_init(void)
+{
+    int ret;
+    ret = register_kprobe(&kp_irq_affinity);
+    if ((ret < 0) || (kp_irq_affinity.addr == NULL)) {
+        pr_err("Failed to get __irq_set_affinity symbol, ret = %d\n", ret);
+        return ret;
+    }
+    irq_set_affinity_fn = (void*)kp_irq_affinity.addr;
+    unregister_kprobe(&kp_irq_affinity);
+
+    return 0;
+}
+
+static int irq_force_affinity_l(unsigned int irq, const struct cpumask *cpumask)
+{
+    int ret;
+    if (kprobe_fn_init_flag == 0) {
+        ret = kprobe_fn_init();
+        kprobe_fn_init_flag++;
+        if (ret || (irq_set_affinity_fn == NULL)) {
+            pr_err("Failed to kprobe_fn_init, ret = %d\n", ret);
+            return -1;
+        }
+    }
+    if (irq_set_affinity_fn == NULL) {
+        pr_err("irq_set_affinity symbol is not found!\n");
+        return -1;
+    }
+    return irq_set_affinity_fn(irq, cpumask, true);
+}
+#else
+static int irq_force_affinity_l(unsigned int irq, const struct cpumask *cpumask)
+{
+    return irq_force_affinity(irq, cpumask);
+}
+#endif
 
 static inline int system_call_mkdir(const char* path)
 {
@@ -109,7 +161,7 @@ static inline void pci_var_node_create(struct pci_dev *pdev, unsigned long cpu_i
         if (irq < 0) {
             break;
         }
-        ret = irq_force_affinity(irq, cpumask_of(cpu_id));
+        ret = irq_force_affinity_l(irq, cpumask_of(cpu_id));
         if (ret) {
             printk(KERN_INFO "irq_force_affinity to cpu:%u failed! ret:0x%x", cpu_id, ret);
         }

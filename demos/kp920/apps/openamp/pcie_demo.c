@@ -45,7 +45,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
     int32_t ret;
 
     /* demo代码仅找一个设备验证，匹配到多个设备也不执行多次probe */
-    if (dev->bus_no != 0xbd) {
+    if (dev->bdf != 0x7d03) {
         return 0;
     }
     if (hpm_probe_flag > 0) {
