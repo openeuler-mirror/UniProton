@@ -44,6 +44,11 @@ CONFIG_OS_OPTION_OPENAMP=y
 # CONFIG_GUEST_OS is not set
 
 #
+# ITS Modules Configuration
+#
+# CONFIG_OS_GIC_ITS_TEST is not set
+
+#
 # IPC Modules Configuration
 #
 

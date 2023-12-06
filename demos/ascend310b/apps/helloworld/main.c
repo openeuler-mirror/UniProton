@@ -12,6 +12,7 @@
 #include "prt_config.h"
 #include "uniproton_shm_demo.h"
 #include "spi_1911.h"
+#include "uniproton_its_demo.h"
 
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
@@ -53,6 +54,9 @@ void TestTaskEntry()
         }
 
         PRT_Printf("[uniproton] Rx:%s\n", rxBuf);
+#endif
+#if defined(OS_GIC_ITS_TEST)
+        its_test_demo_start();
 #endif
     }
     return;

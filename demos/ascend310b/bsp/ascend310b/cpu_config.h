@@ -12,6 +12,7 @@
 #define TEST_CLK_INT                27
 #define OS_GIC_BASE_ADDR            0x7FFF000000ULL     // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
+#define GITS_BASE_ADDR              0x7FFF020000ULL     // GITS基地址
 #else
 #define UART_BASE_ADDR              0xC4010000ULL
 #define TEST_CLK_INT                30
@@ -21,6 +22,7 @@
 #define MMU_GIC_ADDR                OS_GIC_BASE_ADDR
 #define MMU_UART_ADDR               UART_BASE_ADDR
 #define MMU_OPENAMP_ADDR            0x20a0000000ULL
+#define GITS_BASE_ADDR              0xD2000000ULL       // GITS基地址
 #endif
 
 #define SICR_ADDR_OFFSET_PER_CORE   0x200U
