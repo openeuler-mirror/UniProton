@@ -1,0 +1,604 @@
+diff -urN libmetal-2022.10.0/CMakeLists.txt libmetal-m/CMakeLists.txt
+--- libmetal-2022.10.0/CMakeLists.txt	2022-10-28 10:12:23.000000000 +0800
++++ libmetal-m/CMakeLists.txt	2023-08-10 15:32:28.669060200 +0800
+@@ -6,7 +6,10 @@
+ if (POLICY CMP0077)
+   cmake_policy(SET CMP0077 NEW)
+ endif()
+-
++include_directories(
++  ../../include
++  ../../include/libc/include)
++set (CMAKE_SYSTEM_NAME Uniproton)
+ set (LIBMETAL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+ 
+ list (APPEND CMAKE_MODULE_PATH
+diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake libmetal-m/cmake/platforms/uniproton_arm64_gcc.cmake
+--- libmetal-2022.10.0/cmake/platforms/uniproton_arm64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/cmake/platforms/uniproton_arm64_gcc.cmake	2023-08-10 15:09:20.037838400 +0800
+@@ -0,0 +1,16 @@
++#cross-compilation config
++
++set(CMAKE_SYSTEM_PROCESSOR arm)
++set(PROJECT_SYSTEM uniproton)
++
++set(CMAKE_C_COMPILER_WORKS 1)
++set(CMAKE_CXX_COMPILER_WORKS 1)
++
++set(CROSS_PREFIX "${TOOLCHAIN_PATH}/bin/aarch64-none-elf-" CACHE STRING "")
++set(CMAKE_C_COMPILER	"${CROSS_PREFIX}gcc" CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER CACHE STRING "")
++set(CMAKE_C_FLAGS "-nostdlib -nostdinc -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++
++# vim: expandtab:ts=2:sw=2:smartindent
+diff -urN libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake libmetal-m/cmake/platforms/uniproton_x86_64_gcc.cmake
+--- libmetal-2022.10.0/cmake/platforms/uniproton_x86_64_gcc.cmake	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/cmake/platforms/uniproton_x86_64_gcc.cmake	2023-08-10 15:09:26.051593000 +0800
+@@ -0,0 +1,16 @@
++#cross-compilation config
++
++set(CMAKE_SYSTEM_PROCESSOR x86_64)
++set(PROJECT_SYSTEM uniproton)
++
++set(CMAKE_C_COMPILER_WORKS 1)
++set(CMAKE_CXX_COMPILER_WORKS 1)
++
++set(CROSS_PREFIX "${CROSS_TOOLCHAIN_PREFIX}-" CACHE STRING "")
++set(CMAKE_C_COMPILER	"${CROSS_PREFIX}gcc" CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER CACHE STRING "")
++set(CMAKE_C_FLAGS "-nostdlib -nostdinc -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++
++# vim: expandtab:ts=2:sw=2:smartindent
+diff -urN libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt libmetal-m/lib/system/uniproton/CMakeLists.txt
+--- libmetal-2022.10.0/lib/system/uniproton/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/CMakeLists.txt	2023-08-09 16:49:41.747777500 +0800
+@@ -0,0 +1,17 @@
++collect (PROJECT_LIB_HEADERS alloc.h)
++collect (PROJECT_LIB_HEADERS assert.h)
++collect (PROJECT_LIB_HEADERS cache.h)
++collect (PROJECT_LIB_HEADERS condition.h)
++collect (PROJECT_LIB_HEADERS io.h)
++collect (PROJECT_LIB_HEADERS irq.h)
++collect (PROJECT_LIB_HEADERS log.h)
++collect (PROJECT_LIB_HEADERS mutex.h)
++collect (PROJECT_LIB_HEADERS sleep.h)
++collect (PROJECT_LIB_HEADERS sys.h)
++
++collect (PROJECT_LIB_SOURCES condition.c)
++collect (PROJECT_LIB_SOURCES device.c)
++collect (PROJECT_LIB_SOURCES init.c)
++collect (PROJECT_LIB_SOURCES shmem.c)
++
++# vim: expandtab:ts=2:sw=2:smartindent
+diff -urN libmetal-2022.10.0/lib/system/uniproton/alloc.h libmetal-m/lib/system/uniproton/alloc.h
+--- libmetal-2022.10.0/lib/system/uniproton/alloc.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/alloc.h	2023-08-09 16:49:41.755782100 +0800
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/alloc.h
++ * @brief	Uniproton libmetal memory allocattion definitions.
++ */
++
++#ifndef __METAL_ALLOC__H__
++#error "Include metal/alloc.h instead of metal/uniproton/alloc.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_ALLOC__H__
++#define __METAL_UNIPROTON_ALLOC__H__
++
++#include "prt_mem.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++static inline void *metal_allocate_memory(unsigned int size)
++{
++	return PRT_MemAlloc(OS_MID_SYS, OS_MEM_DEFAULT_PT0, size);
++}
++
++static inline void metal_free_memory(void *ptr)
++{
++	PRT_MemFree(OS_MID_SYS, ptr);
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_ALLOC__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/assert.h libmetal-m/lib/system/uniproton/assert.h
+--- libmetal-2022.10.0/lib/system/uniproton/assert.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/assert.h	2023-08-09 16:49:41.763791100 +0800
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (c) 2018, Xilinx Inc. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	assert.h
++ * @brief	Uniproton assertion support.
++ */
++
++#ifndef __METAL_ASSERT__H__
++#error "Include metal/assert.h instead of metal/uniproton/assert.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_ASSERT__H__
++#define __METAL_UNIPROTON_ASSERT__H__
++
++/**
++ * @brief Assertion macro.
++ * @param cond Condition to test.
++ */
++#define metal_sys_assert(cond)
++
++#endif /* __METAL_UNIPROTON_ASSERT__H__ */
++
+diff -urN libmetal-2022.10.0/lib/system/uniproton/cache.h libmetal-m/lib/system/uniproton/cache.h
+--- libmetal-2022.10.0/lib/system/uniproton/cache.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/cache.h	2023-08-09 16:49:41.770780300 +0800
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) 2018, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/cache.h
++ * @brief	Uniproton cache operation primitives for libmetal.
++ */
++
++#ifndef __METAL_CACHE__H__
++#error "Include metal/cache.h instead of metal/uniproton/cache.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_CACHE__H__
++#define __METAL_UNIPROTON_CACHE__H__
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++static inline void __metal_cache_flush(void *addr, unsigned int len)
++{
++	(void)addr;
++	(void)len;
++}
++
++static inline void __metal_cache_invalidate(void *addr, unsigned int len)
++{
++	(void)addr;
++	(void)len;
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_CACHE__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.c libmetal-m/lib/system/uniproton/condition.c
+--- libmetal-2022.10.0/lib/system/uniproton/condition.c	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/condition.c	2023-08-09 16:49:41.777777600 +0800
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/condition.c
++ * @brief	Uniproton libmetal condition variable handling.
++ */
++
++#include <metal/condition.h>
++#include <metal/irq.h>
++#include <metal/errno.h>
++
++int metal_condition_wait(struct metal_condition *cv,
++			 metal_mutex_t *m)
++{
++	unsigned int flags;
++
++	/* Check if the mutex has been acquired */
++	if (!cv || !m || !metal_mutex_is_acquired(m)) {
++		return -EINVAL;
++	}
++
++	flags = metal_irq_save_disable();
++	/* Release the mutex first. */
++	metal_mutex_release(m);
++	metal_irq_restore_enable(flags);
++	/* Acquire the mutex again. */
++	metal_mutex_acquire(m);
++	return 0;
++}
+diff -urN libmetal-2022.10.0/lib/system/uniproton/condition.h libmetal-m/lib/system/uniproton/condition.h
+--- libmetal-2022.10.0/lib/system/uniproton/condition.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/condition.h	2023-08-09 16:49:41.783776100 +0800
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/condition.h
++ * @brief	Uniproton condition variable primitives for libmetal.
++ */
++
++#ifndef __METAL_CONDITION__H__
++#error "Include metal/condition.h instead of metal/uniproton/condition.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_CONDITION__H__
++#define __METAL_UNIPROTON_CONDITION__H__
++
++#include <metal/mutex.h>
++#include <metal/utilities.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_CONDITION__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/device.c libmetal-m/lib/system/uniproton/device.c
+--- libmetal-2022.10.0/lib/system/uniproton/device.c	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/device.c	2023-08-09 16:49:41.790777500 +0800
+@@ -0,0 +1,21 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/device.c
++ * @brief	Uniproton libmetal device definitions.
++ */
++
++#include <metal/device.h>
++#include <metal/io.h>
++#include <metal/sys.h>
++#include <metal/utilities.h>
++
++int metal_generic_dev_sys_open(struct metal_device *dev)
++{
++	return 0;
++}
++
+diff -urN libmetal-2022.10.0/lib/system/uniproton/init.c libmetal-m/lib/system/uniproton/init.c
+--- libmetal-2022.10.0/lib/system/uniproton/init.c	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/init.c	2023-08-09 16:49:41.796776600 +0800
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/init.c
++ * @brief	Uniproton libmetal initialization.
++ */
++
++#include <metal/device.h>
++#include <metal/sys.h>
++
++struct metal_state _metal;
++
++int metal_sys_init(const struct metal_init_params *params)
++{
++	(void)params;
++	metal_bus_register(&metal_generic_bus);
++	return 0;
++}
++
++void metal_sys_finish(void)
++{
++	metal_bus_unregister(&metal_generic_bus);
++}
+diff -urN libmetal-2022.10.0/lib/system/uniproton/io.h libmetal-m/lib/system/uniproton/io.h
+--- libmetal-2022.10.0/lib/system/uniproton/io.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/io.h	2023-08-09 16:49:41.803776900 +0800
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/io.h
++ * @brief	Uniproton specific io definitions.
++ */
++
++#ifndef __METAL_IO__H__
++#error "Include metal/io.h instead of metal/uniproton/io.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_IO__H__
++#define __METAL_UNIPROTON_IO__H__
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#ifdef METAL_INTERNAL
++/**
++ * @brief memory mapping for an I/O region
++ */
++static inline void metal_sys_io_mem_map(struct metal_io_region *io)
++{
++	(void)io;
++}
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_IO__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/irq.h libmetal-m/lib/system/uniproton/irq.h
+--- libmetal-2022.10.0/lib/system/uniproton/irq.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/irq.h	2023-08-09 16:49:41.809779500 +0800
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/irq.c
++ * @brief	Uniproton libmetal irq definitions.
++ */
++
++#ifndef __METAL_IRQ__H__
++#error "Include metal/irq.h instead of metal/uniproton/irq.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_IRQ__H__
++#define __METAL_UNIPROTON_IRQ__H__
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_IRQ__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/log.h libmetal-m/lib/system/uniproton/log.h
+--- libmetal-2022.10.0/lib/system/uniproton/log.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/log.h	2023-08-09 16:49:41.815776600 +0800
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (c) 2018, Xilinx Inc. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/log.h
++ * @brief	Uniproton libmetal log handler definition.
++ */
++
++#ifndef __METAL_METAL_LOG__H__
++#error "Include metal/log.h instead of metal/uniproton/log.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_LOG__H__
++#define __METAL_UNIPROTON_LOG__H__
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_LOG__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/mutex.h libmetal-m/lib/system/uniproton/mutex.h
+--- libmetal-2022.10.0/lib/system/uniproton/mutex.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/mutex.h	2023-08-09 16:49:41.822776600 +0800
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/mutex.h
++ * @brief	Uniproton mutex primitives for libmetal.
++ */
++
++#ifndef __METAL_MUTEX__H__
++#error "Include metal/mutex.h instead of metal/uniproton/mutex.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_MUTEX__H__
++#define __METAL_UNIPROTON_MUTEX__H__
++
++#include "errno.h"
++#include "pthread.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef pthread_mutex_t metal_mutex_t;
++
++/*
++ * METAL_MUTEX_INIT - used for initializing an mutex element in a static struct
++ * or global
++ */
++#define METAL_MUTEX_INIT(m) MUTEX_INITIALIZER
++/*
++ * METAL_MUTEX_DEFINE - used for defining and initializing a global or
++ * static singleton mutex
++ */
++#define METAL_MUTEX_DEFINE(m) metal_mutex_t m = MUTEX_INITIALIZER
++
++static inline void __metal_mutex_init(metal_mutex_t *mutex)
++{
++	pthread_mutex_init(mutex, NULL);
++}
++
++static inline void __metal_mutex_deinit(metal_mutex_t *mutex)
++{
++	pthread_mutex_destroy(mutex);
++}
++
++static inline int __metal_mutex_try_acquire(metal_mutex_t *mutex)
++{
++	return pthread_mutex_trylock(mutex);
++}
++
++static inline int __metal_mutex_is_acquired(metal_mutex_t *mutex)
++{
++	
++}
++
++static inline void __metal_mutex_acquire(metal_mutex_t *mutex)
++{
++	pthread_mutex_lock(mutex);
++}
++
++static inline void __metal_mutex_release(metal_mutex_t *mutex)
++{
++	pthread_mutex_unlock(mutex);
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_MUTEX__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/shmem.c libmetal-m/lib/system/uniproton/shmem.c
+--- libmetal-2022.10.0/lib/system/uniproton/shmem.c	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/shmem.c	2023-08-09 16:49:41.830781400 +0800
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * 
++ * @file	uniproton/shmem.c
++ * @brief	Uniproton libmetal shared memory handling.
++ */
++
++#include <metal/shmem.h>
++
++int metal_shmem_open(const char *name, size_t size,
++		     struct metal_io_region **io)
++{
++	return metal_shmem_open_generic(name, size, io);
++}
+diff -urN libmetal-2022.10.0/lib/system/uniproton/sleep.h libmetal-m/lib/system/uniproton/sleep.h
+--- libmetal-2022.10.0/lib/system/uniproton/sleep.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/sleep.h	2023-08-11 10:10:36.529845100 +0800
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (c) 2018, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/sleep.h
++ * @brief	Uniproton sleep primitives for libmetal.
++ */
++
++#ifndef __METAL_SLEEP__H__
++#error "Include metal/sleep.h instead of metal/uniproton/sleep.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_SLEEP__H__
++#define __METAL_UNIPROTON_SLEEP__H__
++
++#include "prt_task.h"
++#include "prt_config.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++static inline int __metal_sleep_usec(unsigned int usec)
++{
++	return PRT_TaskDelay((U32)(OS_TICK_PER_SECOND * usec / 1000000));
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_SLEEP__H__ */
+diff -urN libmetal-2022.10.0/lib/system/uniproton/sys.h libmetal-m/lib/system/uniproton/sys.h
+--- libmetal-2022.10.0/lib/system/uniproton/sys.h	1970-01-01 08:00:00.000000000 +0800
++++ libmetal-m/lib/system/uniproton/sys.h	2023-08-09 16:49:41.846794400 +0800
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) 2017, Linaro Limited. and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/*
++ * @file	uniproton/sys.h
++ * @brief	Uniproton system primitives for libmetal.
++ */
++
++#ifndef __METAL_SYS__H__
++#error "Include metal/sys.h instead of metal/uniproton/sys.h"
++#endif
++
++#ifndef __METAL_UNIPROTON_SYS__H__
++#define __METAL_UNIPROTON_SYS__H__
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define METAL_INIT_DEFAULTS				\
++{							\
++	.log_handler	= metal_default_log_handler,	\
++	.log_level	= METAL_LOG_INFO,		\
++}
++
++/** Structure of libmetal runtime state. */
++struct metal_state {
++	/** Common (system independent) data. */
++	struct metal_common_state common;
++};
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __METAL_UNIPROTON_SYS__H__ */
