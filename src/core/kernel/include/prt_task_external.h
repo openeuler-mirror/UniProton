@@ -238,8 +238,8 @@ extern void OsCpuPowerOff(void); /* hook之前异常, 需实现该函数 */
         OS_TSK_EVENT_PEND | OS_TSK_WAITQUEUE_PEND)
 
 #if defined(OS_OPTION_LINUX)
-#define KTHREAD_TSK_STATE_TST(tsk, tskState)   (((tsk)->kthreadTsk->state == (tskState)))
-#define KTHREAD_TSK_STATE_SET(tsk, tskState)   ((tsk)->kthreadTsk->state = (tskState))
+#define KTHREAD_TSK_STATE_TST(tsk, tskState)   (((tsk)->kthreadTsk != NULL) && ((tsk)->kthreadTsk->state == (tskState)))
+#define KTHREAD_TSK_STATE_SET(tsk, tskState)   ((tsk)->kthreadTsk != NULL ? (tsk)->kthreadTsk->state = (tskState) : 0)
 #endif
 
 #define OS_TSK_SUSPEND_READY_BLOCK (OS_TSK_SUSPEND)

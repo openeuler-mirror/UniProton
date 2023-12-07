@@ -255,7 +255,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
     }
 
     /* 若任务在就绪队列或者被延时且没有在等待调度去处理信号，则将该任务的上下文保存并使下次调度直接进入信号处理函数*/
-    if ((taskCb->taskStatus & OS_TSK_READY || taskCb->taskStatus & OS_TSK_DELAY) &&
+    if ((taskCb->taskStatus & (OS_TSK_READY | OS_TSK_DELAY | OS_TSK_SIG_PAUSE | OS_TSK_DELAY_INTERRUPTIBLE)) &&
         !(taskCb->taskStatus & OS_TSK_HOLD_SIGNAL)) {
         taskCb->taskStatus |= OS_TSK_HOLD_SIGNAL;
 
@@ -264,6 +264,17 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
         U32 curStackSize = (U32)taskCb->stackPointer - (U32)taskCb->topOfStack;
         taskCb->stackPointer = OsTskContextInit(taskId, curStackSize, (uintptr_t *)taskCb->topOfStack,
             (uintptr_t)OsSignalEntry);
+        /* 如果在暂停状态，收到信号后任务加回就绪队列*/
+        if (taskCb->taskStatus & OS_TSK_SIG_PAUSE) {
+            taskCb->taskStatus &= ~OS_TSK_SIG_PAUSE;
+            OsTskReadyAdd(taskCb);
+        }
+#if defined(OS_OPTION_LINUX)
+        /* 任务如果在TASK_INTERRUPTIBLE状态收到信号会唤醒*/
+        else if (KTHREAD_TSK_STATE_TST(taskCb, TASK_INTERRUPTIBLE)) {
+            wake_up_process(taskCb->kthreadTsk);
+        }
+#endif
         OsTskSchedule();
     }
 
