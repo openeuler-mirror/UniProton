@@ -24,8 +24,8 @@ if [ "$2" != "yocto" ]
 then
     sh ./build_fetch.sh
 fi
-sh ./build_static.sh x86_64
-sh ./build_openamp.sh $TOOLCHAIN_PATH
+sh ./build_static.sh uvp
+sh ./build_openamp.sh $CROSS_TOOLCHAIN_PREFIX
 
 function build()
 {
