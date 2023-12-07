@@ -69,6 +69,9 @@
 #define READLINK_ID       47UL
 #define SYSTEM_ID         48UL
 
+#define ACCESS_ID         49UL
+#define DUP2_ID           51UL
+
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
 #define GETHOSTBYADDR_ID   102UL
@@ -1127,5 +1130,29 @@ typedef struct rpc_readlink_outp {
     ssize_t ret;
     void *buf;
 } rpc_readlink_outp_t;
+
+/* access */
+typedef struct rpc_access_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int mode;
+    char pathname[MAX_STRING_LEN];
+} rpc_access_req_t;
+
+typedef rpc_common_resp_t rpc_access_resp_t;
+
+typedef rpc_common_outp_t rpc_access_outp_t;
+
+/* dup2 */
+typedef struct rpc_dup2_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int oldfd;
+    int newfd;
+} rpc_dup2_req_t;
+
+typedef rpc_common_resp_t rpc_dup2_resp_t;
+
+typedef rpc_common_outp_t rpc_dup2_outp_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */

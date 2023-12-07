@@ -1444,6 +1444,72 @@ static int test_link()
     return 0;
 }
 
+static int test_access()
+{
+    char *fname = "/tmp/test_access.file";
+    char *fname2 = "/tmp/non-exist";
+    char *str = "A Test string being written to file..";
+    int fd = open(fname, REDEF_O_CREAT | REDEF_O_RDWR | REDEF_O_APPEND,
+        S_IRUSR | S_IWUSR);
+
+    int ret = access(fname, F_OK|R_OK|W_OK);
+    if (ret) {
+        printf("UP>access error ret: %d, errstr: %s\n", ret, strerror(errno));
+        close(fd);
+        return -1;
+    }
+
+    ret = access(fname2, F_OK);
+    printf("UP>acces ret: %d, errstr: %s\n", ret, strerror(errno));
+    if (ret != -1) {
+        close(fd);
+        return -1;
+    }
+    close(fd);
+    return 0;
+}
+
+static int test_dup2()
+{
+    char *fname = "/tmp/test_dup2.file";
+    char *fname2 = "/tmp/test_dup2_tmp.file";
+    char *str = "A Test string being written to file..";
+    char rbuff[100];
+    int fd = open(fname, REDEF_O_CREAT | REDEF_O_RDWR | REDEF_O_APPEND,
+        S_IRUSR | S_IWUSR);
+    int fd2 = open(fname2, REDEF_O_CREAT | REDEF_O_RDWR | REDEF_O_APPEND,
+        S_IRUSR | S_IWUSR);
+
+    int ret = dup2(fd, fd2);
+    if (ret != fd2) {
+        printf("UP>dup2 error ret: %d, fd2:%d errstr: %s\n", ret, fd2, strerror(errno));
+        ret = -1;
+        goto close_file;
+    }
+
+    ret = write(fd2, str, strlen(str));
+
+    off_t off = lseek(fd, 0, SEEK_SET);
+    if (off < 0) {
+        dprintf("\nUP>lseek fail, ret %d\r\n", ret);
+        goto close_file;
+    }
+    ret = read(fd, rbuff, sizeof(rbuff));
+    if (ret < 0) {
+        dprintf("\nUP>Read from fd = %d, failed ret %d\r\n", fd, ret);
+        goto close_file;
+    }
+    rbuff[ret] = 0;
+    dprintf("\nUP>Read from fd = %d, size = %d, "
+    "printing contents below .. %s\r\n", fd, ret, rbuff);
+
+close_file:
+    close(fd);
+    close(fd2);
+    dprintf("\nUP>Closed fd = %d, %d\r\n", fd, fd2);
+    return ret >= 0 ? 0 : -1;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1494,6 +1560,8 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_FILE_fs_posix8),
     TEST_CASE_Y(test_getcwd),
     TEST_CASE_Y(test_link),
+    TEST_CASE_Y(test_access),
+    TEST_CASE_Y(test_dup2),
 };
 
 int rpc_test_entry()
