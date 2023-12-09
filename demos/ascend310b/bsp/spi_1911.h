@@ -245,5 +245,6 @@ void SpiIrqHandler(U32 spiId);
 struct SpiDeviceInfo *FindSpiDeviceById(U32 spiId);
 int SpiTransferProc(U32 spiId, struct TransferDataInfo *transferInfo);
 U32 OsSpiInit(void);
+void SpiTransferTest(void);
 
 #endif
