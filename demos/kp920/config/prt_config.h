@@ -17,6 +17,7 @@
 
 #include "prt_buildef.h"
 #include "prt_typedef.h"
+#include "cpu_config.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -105,11 +106,11 @@ extern "C" {
 /* GIC地址可配置开关 */
 #define OS_INCLUDE_GIC_BASE_ADDR_CONFIG                 YES
 /* GIC基地址配置 */
-#define OS_GIC_BASE_ADDR                                0xAA000000U
+#define OS_GIC_BASE_ADDR                                GIC_REG_BASE_ADDR
 /* GICR相对于GIC基地址偏移量配置 */
-#define OS_GICR_OFFSET                                  0x100000U
+#define OS_GICR_OFFSET                  (GICR_BASE0 - GIC_REG_BASE_ADDR)
 /* GICR核间偏移量配置 */
-#define OS_GICR_STRIDE                                  0x40000U
+#define OS_GICR_STRIDE                                  SICR_ADDR_OFFSET_PER_CORE
 
 extern U8 g_memRegion00[];
 

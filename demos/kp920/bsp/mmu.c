@@ -23,6 +23,7 @@ typedef enum {
     MMU_GDB_STUB_TYPE,
 #endif
     MMU_GIC_TYPE,
+    MMU_GIC1_TYPE,
     MMU_ITS_TYPE,
     MMU_ITS1_TYPE,
     MMU_UART_TYPE,
@@ -68,6 +69,12 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
 #endif
         .virt      = MMU_GIC_ADDR,
         .phys      = MMU_GIC_ADDR,
+        .size      = 0x1000000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_GICR1_ADDR,
+        .phys      = MMU_GICR1_ADDR,
         .size      = 0x1000000,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
