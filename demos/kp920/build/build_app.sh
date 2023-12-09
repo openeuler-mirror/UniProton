@@ -1,6 +1,6 @@
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
 
-# task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency linuxTest
+# task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency linuxTest UniPorton_test_proxy_posix_interface
 export ALL="kp920"
 
 sh ./build_static.sh kp920
