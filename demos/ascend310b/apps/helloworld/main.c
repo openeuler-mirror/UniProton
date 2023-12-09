@@ -23,8 +23,6 @@ void TestTaskEntry()
     while (++n) {
         PRT_TaskDelay(OS_TICK_PER_SECOND);
         PRT_Printf("[uniproton] test [%llu]\n", n);
-
-        SpiTransferTest();
     }
     return;
 }
