@@ -113,7 +113,7 @@ int OsShmGet(key_t key, int flag, size_t size, int *shmid)
 
     if (key != IPC_PRIVATE) {
         if (find >= 0) { 
-            if (flag & (IPC_CREAT | IPC_EXCL)) {
+            if ((flag & IPC_CREAT) && (flag & IPC_EXCL)) {
                 ret = EEXIST;
             } else if (g_ipcShmSeg[find].shminfo->shm_segsz < size) {
                 ret = EINVAL;

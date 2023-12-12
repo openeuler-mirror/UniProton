@@ -71,6 +71,7 @@
 
 #define ACCESS_ID         49UL
 #define DUP2_ID           51UL
+#define MKFIFO_ID         52UL
 
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
@@ -1154,5 +1155,12 @@ typedef struct rpc_dup2_req {
 typedef rpc_common_resp_t rpc_dup2_resp_t;
 
 typedef rpc_common_outp_t rpc_dup2_outp_t;
+
+/* mkfifo */
+typedef rpc_access_req_t rpc_mkfifo_req_t;
+
+typedef rpc_common_resp_t rpc_mkfifo_resp_t;
+
+typedef rpc_common_outp_t rpc_mkfifo_outp_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */

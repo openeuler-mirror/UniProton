@@ -1,7 +1,6 @@
 #include "ecrt.h"
 #include "prt_sys.h"
 #include <limits.h>
-#include <linux/sched.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>

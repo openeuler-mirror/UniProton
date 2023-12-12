@@ -254,7 +254,7 @@ DEF_CONVERT(csret)
 DEF_CONVERT(read)
 {
     DEFINE_CB_VARS(read)
-    size_t buflen = MIN(sizeof(resp->buf), resp->ret);
+    ssize_t buflen = MIN(((ssize_t)sizeof(resp->buf)), resp->ret);
 
     if (outp->buf != NULL && buflen > 0) {
         memcpy_s(outp->buf, buflen, resp->buf, buflen);
@@ -276,7 +276,7 @@ DEF_CONVERT(ioctl)
 DEF_CONVERT(gethostbyaddr)
 {
     DEFINE_CB_VARS(gethostbyaddr)
-    size_t buflen = MIN(sizeof(resp->buf), resp->len);
+    int buflen = MIN(((int)sizeof(resp->buf)), resp->len);
 
     if (outp->buf != NULL && buflen > 0) {
         memcpy_s(outp->buf, buflen, resp->buf, buflen);
@@ -288,7 +288,7 @@ DEF_CONVERT(gethostbyaddr)
 DEF_CONVERT(getaddrinfo)
 {
     DEFINE_CB_VARS(getaddrinfo)
-    size_t buflen = MIN(sizeof(resp->buf), resp->buflen);
+    int buflen = MIN(((int)sizeof(resp->buf)), resp->buflen);
 
     if (outp->buf != NULL && buflen > 0) {
         memcpy_s(outp->buf, buflen, resp->buf, buflen);
@@ -300,7 +300,7 @@ DEF_CONVERT(getaddrinfo)
 DEF_CONVERT(getpeername)
 {
     DEFINE_CB_VARS(getpeername)
-    size_t buflen = MIN(sizeof(resp->addr_buf), resp->addrlen);
+    socklen_t buflen = MIN(((socklen_t)sizeof(resp->addr_buf)), resp->addrlen);
 
     if (outp->addr != NULL && buflen > 0) {
         memcpy_s(outp->addr, buflen, resp->addr_buf, buflen);
@@ -314,7 +314,7 @@ DEF_CONVERT(getpeername)
 DEF_CONVERT(accept)
 {
     DEFINE_CB_VARS(accept)
-    size_t buflen = MIN(sizeof(resp->buf), resp->addrlen);
+    socklen_t buflen = MIN(((socklen_t)sizeof(resp->buf)), resp->addrlen);
 
     if (outp->addrlen != NULL) {
         *outp->addrlen = buflen;
@@ -328,7 +328,7 @@ DEF_CONVERT(accept)
 DEF_CONVERT(recv)
 {
     DEFINE_CB_VARS(recv)
-    size_t buflen = MIN(sizeof(resp->buf), resp->ret);
+    ssize_t buflen = MIN(((ssize_t)sizeof(resp->buf)), resp->ret);
 
     if (outp->buf != NULL && buflen > 0) {
         memcpy_s(outp->buf, buflen, resp->buf, buflen);
@@ -679,6 +679,13 @@ ssize_t PRT_ProxyReadLoop(int fd, void *buf, size_t count) {
     if (count == 0) {
         return 0;
     }
+
+    if (count <= MAX_STRING_LEN) {
+        return PRT_ProxyRead(fd, buf, count);
+    } else {
+        printf("WARN: read buf to large, using loop read\n");
+    }
+
     size_t lenRemain = count;
     ssize_t lenRead = 0;
     while (lenRemain > 0)
@@ -1771,6 +1778,13 @@ size_t PRT_ProxyFreadLoop(void *buffer, size_t size, size_t count, FILE *f) {
     }
     size_t lenRemain = size * count;
     size_t lenRead = 0;
+
+    if (lenRemain <= MAX_STRING_LEN) {
+        return PRT_ProxyFread(buffer, size, count, f);
+    } else {
+        printf("WARN: fread buf to large, using loop fread\n");
+    }
+
     while (lenRemain > 0)
     {
         lenRead = PRT_ProxyFread(buffer, 1, lenRemain, (FILE *)f);
@@ -1836,6 +1850,13 @@ size_t PRT_ProxyFwriteLoop(const void *buffer, size_t size, size_t count, FILE *
     }
     size_t lenRemain = size * count;
     size_t lenWrite = 0;
+
+    if (lenRemain <= MAX_STRING_LEN) {
+        return PRT_ProxyFwrite(buffer, size, count, f);
+    } else {
+        printf("WARN: fwrite buf to large, using loop fwrite\n");
+    }
+
     while (lenRemain > 0)
     {
         lenWrite = PRT_ProxyFwrite(buffer, 1, lenRemain, (FILE *)f);
@@ -2866,6 +2887,29 @@ int PRT_ProxyDup2(int oldfd, int newfd)
     return outp.ret;
 }
 
+int PRT_ProxyMkfifo(const char *pathname, mode_t mode)
+{
+    DEFINE_COMMON_RPC_VAR(mkfifo)
+
+    CHECK_INIT()
+    CHECK_ARG(pathname == NULL, EINVAL)
+    size_t len = strlen(pathname) + 1;
+    CHECK_ARG(len > sizeof(req.pathname), ENAMETOOLONG)
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+    (void)memcpy_s(&req.pathname, sizeof(req.pathname), pathname, len);
+    req.func_id = MKFIFO_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.mode = mode;
+    RECORD_AT(slot_idx).cb = CONVERT(common);
+    payload_size = payload_size - sizeof(req.pathname) + len;
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret < 0)
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return outp.ret;
+}
+
 #ifdef OS_OPTION_PROXY
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
@@ -2936,5 +2980,6 @@ WEAK_ALIAS(PRT_ProxyReadLink, readlink);
 WEAK_ALIAS(PRT_ProxySystem, system);
 WEAK_ALIAS(PRT_ProxyAccess, access);
 WEAK_ALIAS(PRT_ProxyDup2, dup2);
+WEAK_ALIAS(PRT_ProxyMkfifo, mkfifo);
 
 #endif
