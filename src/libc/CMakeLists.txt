@@ -23,6 +23,10 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__stack_chk_fail.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/htonl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/htons.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohl.c
     )
 
 if(NOT ${CONFIG_OS_OPTION_PROXY})

@@ -1562,6 +1562,137 @@ close_file:
     return ret >= 0 ? 0 : -1;
 }
 
+static int test_dir_mk_ch_rm()
+{
+    char *root_dir = "/tmp";
+    char *dir1 = "/tmp/diraa1";
+    char *dir2 = "/tmp/diraa1/diraa2";
+    char *dir3 = "./diraa3";
+    int ret;
+
+    ret = chdir(root_dir);
+    if (ret) {
+        printf("UP>chdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = mkdir(dir1, 0744);
+    if (ret) {
+        printf("UP>mkdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = mkdir(dir2, 0744);
+    if (ret) {
+        printf("UP>mkdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = mkdir(dir3, 0744);
+    if (ret) {
+        printf("UP>mkdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = chmod(dir3, 0755);
+    if (ret) {
+        printf("UP>chmod error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = rmdir(dir2);
+    if (ret) {
+        printf("UP>rmdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = rmdir(dir1);
+    if (ret) {
+        printf("UP>rmdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    ret = rmdir(dir3);
+    if (ret) {
+        printf("UP>rmdir error ret: %d, errstr: %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}
+
+static int test_fseek_ftell()
+{
+    char *fname = "/tmp/test_fseek_ftell.txt";
+    FILE *fp;
+    char buff[100];
+    char *wdata = "hello world!\nThis is a demo..\n";
+    int ret;
+
+    fp = fopen(fname, "w+");
+    if (fp == NULL) {
+        printf("UP>fopen file '%s' fail, ret: %lu\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    printf("UP>fopen file '%s' success\n", fname);
+
+    size_t nmemb = strlen(wdata);
+    size_t sz = fwrite(wdata, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        printf("UP>fwrite fail, sz: %u, nmemb: %u\r\n", sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fseek(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        printf("UP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fread(buff, sizeof(char), sizeof(buff) - 1, fp);
+    if (ret != nmemb) {
+        printf("UP>fread fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+    buff[99] = '\0';
+    printf("UP>read:%s\n", buff);
+
+    ret = fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    printf("UP>filesize:%ld\n", size);
+
+    fclose(fp);
+    return 0;
+}
+
+static int test_pipe()
+{
+    int fd[2];
+    char buff[128];
+    int flags;
+
+    if (pipe(fd) == -1) {
+        printf("UP>pipe fail\n");
+        return -1;
+    }
+    printf("UP>pipe fd[2]: %d %d\n", fd[0], fd[1]);
+
+    close(fd[0]);
+    close(fd[1]);
+
+    uint16_t host_d = 0x1055;
+    uint16_t net_d = htons(host_d);
+    printf("UP>htons(%04x) = %04x\n", host_d, net_d);
+
+    net_d = 0x1055;
+    host_d = ntohs(net_d);
+    printf("UP>ntohs(%04x) = %04x\n", net_d, host_d);
+    return 0;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1615,6 +1746,9 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_access),
     TEST_CASE_Y(test_dup2),
     TEST_CASE_Y(test_mkfifo),
+    TEST_CASE_Y(test_dir_mk_ch_rm),
+    TEST_CASE_Y(test_fseek_ftell),
+    TEST_CASE_Y(test_pipe),
 };
 
 int rpc_test_entry()

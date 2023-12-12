@@ -49,6 +49,8 @@
 #define RENAME_ID         29UL
 #define REMOVE_ID         30UL
 #define MKSTMP_ID         31UL
+#define FSEEK_ID          32UL
+#define FTELL_ID          33UL
 
 #define FFLUSH_ID         34UL
 #define GETWC_ID          35UL
@@ -70,8 +72,13 @@
 #define SYSTEM_ID         48UL
 
 #define ACCESS_ID         49UL
+#define PIPE_ID           50UL
 #define DUP2_ID           51UL
 #define MKFIFO_ID         52UL
+#define CHMOD_ID          53UL
+#define CHDIR_ID          54UL
+#define MKDIR_ID          55UL
+#define RMDIR_ID          56UL
 
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
@@ -1162,5 +1169,64 @@ typedef rpc_access_req_t rpc_mkfifo_req_t;
 typedef rpc_common_resp_t rpc_mkfifo_resp_t;
 
 typedef rpc_common_outp_t rpc_mkfifo_outp_t;
+
+/* chmod */
+typedef struct rpc_chmod_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int mode;
+    char pathname[MAX_STRING_LEN];
+} rpc_chmod_req_t;
+
+typedef rpc_common_resp_t rpc_chmod_resp_t;
+
+typedef rpc_common_outp_t rpc_chmod_outp_t;
+
+/* chdir */
+typedef rpc_unlink_req_t rpc_chdir_req_t;
+
+typedef rpc_common_resp_t rpc_chdir_resp_t;
+
+typedef rpc_common_outp_t rpc_chdir_outp_t;
+
+/* mkdir */
+typedef struct rpc_mkdir_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int mode;
+    char pathname[MAX_STRING_LEN];
+} rpc_mkdir_req_t;
+
+typedef rpc_common_resp_t rpc_mkdir_resp_t;
+
+typedef rpc_common_outp_t rpc_mkdir_outp_t;
+
+/* rmdir */
+typedef rpc_unlink_req_t rpc_rmdir_req_t;
+
+typedef rpc_common_resp_t rpc_rmdir_resp_t;
+
+typedef rpc_common_outp_t rpc_rmdir_outp_t;
+
+/* fseek == fseeko */
+/* ftell == ftello */
+
+/* pipe */
+typedef struct rpc_pipe_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+} rpc_pipe_req_t;
+
+typedef struct rpc_pipe_resp {
+    rpc_resp_base_t super;
+    ssize_t ret;
+    int fd[2];
+} rpc_pipe_resp_t;
+
+typedef struct rpc_pipe_outp {
+    rpc_outp_base_t super;
+    ssize_t ret;
+    int fd[2];
+} rpc_pipe_outp_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */

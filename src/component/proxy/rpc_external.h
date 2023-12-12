@@ -110,5 +110,11 @@ int PRT_ProxySystem(const char *command);
 ssize_t PRT_ProxyReadLink(const char *pathname, char *buf, size_t bufsiz);
 int PRT_ProxyAccess(const char *pathname, int mode);
 int PRT_ProxyDup2(int oldfd, int newfd);
+int PRT_ProxyMkfifo(const char *pathname, mode_t mode);
+int PRT_ProxyChmod(const char *pathname, mode_t mode);
+int PRT_ProxyChdir(const char *path);
+int PRT_ProxyMkdir(const char *pathname, mode_t mode);
+int PRT_ProxyRmdir(const char *path);
+int PRT_ProxyPipe(int fd[2]);
 
 #endif /* _RPC_EXTERNAL_H */
