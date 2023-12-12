@@ -1,6 +1,6 @@
 diff -uprN ccl-0.1.1.orig/ccl/ccl.h ccl-0.1.1/ccl/ccl.h
 --- ccl-0.1.1.orig/ccl/ccl.h	2004-04-16 01:53:26.000000000 +0800
-+++ ccl-0.1.1/ccl/ccl.h	2023-11-30 10:41:14.915357454 +0800
++++ ccl-0.1.1/ccl/ccl.h	2023-12-12 09:29:53.755992818 +0800
 @@ -27,6 +27,8 @@
  
  #include "ccl/bst.h"
@@ -10,19 +10,48 @@ diff -uprN ccl-0.1.1.orig/ccl/ccl.h ccl-0.1.1/ccl/ccl.h
  /*! \file ccl.h
   * \brief The ccl library interface
   */
+diff -uprN ccl-0.1.1.orig/ccl/ccl_parse.c ccl-0.1.1/ccl/ccl_parse.c
+--- ccl-0.1.1.orig/ccl/ccl_parse.c	2004-04-16 01:48:34.000000000 +0800
++++ ccl-0.1.1/ccl/ccl_parse.c	2023-12-12 09:29:53.755992818 +0800
+@@ -136,7 +136,7 @@ ccl_parse(struct ccl_t *data,
+ 	  t = token;
+ 
+ 	  /* Enlarge buffer, if needed */
+-	  if(t > tok_limit) {
++	  if(t >= tok_limit) {
+ 	    int count = t - token;
+ 	    token = (char*) realloc(token, tok_cap * 2);
+ 	    if(token == 0) {
+@@ -180,7 +180,7 @@ ccl_parse(struct ccl_t *data,
+ 	}
+ 	else {
+ 	  /* Enlarge buffer, if needed */
+-	  if(t > tok_limit) {
++	  if(t >= tok_limit) {
+ 	    int count = t - token;
+ 	    token = (char*) realloc(token, tok_cap * 2);
+ 	    if(token == 0) {
+@@ -234,7 +234,7 @@ ccl_parse(struct ccl_t *data,
+ 	}
+ 	else {
+ 	  /* Enlarge buffer, if needed */
+-	  if(t > tok_limit) {
++	  if(t >= tok_limit) {
+ 	    int count = t - token;
+ 	    token = (char*) realloc(token, tok_cap * 2);
+ 	    if(token == 0) {
 diff -uprN ccl-0.1.1.orig/CMakeLists.txt ccl-0.1.1/CMakeLists.txt
 --- ccl-0.1.1.orig/CMakeLists.txt	1970-01-01 08:00:00.000000000 +0800
-+++ ccl-0.1.1/CMakeLists.txt	2023-11-30 15:08:58.617029532 +0800
++++ ccl-0.1.1/CMakeLists.txt	2023-12-12 09:42:57.031989830 +0800
 @@ -0,0 +1,5 @@
 +include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 +
 +file(GLOB CCL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/ccl/*.c)
 +
 +add_library(ccl STATIC ${CCL_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/demo/test_entry.c)
-\ 文件尾没有换行符
 diff -uprN ccl-0.1.1.orig/demo/test_entry.c ccl-0.1.1/demo/test_entry.c
 --- ccl-0.1.1.orig/demo/test_entry.c	1970-01-01 08:00:00.000000000 +0800
-+++ ccl-0.1.1/demo/test_entry.c	2023-11-30 15:29:39.967848752 +0800
++++ ccl-0.1.1/demo/test_entry.c	2023-12-12 09:29:53.759992817 +0800
 @@ -0,0 +1,25 @@
 +#include <stdio.h>
 +
