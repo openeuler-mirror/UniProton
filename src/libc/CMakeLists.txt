@@ -101,6 +101,10 @@ if (${CPU_TYPE} STREQUAL "x86_64")
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/shgetc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/htons.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/htonl.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohs.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohl.c
     )
 endif()
 
