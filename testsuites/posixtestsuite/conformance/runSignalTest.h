@@ -17,6 +17,10 @@ extern int TEST_sigfillset_1(void);
 extern int TEST_sigaddset_1(void);
 extern int TEST_sigdelset_1(void);
 extern int TEST_sigemptyset_1(void);
+extern int TEST_pause(void);
+extern int TEST_signal_1(void);
+extern int TEST_signal_2(void);
+extern int TEST_signal_3(void);
 
 typedef int test_run_main();
 
@@ -36,7 +40,11 @@ test_run_main *run_test_arry_1[] = {
     TEST_sigfillset_1,
     TEST_sigaddset_1,
     TEST_sigdelset_1,
-    TEST_sigemptyset_1
+    TEST_sigemptyset_1,
+    TEST_signal_1,
+    TEST_signal_2,
+    TEST_signal_3,
+    TEST_pause,
 };
 
 char run_test_name_1[][50] = {
@@ -55,7 +63,11 @@ char run_test_name_1[][50] = {
     "TEST_sigfillset_1",
     "TEST_sigaddset_1",
     "TEST_sigdelset_1",
-    "TEST_sigemptyset_1"
+    "TEST_sigemptyset_1",
+    "TEST_signal_1",
+    "TEST_signal_2",
+    "TEST_signal_3",
+    "TEST_pause",
 };
 
 #endif

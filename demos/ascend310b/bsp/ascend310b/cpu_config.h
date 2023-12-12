@@ -3,17 +3,18 @@
 
 #include "cache_asm.h"
 
-/* 裸跑or虚拟化场景均采用UART2，在main函数初始化相关配置，波特率115200 */
+#if defined(GUEST_OS)
+/* 虚拟化场景均采用UART2，在main函数初始化相关配置，波特率115200 */
 #define UART_BASE_ADDR              0x82230000U
 #define UART_CLK_INPUT              150000000U  /* 150M */
 #define GPIO_UTXD2_ADDR             0x82320040U
 #define GPIO_URXD2_ADDR             0x82320044U
-
-#if defined(GUEST_OS)
 #define TEST_CLK_INT                27
 #define OS_GIC_BASE_ADDR            0x7FFF000000ULL     // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
+#define GITS_BASE_ADDR              0x7FFF020000ULL     // GITS基地址
 #else
+#define UART_BASE_ADDR              0xC4010000ULL
 #define TEST_CLK_INT                30
 #define OS_GIC_BASE_ADDR            0xd0000000ULL        // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x100000U            // GICR相对于GIC基地址偏移量配置
@@ -21,6 +22,7 @@
 #define MMU_GIC_ADDR                OS_GIC_BASE_ADDR
 #define MMU_UART_ADDR               UART_BASE_ADDR
 #define MMU_OPENAMP_ADDR            0x20a0000000ULL
+#define GITS_BASE_ADDR              0xD2000000ULL       // GITS基地址
 #endif
 
 #define SICR_ADDR_OFFSET_PER_CORE   0x200U

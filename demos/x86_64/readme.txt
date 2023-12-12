@@ -23,3 +23,6 @@
 
 ## libxml2支持
 如果需要支持代理接口，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_LIBXML2
+
+## shell支持
+如果需要支持pty shell，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_LOSCFG_SHELL以及CONFIG_LOSCFG_SHELL_MICA_INPUT

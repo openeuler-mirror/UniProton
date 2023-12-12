@@ -14,7 +14,9 @@
  */
 #include "prt_typedef.h"
 #include "prt_attr_external.h"
+#include "prt_exc_external.h"
 
+OS_SEC_BSS ExcTaskInfoFunc g_excTaskInfoGet;
 /*
  * 描述: EXC模块的初始化
  */

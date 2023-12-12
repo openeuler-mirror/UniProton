@@ -17,6 +17,7 @@
 
 #include "cpu_config.h"
 #include "test.h"
+#include "prt_buildef.h"
 
 #define VDEV_START_ADDR		MMU_OPENAMP_ADDR
 #define VDEV_SIZE		0x30000
@@ -29,8 +30,16 @@
 #define SHM_DEVICE_NAME		"lonely_device"
 
 #define VRING_COUNT		2
+
+#ifdef OS_OPTION_RSC_TABLE
+#define VRING_RX_ADDRESS        -1  /* allocated by Master processor */
+#define VRING_TX_ADDRESS        -1  /* allocated by Master processor */
+#define VRING_BUFF_ADDRESS      -1  /* allocated by Master processor */
+#else
 #define VRING_RX_ADDRESS	(VDEV_START_ADDR + SHM_SIZE - VDEV_STATUS_SIZE)
 #define VRING_TX_ADDRESS	(VDEV_START_ADDR + SHM_SIZE)
+#endif
+
 #define VRING_ALIGNMENT		4
 #define VRING_SIZE		16
 

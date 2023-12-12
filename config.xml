@@ -84,4 +84,15 @@
             </platform>
         </project>
     </projects>
+    <projects>
+        <project cpu_type="uvp">
+            <lib_type>SRE</lib_type>
+            <platform plat_name="x86_64">
+                <name>x86_64</name>
+                <compile_path_x86>/usr/bin</compile_path_x86>
+                <compile_path_arm64>None</compile_path_arm64>
+                <kconf_dir>x86_uvp</kconf_dir>
+            </platform>
+        </project>
+    </projects>
 </config>

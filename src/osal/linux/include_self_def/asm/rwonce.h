@@ -14,7 +14,7 @@
         unsigned type:    (unsigned type)0,            \
         signed type:    (signed type)0
 
-#define __unqual_scalar_typeof(x) typeof(                \
+#define __unqual_scalar_typeof(x) __typeof__(                \
         _Generic((x),                        \
              char:    (char)0,                \
              __scalar_type_to_expr_cases(char),        \
@@ -34,7 +34,7 @@
 
 #define WRITE_ONCE(x, val)                        \
 do {                                    \
-    *(volatile typeof(x) *)&(x) = (val);                \
+    *(volatile __typeof__(x) *)&(x) = (val);                \
 } while (0)
 
 #endif    /* __ASM_GENERIC_RWONCE_H */

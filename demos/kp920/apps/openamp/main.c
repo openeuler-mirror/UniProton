@@ -11,6 +11,10 @@
 #if defined(OS_OPTION_POWEROFF)
 #include "psci.h"
 #endif
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shell.h"
+#include "show.h"
+#endif
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -20,6 +24,12 @@ extern U32 PRT_PrintfInit();
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
 extern U64 g_timerFrequency;
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
+void kthreadTest(void);
+void schedTest(void);
+void waitTest(void);
 #endif
 
 #if defined(OS_OPTION_PCIE)
@@ -40,6 +50,35 @@ int TestOpenamp()
 }
 #endif
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+static int osShellCmdTstReg(int argc, const char **argv)
+{
+    printf("tstreg: get %d arguments\n", argc);
+    for(int i = 0; i < argc; i++) {
+        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    }
+
+    return 0;
+}
+
+void micaShellInit()
+{
+    int ret = OsShellInit(0);
+    ShellCB *shellCB = OsGetShellCB();
+    if (ret != 0 || shellCB == NULL) {
+        printf("shell init fail\n");
+        return;
+    }
+    (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
+    if (ret == 0) {
+        printf("[INFO]: reg cmd 'tstreg' successed!\n");
+    } else {
+        printf("[INFO]: reg cmd 'tstreg' failed!\n");
+    }
+}
+#endif
+
 #if defined(OS_OPTION_POWEROFF)
 extern bool g_sysPowerOffFlag;
 #endif
@@ -56,20 +95,20 @@ void TestTaskEntry()
     for (int i = 0; i < 5; i++) {
         printf("TestTaskEntry=============TestTaskEntry\r\n");
     }
-#if defined(OS_OPTION_PCIE)
+
+#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
+    kthreadTest();
+    schedTest();
+    waitTest();
+#endif
+
+#if defined(OS_OPTION_PCIE) && defined(PCIE_TESTCASE)
     test_pcie_demo(); /* 依赖openamp实现的代理bash，放在TestOpenamp之后 */
 #endif
 
-    do {
-        PRT_TaskDelay(1000);
-        printf("TestTaskEntry\r\n");
-#if defined(OS_OPTION_POWEROFF)
-        if (g_sysPowerOffFlag) {
-            PRT_TaskDelay(500);
-            OsCpuPowerOff();
-        }
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
 #endif
-    } while (1);
 }
 
 U32 OsTestInit(void)

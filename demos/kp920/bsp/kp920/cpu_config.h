@@ -2,9 +2,12 @@
 #define CPU_CONFIG_H
 
 #include "cache_asm.h"
+#include "prt_gic_external.h"
 
 #define MMU_IMAGE_ADDR             0x202783000000ULL
-#define MMU_GIC_ADDR               0xAA000000ULL
+#define MMU_GIC_ADDR               0xAA000000ULL        /* gicd */
+#define MMU_GICR0_ADDR             0xAA000000ULL        /* gicr die1 */
+#define MMU_GICR1_ADDR             0xAE000000ULL        /* gicr die0 */
 #define MMU_UART_ADDR              0x08743000ULL /* todo */
 #define MMU_OPENAMP_ADDR           0x202780000000ULL
 #define MMU_DMA_ADDR               0x202780100000ULL
@@ -29,7 +32,7 @@
 
 #define OS_GIC_VER                 3
 #define SICR_ADDR_OFFSET_PER_CORE  0x40000U
-#define GIC_REG_BASE_ADDR          0xAA000000ULL /* equal MMU_GIC_ADDR */
+#define GIC_REG_BASE_ADDR          MMU_GIC_ADDR
 
 #define GICD_CTLR_S_ADDR           (GIC_REG_BASE_ADDR + 0x0000U)
 #define GICD_IGROUPN_ADDR          (GIC_REG_BASE_ADDR + 0x0080U)
@@ -38,8 +41,9 @@
 #define GICD_IPRIORITYN_ADDR       (GIC_REG_BASE_ADDR + 0x0400U)
 #define GICD_IGRPMODRN_ADDR        (GIC_REG_BASE_ADDR + 0x0D00U)
 
-#define GICR_BASE0                 (GIC_REG_BASE_ADDR + 0x100000U)
-#define GICR_BASE1                 (GIC_REG_BASE_ADDR + 0x110000U)
+#define GICR_BASE_SEL ((g_gicCoreMap.value & 0x100000) ? MMU_GICR0_ADDR : MMU_GICR1_ADDR)
+#define GICR_BASE0                 (GICR_BASE_SEL + 0x100000U)
+#define GICR_BASE1                 (GICR_BASE_SEL + 0x110000U)
 
 #define GICR_CTRL_ADDR             (GICR_BASE0 + 0x0000U)  /* GICR_CTLR_ADDR */
 #define GICR_IIDR_ADDR             (GICR_BASE0 + 0x0004U)

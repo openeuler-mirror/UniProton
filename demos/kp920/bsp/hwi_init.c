@@ -6,11 +6,6 @@
 #include "cpu_config.h"
 
 #if (OS_GIC_VER == 3)
-enum GicIntState {
-    GIC_DISABLE = 0,
-    GIC_ENABLE = 1
-};
-
 enum SicGroupType {
     SIC_GROUP_G0S  = 0,
     SIC_GROUP_G1NS = 1,

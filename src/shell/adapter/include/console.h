@@ -15,7 +15,10 @@
 #ifndef _CONSOLE_H
 #define _CONSOLE_H
 
+#include "prt_buildef.h"
+#ifdef OS_OPTION_NUTTX_VFS
 #include "nuttx/config.h"
+#endif
 #include "los_printf.h"
 
 #ifdef __cplusplus

@@ -69,6 +69,18 @@ CHAR *ShellGetInputBuf(ShellCB *shellCB)
     CmdKeyLink *cmdKey = shellCB->cmdKeyLink;
     CmdKeyLink *cmdNode = NULL;
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
+    if ((cmdKey == NULL) || LOS_ListEmpty(&cmdKey->list)) {
+        PRT_HwiRestore(intSave);
+        return NULL;
+    }
+
+    cmdNode = LOS_DL_LIST_ENTRY(cmdKey->list.next, CmdKeyLink, list);
+    LOS_ListDelete(&(cmdNode->list));
+    PRT_HwiRestore(intSave);
+#else
     (VOID)pthread_mutex_lock(&shellCB->keyMutex);
     if ((cmdKey == NULL) || LOS_ListEmpty(&cmdKey->list)) {
         (VOID)pthread_mutex_unlock(&shellCB->keyMutex);
@@ -78,6 +90,7 @@ CHAR *ShellGetInputBuf(ShellCB *shellCB)
     cmdNode = LOS_DL_LIST_ENTRY(cmdKey->list.next, CmdKeyLink, list);
     LOS_ListDelete(&(cmdNode->list));
     (VOID)pthread_mutex_unlock(&shellCB->keyMutex);
+#endif
 
     return cmdNode->cmdString;
 }
@@ -91,13 +104,21 @@ STATIC VOID ShellSaveHistoryCmd(CHAR *string, ShellCB *shellCB)
     if ((string == NULL) || (strlen(string) == 0)) {
         return;
     }
-
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    uintptr_t intSave;
+    intSave = PRT_HwiLock();
+#else
     (VOID)pthread_mutex_lock(&shellCB->historyMutex);
+#endif
     if (cmdHistory->count != 0) {
         cmdNxt = LOS_DL_LIST_ENTRY(cmdHistory->list.prev, CmdKeyLink, list);
         if (strcmp(string, cmdNxt->cmdString) == 0) {
             (VOID)LOS_MemFree(m_aucSysMem0, (VOID *)cmdKey);
+#ifdef LOSCFG_SHELL_MICA_INPUT
+            PRT_HwiRestore(intSave);
+#else
             (VOID)pthread_mutex_unlock(&shellCB->historyMutex);
+#endif
             return;
         }
     }
@@ -107,14 +128,21 @@ STATIC VOID ShellSaveHistoryCmd(CHAR *string, ShellCB *shellCB)
         LOS_ListDelete(&cmdNxt->list);
         LOS_ListTailInsert(&cmdHistory->list, &cmdKey->list);
         (VOID)LOS_MemFree(m_aucSysMem0, (VOID *)cmdNxt);
+#ifdef LOSCFG_SHELL_MICA_INPUT
+        PRT_HwiRestore(intSave);
+#else
         (VOID)pthread_mutex_unlock(&shellCB->historyMutex);
+#endif
         return;
     }
 
     LOS_ListTailInsert(&cmdHistory->list, &cmdKey->list);
     cmdHistory->count++;
-
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    PRT_HwiRestore(intSave);
+#else
     (VOID)pthread_mutex_unlock(&shellCB->historyMutex);
+#endif
     return;
 }
 
@@ -190,9 +218,13 @@ LITE_OS_SEC_TEXT_MINOR VOID ShellCmdLineParse(CHAR c, pf_OUTPUT outputFunc, Shel
             shellCB->shellBuf[shellCB->shellBufOffset] = '\0';
         }
         shellCB->shellBufOffset = 0;
+#ifdef LOSCFG_SHELL_MICA_INPUT
+        OsShellCmdPush(shellCB->shellBuf, shellCB->cmdKeyLink);
+#else
         (VOID)pthread_mutex_lock(&shellCB->keyMutex);
         OsShellCmdPush(shellCB->shellBuf, shellCB->cmdKeyLink);
         (VOID)pthread_mutex_unlock(&shellCB->keyMutex);
+#endif
         ShellNotify(shellCB);
         return;
     } else if ((ch == '\b') || (ch == 0x7F)) { /* backspace or delete(0x7F) */
@@ -335,7 +367,9 @@ LITE_OS_SEC_TEXT_MINOR VOID ShellEntry(uintptr_t param1, uintptr_t param2, uintp
     ShellCB *shellCB = (ShellCB *)param1;
 
     (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+#ifdef LOSCFG_SHELL_MICA_INPUT
     ShellStdinLoop(shellCB);
+#endif
 }
 
 STATIC VOID ShellCmdProcess(ShellCB *shellCB)

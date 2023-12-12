@@ -10,6 +10,11 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shell.h"
+#include "show.h"
+#endif
+
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
@@ -51,8 +56,41 @@ int TestOpenamp()
 }
 #endif
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+static int osShellCmdTstReg(int argc, const char **argv)
+{
+    printf("tstreg: get %d arguments\n", argc);
+    for(int i = 0; i < argc; i++) {
+        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    }
+
+    return 0;
+}
+
+void micaShellInit()
+{
+    int ret = OsShellInit(0);
+    ShellCB *shellCb = OsGetShellCB();
+    if (ret != 0 || shellCb == NULL) {
+        printf("shell init fail\n");
+        return;
+    }
+    (void)memset_s(shellCb->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
+    if (ret == 0) {
+        printf("[INFO]: reg cmd 'tstreg' successed!\n");
+    } else {
+        printf("[INFO]: reg cmd 'tstreg' failed!\n");
+    }
+}
+#endif
+
 #if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
 int xml2_test_entry();
+#endif
+
+#if defined(LIBCCL_TESTCASE)
+extern int test_ccl(const char *conf_path);
 #endif
 
 void TestTaskEntry()
@@ -61,6 +99,10 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
+#endif
 
 #if defined(OS_SUPPORT_ETHERCAT)
     ethercat_init();
@@ -91,6 +133,9 @@ void TestTaskEntry()
 #endif
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
     Init(0, 0, 0, 0);
+#endif
+#if defined(LIBCCL_TESTCASE)
+    test_ccl(NULL);
 #endif
 }
 
@@ -206,114 +251,3 @@ S32 main(void)
 {
     return OsConfigStart();
 }
-
-extern int __wrap_memcmp(const void *s1, const void *s2, size_t cnt)
-{
-    const char *t1 = s1;
-    const char *t2 = s2;
-    int res = 0;
-
-    while (cnt-- > 0) {
-        if (*t1 > *t2) {
-            res = 1;
-            break;
-        } else if (*t1 < *t2) {
-            res = -1;
-            break;
-        } else {
-            t1++;
-            t2++;
-        }
-    }
-    return res;
-}
-
-extern char *__wrap_strncpy(char *dest, const char *src, unsigned int num)
-{
-    char *ret = dest;
-    while (num && *src) {
-        *dest++ = *src++;
-        num--;
-    }
-    while (num) {
-        *dest++ = '\0';
-        num--;
-    }
-
-    return ret;
-}
-
-extern void *__wrap_memset(void *dest, int set, U32 len)
-{
-    if (dest == NULL || len == 0) {
-        return NULL;
-    }
-    
-    char *ret = (char *)dest;
-    for (int i = 0; i < len; ++i) {
-        ret[i] = set;
-    }
-    return dest;
-}
-
-extern void *__wrap_memcpy(void *dest, const void *src, size_t size)
-{
-    for (size_t i = 0; i < size; ++i) {
-        *(char *)(dest + i) = *(char *)(src + i);
-    }
-    return dest;
-}
-
-extern int __wrap_strcmp(const char *str1, const char *str2)
-{
-    int ret = 0;
-    while (!(ret = *(unsigned char *)str1 - *(unsigned char *)str2) && *str1) {
-        str1++;
-        str2++;
-    }
-    if (ret < 0) {
-        return -1;
-    } else if (ret > 0) {
-        return 1;
-    }
-    return 0;
-}
-
-extern int __wrap_strncmp(const char *dst, const char *src, int n)
-{
-    while (--n && (*dst++ == *src++));
-    return *dst - *src;
-}
-
-extern size_t __wrap_strnlen(const char *str, size_t maxsize)
-{
-    size_t n;
-
-    for (n = 0; n < maxsize && *str; n++, str++) {
-        ;
-    }
-
-    return n;
-}
-
-extern size_t __wrap_strlen(char *str)
-{
-    int count = 0;
-    while (*str != '\0') {
-        count++;
-        str++;
-    }
-    return count;
-}
-
-extern void *__wrap_memchr(const void *buf, int c, size_t count)
-{
-    while (count--) {
-        if (*(char *)buf == c) {
-            return (void *)buf;
-        }
-        buf = (char *)buf + 1;
-    }
-    return NULL;
-}
-

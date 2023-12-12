@@ -567,6 +567,13 @@ extern "C" {
 #define OS_TSK_WAITQUEUE_PEND 0x10000
 
 /*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务暂停，等待任何信号处理完成
+ */
+#define OS_TSK_SIG_PAUSE 0x20000
+
+/*
  * 任务模块的错误码定义。
  */
 /*

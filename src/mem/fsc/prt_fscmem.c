@@ -21,6 +21,10 @@
 OS_SEC_BSS struct TagMemFuncLib g_memArithAPI; /* 算法对应API */
 OS_SEC_BSS struct TagFscMemCtrl g_fscMemNodeList[OS_FSC_MEM_LAST_IDX];
 OS_SEC_BSS U32 g_fscMemBitMap = 1;
+U32 g_memTotalSize = 0;
+U32 g_memUsage = 0;
+U32 g_memPeakUsage = 0;
+uintptr_t g_memStartAddr = 0;
 
 OS_SEC_TEXT struct TagFscMemCtrl *OsFscMemSearch(U32 size, U32 *idx)
 {
@@ -130,7 +134,10 @@ OS_SEC_TEXT void *OsFscMemAllocInner(U32 mid, U32 size, uintptr_t align)
     currBlk->prev = 0;
     usrAddr = (((uintptr_t)currBlk + OS_FSC_MEM_SLICE_HEAD_SIZE + align - 1) & ~(align - 1));
     OsMemSetHeadAddr(usrAddr, ((uintptr_t)currBlk + OS_FSC_MEM_SLICE_HEAD_SIZE));
-
+    g_memUsage += allocSize;
+    if (g_memPeakUsage < g_memUsage) {
+        g_memPeakUsage = g_memUsage;
+    }
     return (void *)usrAddr;
 }
 
@@ -189,6 +196,7 @@ OS_SEC_TEXT U32 OsFscMemFree(void *addr)
 
     nextBlk = (struct TagFscMemCtrl *)((uintptr_t)currBlk + (uintptr_t)currBlk->size);
     nextBlk->prevSize = currBlk->size;
+    g_memUsage -= blkSize;
 
     return OS_OK;
 }
@@ -268,6 +276,9 @@ OS_SEC_TEXT U32 OsFscMemInit(uintptr_t addr, U32 size)
     currBlk->prev = headBlk;
     headBlk->next = currBlk;
     headBlk->prev = currBlk;
+
+    g_memTotalSize = size;
+    g_memStartAddr = addr;
 
     nextBlk = (struct TagFscMemCtrl *)((uintptr_t)currBlk + (uintptr_t)currBlk->size);
     nextBlk->next = OS_FSC_MEM_MAGIC_USED;

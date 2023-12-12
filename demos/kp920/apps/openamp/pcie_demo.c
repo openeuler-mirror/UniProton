@@ -13,6 +13,7 @@
  * Description: PCIE功能demo
  */
 
+#include "cpu_config.h"
 #include "pcie.h"
 #include "prt_hwi.h"
 
@@ -44,7 +45,7 @@ int hpm_probe(struct pci_dev *dev, const struct pci_device_id *id)
     int32_t ret;
 
     /* demo代码仅找一个设备验证，匹配到多个设备也不执行多次probe */
-    if (dev->bus_no != 0xbd) {
+    if (dev->bdf != 0x7d03) {
         return 0;
     }
     if (hpm_probe_flag > 0) {
@@ -150,10 +151,6 @@ static struct pci_driver hpm_driver = {
     .probe      = hpm_probe,
     .remove     = hpm_remove,
 };
-
-#ifndef MMU_ECAM_ADDR
-#define MMU_ECAM_ADDR 0xd0000000ULL
-#endif
 
 void test_pcie_demo(void)
 {

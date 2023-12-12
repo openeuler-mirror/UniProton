@@ -17,52 +17,7 @@
 
 #include "prt_typedef.h"
 #include "prt_hwi.h"
-
-struct TagOsStack {
-    U64 rax;
-    U64 rbx;
-    U64 rcx;
-    U64 rdx;
-    U64 rsi;
-    U64 rdi;
-    U64 rbp;
-    U64 r8;
-    U64 r9;
-    U64 r10;
-    U64 r11;
-    U64 r12;
-    U64 r13;
-    U64 r14;
-    U64 r15;
-    U64 intNumber;
-    U64 rbpFrame;
-    U64 ripFrame;
-    U64 error;
-    U64 rip;
-    U64 cs;
-    U64 rflags;
-    U64 rsp;
-    U64 ss;
-};
-
-struct OsFpuStack {
-    U16 fcw;
-    U16 fsw;
-    U8  ftw;
-    U8  reserve1;
-    U16 fop;
-    U32 fip;
-    U16 fcs;
-    U16 reserve2;
-    U32 fdp;
-    U16 fds;
-    U16 reserve3;
-    U32 mxcsr;
-    U32 mxcsrMask;
-    // fxsave/fsrstore 512 字节，后面栈初始化为0
-};
-
-#define OS_FPU_SIZE 512
+#include "./hw/x86_64/os_cpu_x86_64.h"
 
 #define OS_HWI_MAX_NUM 256
 #define OS_HWI_MIN 0
@@ -186,6 +141,20 @@ OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
 {
     (void)lockVar;
     return;
+}
+
+OS_SEC_ALW_INLINE INLINE uintptr_t OsGetSp(void)
+{
+    uintptr_t sp;
+
+    OS_EMBED_ASM("mov %%rsp, %0" : "=q"(sp));
+
+    return sp;
+}
+
+OS_SEC_ALW_INLINE INLINE uintptr_t OsTskGetInstrAddr(uintptr_t addr)
+{
+    return ((struct TagOsStack *)(addr + OS_FPU_SIZE))->rip;
 }
 
 #endif

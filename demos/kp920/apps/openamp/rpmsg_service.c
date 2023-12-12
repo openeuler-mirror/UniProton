@@ -17,6 +17,9 @@
 #include <string.h>
 #include "rpmsg_backend.h"
 #include "cpu_config.h"
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shmsg.h"
+#endif
 
 static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
@@ -27,7 +30,7 @@ struct rpmsg_endpoint g_ept;
 struct rpmsg_endpoint g_proxybash_ept;
 #endif
 U32 g_receivedMsg;
-bool g_openampFlag = false;
+
 #define RPMSG_ENDPOINT_NAME "console"
 #if defined(OS_OPTION_OPENAMP_PROXYBASH)
 #define PROXYBASH_RPMSG_ENDPOINT_NAME "proxybash"
@@ -43,16 +46,21 @@ int send_message(unsigned char *message, int len)
 {
     return rpmsg_send(&g_ept, message, len);
 }
-
 static int g_s0 = 0;
 char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
-    g_openampFlag = true;
     if (g_s0 == 0) {
         send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
         g_s0++;
     }
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    ShellCB *shellCB = OsGetShellCB();
+    if (shellCB != NULL) {
+        char c = ((char *)data)[0];
+        ShellCmdLineParse(c, (pf_OUTPUT)printf, shellCB);
+    }
+#endif
     return OS_OK;
 }
 
