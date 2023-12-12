@@ -13,6 +13,9 @@
  * Description: SPI功能
  */
 
+#include "test.h"
+#include "timer.h"
+#include "prt_task.h"
 #include "spi_1911.h"
 
 static U32 SpiDataConvert32(U32 data)
@@ -212,4 +215,37 @@ int SpiTransferProc(U32 spiId, struct TransferDataInfo *transferInfo)
     spi->spiOps->Enable(&spi->spiBaseAddr);
 
     return 0;
+}
+
+void SpiTransferTest(void)
+{
+#if (CONFIG_SPI_ENABLE == YES)
+    int ret;
+    U8 txBuf[] = "123 Hello world !!! 123 Hello UniProton !!!";
+    U8 rxBuf[sizeof(txBuf)];
+    struct TransferDataInfo transInfo;
+#if (CONFIG_DEVICE_DK_A2 == YES)
+    U32 spiId = 0;
+#else
+    U32 spiId = 5;
+#endif
+
+    PRT_TaskDelay(OS_TICK_PER_SECOND);
+    PRT_Printf("[uniproton] Tx:%s\n", txBuf);
+    PRT_TaskDelay(OS_TICK_PER_SECOND);
+
+    transInfo.txBuf = (void *)txBuf;
+    transInfo.rxBuf = (void *)rxBuf;
+    transInfo.len = sizeof(txBuf);
+    transInfo.bitsPerWord = WIDTH_8_BITS;
+    transInfo.mode = SPI_LOOP; /* 环回自验模式 */
+    transInfo.chipSelect = 0;
+    transInfo.rxFifoLevel = SPI_RX_THR_32;
+    ret = SpiTransferProc(spiId, &transInfo);
+    if (ret != 0) {
+        PRT_Printf("[uniproton] Failed to transfer data by spi[%u], ret:%d\n", spiId, ret);
+    }
+
+    PRT_Printf("[uniproton] Rx:%s\n", rxBuf);
+#endif
 }

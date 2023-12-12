@@ -34,6 +34,8 @@
 #define ICC_IAR1_EL1              S3_0_C12_C12_0
 #define ICC_EOIR1_EL1             S3_0_C12_C12_1
 #define ICC_SGI1R_EL1             S3_0_C12_C11_5
+#define ICC_DIR_EL1               S3_0_C12_C11_1
+#define ICC_CTLR_EL1              S3_0_C12_C12_4
 #endif
 #define GIC_REG_BASE              g_gicdBase
 #define MAX_SGI_ID                15   // 系统支持的最大SGI的中断号
@@ -43,6 +45,7 @@
 #define MIN_LPI_ID                8192 // 系统可支持的最小LPI的中断号
 #define MAX_INT_PRIORITY          0xF  // 安全可配置的最大优先级
 #define GIC_INT_ID_MASK           0x3FFU
+#define ICC_CTLR_EL1_EOI_MODE     (U32)(1 << 1) // EOImode的值
 // 使能/去使能中断，每个寄存器对应32个中断
 #define GIC_IENABLE_INT_NUM       32
 // 将变参列表字符串化

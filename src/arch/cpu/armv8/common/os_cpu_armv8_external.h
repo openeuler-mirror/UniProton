@@ -178,6 +178,16 @@ OS_SEC_ALW_INLINE INLINE void OsHwiClear(U32 intId)
 {
     OS_EMBED_ASM("MSR " REG_ALIAS(ICC_EOIR1_EL1)", %0 \n"
                  : : "r"(intId) : "memory");
+#if defined(GUEST_OS)
+    U32 iar;
+    OS_EMBED_ASM("MRS   %0," REG_ALIAS(ICC_CTLR_EL1)" \n"
+                 : "=&r"(iar) : : "memory");
+    // 需要根据EOImode来判断是否需要去激活
+    if (iar & ICC_CTLR_EL1_EOI_MODE) {
+        OS_EMBED_ASM("MSR " REG_ALIAS(ICC_DIR_EL1)", %0 \n"
+                     : : "r"(intId) : "memory");
+    }
+#endif
     return;
 }
 #endif
