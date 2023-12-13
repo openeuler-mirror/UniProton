@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include "prt_proxy_ext.h"
 #include <stdio.h>
+#include "pthread.h"
 
 #define FD_SETSIZE 1024
 #define dprintf(format, ...) PRT_ProxyPrintf(format, ##__VA_ARGS__)
@@ -1510,6 +1511,57 @@ close_file:
     return ret >= 0 ? 0 : -1;
 }
 
+// 测试mkfifo必须配合linux侧的其他进程的读写操作
+static int test_mkfifo()
+{
+    char *fname = "/tmp/test_mkfifo";
+    char rbuff[100];
+    pthread_t mkfifo_thread;
+    mkfifo(fname, 0666);
+    
+    // test read
+    dprintf("\nUP>mkfifo reading, please run 'echo \"any test sting\" > /tmp/test_mkfifo'\r\n");
+    int fd = open(fname, O_RDONLY);
+    if (fd < 0) {
+        dprintf("\nUP>test_mkfifo open file '%s' fail, ret: %d\r\n", fname, fd);
+        return fd;
+    }
+    dprintf("\nUP>test_mkfifo opened file '%s' with fd = %d\r\n", fname, fd);
+
+    ssize_t ret = read(fd, rbuff, sizeof(rbuff));
+    if (ret < 0) {
+        dprintf("\nUP>Read from fd = %d, failed ret %d\r\n", fd, ret);
+        goto close_file;
+    }
+    rbuff[ret] = 0;
+    dprintf("\nUP>Read from fd = %d, size = %d, "
+    "printing contents below .. %s\r\n", fd, ret, rbuff);
+    close(fd);
+
+    // test write
+    char *str = "A Test string being written to file..";
+    dprintf("\nUP>mkfifo writing, please run 'cat /tmp/test_mkfifo'\r\n");
+    fd = open(fname, O_WRONLY);
+    if (fd < 0) {
+        dprintf("\nUP>test_mkfifo open file '%s' fail, ret: %d\r\n", fname, fd);
+        ret = -1;
+        goto close_file;
+    }
+    dprintf("\nUP> test_mkfifo opened file '%s' with fd = %d\r\n", fname, fd);
+
+    ret = write(fd, str, strlen(str));
+    if (ret < 0) {
+        dprintf("\nUP>test_mkfifo write to fd = %d, failed ret %d\r\n", fd, ret);
+         ret = -1;
+        goto close_file;
+    }
+
+close_file:
+    close(fd);
+    dprintf("\nUP>Closed fd = %d\r\n", fd);
+    return ret >= 0 ? 0 : -1;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1562,6 +1614,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_link),
     TEST_CASE_Y(test_access),
     TEST_CASE_Y(test_dup2),
+    TEST_CASE_Y(test_mkfifo),
 };
 
 int rpc_test_entry()

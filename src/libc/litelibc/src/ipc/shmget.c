@@ -19,7 +19,7 @@
 int shmget(key_t key, size_t size, int shmflg)
 {
     int shmid;
-    int ret = OsShmGet(key, shmflg,size, &shmid);
+    int ret = OsShmGet(key, shmflg, size, &shmid);
     errno = ret;
     return (ret == 0) ? shmid : (-1);
 }
