@@ -10,16 +10,17 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Create: 2023-10-17
- * Description: PCIE功能
+ * Description: PCIE功能 依赖其他模块实现的接口
  */
 
-#include "prt_typedef.h"
-#include "pcie_config.h"
+#ifndef __PCIE_DEPEND_H__
+#define __PCIE_DEPEND_H__
 
-bool __attribute__((weak)) pci_bus_accessible(uint32_t bus_no)
-{
-    if (bus_no >= PCI_BUS_NUM_MAX) {
-        return false;
-    }
-    return true;
-}
+#include "prt_typedef.h"
+
+extern bool pci_bus_accessible(uint32_t bus_no);
+
+#define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
+extern int proxybash_exec_lock(char *cmdline, char *result_buf, unsigned int buf_len);
+
+#endif

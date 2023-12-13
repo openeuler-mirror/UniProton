@@ -20,21 +20,48 @@
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shmsg.h"
 #endif
+#ifdef OS_OPTION_PROXY
+#include "prt_proxy_ext.h"
+#endif
 
 static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
 static struct metal_io_region *io;
 struct rpmsg_device *g_rdev;
+
+#define RPMSG_VIRTIO_CONSOLE_CONFIG            \
+    (&(const struct rpmsg_virtio_config) {     \
+        .h2r_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
+        .r2h_buf_size = RPMSG_CONSOLE_BUFFER_SIZE, \
+        .split_shpool = false,             \
+})
+
+typedef enum {
+    RPMSG_ADDR_CONSOLE = 0xf,
+    RPMSG_ADDR_PROXYBASH,
+    RPMSG_ADDR_PROXY,
+    RPMSG_ADDR_END,
+} RPMSG_ADDR_E;
+
 struct rpmsg_endpoint g_ept;
-#if defined(OS_OPTION_OPENAMP_PROXYBASH)
-struct rpmsg_endpoint g_proxybash_ept;
-#endif
-U32 g_receivedMsg;
 
 #define RPMSG_ENDPOINT_NAME "console"
+
+/* PROXYBASH 功能后续整合到 PROXY 中，并删除 */
 #if defined(OS_OPTION_OPENAMP_PROXYBASH)
+struct rpmsg_endpoint g_proxybash_ept;
 #define PROXYBASH_RPMSG_ENDPOINT_NAME "proxybash"
 #endif
+
+#if defined(OS_OPTION_PROXY)
+struct rpmsg_endpoint g_proxy_ept;
+#define PROXY_RPMSG_ENDPOINT_NAME "proxy"
+extern char *g_printf_buffer;
+extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
+extern int rpmsg_client_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+    uint32_t src, void *priv);
+#endif
+
 extern void OsPowerOffSetFlag(void);
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -139,7 +166,8 @@ int openamp_init(void)
         return err;
     }
 
-    err = rpmsg_init_vdev(&rvdev, &vdev, NULL, io, NULL);
+    err = rpmsg_init_vdev_with_config(&rvdev, &vdev, NULL, io, NULL,
+        RPMSG_VIRTIO_CONSOLE_CONFIG);
     if (err) {
         return err;
     }
@@ -148,15 +176,24 @@ int openamp_init(void)
 
 #if defined(OS_OPTION_OPENAMP_PROXYBASH)
     err = rpmsg_create_ept(&g_proxybash_ept, g_rdev,
-                           PROXYBASH_RPMSG_ENDPOINT_NAME, 0xE, RPMSG_ADDR_ANY,
-                           proxybash_rpmsg_endpoint_cb, rpmsg_service_unbind);
+        PROXYBASH_RPMSG_ENDPOINT_NAME, RPMSG_ADDR_PROXYBASH, RPMSG_ADDR_ANY,
+        proxybash_rpmsg_endpoint_cb, rpmsg_service_unbind);
+    if (err) {
+        return err;
+    }
+#endif
+
+#if defined(OS_OPTION_PROXY)
+    err = rpmsg_create_ept(&g_proxy_ept, g_rdev,
+        PROXY_RPMSG_ENDPOINT_NAME, RPMSG_ADDR_PROXY, RPMSG_ADDR_ANY,
+        rpmsg_client_cb, rpmsg_service_unbind);
     if (err) {
         return err;
     }
 #endif
 
     err = rpmsg_create_ept(&g_ept, g_rdev, RPMSG_ENDPOINT_NAME,
-                           0xF, RPMSG_ADDR_ANY,
+                           RPMSG_ADDR_CONSOLE, RPMSG_ADDR_ANY,
                            rpmsg_endpoint_cb, rpmsg_service_unbind);
     if (err) {
         return err;
@@ -183,6 +220,12 @@ int rpmsg_service_init(void)
 
 #if defined(OS_OPTION_OPENAMP_PROXYBASH)
     while (!is_rpmsg_ept_ready(&g_proxybash_ept));
+#endif
+
+#if defined(OS_OPTION_PROXY)
+    while (!is_rpmsg_ept_ready(&g_proxy_ept));
+    rpmsg_set_default_ept(&g_proxy_ept);
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
 #endif
 
     while (!is_rpmsg_ept_ready(&g_ept));

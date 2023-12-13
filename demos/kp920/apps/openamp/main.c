@@ -79,17 +79,13 @@ void micaShellInit()
 }
 #endif
 
-#if defined(OS_OPTION_POWEROFF)
-extern bool g_sysPowerOffFlag;
-#endif
-
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
 #endif
-#if defined(RHEALSTONE_TESTCASE)
-    printf("RHEALSTONE_TESTCASE TestTaskEntry(Freq:%llu)\r\n", g_timerFrequency);
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+    printf("TESTCASE TestTaskEntry(Freq:%llu)\r\n", g_timerFrequency);
     Init(0, 0, 0, 0);
 #endif
     for (int i = 0; i < 5; i++) {

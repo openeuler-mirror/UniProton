@@ -36,6 +36,7 @@ include_directories(
     ${HOME_PATH}/src/shell/adapter/include
     ${HOME_PATH}/src/shell/full/include
     ${HOME_PATH}/src/fs/include
+    ${HOME_PATH}/src/component/proxy
     ${OUTPUT_PATH}/libc/include
     ${OUTPUT_PATH}/libc/include/bits
 )
@@ -53,6 +54,10 @@ link_libraries(
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
+if (${CONFIG_OS_OPTION_PROXY})
+    add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
+    list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
+endif()
 
 if (${APP} MATCHES "kp920")
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
@@ -63,12 +68,17 @@ elseif (${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "interrupt-latency" OR
         ${APP} STREQUAL "deadlock-break" OR
         ${APP} STREQUAL "message-latency")
-    add_subdirectory(../../testsuites/rhealstone tmp)
+    add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
     target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:rhealstoneTest>)
     add_executable(${APP} ${OBJS})
 elseif (${APP} STREQUAL "linuxTest")
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
     target_compile_options(rpmsg PUBLIC -DLINUX_TESTCASE)
+    add_executable(${APP} ${OBJS})
+elseif (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+    add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
+    target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
     add_executable(${APP} ${OBJS})
 endif()

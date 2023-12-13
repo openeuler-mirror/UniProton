@@ -2911,7 +2911,7 @@ int PRT_ProxyMkfifo(const char *pathname, mode_t mode)
     return outp.ret;
 }
 
-#ifdef OS_OPTION_PROXY
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
 WEAK_ALIAS(PRT_ProxyWrite, write);

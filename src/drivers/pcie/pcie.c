@@ -21,7 +21,7 @@
 #include "prt_mem.h"
 #include "pcie.h"
 #include "pcie_config.h"
-#include "pcie_bus_filter.h"
+#include "pcie_depend.h"
 
 #define IORESOURCE_IO   0x00000100    /* PCI/ISA I/O ports */
 #define IORESOURCE_MEM  0x00000200
@@ -293,9 +293,6 @@ void pci_dev_add(struct pci_dev *pdev)
         list_add_tail(&(pdev->pdrv->links), &g_pcie_driver_list_head);
     }
 }
-
-#define UNIPROTON_NODE_PATH "/run/pci_uniproton/"
-extern int proxybash_exec_lock(char *cmdline, char *result_buf, unsigned int buf_len);
 
 int pci_irq_parse(char *buff, int *irq, int irq_num)
 {
