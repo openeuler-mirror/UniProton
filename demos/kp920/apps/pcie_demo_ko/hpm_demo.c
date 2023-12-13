@@ -11,7 +11,7 @@
 #include "hpm_node.h"
 
 #define MMU_DMA_ADDR    0x202780100000ULL
-#define MMU_DMA_LENGTH  0x200000
+#define MMU_DMA_LENGTH  0xA00000
 
 const char g_hpm_driver_name[] = "huawei_pci_model";
 

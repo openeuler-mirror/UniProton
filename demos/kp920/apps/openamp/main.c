@@ -160,11 +160,6 @@ U32 PRT_HardDrvInit(void)
         return ret;
     }
 
-    ret = PRT_PrintfInit();
-    if (ret) {
-        return ret;
-    }
-    
     return OS_OK;
 }
 

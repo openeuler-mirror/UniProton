@@ -4,25 +4,31 @@
 #include "cache_asm.h"
 #include "prt_gic_external.h"
 
+/* 系统内存空间1 */
 #define MMU_IMAGE_ADDR             0x202783000000ULL
+#define MMU_IMAGE_ADDR_LEN         0x7D000000           /* 2000MB */
 #define MMU_GIC_ADDR               0xAA000000ULL        /* gicd */
 #define MMU_GICR0_ADDR             0xAA000000ULL        /* gicr die1 */
 #define MMU_GICR1_ADDR             0xAE000000ULL        /* gicr die0 */
-#define MMU_UART_ADDR              0x08743000ULL /* todo */
+#define MMU_GIC_ADDR_LEN           0x1000000
 #define MMU_OPENAMP_ADDR           0x202780000000ULL
-#define MMU_DMA_ADDR               0x202780100000ULL
-#define MMU_LPI_PEND_ADDR          0x202780400000ULL /* 预留使用 */
-
-#define MMU_ECAM_ADDR               0xd0000000ULL
-#define MMU_ECAM_ADDR_LEN           0x10000000ULL /* 256Bus * 32Device * 8Fuc * 4KB */
-
-#define MMU_ITS_ADDR                0xA8100000ULL
-#define MMU_ITS1_ADDR               0x2000A8100000ULL
-#define MMU_ITS_ADDR_LEN            0x100000ULL /* 1MB */
-
+#define MMU_OPENAMP_ADDR_LEN       0x30000
 #ifdef OS_GDB_STUB
 #define MMU_GDB_STUB_ADDR          0x202780030000ULL
 #endif
+#define MMU_DMA_ADDR               0x202780100000ULL
+#define MMU_DMA_ADDR_LEN           0xA00000
+#define MMU_LPI_PEND_ADDR          0x202780B00000ULL /* 预留使用 */
+#define MMU_LPI_PEND_ADDR_LEN      0x200000
+
+/* 系统硬件IO空间 */
+#define MMU_ECAM_ADDR               0xd0000000ULL
+#define MMU_ECAM_ADDR_LEN           0x10000000ULL /* 256Bus * 32Device * 8Fuc * 4KB */
+#define MMU_UART_ADDR               0x94080000ULL /* 未验证，未启用 */
+#define MMU_UART_ADDR_LEN           0x4000
+#define MMU_ITS_ADDR                0xA8100000ULL
+#define MMU_ITS1_ADDR               0x2000A8100000ULL
+#define MMU_ITS_ADDR_LEN            0x100000ULL /* 1MB */
 
 #define MMU_INVALID_ADDR            0x0ULL
 
