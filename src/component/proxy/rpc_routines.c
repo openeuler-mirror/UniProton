@@ -683,7 +683,7 @@ ssize_t PRT_ProxyReadLoop(int fd, void *buf, size_t count) {
     if (count <= MAX_STRING_LEN) {
         return PRT_ProxyRead(fd, buf, count);
     } else {
-        printf("WARN: read buf to large, using loop read\n");
+        printf("WARN: read buf too large, using loop read\n");
     }
 
     size_t lenRemain = count;
@@ -1783,7 +1783,7 @@ size_t PRT_ProxyFreadLoop(void *buffer, size_t size, size_t count, FILE *f) {
     if (lenRemain <= MAX_STRING_LEN) {
         return PRT_ProxyFread(buffer, size, count, f);
     } else {
-        printf("WARN: fread buf to large, using loop fread\n");
+        printf("WARN: fread buf too large, using loop fread\n");
     }
 
     while (lenRemain > 0)
@@ -1855,7 +1855,7 @@ size_t PRT_ProxyFwriteLoop(const void *buffer, size_t size, size_t count, FILE *
     if (lenRemain <= MAX_STRING_LEN) {
         return PRT_ProxyFwrite(buffer, size, count, f);
     } else {
-        printf("WARN: fwrite buf to large, using loop fwrite\n");
+        printf("WARN: fwrite buf too large, using loop fwrite\n");
     }
 
     while (lenRemain > 0)

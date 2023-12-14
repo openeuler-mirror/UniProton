@@ -22,6 +22,13 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp)
     U64 tick;
     const U32 nsPerTick = OS_SYS_NS_PER_SECOND / g_tickModInfo.tickPerSecond;
 
+    struct TagTskCb *curTskCb = RUNNING_TASK;
+    uintptr_t intSave = OsIntLock();
+    if (curTskCb->cancelState == PTHREAD_CANCEL_ENABLE && curTskCb->cancelPending) {
+        PRT_PthreadExit(PTHREAD_CANCELED);
+    }
+    OsIntRestore(intSave);
+
     if (!OsTimeCheckSpec(rqtp)) {
         errno = EINVAL;
         return PTHREAD_OP_FAIL;
