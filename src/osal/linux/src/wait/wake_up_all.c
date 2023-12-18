@@ -16,8 +16,8 @@ void wake_up(struct wait_queue_head *wq_head)
         TSK_STATUS_CLEAR(taskCb, OS_TSK_WAITQUEUE_PEND);
         taskCb = LIST_COMPONENT(&wq_head->waitList, struct TagTskCb, waitList);
     }
-    OsIntRestore(intSave);
     OsTskSchedule();
+    OsIntRestore(intSave);
 }
 
 // 参考 PRT_TaskDelay 以及 OsSemPendListPut
@@ -49,7 +49,7 @@ OS_SEC_L0_TEXT U32 enter_wait_queue(struct wait_queue_head *wq_head)
     KTHREAD_TSK_STATE_SET(runTask, TASK_UNINTERRUPTIBLE);
     ListTailAdd(&runTask->waitList, &wq_head->waitList);
 
-    OsIntRestore(intSave);
     OsTskSchedule();
+    OsIntRestore(intSave);
     return OS_OK;
 }

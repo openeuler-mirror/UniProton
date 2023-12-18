@@ -166,9 +166,9 @@ int workers_init(struct rpmsg_endpoint *ept)
     for (int i = 0; i < WORKERS; i++) {
         struct TskInitParam param = {0};
         char tsk_name[16] = {0};
-        sprintf(tsk_name, "TestTask%d", i);
+        sprintf(tsk_name, "IghCmdWorker%d", i);
         param.taskEntry = (TskEntryFunc)worker_thread;
-        param.taskPrio = 25;
+        param.taskPrio = CMD_CLIENT_PRIORITY;
         param.args[0] = (uintptr_t)ept;
         param.stackSize = OS_TSK_DEFAULT_STACK_SIZE;
         param.name = tsk_name;

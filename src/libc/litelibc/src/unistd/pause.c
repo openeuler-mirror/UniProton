@@ -27,8 +27,8 @@ int pause(void)
     runTask = RUNNING_TASK;
     TSK_STATUS_SET(runTask, OS_TSK_SIG_PAUSE);
     OsTskReadyDel(runTask);
-    OsIntRestore(intSave);
     OsTskSchedule();
+    OsIntRestore(intSave);
     errno = EINVAL;
     return -1;
 }
