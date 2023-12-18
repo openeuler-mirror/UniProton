@@ -31,10 +31,10 @@ int __pthread_rwlock_unlock(pthread_rwlock_t *rwl)
         return (int)ret;
     }
 
-    PRT_HwiRestore(intSave);
     if (needSched == TRUE) {
         OsTskSchedule();
     }
+    PRT_HwiRestore(intSave);
 
     return (int)ret;
 }

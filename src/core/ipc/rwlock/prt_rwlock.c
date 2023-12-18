@@ -170,8 +170,8 @@ U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockLis
     node = OsRwLockPendFindPos(runTask, lockList);
     OsRwLockPendPre(runTask, node, timeout);
     if (timeout != OS_WAIT_FOREVER) {
-        PRT_HwiRestore(intSave);
         OsTskSchedule();
+        PRT_HwiRestore(intSave);
         intSave = PRT_HwiLock();
         /* 判断是否是等待信号量超时 */
         if (TSK_STATUS_TST(runTask, OS_TSK_TIMEOUT)) {
@@ -181,8 +181,8 @@ U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockLis
         }
         PRT_HwiRestore(intSave);
     } else {
-        PRT_HwiRestore(intSave);
         OsTskSchedule();
+        PRT_HwiRestore(intSave);
     }
 
     return OS_OK;
