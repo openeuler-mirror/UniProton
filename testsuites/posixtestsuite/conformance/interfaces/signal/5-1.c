@@ -22,17 +22,17 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-void SIGUSR1_handler(int signo)
+static void SIGUSR1_handler(int signo)
 {
 	printf("do nothing useful\n");
 }
 
-void SIGUSR2_handler(int signo)
+static void SIGUSR2_handler(int signo)
 {
 	printf("do nothing useful\n");
 }
 
-int main()
+int signal_5_1()
 {
 	if (signal(SIGUSR1, SIGUSR1_handler) == SIG_ERR) {
                 perror("Unexpected error while using signal()");

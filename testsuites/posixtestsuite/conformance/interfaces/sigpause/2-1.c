@@ -39,17 +39,17 @@
 #define INMAIN 0
 #define INTHREAD 1
 
-int handler_called = 0;
-int return_value = 2;
-int sem = INMAIN;
+static int handler_called = 0;
+static int return_value = 2;
+static int sem = INMAIN;
 
-void handler() {
+static void handler() {
 	printf("signal was called\n");
 	handler_called = 1;
 	return;
 }
 
-void *a_thread_func()
+static void *a_thread_func()
 {
 	struct sigaction act;
 	sigset_t pendingset;
@@ -79,7 +79,7 @@ void *a_thread_func()
 	return NULL;
 }
 
-int main()
+int sigpause_2_1()
 {
 	pthread_t new_th;
 

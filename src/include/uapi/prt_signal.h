@@ -176,6 +176,28 @@ extern U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info);
  */
 extern U32 PRT_SignalWait(const signalSet *set, signalInfo *info, U32 timeOutTick);
 
+/*
+ * @brief 设置信号集状态并等待。
+ *
+ * @par 描述
+ * 设置信号集屏蔽状态并等待。
+ * @attention
+ * <ul>
+ * <li>设置信号集状态，若有信号发生并执行信号处理返回</li>
+ * </ul>
+ *
+ * @param set         [IN]   类型#signalSet*，屏蔽信号集。
+ *
+ * @retval #OS_OK  0x00000000，操作成功。
+ * @retval #其它值，操作失败。
+ * @par 依赖
+ * <ul>
+ * @li prt_signal.h：该接口声明所在的头文件。
+ * </ul>
+ * @see PRT_Sigsuspend
+ */
+extern U32 PRT_SigSuspend(const signalSet *mask);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

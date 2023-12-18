@@ -36,7 +36,9 @@
 #ifndef PTHREAD_KEYS_MAX
 #define PTHREAD_KEYS_MAX 32
 #endif
+#if defined(OS_OPTION_POSIX_SIGNAL)
 #include "prt_signal.h"
+#endif
 #if defined(OS_OPTION_LINUX)
 #include <linux/kthread.h>
 #endif
@@ -126,6 +128,7 @@ struct TagTskCb {
     /* pthread key */
     void *tsd[PTHREAD_KEYS_MAX];
     U32 tsdUsed;
+#if defined(OS_OPTION_POSIX_SIGNAL)
     /* 设置的阻塞信号掩码 */
     signalSet sigMask;
     /* 设置的等待信号掩码 */
@@ -139,6 +142,8 @@ struct TagTskCb {
     /* 保存任务的原SP */
     void *oldStackPointer;
     int holdSignal;
+    timer_t itimer;
+#endif
 #if defined(OS_OPTION_LOCALE)
     locale_t locale;
 #endif

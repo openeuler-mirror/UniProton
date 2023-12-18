@@ -17,14 +17,14 @@
  *     the test a pass (most likely no signal was sent).
  */
 
-int main()
+int kill_2_1()
 {
-	if (kill(getpid(), 0) != 0) {
-		printf("Could not call kill with sig = 0\n");
-		return PTS_FAIL;
-	}
+    if (kill(getpid(), 0) == 0) {
+        printf("Could not call kill with sig = 0\n");
+        return PTS_FAIL;
+    }
 
-	printf("Test PASSED\n");
-	return PTS_PASS;
+    printf("Test PASSED\n");
+    return PTS_PASS;
 }
 

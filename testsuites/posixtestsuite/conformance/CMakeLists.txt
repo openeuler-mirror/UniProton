@@ -430,6 +430,46 @@ list(APPEND ALL_SIGNAL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigemptyset/sigemptyset_test.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/signal_test.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/pause/pause_test.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/setitimer/1_1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/setitimer/1_2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/getitimer/1_1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/getitimer/1_2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/kill/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/kill/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/4-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/6-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/7-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigsuspend/7-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/1-3.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/1-4.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sighold/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sighold/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigignore/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigignore/4-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigignore/6-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigignore/6-2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigismember/3-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigismember/4-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/3-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/5-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/6-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/signal/7-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpause/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpause/1-2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpause/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpause/3-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpause/4-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigrelse/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigrelse/2-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpending/1-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpending/1-2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpending/1-3.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigpending/2-1.c
 )
 
 list(APPEND ALL_PROXY_SRC

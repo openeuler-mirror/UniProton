@@ -21,15 +21,15 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-int handler_called = 0;
+static int handler_called = 0;
 
-void myhandler(int signo)
+static void myhandler(int signo)
 {
 	printf("SIGCHLD called. Inside handler\n");
 	handler_called = 1;
 }
 
-int main()
+int signal_2_1()
 {
 	if (signal(SIGCHLD, myhandler) == SIG_ERR) {
                 perror("Unexpected error while using signal()");

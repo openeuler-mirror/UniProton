@@ -14,7 +14,7 @@
 #include <signal.h>
 #include "posixtest.h"
 
-int main(int argc, char *argv[])
+int sigdelset_2_1()
 {
 	sigset_t signalset;
 

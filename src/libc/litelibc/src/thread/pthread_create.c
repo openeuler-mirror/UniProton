@@ -119,15 +119,17 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
 
     INIT_LIST_OBJECT(&tskCb->pendList);
     INIT_LIST_OBJECT(&tskCb->timerList);
-
+#if defined(OS_OPTION_POSIX_SIGNAL)
     tskCb->sigMask = 0;
     tskCb->sigWaitMask = 0;
     tskCb->sigPending = 0;
+    tskCb->itimer = 0;
+    INIT_LIST_OBJECT(&tskCb->sigInfoList);
+    OsInitSigVectors(tskCb);
+#endif
 #if defined(OS_OPTION_POSIX_LOCALE)
     tskCb->locale = (locale_t)libc_global_locale;
 #endif
-    INIT_LIST_OBJECT(&tskCb->sigInfoList);
-    OsInitSigVectors(tskCb);
 }
 
 int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*threadroutine)(void *), void *arg)

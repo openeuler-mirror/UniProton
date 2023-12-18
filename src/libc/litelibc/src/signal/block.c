@@ -1,6 +1,7 @@
 #include "pthread_impl.h"
-#include "syscall.h"
 #include <signal.h>
+#include "prt_signal.h"
+#include "prt_signal_external.h"
 
 static const unsigned long all_mask[] = {
 #if ULONG_MAX == 0xffffffff && _NSIG > 65
@@ -30,15 +31,19 @@ static const unsigned long app_mask[] = {
 
 void __block_all_sigs(void *set)
 {
-    __syscall(SYS_rt_sigprocmask, SIG_BLOCK, &all_mask, set, _NSIG/8);
+    sigprocmask(SIG_BLOCK, (sigset_t *)&all_mask, set);
 }
 
 void __block_app_sigs(void *set)
 {
-    __syscall(SYS_rt_sigprocmask, SIG_BLOCK, &app_mask, set, _NSIG/8);
+    sigprocmask(SIG_BLOCK, (sigset_t *)&app_mask, set);
 }
 
 void __restore_sigs(void *set)
 {
-    __syscall(SYS_rt_sigprocmask, SIG_SETMASK, set, 0, _NSIG/8);
+    signalSet prtSet = ((sigset_t *)set)->__bits[0];
+    uintptr_t intSave = OsIntLock();
+    struct TagTskCb *runTsk = RUNNING_TASK;
+    runTsk->sigMask &= ~prtSet;
+    OsIntRestore(intSave);
 }

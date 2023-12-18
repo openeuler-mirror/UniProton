@@ -17,12 +17,12 @@
 #include <errno.h>
 #include "posixtest.h"
 
-void myhandler(int signo)
+static void myhandler(int signo)
 {
 	printf("handler does nothing useful.\n");
 }
 
-int main()
+int signal_6_1()
 {
 	errno = -1;
 

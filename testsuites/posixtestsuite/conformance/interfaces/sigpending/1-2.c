@@ -32,79 +32,82 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-void handler(int signo)
+static int handler_flag = 0;
+
+static void handler(int signo)
 {
-        sigset_t pendingset;
+    sigset_t pendingset;
 
-	if (sigemptyset(&pendingset) == -1) {
-		printf("Could not call sigemptyset()\n");
-		exit(-1);
-	}
-	if (raise(SIGCONT) != 0) {
-		printf("Could not raise SIGCONT\n");
-		exit(-1);
-	}
-	if (raise(SIGUSR1) != 0) {
-		printf("Could not raise SIGUSR1\n");
-		exit(-1);
-	}
-
-	if (sigpending(&pendingset) == -1) {
-		printf("Error calling sigpending()\n");
-		exit(-1);
-	}
-
-	if (sigismember(&pendingset, SIGCONT) == 1) {
-		if (sigismember(&pendingset, SIGUSR1) == 1) {
-			printf("All pending signals found\n");
-			if (sigismember(&pendingset, SIGHUP) == 0) {
-				printf("Unsent signals not found.\n");
-				printf("Test PASSED\n");
-				exit(0);
-			} else {
-				printf("Error with unsent signals\n");
-				printf("Test FAILED\n");
-				exit(-1);
-			}
-		} else {
-			printf("Not all pending signals found\n");
-			exit(-1);
-		}
-	} else {
-		printf("Not all pending signals found\n");
-		exit(-1);
-	}
+    if (sigemptyset(&pendingset) == -1) {
+        printf("Could not call sigemptyset()\n");
+    }
+    if (raise(SIGCONT) != 0) {
+        printf("Could not raise SIGCONT\n");
+    }
+    if (raise(SIGUSR1) != 0) {
+        printf("Could not raise SIGUSR1\n");
+    }
+    if (sigpending(&pendingset) == -1) {
+        printf("Error calling sigpending()\n");
+    }
+    if (sigismember(&pendingset, SIGCONT) == 1) {
+        if (sigismember(&pendingset, SIGUSR1) == 1) {
+            printf("All pending signals found\n");
+            if (sigismember(&pendingset, SIGHUP) == 0) {
+                printf("Unsent signals not found.\n");
+                printf("Test PASSED\n");
+                handler_flag = 1;
+            } else {
+                printf("Error with unsent signals\n");
+                printf("Test FAILED\n");
+            }
+        } else {
+            printf("Not all pending signals found\n");
+        }
+    } else {
+        printf("Not all pending signals found\n");
+    }
 }
 
-int main()
+int sigpending_1_2()
 {
         struct sigaction act;
 
         act.sa_handler = handler;
         act.sa_flags = 0;
 
-	if (sigemptyset(&act.sa_mask) == -1) {
-		printf("Could not call sigemptyset()\n");
-		return PTS_UNRESOLVED;
-	}
+    if (sigemptyset(&act.sa_mask) == -1) {
+        printf("Could not call sigemptyset()\n");
+        return PTS_UNRESOLVED;
+    }
 
-	if ( (sigaddset(&act.sa_mask, SIGCONT) == -1) ||
-		(sigaddset(&act.sa_mask, SIGHUP) == -1) ||
-		(sigaddset(&act.sa_mask, SIGUSR1) == -1) ) {
-		perror("Error calling sigaddset()\n");
-		return PTS_UNRESOLVED;
-	}
+    if ( (sigaddset(&act.sa_mask, SIGCONT) == -1) ||
+        (sigaddset(&act.sa_mask, SIGHUP) == -1) ||
+        (sigaddset(&act.sa_mask, SIGUSR1) == -1) ) {
+        perror("Error calling sigaddset()\n");
+        return PTS_UNRESOLVED;
+    }
 
-        if (sigaction(SIGTTOU, &act, 0) == -1) {
-                perror("Could not call sigaction()");
-                return PTS_UNRESOLVED;
-        }
+    if (sigaction(SIGTTOU, &act, 0) == -1) {
+        perror("Could not call sigaction()");
+        return PTS_UNRESOLVED;
+    }
 
-        if (raise(SIGTTOU) == -1) {
-                perror("Could not raise SIGTTOU");
-                return PTS_UNRESOLVED;
-        }
-	printf("This code should not be reachable\n");
-	return PTS_UNRESOLVED;
+    if (raise(SIGTTOU) == -1) {
+        perror("Could not raise SIGTTOU");
+        return PTS_UNRESOLVED;
+    }
+
+    sleep(1);
+
+    if (handler_flag != 1) {
+        perror("check handler_flag fail");
+        return PTS_FAIL;
+    }
+
+    sigset_t blockset;
+    sigemptyset(&blockset);
+    sigprocmask(SIG_SETMASK, &blockset, NULL);
+
+    return PTS_PASS;
 }
-

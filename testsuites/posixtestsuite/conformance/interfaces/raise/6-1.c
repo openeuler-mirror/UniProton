@@ -17,15 +17,15 @@
 #include <errno.h>
 #include "posixtest.h"
 
-int main()
+int raise_6_1()
 {
-	if (raise(10000) == 0) {
-		printf("Incorrectly returned 0\n");
-		printf("Test FAILED\n");
-		return PTS_FAIL;
-	}
+    if (raise(10000) == 0) {
+        printf("Incorrectly returned 0\n");
+        printf("Test FAILED\n");
+        return PTS_FAIL;
+    }
 
-	printf("Test PASSED\n");
-	return PTS_PASS;
+    printf("Test PASSED\n");
+    return PTS_PASS;
 }
 
