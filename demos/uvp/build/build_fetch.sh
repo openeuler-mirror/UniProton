@@ -1,12 +1,9 @@
 echo "################# git clone libboundscheck #################"
-if [ ! -e ../../../platform/libboundscheck ]
-then
 git clone https://gitee.com/openeuler/libboundscheck.git
 cp libboundscheck/include/* ../../../platform/libboundscheck/include
 cp libboundscheck/include/* ../include
 cp libboundscheck/src/* ../../../platform/libboundscheck/src
 rm -rf libboundscheck
-fi
 
 echo "################# git clone libmetal #################"
 pushd ../component
