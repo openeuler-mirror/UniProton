@@ -6,6 +6,7 @@ SECTIONS
 {
     . = 0xf02400000;
     __openamp_phys_addr = .;
+    . = . + 0x40; /* reserved for mmu map link */
     __os_print_start = .;
     . = . + 0x100000;
     __os_print_end = .;
