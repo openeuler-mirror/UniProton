@@ -14,14 +14,13 @@
 
 #include "shcmd.h"
 
-extern U32 g_memTotalSize;
-extern U32 g_memUsage;
-extern U32 g_memPeakUsage;
+extern uintptr_t g_memTotalSize;
+extern uintptr_t g_memUsage;
+extern uintptr_t g_memPeakUsage;
 extern uintptr_t g_memStartAddr;
 
-static U32 OsShellGetMemUsage(U32 usedSize, U32 totalSize) {
-    U64 usedSizeRate = 10000 * usedSize;
-    return (U32)(usedSizeRate / totalSize);
+static double OsShellGetMemUsageRate(uintptr_t usedSize, uintptr_t totalSize) {
+    return (usedSize * 100.0 / totalSize);
 }
 
 int OsShellCmdMemInfo(int argc, const char **argv)
@@ -31,11 +30,20 @@ int OsShellCmdMemInfo(int argc, const char **argv)
     PRINTK("-----  ----------------  ----------------  ----------------  ----------  "
         "----------  ----------  ----------  ----------\n");
 
-    U32 memUsage = OsShellGetMemUsage(g_memUsage, g_memTotalSize);
-    PRINTK("0      MEM_ARITH_FSC     %#-16lx  %#-16lx  %-10u  "
-        "%-10u  %-10u  %-10u  %-2u.%-2u%%\n",
-        g_memStartAddr, g_memStartAddr + g_memTotalSize - 1, g_memTotalSize,
-        g_memUsage, (g_memTotalSize - g_memUsage), g_memPeakUsage, (memUsage / 100), (memUsage % 100));
+    double memUsageRate = OsShellGetMemUsageRate(g_memUsage, g_memTotalSize);
+
+    if (sizeof(uintptr_t) == 4) {
+        PRINTK("0      MEM_ARITH_FSC     %#-16x  %#-16x  %-10u  "
+            "%-10u  %-10u  %-10u  %.2fpercent\n",
+            g_memStartAddr, g_memStartAddr + g_memTotalSize - 1, g_memTotalSize,
+            g_memUsage, (g_memTotalSize - g_memUsage), g_memPeakUsage, memUsageRate);
+    } else {
+        PRINTK("0      MEM_ARITH_FSC     %#-16lx  %#-16lx  %-10lu  "
+            "%-10lu  %-10lu  %-10lu  %.2fpercent\n",
+            g_memStartAddr, g_memStartAddr + g_memTotalSize - 1, g_memTotalSize,
+            g_memUsage, (g_memTotalSize - g_memUsage), g_memPeakUsage, memUsageRate);
+    }
+
     return 0;
 }
 
