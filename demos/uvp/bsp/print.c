@@ -43,7 +43,7 @@ int Test_Printf(const char *format, va_list vaList)
     char *str = buff;
 
     len = vsnprintf(buff, OS_MAX_SHOW_LEN, format, vaList);
-    if (len = -1) {
+    if (len == -1) {
         return len;
     }
 
