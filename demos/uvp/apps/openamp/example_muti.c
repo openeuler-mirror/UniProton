@@ -18,17 +18,17 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
     rpmsg_destroy_ept(ep);
 }
 
+int send_message(unsigned char *message, int len)
+{
+    return rpmsg_send(&g_ept_default, message, len);
+}
+
 static char *g_s1 = "Hello, UniProton! \r\n";
 static int rpmsg_endpoint_cb_default(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
     send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
 
     return OS_OK;
-}
-
-int send_message(unsigned char *message, int len)
-{
-    return rpmsg_send(&g_ept_default, message, len);
 }
 
 int rpmsg_endpoint_init(struct rpmsg_device *rdev)
