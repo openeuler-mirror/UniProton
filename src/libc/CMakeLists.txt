@@ -26,7 +26,12 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wctomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcrtomb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/memchr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcat.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strrchr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strtok_r.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strncasecmp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/rand_r.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/prng/rand.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__stack_chk_fail.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/__environ.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/getenv.c
@@ -34,6 +39,11 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/htons.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_addr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_aton.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_pton.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_ntop.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/if_freenameindex.c
     )
 
 if(NOT ${CONFIG_OS_OPTION_PROXY})
