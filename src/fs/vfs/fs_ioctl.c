@@ -213,7 +213,7 @@ int file_ioctl(FAR struct file *filep, int req, ...)
  *
  ****************************************************************************/
 
-int ioctl(int fd, int req, ...)
+int sys_ioctl(int fd, int req, ...)
 {
   FAR struct file *filep;
   va_list ap;

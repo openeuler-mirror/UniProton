@@ -12,8 +12,8 @@
 
 #define PANIC() assert("panic")
 
-#define OK OS_OK
-#define ERROR OS_ERROR
+#define OK (0)
+#define ERROR (-1)
 
 #define set_errno(e) \
     do \

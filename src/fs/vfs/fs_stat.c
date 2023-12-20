@@ -34,6 +34,7 @@
 #include "inode/inode.h"
 #include <nuttx/mtd/mtd.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/sys/sys_stat.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -197,7 +198,7 @@ int nx_stat(FAR const char *path, FAR struct stat *buf, int resolve)
  *
  ****************************************************************************/
 
-int stat(FAR const char *path, FAR struct stat *buf)
+int sys_stat(FAR const char *path, FAR struct stat *buf)
 {
   int ret;
 
@@ -211,7 +212,7 @@ int stat(FAR const char *path, FAR struct stat *buf)
   return ret;
 }
 
-int lstat(FAR const char *path, FAR struct stat *buf)
+int sys_lstat(FAR const char *path, FAR struct stat *buf)
 {
   int ret;
 

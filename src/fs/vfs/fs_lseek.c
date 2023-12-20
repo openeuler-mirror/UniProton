@@ -29,6 +29,7 @@
 #include <sched.h>
 #include <errno.h>
 #include <assert.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -178,7 +179,7 @@ off_t nx_seek(int fd, off_t offset, int whence)
  *
  ****************************************************************************/
 
-off_t lseek(int fd, off_t offset, int whence)
+off_t sys_lseek(int fd, off_t offset, int whence)
 {
   off_t newpos;
 

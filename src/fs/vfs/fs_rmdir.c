@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -55,7 +56,7 @@
  *
  ****************************************************************************/
 
-int rmdir(FAR const char *pathname)
+int sys_rmdir(FAR const char *pathname)
 {
   struct inode_search_s desc;
   FAR struct inode *inode;

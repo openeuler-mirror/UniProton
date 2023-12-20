@@ -26,7 +26,7 @@ typedef long syscall_arg_t;
 hidden long __syscall_ret(unsigned long),
 	__syscall_cp(syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t,
 	             syscall_arg_t, syscall_arg_t, syscall_arg_t);
-
+#ifndef OS_OPTION_NUTTX_VFS /* No implementation of syscall */
 #define __syscall1(n,a) __syscall1(n,__scc(a))
 #define __syscall2(n,a,b) __syscall2(n,__scc(a),__scc(b))
 #define __syscall3(n,a,b,c) __syscall3(n,__scc(a),__scc(b),__scc(c))
@@ -394,5 +394,5 @@ static inline long __alt_socketcall(int sys, int sock, int cp, long a, long b, l
 hidden void __procfdname(char __buf[static 15+3*sizeof(int)], unsigned);
 
 hidden void *__vdsosym(const char *, const char *);
-
+#endif /* OS_OPTION_NUTTX_VFS */
 #endif

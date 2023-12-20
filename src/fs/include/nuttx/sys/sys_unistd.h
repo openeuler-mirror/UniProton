@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/sys/sys_stat.h
+ * include/nuttx/sys/sys_unistd.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,19 +22,25 @@
  * Description: 适配UniProton和musl libc，使musl接口可以直接调用，避免符号冲突
  ****************************************************************************/
 
-#ifndef __INCLUDE_SYS_STAT_H
-#define __INCLUDE_SYS_STAT_H
+#ifndef __INCLUDE_FS_UNISTD_H
+#define __INCLUDE_FS_UNISTD_H
 
-#include <sys/stat.h>
+#include <unistd.h>
 
-mode_t sys_umask(mode_t);
+int sys_close(int fd);
 
-int sys_stat(const char *path, struct stat *buf);
+ssize_t sys_read(int fd, void *buf, size_t nbytes);
 
-int sys_lstat(const char *path, struct stat *buf);
+ssize_t sys_write(int fd, const void *buf, size_t nbytes);
 
-int utimens(const char *path, const struct timespec times[2]);
-int lutimens(const char *path, const struct timespec times[2]);
-mode_t getumask(void);
+off_t sys_lseek(int fd, off_t offset, int whence);
 
-#endif /* __INCLUDE_SYS_STAT_H */
+int sys_unlink(const char *pathname);
+
+int sys_rmdir(const char *pathname);
+
+int sys_rename(const char *oldpath, const char *newpath);
+
+int sys_dup2(int fd1, int fd2);
+
+#endif /* __INCLUDE_FS_UNISTD_H */

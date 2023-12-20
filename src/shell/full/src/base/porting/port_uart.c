@@ -32,6 +32,8 @@
 #include "shmsg.h"
 #include "console.h"
 #include "uart.h"
+#include "nuttx/sys/sys_unistd.h"
+#include "nuttx/sys/sys_fcntl.h"
 
 UINT32 ShellStdinLoop(ShellCB *shellCB)
 {
@@ -39,7 +41,7 @@ UINT32 ShellStdinLoop(ShellCB *shellCB)
     UINT8 ch[1];
     ssize_t n;
 
-    fd = open(SHELL_PATH, O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = sys_open(SHELL_PATH, O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd < 0) {
         return -1;
     }
@@ -53,6 +55,6 @@ UINT32 ShellStdinLoop(ShellCB *shellCB)
         }
         PRT_TaskDelay(100);
     }
-    close(fd);
+    sys_close(fd);
     return 0;
 }

@@ -18,14 +18,19 @@
 int OsMutexParamCheck(prt_pthread_mutex_t *mutex)
 {
     int ret;
-    prt_pthread_mutex_t tmp = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutexattr_t attr;
 
     if (mutex == NULL) {
         return EINVAL;
     }
-
-    if (memcmp(mutex, &tmp, sizeof(prt_pthread_mutex_t)) == 0) {
-        ret = pthread_mutex_init(mutex, NULL);
+    /* 这里不通过mutex和tmp做比较，因为mutex->type可以
+    *  取值PTHREAD_MUTEX_NORMAL和PTHREAD_MUTEX_RECURSIVE，
+    *  两者均有可能未初始化。因此改为用magic和mutex_sem进行判断
+    * */
+    if (mutex->magic == 0 && mutex->mutex_sem == 0) {
+        (void)pthread_mutexattr_init(&attr);
+        (void)pthread_mutexattr_settype(&attr, mutex->type);
+        ret = pthread_mutex_init(mutex, &attr);
         if (ret != OS_OK) {
             return EINVAL;
         }

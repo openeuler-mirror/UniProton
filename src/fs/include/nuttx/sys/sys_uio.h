@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/sys/sys_stat.h
+ * include/nuttx/sys/sys_uio.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,22 +19,16 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Description: 适配UniProton和musl libc，使musl接口可以直接调用，避免符号冲突
+ * Description: 适配UniProton和musl libc，使musl接口可以直接调用
  ****************************************************************************/
 
-#ifndef __INCLUDE_SYS_STAT_H
-#define __INCLUDE_SYS_STAT_H
+#ifndef __INCLUDE_SYS_UIO_H
+#define __INCLUDE_SYS_UIO_H
 
-#include <sys/stat.h>
+#include <sys/uio.h>
 
-mode_t sys_umask(mode_t);
+ssize_t sys_readv(int fildes, const struct iovec *iov, int iovcnt);
 
-int sys_stat(const char *path, struct stat *buf);
+ssize_t sys_writev(int fildes, const struct iovec *iov, int iovcnt);
 
-int sys_lstat(const char *path, struct stat *buf);
-
-int utimens(const char *path, const struct timespec times[2]);
-int lutimens(const char *path, const struct timespec times[2]);
-mode_t getumask(void);
-
-#endif /* __INCLUDE_SYS_STAT_H */
+#endif /* __INCLUDE_SYS_UIO_H */

@@ -16,10 +16,11 @@
 #include "uart.h"
 #include "prt_task_external.h"
 #include "nuttx/arch.h"
+#include "nuttx/sys/sys_unistd.h"
 
 ssize_t UartRead(int fd, void *str, ssize_t n)
 {
-    return read(fd, str, n);
+    return sys_read(fd, str, n);
 }
 
 VOID UartPuts(const CHAR *s, UINT32 len, BOOL isLock)

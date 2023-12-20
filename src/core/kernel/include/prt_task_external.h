@@ -148,6 +148,7 @@ struct TagTskCb {
 #endif
 #if defined(OS_OPTION_NUTTX_VFS)
     struct filelist tskFileList;
+    void *stdio_locks;      // 来自musl中的struct pthread
 #if defined(CONFIG_FILE_STREAM)
     struct streamlist ta_streamlist;
 #endif

@@ -36,9 +36,12 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 	static void *volatile loc_head;
 	const struct __locale_map *p;
 	struct __locale_map *new = 0;
+#if !defined(OS_OPTION_LOCALE)
 	const char *path = 0, *z;
 	char buf[256];
-	size_t l, n;
+	size_t l;
+#endif
+	size_t n;
 
 	if (!*val) {
 		(val = getenv("LC_ALL")) && *val ||

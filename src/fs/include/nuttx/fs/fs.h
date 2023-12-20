@@ -28,7 +28,6 @@
 #include <nuttx/config.h>
 #include <nuttx/compiler.h>
 
-#include <limits.h>
 #include <sys/types.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -37,6 +36,9 @@
 #include <dirent.h>
 #include <limits.h>
 #include <nuttx/fs/fs_poll.h>
+#include <nuttx/sys/sys_fcntl.h>
+#include <nuttx/sys/sys_unistd.h>
+#include <nuttx/sys/sys_stat.h>
 
 #include <nuttx/mutex.h>
 #include <nuttx/semaphore.h>
@@ -82,12 +84,12 @@
 #  define _NX_SETERRNO(r)      set_errno(-(r))
 #  define _NX_GETERRVAL(r)     (r)
 #else
-#  define _NX_OPEN             open
-#  define _NX_CLOSE(f)         close(f)
-#  define _NX_READ(f,b,s)      read(f,b,s)
-#  define _NX_WRITE(f,b,s)     write(f,b,s)
-#  define _NX_SEEK(f,o,w)      lseek(f,o,w)
-#  define _NX_STAT(p,s)        stat(p,s)
+#  define _NX_OPEN             sys_open
+#  define _NX_CLOSE(f)         sys_close(f)
+#  define _NX_READ(f,b,s)      sys_read(f,b,s)
+#  define _NX_WRITE(f,b,s)     sys_write(f,b,s)
+#  define _NX_SEEK(f,o,w)      sys_lseek(f,o,w)
+#  define _NX_STAT(p,s)        sys_stat(p,s)
 #  define _NX_GETERRNO(r)      errno
 #  define _NX_SETERRNO(r)      ((void)(r))
 #  define _NX_GETERRVAL(r)     (-errno)

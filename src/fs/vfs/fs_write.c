@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include <nuttx/cancelpt.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -189,7 +190,7 @@ ssize_t nx_write(int fd, FAR const void *buf, size_t nbytes)
  *
  ****************************************************************************/
 
-ssize_t write(int fd, FAR const void *buf, size_t nbytes)
+ssize_t sys_write(int fd, FAR const void *buf, size_t nbytes)
 {
   ssize_t ret;
 
