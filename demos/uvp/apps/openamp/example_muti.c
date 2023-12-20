@@ -3,7 +3,7 @@
 #include "prt_proxy_ext.h"
 
 #define RPMSG_ENDPOINT_NAME "console"
-#define RPMSG_RPC_SERVICE_NAME "rmpmsg-rpc_proxy"
+#define RPMSG_RPC_SERVICE_NAME "rpmsg-rpc-proxy"
 
 static struct rpmsg_endpoint g_ept_default;
 static struct rpmsg_endpoint g_ept_rpc;
