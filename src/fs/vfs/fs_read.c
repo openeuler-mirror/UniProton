@@ -32,6 +32,7 @@
 #include <errno.h>
 
 #include <nuttx/cancelpt.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -157,7 +158,7 @@ ssize_t nx_read(int fd, FAR void *buf, size_t nbytes)
  *
  ****************************************************************************/
 
-ssize_t read(int fd, FAR void *buf, size_t nbytes)
+ssize_t sys_read(int fd, FAR void *buf, size_t nbytes)
 {
   ssize_t ret;
 

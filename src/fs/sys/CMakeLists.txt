@@ -8,5 +8,9 @@ target_include_directories(base_sys PUBLIC
     ${FS_BASE_DIR}/
 )
 
+target_compile_options(base_sys PUBLIC 
+    -Wno-discarded-qualifiers
+)
+
 list(APPEND ALL_OBJECT_LIBRARYS base_sys)
 set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)

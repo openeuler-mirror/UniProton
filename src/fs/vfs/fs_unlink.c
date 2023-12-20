@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -208,7 +209,7 @@ errout_with_search:
  *
  ****************************************************************************/
 
-int unlink(FAR const char *pathname)
+int sys_unlink(FAR const char *pathname)
 {
   int ret;
 

@@ -45,6 +45,8 @@
 #  include <nuttx/fdcheck.h>
 #endif
 
+#include <nuttx/sys/sys_unistd.h>
+
 #include "inode/inode.h"
 
 /****************************************************************************
@@ -595,7 +597,7 @@ int nx_dup2(int fd1, int fd2)
  *
  ****************************************************************************/
 
-int dup2(int fd1, int fd2)
+int sys_dup2(int fd1, int fd2)
 {
   int ret;
 
@@ -722,7 +724,7 @@ int nx_close(int fd)
  *
  ****************************************************************************/
 
-int close(int fd)
+int sys_close(int fd)
 {
   int ret;
 

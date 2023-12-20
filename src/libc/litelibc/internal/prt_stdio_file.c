@@ -25,7 +25,12 @@ hidden FILE __stdin_FILE = {
     .read = NULL,
     .seek = NULL,
     .close = NULL,
+#ifdef OS_OPTION_NUTTX_VFS
+    .owner = -1,
+    .mutex = {PTHREAD_MUTEX_RECURSIVE, 0, 0},
+#else
     .lock = -1,
+#endif
 };
 FILE *const stdin = &__stdin_FILE;
 FILE *volatile __stdin_used = &__stdin_FILE;
@@ -41,7 +46,12 @@ hidden FILE __stdout_FILE = {
     .write = NULL,
     .seek = NULL,
     .close = NULL,
+#ifdef OS_OPTION_NUTTX_VFS
+    .owner = -1,
+    .mutex = {PTHREAD_MUTEX_RECURSIVE, 0, 0},
+#else
     .lock = -1,
+#endif
 };
 FILE *const stdout = &__stdout_FILE;
 FILE *volatile __stdout_used = &__stdout_FILE;
@@ -57,7 +67,12 @@ hidden FILE __stderr_FILE = {
     .write = NULL,
     .seek = NULL,
     .close = NULL,
+#ifdef OS_OPTION_NUTTX_VFS
+    .owner = -1,
+    .mutex = {PTHREAD_MUTEX_RECURSIVE, 0, 0},
+#else
     .lock = -1,
+#endif
 };
 FILE *const stderr = &__stderr_FILE;
 FILE *volatile __stderr_used = &__stderr_FILE;

@@ -40,6 +40,7 @@
 #include <nuttx/list.h>
 #include <nuttx/mutex.h>
 #include <nuttx/signal.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -377,7 +378,7 @@ int epoll_create1(int flags)
 
 void epoll_close(int epfd)
 {
-  close(epfd);
+  sys_close(epfd);
 }
 
 /****************************************************************************

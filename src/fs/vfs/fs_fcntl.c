@@ -34,6 +34,7 @@
 #include <nuttx/cancelpt.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/sys/sys_fcntl.h>
 
 #include "inode/inode.h"
 
@@ -297,7 +298,7 @@ int file_fcntl(FAR struct file *filep, int cmd, ...)
  *
  ****************************************************************************/
 
-int fcntl(int fd, int cmd, ...)
+int sys_fcntl(int fd, int cmd, ...)
 {
   FAR struct file *filep;
   va_list ap;

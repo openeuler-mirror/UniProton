@@ -37,6 +37,7 @@
 #include <nuttx/fs/fs.h>
 #include <nuttx/sched.h>
 #include <nuttx/sys/sys_stat.h>
+#include <nuttx/sys/sys_fcntl.h>
 
 #include "inode/inode.h"
 #include "driver/driver.h"
@@ -429,7 +430,7 @@ int nx_open(FAR const char *path, int oflags, ...)
  *
  ****************************************************************************/
 
-int open(FAR const char *path, int oflags, ...)
+int sys_open(FAR const char *path, int oflags, ...)
 {
   va_list ap;
   int fd;

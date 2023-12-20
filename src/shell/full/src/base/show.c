@@ -95,6 +95,10 @@ UINT32 OsShellInit(INT32 consoleId)
     UINT32 ret;
     ShellCB *shellCB = NULL;
 
+#ifdef CONFIG_FILE_STREAM
+    lib_stream_initialize(RUNNING_TASK);
+#endif
+
     ret = OsShellSourceInit();
     if (ret != LOS_OK) {
         return ret;
@@ -137,9 +141,6 @@ UINT32 OsShellInit(INT32 consoleId)
     if (ret != LOS_OK) {
         goto ERR_OUT2;
     }
-#ifdef CONFIG_FILE_STREAM
-    lib_stream_initialize(RUNNING_TASK);
-#endif
 
     return LOS_OK;
 ERR_OUT2:

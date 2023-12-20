@@ -33,6 +33,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -450,7 +451,7 @@ errout_with_newsearch:
  *
  ****************************************************************************/
 
-int rename(FAR const char *oldpath, FAR const char *newpath)
+int sys_rename(FAR const char *oldpath, FAR const char *newpath)
 {
   struct inode_search_s olddesc;
   FAR struct inode *oldinode;

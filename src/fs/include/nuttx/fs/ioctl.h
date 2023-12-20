@@ -671,6 +671,8 @@ extern "C"
  * Public Function Prototypes
  ****************************************************************************/
 
+int sys_ioctl(int fd, int req, ...);
+
 #undef EXTERN
 #ifdef __cplusplus
 }

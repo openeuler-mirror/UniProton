@@ -6,9 +6,17 @@
 
 #define UNGET 8
 
+#ifdef OS_OPTION_NUTTX_VFS
+#include <pthread.h>
+
+#define FFINALLOCK(f) ((f) ? __lockfile((f)) : 0)
+#define FLOCK(f) int __need_unlock = ((f) ? __lockfile((f)) : 0)
+#define FUNLOCK(f) do { if (__need_unlock) __unlockfile((f)); } while (0)
+#else
 #define FFINALLOCK(f) ((f)->lock>=0 ? __lockfile((f)) : 0)
 #define FLOCK(f) int __need_unlock = ((f)->lock>=0 ? __lockfile((f)) : 0)
 #define FUNLOCK(f) do { if (__need_unlock) __unlockfile((f)); } while (0)
+#endif /* OS_OPTION_NUTTX_VFS */
 
 #define F_PERM 1
 #define F_NORD 4
@@ -35,7 +43,12 @@ struct _IO_FILE {
 	int pipe_pid;
 	long lockcount;
 	int mode;
+#ifdef OS_OPTION_NUTTX_VFS	// 使用UniProton的锁
+	long owner;
+	pthread_mutex_t mutex;
+#else
 	volatile int lock;
+#endif
 	int lbf;
 	void *cookie;
 	off_t off;
