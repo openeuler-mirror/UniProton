@@ -10,8 +10,8 @@ patch -N -p1 -d . < x86_64-toolchain-patch.patch
 rm x86_64-toolchain-patch.patch
 popd
 
-TOOLCHAIN_PATH=/usr/bin
-CROSS_TOOLCHAIN_PREFIX=$TOOLCHAIN_PATH/x86_64-linux-gnu
+TOOLCHAIN_PATH=/usr1/openeuler/gcc/openeuler_gcc_x86_64/bin
+CROSS_TOOLCHAIN_PREFIX=$TOOLCHAIN_PATH/x86_64-openeuler-linux-gnu
 
 CXX=$CROSS_TOOLCHAIN_PREFIX-g++
 CC=$CROSS_TOOLCHAIN_PREFIX-gcc

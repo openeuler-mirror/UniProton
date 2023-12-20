@@ -41,7 +41,7 @@ int openamp_init(void)
         return err;
     }
 
-    err = rpmsg_init_vdev_with_config(&rvdev, &vdev, NULL, io, NULL, RPMSG_VIRTIO_CONSOLE_CONFIG);
+    err = rpmsg_init_vdev(&rvdev, &vdev, NULL, io, NULL);
     if (err) {
         return err;
     }

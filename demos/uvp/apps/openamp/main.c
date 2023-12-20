@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <fcntl.h>
 #include "securec.h"
 #include "prt_config.h"
 #include "prt_config_internal.h"
@@ -10,21 +11,6 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
-#ifdef LOSCFG_SHELL_MICA_INPUT
-#include "shell.h"
-#include "show.h"
-#endif
-
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
-#endif
-
-#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
-void kthreadTest(void);
-void schedTest(void);
-void waitTest(void);
-#endif
-
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U64 g_cpuClock = 0;
@@ -32,6 +18,19 @@ char g_modelID[64] = {0};
 const TskPrior g_testTskPri = 25;
 
 #if defined(OS_OPTION_OPENAMP)
+int TestFileProxy()
+{
+    char buf[1024] = {'\0'};
+    printf("ready to open file\n");
+    int fd = open("test.log", O_RDWR|O_CREAT|O_APPEND, S_IRWXU);
+    printf("get fd: %d\n", fd);
+    if (fd == -1) {
+        return fd;
+    }
+    int ret = close(fd);
+    return ret;
+}
+
 int TestOpenamp()
 {
     int ret;
@@ -40,37 +39,13 @@ int TestOpenamp()
     if (ret) {
         return ret;
     }
-    
-    return OS_OK;
-}
-#endif
 
-#ifdef LOSCFG_SHELL_MICA_INPUT
-static int osShellCmdTstReg(int argc, const char **argv)
-{
-    printf("tstreg: get %d arguments\n", argc);
-    for(int i = 0; i < argc; i++) {
-        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    printf("ready to start test fileProxy!\n");
+    ret = TestFileProxy();
+    if (ret) {
+        return ret;
     }
-
     return 0;
-}
-
-void micaShellInit()
-{
-    int ret = OsShellInit(0);
-    ShellCB *shellCb = OsGetShellCB();
-    if (ret != 0 || shellCb == NULL) {
-        printf("shell init fail\n");
-        return;
-    }
-    (void)memset_s(shellCb->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
-    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
-    if (ret == 0) {
-        printf("[INFO]: reg cmd 'tstreg' successed!\n");
-    } else {
-        printf("[INFO]: reg cmd 'tstreg' failed!\n");
-    }
 }
 #endif
 
@@ -79,20 +54,7 @@ void TestTaskEntry()
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
-    printf("test entry\n");
-
-#ifdef LOSCFG_SHELL_MICA_INPUT
-    micaShellInit();
-#endif
-
-#if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
-    kthreadTest();
-    schedTest();
-    waitTest();
-#endif
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
-    Init(0, 0, 0, 0);
-#endif
+    printf("openamp test entry\n");
 }
 
 U32 OsTestInit(void)
@@ -205,5 +167,6 @@ U32 PRT_HardDrvInit(void)
 
 S32 main(void)
 {
+    PrintInit();
     return OsConfigStart();
 }
