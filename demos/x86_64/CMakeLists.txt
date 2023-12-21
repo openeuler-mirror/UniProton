@@ -24,6 +24,8 @@ import_kconfig(${HOME_PATH}/build/uniproton_config/config_x86_64/defconfig)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Eigen
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/x86_64
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include/bits
     ${CMAKE_CURRENT_SOURCE_DIR}/config
