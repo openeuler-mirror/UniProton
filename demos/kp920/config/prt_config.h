@@ -77,14 +77,14 @@ extern "C" {
 /* 私有FSC内存分区起始地址 */
 #define OS_MEM_FSC_PT_ADDR                              (uintptr_t)&g_memRegion00[0]
 /* 私有FSC内存分区大小 */
-#define OS_MEM_FSC_PT_SIZE                              0x80000
+#define OS_MEM_FSC_PT_SIZE                              0x60000000
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */
 #define OS_INCLUDE_SEM                                  YES
 
 /* 最大支持的信号量数 */
-#define OS_SEM_MAX_SUPPORT_NUM                          10
+#define OS_SEM_MAX_SUPPORT_NUM                          256
 
 /* ***************************** 配置队列模块 ******************************* */
 /* 队列模块裁剪开关 */

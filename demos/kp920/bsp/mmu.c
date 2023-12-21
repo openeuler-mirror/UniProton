@@ -37,25 +37,25 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
     {
         .virt      = MMU_OPENAMP_ADDR,
         .phys      = MMU_OPENAMP_ADDR,
-        .size      = 0x30000,
+        .size      = MMU_OPENAMP_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
         .virt      = MMU_DMA_ADDR,
         .phys      = MMU_DMA_ADDR,
-        .size      = 0x200000,
+        .size      = MMU_DMA_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
         .virt      = MMU_LPI_PEND_ADDR,
         .phys      = MMU_LPI_PEND_ADDR,
-        .size      = 0x200000,
+        .size      = MMU_LPI_PEND_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
         .virt      = MMU_IMAGE_ADDR,
         .phys      = MMU_IMAGE_ADDR,
-        .size      = 0x1000000,
+        .size      = MMU_IMAGE_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
     }, {
@@ -69,13 +69,13 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
 #endif
         .virt      = MMU_GIC_ADDR,
         .phys      = MMU_GIC_ADDR,
-        .size      = 0x1000000,
+        .size      = MMU_GIC_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
         .virt      = MMU_GICR1_ADDR,
         .phys      = MMU_GICR1_ADDR,
-        .size      = 0x1000000,
+        .size      = MMU_GIC_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
@@ -93,7 +93,7 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
     }, {
         .virt      = MMU_UART_ADDR,
         .phys      = MMU_UART_ADDR,
-        .size      = 0x2000,
+        .size      = MMU_UART_ADDR_LEN,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
