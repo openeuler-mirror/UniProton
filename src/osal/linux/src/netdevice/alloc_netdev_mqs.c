@@ -55,5 +55,6 @@ struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
         (void)PRT_MemFree(OS_MID_APP, p);
         return NULL;
     }
+    memset_s(dev->dev_addr, ETH_ALEN, 0, ETH_ALEN);
     return dev;
 }

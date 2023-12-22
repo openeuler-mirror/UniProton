@@ -105,6 +105,7 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
     taskStrut->state = TASK_UNINTERRUPTIBLE;
     taskStrut->pid = taskId;
     taskStrut->name = kthread_name;
+    taskStrut->flags = 0;
 
     // 创建 task，之后如果失败，挂到g_tskCbFreeList上释放
     ret = OsTaskCreateRsrcInit(taskId, &param, taskCb, &topStack, &curStackSize);
