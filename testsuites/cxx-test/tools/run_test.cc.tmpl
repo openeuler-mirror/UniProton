@@ -1,0 +1,37 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <exception>
+
+#FUNCTION_DECALER
+
+extern "C" { 
+
+void test_terminate()
+{
+  printf("test_terminate\n");
+  abort();
+}
+
+void test_unexpected()
+{
+  printf("test_unexpected\n");
+  abort();
+}
+
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    (void)(param1);
+    (void)(param2);
+    (void)(param3);
+    (void)(param4);
+
+    std::set_unexpected(test_unexpected);
+    std::set_terminate(test_terminate);
+    printf("test start\n");
+#FUNCTION_CALL
+
+    printf("test finish\n");
+}
+}
+
