@@ -66,11 +66,6 @@ cd open-amp
 patch -p1 -d . < UniProton-patch-for-openamp.patch
 popd
 
-echo "################# git clone libcxx #################"
-pushd ../component
-git clone https://gitee.com/zuyiwen/libcxx.git
-popd
-
 echo "################# get ccl #################"
 pushd ../../../src/component
 rm -rf ./ccl
