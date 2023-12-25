@@ -24,6 +24,7 @@
 
 #include <nuttx/config.h>
 #include <nuttx/compiler.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include <unistd.h>
 
@@ -38,10 +39,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: link
+ * Name: sys_link
  *
  * Description:
- *  The link function provides a wrapper to symlink. Solely to provide
+ *  The sys_link function provides a wrapper to symlink. Solely to provide
  *  compatibility to posix compatibility layer.
  *
  *  See symlink for details on limitations.
@@ -57,7 +58,7 @@
  *
  ****************************************************************************/
 
-int link(FAR const char *path1, FAR const char *path2)
+int sys_link(FAR const char *path1, FAR const char *path2)
 {
   return symlink(path1, path2);
 }

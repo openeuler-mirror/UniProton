@@ -34,6 +34,7 @@
 
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -48,10 +49,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: symlink
+ * Name: sys_symlink
  *
  * Description:
- *   The symlink() function will create a new link (directory entry) for the
+ *   The sys_symlink() function will create a new link (directory entry) for the
  *   existing file, path2.  This implementation is simplied for use with
  *   NuttX in these ways:
  *
@@ -73,7 +74,7 @@
  *
  ****************************************************************************/
 
-int symlink(FAR const char *path1, FAR const char *path2)
+int sys_symlink(FAR const char *path1, FAR const char *path2)
 {
   struct inode_search_s desc;
   FAR struct inode *inode = NULL;

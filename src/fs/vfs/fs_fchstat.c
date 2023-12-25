@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -221,10 +222,10 @@ int fchmod(int fd, mode_t mode)
 }
 
 /****************************************************************************
- * Name: fchown
+ * Name: sys_fchown
  *
  * Description:
- *   The fchown() function shall be equivalent to chown() except that the
+ *   The sys_fchown() function shall be equivalent to chown() except that the
  *   file whose owner and group are changed is specified by the file
  *   descriptor.
  *
@@ -234,12 +235,12 @@ int fchmod(int fd, mode_t mode)
  *   group - Specifies the group to set
  *
  * Returned Value:
- *   Upon successful completion, fchown() shall return 0.
+ *   Upon successful completion, sys_fchown() shall return 0.
  *   Otherwise, it shall return -1 and set errno to indicate the error.
  *
  ****************************************************************************/
 
-int fchown(int fd, uid_t owner, gid_t group)
+int sys_fchown(int fd, uid_t owner, gid_t group)
 {
   struct stat buf;
 

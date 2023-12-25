@@ -33,6 +33,7 @@
 #include <nuttx/cancelpt.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -86,14 +87,14 @@ int file_fsync(FAR struct file *filep)
 }
 
 /****************************************************************************
- * Name: fsync
+ * Name: fs_fsync
  *
  * Description:
  *   This func simply binds inode sync methods to the sync system call.
  *
  ****************************************************************************/
 
-int fsync(int fd)
+int sys_fsync(int fd)
 {
   FAR struct file *filep;
   int ret;

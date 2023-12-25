@@ -142,10 +142,10 @@ ssize_t nx_read(int fd, FAR void *buf, size_t nbytes)
 }
 
 /****************************************************************************
- * Name: read
+ * Name: sys_read
  *
  * Description:
- *   The standard, POSIX read interface.
+ *   The standard, POSIX sys_read interface.
  *
  * Input Parameters:
  *   fd     - File descriptor to read from

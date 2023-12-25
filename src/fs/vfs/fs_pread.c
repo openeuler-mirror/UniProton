@@ -31,6 +31,7 @@
 
 #include <nuttx/cancelpt.h>
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 /****************************************************************************
  * Public Functions
@@ -93,7 +94,7 @@ ssize_t file_pread(FAR struct file *filep, FAR void *buf, size_t nbytes,
 }
 
 /****************************************************************************
- * Name: pread
+ * Name: sys_pread
  *
  * Description:
  *   The pread() function performs the same action as read(), except that it
@@ -121,7 +122,7 @@ ssize_t file_pread(FAR struct file *filep, FAR void *buf, size_t nbytes,
  *
  ****************************************************************************/
 
-ssize_t pread(int fd, FAR void *buf, size_t nbytes, off_t offset)
+ssize_t sys_pread(int fd, FAR void *buf, size_t nbytes, off_t offset)
 {
   FAR struct file *filep;
   ssize_t ret;

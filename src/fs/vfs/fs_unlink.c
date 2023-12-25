@@ -203,7 +203,7 @@ errout_with_search:
 }
 
 /****************************************************************************
- * Name: unlink
+ * Name: sys_unlink
  *
  * Description:  Remove a file managed a mountpoint
  *

@@ -103,24 +103,24 @@ int file_truncate(FAR struct file *filep, off_t length)
 }
 
 /****************************************************************************
- * Name: ftruncate
+ * Name: sys_ftruncate
  *
  * Description:
- *   The ftruncate() function causes the regular file referenced by fd to
+ *   The sys_ftruncate() function causes the regular file referenced by fd to
  *   have a size of length bytes.
  *
  *   If the file previously was larger than length, the extra data is
  *   discarded.  If it was previously shorter than length, it is unspecified
  *   whether the file is changed or its size increased.  If the file is
  *   extended, the extended area appears as if it were zero-filled.  If fd
- *   references a shared memory object, ftruncate() sets the size of the
+ *   references a shared memory object, sys_ftruncate() sets the size of the
  *   shared memory object to length. If the file is not a regular file or
  *   a shared memory object, the result is unspecified.
 
- *   With ftruncate(), the file must be open for writing; for truncate(),
+ *   With sys_ftruncate(), the file must be open for writing; for truncate(),
  *   the process must have write permission for the file.
  *
- *   ftruncate() does not modify the file offset for any open file
+ *   sys_ftruncate() does not modify the file offset for any open file
  *   descriptions associated with the file.
  *
  * Input Parameters:
@@ -129,7 +129,7 @@ int file_truncate(FAR struct file *filep, off_t length)
  *   length - The new length of the file or shared memory object.
  *
  * Returned Value:
- *    Upon successful completion, ftruncate() return 0s. Otherwise a -1 is
+ *    Upon successful completion, sys_ftruncate() return 0s. Otherwise a -1 is
  *    returned, and errno is set to indicate the error.
  *
  *    EINTR
@@ -155,7 +155,7 @@ int file_truncate(FAR struct file *filep, off_t length)
  *
  ****************************************************************************/
 
-int ftruncate(int fd, off_t length)
+int sys_ftruncate(int fd, off_t length)
 {
   FAR struct file *filep;
   int ret = -EINVAL;

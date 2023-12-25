@@ -23,7 +23,6 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
-
 #include <sys/types.h>
 #include <unistd.h>
 #include <sched.h>
@@ -142,7 +141,7 @@ off_t nx_seek(int fd, off_t offset, int whence)
 }
 
 /****************************************************************************
- * Name: lseek
+ * Name: sys_lseek
  *
  * Description:
  *   The lseek() function repositions the offset of the open file associated

@@ -589,7 +589,7 @@ int nx_dup2(int fd1, int fd2)
 }
 
 /****************************************************************************
- * Name: dup2
+ * Name: sys_dup2
  *
  * Description:
  *   Clone a file descriptor or socket descriptor to a specific descriptor
@@ -748,15 +748,15 @@ int sys_close(int fd)
 }
 
 /****************************************************************************
- * Name: sync
+ * Name: sys_sync
  *
  * Description:
- *   sync() causes all pending modifications to filesystem metadata and
+ *   sys_sync() causes all pending modifications to filesystem metadata and
  *   cached file data to be written to the underlying filesystems.
  *
  ****************************************************************************/
 
-void sync(void)
+void sys_sync(void)
 {
   nxsched_foreach(task_fssync, NULL);
 }

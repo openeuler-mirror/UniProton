@@ -30,6 +30,7 @@
 
 #include <nuttx/cancelpt.h>
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 /****************************************************************************
  * Public Functions
@@ -92,17 +93,17 @@ ssize_t file_pwrite(FAR struct file *filep, FAR const void *buf,
 }
 
 /****************************************************************************
- * Name: pwrite
+ * Name: sys_pwrite
  *
  * Description:
- *   The pwrite() function performs the same action as write(), except that
+ *   The sys_pwrite() function performs the same action as write(), except that
  *   it writes into a given position without changing the file pointer. The
- *   first three arguments to pwrite() are the same as write() with the
+ *   first three arguments to sys_pwrite() are the same as write() with the
  *   addition of a fourth argument offset for the desired position inside
  *   the file.
  *
  *   NOTE: This function could have been wholly implemented within libc but
- *   it is not.  Why?  Because if pwrite were implemented in libc, it would
+ *   it is not.  Why?  Because if sys_pwrite were implemented in libc, it would
  *   require four system calls.  If it is implemented within the kernel,
  *   only three.
  *
@@ -118,13 +119,13 @@ ssize_t file_pwrite(FAR struct file *filep, FAR const void *buf,
  *
  * Assumptions/Limitations:
  *   POSIX requires that opening a file with the O_APPEND flag should have no
- *   effect on the location at which pwrite() writes data.  However, on NuttX
- *   like on Linux, if a file is opened with O_APPEND, pwrite() appends data
+ *   effect on the location at which sys_pwrite() writes data.  However, on NuttX
+ *   like on Linux, if a file is opened with O_APPEND, sys_pwrite() appends data
  *   to the end of the file, regardless of the value of offset.
  *
  ****************************************************************************/
 
-ssize_t pwrite(int fd, FAR const void *buf, size_t nbytes, off_t offset)
+ssize_t sys_pwrite(int fd, FAR const void *buf, size_t nbytes, off_t offset)
 {
   FAR struct file *filep;
   ssize_t ret;
