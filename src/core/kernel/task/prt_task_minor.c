@@ -163,8 +163,8 @@ OS_SEC_L0_TEXT void PRT_TaskUnlock(void)
         g_uniTaskLock = 0;
         if ((OS_FLG_BGD_ACTIVE & UNI_FLAG) != 0) {
             OsTskScheduleFastPs(intSave);
-            OsIntRestore(intSave);
         }
+        OsIntRestore(intSave);
         return;
     }
     // 冷分支

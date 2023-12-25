@@ -59,7 +59,7 @@ struct task_struct {
     TskHandle pid;
     /* -1 unrunnable, 0 runnable, >0 stopped: */
     volatile long state;
-    unsigned long flags;
+    volatile unsigned long flags;
     char *name;
 };
 
