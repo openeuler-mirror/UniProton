@@ -217,7 +217,7 @@ index 00000000..98726831
 +)
 \ No newline at end of file
 diff --git a/devices/generic.c b/devices/generic.c
-index 4d4d9bbd..088c6612 100644
+index 4d4d9bbd..acc944b3 100644
 --- a/devices/generic.c
 +++ b/devices/generic.c
 @@ -43,6 +43,11 @@
@@ -359,7 +359,7 @@ index 4d4d9bbd..088c6612 100644
          if (ret > 0) {
              ecdev_receive(dev->ecdev, dev->rx_buf, ret);
          } else if (ret < 0) {
-@@ -407,6 +446,52 @@ void clear_devices(void)
+@@ -407,6 +446,48 @@ void clear_devices(void)
   * Initializes \a master_count masters.
   * \return 0 on success, else < 0
   */
@@ -374,9 +374,7 @@ index 4d4d9bbd..088c6612 100644
 +            EC_MASTER_VERSION);
 +    INIT_LIST_HEAD(&generic_devices);
 +
-+    printk("[TEST] i210 init\n");
 +    i210_init();
-+    printk("[TEST] malloc desc\n");
 +    desc = kmalloc(sizeof(ec_gen_interface_desc_t), GFP_ATOMIC);
 +    if (!desc) {
 +        ret = -ENOMEM;
@@ -387,24 +385,22 @@ index 4d4d9bbd..088c6612 100644
 +    desc->netdev = NULL;
 +    desc->ifindex = 0;
 +
-+    printk("[TEST] get mac address\n");
 +    ret = i210_get_mac_address(desc->dev_addr, ETH_ALEN);
 +    if (ret) {
-+        printk("[TEST] get mac address fail\n");
++        kfree(desc);
++        goto out_err;
 +    }
 +
-+    printk("[TEST] offer device\n");
 +    ret = offer_device(desc);
 +    if (ret) {
 +        kfree(desc);
 +        goto out_err;
 +    }
 +    kfree(desc);
-+    printk("[TEST] generic init finish\n");
 +    return ret;
 +
 +out_err:
-+    printk("[TEST] EtherCAT master generic Ethernet device module init fail\n");
++    printk("EtherCat master generic Ethernet device module init fail\n");
 +    clear_devices();
 +    return ret;
 +}
@@ -412,7 +408,7 @@ index 4d4d9bbd..088c6612 100644
  int __init ec_gen_init_module(void)
  {
      int ret = 0;
-@@ -455,6 +540,7 @@ out_err:
+@@ -455,6 +536,7 @@ out_err:
      clear_devices();
      return ret;
  }
@@ -420,7 +416,7 @@ index 4d4d9bbd..088c6612 100644
  
  /*****************************************************************************/
  
-@@ -472,8 +558,10 @@ void __exit ec_gen_cleanup_module(void)
+@@ -472,8 +554,10 @@ void __exit ec_gen_cleanup_module(void)
  
  /** \cond */
  
@@ -754,10 +750,10 @@ index 74b2e9f9..71c693b1 100644
  
 diff --git a/lib/stub_cdev.c b/lib/stub_cdev.c
 new file mode 100644
-index 00000000..b1a8f7d5
+index 00000000..c3d57139
 --- /dev/null
 +++ b/lib/stub_cdev.c
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,168 @@
 +#define __KERNEL__
 +#include "../include/change_name.h"
 +#include <stdarg.h>
@@ -791,7 +787,7 @@ index 00000000..b1a8f7d5
 +    va_end(ap);
 +
 +    if (fd < 0 || fd > MAX_OPEN_FILE || !filp[fd].in_use) {
-+        printk("[TEST] wrong fd:%d\n", fd);
++        printk("EtherCat ioctl get wrong fd:%d\n", fd);
 +        errno = EBADF;
 +        return -1;
 +    }
@@ -836,7 +832,7 @@ index 00000000..b1a8f7d5
 +    ctx->requested = 0;
 +    ctx->process_data = NULL;
 +    ctx->process_data_size = 0;
-+    printk("[TEST] context open, fd:%d\n", i);
++    printk("EtherCat context open, fd:%d\n", i);
 +    return i;
 +}
 +
@@ -856,7 +852,7 @@ index 00000000..b1a8f7d5
 +        vfree(filp[fd].ctx.process_data);
 +    }
 +    filp[fd].in_use = 0;
-+    printk("[TEST] context close\n");
++    printk("EtherCat context close\n");
 +}
 +
 +// 替代 mmap, eccdev_mmap
@@ -868,10 +864,10 @@ index 00000000..b1a8f7d5
 +    }
 +
 +    if (filp[fd].ctx.process_data == NULL) {
-+        printk("[TEST] mmap fail\n");
++        printk("EtherCat mmap fail\n");
 +        return MAP_FAILED;
 +    }
-+    printk("[TEST] mmap success\n");
++    printk("EtherCat mmap success\n");
 +    return filp[fd].ctx.process_data;
 +}
 +
@@ -887,7 +883,8 @@ index 00000000..b1a8f7d5
 +        request == EC_IOCTL_SLAVE_FOE_READ ||
 +        request == EC_IOCTL_SLAVE_FOE_WRITE ||
 +        request == EC_IOCTL_SLAVE_SOE_READ ||
-+        request == EC_IOCTL_SLAVE_SOE_WRITE
++        request == EC_IOCTL_SLAVE_SOE_WRITE ||
++        request == EC_IOCTL_DOMAIN_DATA
 +        );
 +}
 +
@@ -919,20 +916,22 @@ index 00000000..b1a8f7d5
 +        case EC_IOCTL_SLAVE_SOE_WRITE:
 +            ((ec_ioctl_slave_soe_write_t *)arg)->data = ((uint8_t *)arg) + sizeof(ec_ioctl_slave_soe_write_t);
 +            return;
++        case EC_IOCTL_DOMAIN_DATA:
++            ((ec_ioctl_domain_data_t *)arg)->target = ((uint8_t *)arg) + sizeof(ec_ioctl_domain_data_t);
++            return;
 +    }
 +    return;
 +}
 \ No newline at end of file
 diff --git a/lib/user_init.c b/lib/user_init.c
 new file mode 100644
-index 00000000..3545c955
+index 00000000..19d07a80
 --- /dev/null
 +++ b/lib/user_init.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,112 @@
 +#include "ecrt.h"
 +#include "prt_sys.h"
 +#include <limits.h>
-+#include <linux/sched.h>
 +#include <stdbool.h>
 +#include <stdio.h>
 +#include <time.h>
@@ -972,10 +971,7 @@ index 00000000..3545c955
 +    inc_period(pinfo);
 +
 +    /* for simplicity, ignoring possibilities of signal wakes */
-+    int ret = clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &pinfo->next_period, NULL);
-+    if (ret != 0) {
-+        printf("[DEMO] sleep fail, ret:%d\n", ret);
-+    }
++    clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &pinfo->next_period, NULL);
 +}
 +
 +
@@ -988,24 +984,21 @@ index 00000000..3545c955
 +
 +    ec_master_t *master_tmp = ecrt_open_master(0);
 +    if (!master_tmp) {
-+        printf("[TEST] open master fail\n");
 +        return false;
 +    }
 +
 +    periodic_task_init(&pinfo);
 +    pinfo.period_s = 1;
-+    printf("[TEST] slave respond wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
++    printf("EtherCat slave respond wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
 +
 +    // wait for slave responding
 +    ecrt_master_state(master_tmp, &master_state);
-+    printf("[TEST] start wait, get master state, wait count:%d, num:%u, al_state:0x%x, linkup:%u\n", count,
-+           master_state.slaves_responding, master_state.al_states, master_state.link_up);
 +    while (master_state.slaves_responding == 0 && count < 10) {
 +        count++;
 +        wait_rest_of_period(&pinfo);
 +        ecrt_master_state(master_tmp, &master_state);
 +    }
-+    printf("[TEST] finish wait, get master state, wait count:%d, num:%u, al_state:0x%x, linkup:%u\n", count,
++    printf("EtherCat finish wait, get master state, wait count:%d, num:%u, al_state:0x%x, linkup:%u\n", count,
 +           master_state.slaves_responding, master_state.al_states, master_state.link_up);
 +
 +    ecrt_release_master(master_tmp);
@@ -1023,37 +1016,30 @@ index 00000000..3545c955
 +
 +    ec_master_t *master_tmp = ecrt_open_master(0);
 +    if (!master_tmp) {
-+        printf("[TEST] open master fail\n");
 +        return false;
 +    }
 +
 +    periodic_task_init(&pinfo);
 +    pinfo.period_s = 1;
-+    printf("[TEST] slave scan wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
++    printf("EtherCat slave scan wait start: sec:%ld, nsec%ld\n", pinfo.next_period.tv_sec, pinfo.next_period.tv_nsec);
 +
 +    // wait for slave scan completion
 +    ret = ecrt_master(master_tmp, &master_info);
-+    printf("[TEST] start wait, get master info, scan_busy:%u, slave_count:%u, ret:%d\n", master_info.scan_busy,
-+           master_info.slave_count, ret);
 +    ret = ecrt_master_get_slave(master_tmp, 0, &slave_info);
-+    printf("[TEST] start wait, get slave info, vendor_id:%lx, product_code:%lx, current_on_ebus:%d, al_state:%u, "
-+           "sdo_count:%u\n",
-+           slave_info.vendor_id, slave_info.product_code, slave_info.current_on_ebus, slave_info.al_state,
-+           slave_info.sdo_count);
-+    while ((master_info.scan_busy || !slave_info.sdo_count || !master_info.slave_count) && count < 10) {
++    while ((master_info.scan_busy || !master_info.slave_count) && count < 10) {
 +        count++;
 +        wait_rest_of_period(&pinfo);
 +        (void)ecrt_master(master_tmp, &master_info);
 +        (void)ecrt_master_get_slave(master_tmp, 0, &slave_info);
 +    }
-+    printf("[TEST] finish wait, get master info, scan_busy:%u, , slave_count:%u, wait count:%d\n",
++    printf("EtherCat finish wait, get master info, scan_busy:%u, slave_count:%u, wait count:%d\n",
 +           master_info.scan_busy, master_info.slave_count, count);
-+    printf("[TEST] finish wait, get slave info, current_on_ebus:%d, al_state:%u, sdo_count:%u\n",
++    printf("EtherCat finish wait, get slave info, current_on_ebus:%d, al_state:%u, sdo_count:%u\n",
 +           slave_info.current_on_ebus, slave_info.al_state, slave_info.sdo_count);
 +
 +    ecrt_release_master(master_tmp);
 +
-+    return !master_info.scan_busy && slave_info.sdo_count && master_info.slave_count;
++    return !master_info.scan_busy && master_info.slave_count;
 +}
 \ No newline at end of file
 diff --git a/master/CMakeLists.txt b/master/CMakeLists.txt
@@ -1147,10 +1133,10 @@ index a06bb1c9..ca237d83 100644
 +#endif /* IGH_CUT */
 diff --git a/master/init.c b/master/init.c
 new file mode 100644
-index 00000000..37a8dae8
+index 00000000..f538781d
 --- /dev/null
 +++ b/master/init.c
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,56 @@
 +#include <stdio.h>
 +#define MAX_MASTERS 32 /**< Maximum number of masters. */
 +
@@ -1175,27 +1161,29 @@ index 00000000..37a8dae8
 +int ethercat_init()
 +{
 +    int ret;
++    if (ethercat_init_success) {
++        return 0;
++    }
 +    main_devices[0] = main;
-+    printf("[TEST] enter init\n");
 +    ret = ec_set_module_param(main_devices, 1, 0, 0, 1);
 +    if (ret) return ret;
-+    printf("[TEST] init module\n");
 +    ret = ec_init_module();
 +    if (ret) return ret;
-+    printf("[TEST] init gen\n");
 +    ret = ec_gen_init_module();
 +    if (ret) {
-+        printf("[TEST] init fail\n");
 +        ec_cleanup_module();
 +        return ret;
 +    }
 +    ethercat_init_success = 1;
-+    printf("[TEST] init success\n");
++    printf("EtherCat init success\n");
 +    return 0;
 +}
 +
 +void ethercat_exit()
 +{
++    if (!ethercat_init_success) {
++        return;
++    }
 +    ec_cleanup_module();
 +    ec_gen_cleanup_module();
 +    ethercat_init_success = 0;
@@ -1593,10 +1581,10 @@ index d5faa524..da8ded7a 100644
  }
 diff --git a/tool/ioctl_rpc.c b/tool/ioctl_rpc.c
 new file mode 100644
-index 00000000..804a013f
+index 00000000..05027889
 --- /dev/null
 +++ b/tool/ioctl_rpc.c
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,347 @@
 +#include "ioctl_rpc.h"
 +#include "../master/ioctl.h"
 +#include <errno.h>
@@ -1730,7 +1718,8 @@ index 00000000..804a013f
 +        request == EC_IOCTL_SLAVE_FOE_READ ||
 +        request == EC_IOCTL_SLAVE_FOE_WRITE ||
 +        request == EC_IOCTL_SLAVE_SOE_READ ||
-+        request == EC_IOCTL_SLAVE_SOE_WRITE
++        request == EC_IOCTL_SLAVE_SOE_WRITE ||
++        request == EC_IOCTL_DOMAIN_DATA
 +        );
 +}
 +
@@ -1771,6 +1760,9 @@ index 00000000..804a013f
 +            *size = ((ec_ioctl_slave_soe_write_t *)arg)->data_size;
 +            *ptr = ((ec_ioctl_slave_soe_write_t *)arg)->data;
 +            return;
++        case EC_IOCTL_DOMAIN_DATA:
++            *size = ((ec_ioctl_domain_data_t *)arg)->data_size;
++            *ptr = ((ec_ioctl_domain_data_t *)arg)->target;
 +    }
 +    return;
 +}
@@ -1802,6 +1794,9 @@ index 00000000..804a013f
 +            return;
 +        case EC_IOCTL_SLAVE_SOE_WRITE:
 +            ((ec_ioctl_slave_soe_write_t *)arg)->data = (uint8_t *)ptr;
++            return;
++        case EC_IOCTL_DOMAIN_DATA:
++            ((ec_ioctl_domain_data_t *)arg)->target = (uint8_t *)ptr;
 +            return;
 +    }
 +    return;
