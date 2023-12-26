@@ -1737,6 +1737,83 @@ static int test_fscanfx()
     return 0;
 }
 
+static int test_ifnameindex()
+{
+    struct if_nameindex *if_ni, *i;
+    if_ni = if_nameindex();
+    dprintf("test_ifnameindex, 0x%x\n",if_ni);
+
+    if (if_ni == NULL) {
+        dprintf("if_nameindex");
+        return -1;
+    }
+    for (i = if_ni; ! (i->if_index == 0 && i->if_name == NULL); i++)
+        dprintf("%u: %s\n", i->if_index, i->if_name);
+    if_freenameindex(if_ni);
+    return 0;
+}
+
+static int test_putchar()
+{
+    putchar('a');
+    putchar('b');
+    putchar('c');
+    putchar('1');
+    putchar('2');
+    putchar('3');
+
+    return 0;
+}
+
+static int test_gaistrerror()
+{
+    struct addrinfo hints;
+    struct addrinfo *result = NULL;
+    int ret = 0;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = 20; /* Datagram socket */
+    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    ret = getaddrinfo(NULL, "22", &hints, &result);
+    dprintf("test_gaistrerror, ret %d\n", ret);
+    if (ret < 0) {
+        dprintf("getaddrinfo---: %s\n", gai_strerror(ret));
+        return 0;
+    }
+    dprintfaddrinfo(result);
+    freeaddrinfo(result);
+    return -1;
+}
+
+static int test_accept4()
+{
+    return 0;
+}
+
+static int test_writev()
+{
+    char *str0 = "hello ";
+    char *str1 = "world\n";
+    struct iovec iov[2];
+    ssize_t nwritten;
+
+    iov[0].iov_base = str0;
+    iov[0].iov_len = strlen(str0) + 1;
+    iov[1].iov_base = str1;
+    iov[1].iov_len = strlen(str1) + 1;
+
+    nwritten = writev(STDOUT_FILENO, iov, 2);
+    printf("%ld bytes written.\n", nwritten);
+    
+    return 0;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1794,6 +1871,11 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_fseek_ftell),
     TEST_CASE_Y(test_pipe),
     TEST_CASE_Y(test_fscanfx),
+    TEST_CASE_Y(test_ifnameindex),
+    TEST_CASE_Y(test_putchar),
+    TEST_CASE_Y(test_gaistrerror),
+    TEST_CASE_N(test_accept4),
+    TEST_CASE_Y(test_writev),
 };
 
 int rpc_test_entry()

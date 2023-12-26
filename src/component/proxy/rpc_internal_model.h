@@ -102,6 +102,11 @@
 #define SETSOCKOPT_ID      118UL
 #define SHUTDOWN_ID        119UL
 #define SOCKET_ID          120UL
+#define IFNAMEINDEX_ID     121UL
+#define PUTCHAR_ID         122UL
+#define GAISTRERROR_ID     123UL
+#define ACCEPT4_ID         124UL
+#define WRITEV_ID          125UL
 #define PRINTF_ID          300UL
 
 #define MIN_ID            OPEN_ID
@@ -114,6 +119,10 @@
 #define MAX_FILE_NAME_LEN 128
 #define MAX_POLL_FDS      32
 #define MAX_PATH_LEN      1024
+#define MAX_IFNAMEINDEX_LEN 40
+#define MAX_IFNAMEINDEX_SIZE 40
+#define MAX_IOV_LEN    60
+#define MAX_IOV_SIZE   30
 
 #define MAX_FILE_MODE_LEN 6
 
@@ -1250,4 +1259,111 @@ typedef struct rpc_fscanx_outp {
     uint64_t data;
 } rpc_fscanfx_outp_t;
 
+typedef struct nameindex {
+    unsigned int if_index;
+    char if_name[MAX_IFNAMEINDEX_LEN];
+} t_nameindex;
+
+/* if_nameindex */
+typedef struct rpc_if_nameindex_req{
+    unsigned long func_id;
+    uint32_t trace_id;
+} rpc_if_nameindex_req_t;
+
+typedef struct rpc_if_nameindex_resp {
+    rpc_resp_base_t super;
+    ssize_t ret;
+    int cnt;
+    t_nameindex if_index[MAX_IFNAMEINDEX_SIZE];
+} rpc_if_nameindex_resp_t;
+
+typedef struct rpc_if_nameindex_outp {
+    rpc_outp_base_t super;
+    ssize_t ret;
+    int cnt;
+    struct if_nameindex *if_index;
+} rpc_if_nameindex_outp_t;
+
+/* putchar */
+typedef struct rpc_putchar_req{
+    unsigned long func_id;
+    uint32_t trace_id;
+    int ch;
+} rpc_putchar_req_t;
+
+typedef struct rpc_putchar_resp {
+    rpc_resp_base_t super;
+    int ret;
+} rpc_putchar_resp_t;
+
+typedef struct rpc_putchar_outp {
+    rpc_outp_base_t super;
+    int ret;
+} rpc_putchar_outp_t;
+
+/* gai_strerror */
+typedef struct rpc_gai_strerror_req{
+    unsigned long func_id;
+    uint32_t trace_id;
+    int error;
+} rpc_gai_strerror_req_t;
+
+typedef struct rpc_gai_strerror_resp {
+    rpc_resp_base_t super;
+    int isNull;
+    char buf[MAX_STRING_LEN];
+} rpc_gai_strerror_resp_t;
+
+typedef struct rpc_gai_strerror_outp {
+    rpc_outp_base_t super;
+    char *buf;
+} rpc_gai_strerror_outp_t;
+
+/* accept4 */
+typedef struct rpc_accept4_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int sockfd;
+    int flags;
+    socklen_t addrlen;
+    char addr_buf[MAX_SBUF_LEN]; // MAX_SBUF_LEN / sizeof(struct sockaddr)
+} rpc_accept4_req_t;
+
+typedef struct rpc_accept4_resp {
+    rpc_resp_base_t super;
+    int ret;
+    socklen_t addrlen;
+    char buf[MAX_SBUF_LEN];
+} rpc_accept4_resp_t;
+
+typedef struct rpc_accept4_outp {
+    rpc_outp_base_t super;
+    ssize_t ret;
+    socklen_t *addrlen;
+    struct sockaddr *addr;
+} rpc_accept4_outp_t;
+
+/* writev */
+typedef struct iovbuf {
+    size_t len;
+    char iov[MAX_IOV_LEN];
+} rpc_iovbuf;
+
+typedef struct rpc_writev_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    int fd;
+    int iovcnt;
+    rpc_iovbuf buf[MAX_IOV_SIZE];
+} rpc_writev_req_t;
+
+typedef struct rpc_writev_resp {
+    rpc_resp_base_t super;
+    ssize_t ret;
+} rpc_writev_resp_t;
+
+typedef struct rpc_writev_outp {
+    rpc_outp_base_t super;
+    ssize_t ret;
+} rpc_writev_outp_t;
 #endif  /* _RPC_INTERNAL_MODEL_H */

@@ -325,6 +325,56 @@ DEF_CONVERT(accept)
     outp->ret = resp->ret;
 }
 
+DEF_CONVERT(accept4)
+{
+    DEFINE_CB_VARS(accept4)
+    socklen_t buflen = MIN(((socklen_t)sizeof(resp->buf)), resp->addrlen);
+
+    if (outp->addrlen != NULL) {
+        *outp->addrlen = buflen;
+    }
+    if (outp->addr != NULL && buflen > 0) {
+        (void)memcpy_s(outp->addr, buflen, resp->buf, buflen);
+    }
+    outp->ret = resp->ret;
+}
+
+DEF_CONVERT(gai_strerror)
+{
+    DEFINE_CB_VARS(gai_strerror)
+    if (resp->isNull) {
+        return;
+    }
+    int len = strlen(resp->buf) + 1;
+    memcpy_s(outp->buf, len, resp->buf, len);
+}
+
+DEF_CONVERT(putchar)
+{
+    DEFINE_CB_VARS(putchar)
+    outp->ret = resp->ret;
+}
+
+DEF_CONVERT(if_nameindex)
+{
+    DEFINE_CB_VARS(if_nameindex)
+    outp->cnt = resp->cnt;
+
+    int len = 0;
+    for (int i = 0; i < resp->cnt; i++) {
+        outp->if_index[i].if_index = resp->if_index[i].if_index;
+        len = strlen(resp->if_index[i].if_name) + 1;
+        outp->if_index[i].if_name = (char *)malloc(sizeof(char)*len);
+        (void)memcpy_s(outp->if_index[i].if_name, MAX_IFNAMEINDEX_LEN, resp->if_index[i].if_name, len);
+    }
+}
+
+DEF_CONVERT(writev)
+{
+    DEFINE_CB_VARS(writev)
+    outp->ret = resp->ret;
+}
+
 DEF_CONVERT(recv)
 {
     DEFINE_CB_VARS(recv)
@@ -3157,6 +3207,148 @@ int PRT_ProxyFscanfx(FILE *f, const char *fmt, ...)
     return ret;
 }
 
+struct if_nameindex *PRT_ProxyIfNameIndex()
+{
+    DEFINE_COMMON_RPC_VAR(if_nameindex)
+    outp.if_index = (struct if_nameindex *)malloc(sizeof(struct if_nameindex)*MAX_IFNAMEINDEX_SIZE);
+    CHECK_INIT()
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = IFNAMEINDEX_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(if_nameindex);
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    if (ret < 0) {
+        return NULL;
+    }
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    if (outp.cnt == 0) {
+        return NULL;
+    }
+
+    return outp.if_index;
+}
+
+int PRT_ProxyPutChar(int ch)
+{
+    DEFINE_COMMON_RPC_VAR(putchar)
+    CHECK_INIT()
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = PUTCHAR_ID;
+    req.ch = ch;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(putchar);
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.ret;
+}
+
+const char *PRT_ProxyGaiStrError(int error)
+{
+    DEFINE_COMMON_RPC_VAR(gai_strerror)
+    CHECK_INIT()
+    CHECK_ARG(error > 0, EINVAL)
+
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = GAISTRERROR_ID;
+    req.error = error;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = CONVERT(gai_strerror);
+
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    return outp.buf;
+}
+
+int PRT_ProxyAccept4(int sockfd, struct sockaddr *addr,socklen_t *addrlen, int flags)
+{
+    DEFINE_COMMON_RPC_VAR(accept4)
+
+    CHECK_INIT()
+    CHECK_ARG(sockfd < 0, EBADF)
+    CHECK_ARG(addr != NULL && addrlen == NULL , EFAULT)
+    CHECK_ARG(addrlen != NULL && *addrlen > sizeof(req.addr_buf), EINVAL)
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = ACCEPT4_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.sockfd = sockfd;
+    req.flags = flags;
+    
+    if (addr != NULL && addrlen != NULL) {
+        req.addrlen = *addrlen;
+        (void)memcpy_s(req.addr_buf, req.addrlen, addr, req.addrlen);
+    } else {
+        req.addrlen = 0;
+        payload_size -= sizeof(req.addr_buf);
+    }
+
+    outp.addr = addr;
+    outp.addrlen = addrlen;
+
+    RECORD_AT(slot_idx).cb = CONVERT(accept4);
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+
+    ret = outp.ret;
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return ret;
+}
+
+ssize_t PRT_ProxyWritev(int fd, const struct iovec *iov, int iovcnt)
+{
+    DEFINE_COMMON_RPC_VAR(writev)
+
+    CHECK_INIT()
+    CHECK_ARG(fd < 0, EBADF)
+    CHECK_ARG(iov == NULL , EFAULT)
+    CHECK_ARG(iovcnt == 0, EINVAL)
+    CHECK_ARG(iovcnt > MAX_IOV_SIZE, EINVAL)
+    slot_idx = new_slot(&outp);
+    CHECK_RET(slot_idx)
+
+    req.func_id = WRITEV_ID;
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    req.fd = fd;
+    req.iovcnt = iovcnt;
+
+    for (int i = 0; i < iovcnt; i++) {
+        memcpy_s(req.buf[i].iov, MAX_IOV_LEN, (char *)iov->iov_base, iov->iov_len);
+        req.buf[i].len = iov->iov_len;
+        iov++;
+    }
+
+    RECORD_AT(slot_idx).cb = CONVERT(writev);
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
+
+    ret = outp.ret;
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+    return ret;
+}
+
 #if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
@@ -3236,4 +3428,9 @@ WEAK_ALIAS(PRT_ProxyMkdir, mkdir);
 WEAK_ALIAS(PRT_ProxyRmdir, rmdir);
 WEAK_ALIAS(PRT_ProxyPipe, pipe);
 WEAK_ALIAS(PRT_ProxyFscanfx, fscanf);
+WEAK_ALIAS(PRT_ProxyIfNameIndex, if_nameindex);
+WEAK_ALIAS(PRT_ProxyPutChar, putchar);
+WEAK_ALIAS(PRT_ProxyGaiStrError, gai_strerror);
+WEAK_ALIAS(PRT_ProxyAccept4, accept4);
+WEAK_ALIAS(PRT_ProxyWritev, writev);
 #endif

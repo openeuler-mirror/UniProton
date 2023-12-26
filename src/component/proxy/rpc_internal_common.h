@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/un.h>
+#include <net/if.h>
 #else 
 typedef unsigned int uint32_t;
 
