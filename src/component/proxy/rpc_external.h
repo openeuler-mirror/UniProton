@@ -116,5 +116,6 @@ int PRT_ProxyChdir(const char *path);
 int PRT_ProxyMkdir(const char *pathname, mode_t mode);
 int PRT_ProxyRmdir(const char *path);
 int PRT_ProxyPipe(int fd[2]);
+int PRT_ProxyFscanfx(FILE *f, const char *fmt, ...);
 
 #endif /* _RPC_EXTERNAL_H */

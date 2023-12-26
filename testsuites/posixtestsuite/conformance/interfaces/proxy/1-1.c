@@ -1693,6 +1693,50 @@ static int test_pipe()
     return 0;
 }
 
+static int test_fscanfx()
+{
+    char *fname = "/tmp/test_fscanx.txt";
+    FILE *fp;
+    char buff[100];
+    char *wdata = "0x123456789ABCDEF0 0xABCDEF0123456789\n0x123456789ABCDEF0 0xABCDEF0123456789\n";
+    int ret;
+    uint64_t data;
+    int i;
+
+    fp = fopen(fname, "w+");
+    if (fp == NULL) {
+        printf("UP>fopen file '%s' fail, ret: %lu\n", fname, (unsigned long)fp);
+        return -1;
+    }
+    printf("UP>fopen file '%s' success\n", fname);
+
+    size_t nmemb = strlen(wdata);
+    size_t sz = fwrite(wdata, sizeof(char), nmemb, fp);
+    if (sz != nmemb) {
+        printf("UP>fwrite fail, sz: %u, nmemb: %u\r\n", sz, nmemb);
+        fclose(fp);
+        return -1;
+    }
+
+    ret = fseek(fp, 0, SEEK_SET);
+    if (ret != 0) {
+        printf("UP>fseeko fail, ret %d\r\n", ret);
+        fclose(fp);
+        return -1;
+    }
+
+    for (i = 0; i < 5; i++) {
+        ret = fscanf(fp, "%llx ", &data);
+        printf("fscanf ret:%d data:0x%llx\r\n", ret, data);
+        if (ret <= 0) {
+            break;
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+
 typedef int (*test_fn)();
 typedef struct test_case {
     char *name;
@@ -1749,6 +1793,7 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_dir_mk_ch_rm),
     TEST_CASE_Y(test_fseek_ftell),
     TEST_CASE_Y(test_pipe),
+    TEST_CASE_Y(test_fscanfx),
 };
 
 int rpc_test_entry()

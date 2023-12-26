@@ -3097,6 +3097,66 @@ int PRT_ProxyPipe(int fd[2])
     return ret;
 }
 
+static void resp2outp_fscanfx(void *from, void *to)
+{
+    rpc_fscanfx_resp_t *resp = (rpc_fscanfx_resp_t *)from;
+    rpc_fscanfx_outp_t *outp = (rpc_fscanfx_outp_t *)to;
+
+    outp->data = resp->data;
+    outp->ret = resp->ret;
+}
+
+int PRT_ProxyVfscanfx(FILE *f, const char *fmt, va_list ap)
+{
+    rpc_fscanfx_req_t req = {0};
+    rpc_fscanfx_outp_t outp = {0};
+
+    if (g_ept == NULL || f == NULL || fmt == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    int len = strlen(fmt) + 1;
+    if (len > sizeof(req.fmt)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    int slot_idx = new_slot(&outp);
+    if (slot_idx < 0) {
+        errno = ETXTBSY;
+        return -1;
+    }
+
+    outp.super.errnum = 0;
+    req.func_id = FSCANFX_ID;
+    req.fhandle = file2handle(f);
+    (void)memcpy_s(req.fmt, len, fmt, len);
+    req.trace_id = RECORD_AT(slot_idx).trace_id;
+    RECORD_AT(slot_idx).cb = resp2outp_fscanfx;
+    int ret = wait4resp(slot_idx, &req, sizeof(req));
+    if (ret < 0) {
+        return ret;
+    }
+    errno = outp.super.errnum;
+    free_slot(slot_idx);
+
+    uint64_t *data_ptr = va_arg(ap, uint64_t*);
+    *data_ptr = outp.data;
+
+    return outp.ret;
+}
+
+int PRT_ProxyFscanfx(FILE *f, const char *fmt, ...)
+{
+    int ret;
+    va_list ap;
+    va_start(ap, fmt);
+    ret = PRT_ProxyVfscanfx(f, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
 #if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
@@ -3175,4 +3235,5 @@ WEAK_ALIAS(PRT_ProxyChdir, chdir);
 WEAK_ALIAS(PRT_ProxyMkdir, mkdir);
 WEAK_ALIAS(PRT_ProxyRmdir, rmdir);
 WEAK_ALIAS(PRT_ProxyPipe, pipe);
+WEAK_ALIAS(PRT_ProxyFscanfx, fscanf);
 #endif

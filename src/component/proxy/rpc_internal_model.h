@@ -79,6 +79,7 @@
 #define CHDIR_ID          54UL
 #define MKDIR_ID          55UL
 #define RMDIR_ID          56UL
+#define FSCANFX_ID        57UL
 
 #define FREEADDRINFO_ID    100UL
 #define GETADDRINFO_ID     101UL
@@ -1228,5 +1229,25 @@ typedef struct rpc_pipe_outp {
     ssize_t ret;
     int fd[2];
 } rpc_pipe_outp_t;
+
+/* fscanf only one %llx */
+typedef struct rpc_fscanfx_req {
+    unsigned long func_id;
+    uint32_t trace_id;
+    char fmt[MAX_FILE_NAME_LEN];
+    fileHandle fhandle;
+} rpc_fscanfx_req_t;
+
+typedef struct rpc_fscanfx_resp {
+    rpc_resp_base_t super;
+    ssize_t ret;
+    uint64_t data;
+} rpc_fscanfx_resp_t;
+
+typedef struct rpc_fscanx_outp {
+    rpc_outp_base_t super;
+    ssize_t ret;
+    uint64_t data;
+} rpc_fscanfx_outp_t;
 
 #endif  /* _RPC_INTERNAL_MODEL_H */
