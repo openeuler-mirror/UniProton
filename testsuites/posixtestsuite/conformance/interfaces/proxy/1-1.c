@@ -11,6 +11,8 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/un.h>
+#include <net/if.h>
+#include <sys/uio.h>
 #include <dirent.h>
 #include "prt_proxy_ext.h"
 #include <stdio.h>
