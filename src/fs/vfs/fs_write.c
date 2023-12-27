@@ -146,7 +146,7 @@ ssize_t nx_write(int fd, FAR const void *buf, size_t nbytes)
  * Name: write
  *
  * Description:
- *  write() writes up to nytes bytes to the file referenced by the file
+ *  sys_write() writes up to nytes bytes to the file referenced by the file
  *  descriptor fd from the buffer starting at buf.
  *
  * Input Parameters:

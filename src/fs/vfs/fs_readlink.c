@@ -1,5 +1,5 @@
 /****************************************************************************
- * fs/vfs/fs_readlink.c
+ * fs/vfs/sys_readlink.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -31,6 +31,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -41,10 +42,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: mkdir
+ * Name: sys_readlink
  *
  * Description:
- *   The readlink() function will place the contents of the symbolic link
+ *   The sys_readlink() function will place the contents of the symbolic link
  *   referred to by 'path' in the buffer 'buf' which has size 'bufsize'. If
  *   the number of bytes in the symbolic link is less than bufsize, the
  *   contents of the remainder of 'buf' are unspecified. If the buf argument
@@ -59,13 +60,13 @@
  *   bufixe - The size of 'buf'
  *
  * Returned Value:
- *   Upon successful completion, readlink() will return the count of bytes
+ *   Upon successful completion, sys_readlink() will return the count of bytes
  *   placed in the buffer. Otherwise, it will return a value of -1, leave the
  *   buffer unchanged, and set errno to indicate the error.
  *
  ****************************************************************************/
 
-ssize_t readlink(FAR const char *path, FAR char *buf, size_t bufsize)
+ssize_t sys_readlink(FAR const char *path, FAR char *buf, size_t bufsize)
 {
   struct inode_search_s desc;
   FAR struct inode *node;

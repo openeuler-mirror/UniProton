@@ -26,6 +26,7 @@
 #define __INCLUDE_FS_UNISTD_H
 
 #include <unistd.h>
+#include <nuttx/compiler.h>
 
 int sys_close(int fd);
 
@@ -42,5 +43,29 @@ int sys_rmdir(const char *pathname);
 int sys_rename(const char *oldpath, const char *newpath);
 
 int sys_dup2(int fd1, int fd2);
+
+int sys_chown(FAR const char *path, uid_t owner, gid_t group);
+
+int sys_fsync(int fd);
+
+int sys_dup(int fd);
+
+ssize_t sys_pread(int fd, FAR void *buf, size_t nbytes, off_t offset);
+
+ssize_t sys_pwrite(int fd, FAR const void *buf, size_t nbytes, off_t offset);
+
+void sys_sync(void);
+
+ssize_t sys_readlink(FAR const char *path, FAR char *buf, size_t bufsize);
+
+int sys_link(FAR const char *path1, FAR const char *path2);
+
+int sys_fchown(int fd, uid_t owner, gid_t group);
+
+int sys_lchown(FAR const char *path, uid_t owner, gid_t group);
+
+int sys_symlink(FAR const char *path1, FAR const char *path2);
+
+int sys_ftruncate(int fd, off_t length);
 
 #endif /* __INCLUDE_FS_UNISTD_H */

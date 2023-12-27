@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
@@ -242,7 +243,7 @@ int lchmod(FAR const char *path, mode_t mode)
 }
 
 /****************************************************************************
- * Name: chown
+ * Name: sys_chown
  *
  * Description:
  *   The chown() function shall change the user and group ownership of a
@@ -261,7 +262,7 @@ int lchmod(FAR const char *path, mode_t mode)
  *
  ****************************************************************************/
 
-int chown(FAR const char *path, uid_t owner, gid_t group)
+int sys_chown(FAR const char *path, uid_t owner, gid_t group)
 {
   struct stat buf;
 
@@ -272,10 +273,10 @@ int chown(FAR const char *path, uid_t owner, gid_t group)
 }
 
 /****************************************************************************
- * Name: lchown
+ * Name: sys_lchown
  *
  * Description:
- *   The lchown() system call is similar to chown() but does not follow
+ *   The sys_lchown() system call is similar to chown() but does not follow
  *   the symbolic links.
  *
  * Input Parameters:
@@ -284,12 +285,12 @@ int chown(FAR const char *path, uid_t owner, gid_t group)
  *   group - Specifies the group to set
  *
  * Returned Value:
- *   Upon successful completion, lchown() shall return 0.
+ *   Upon successful completion, sys_lchown() shall return 0.
  *   Otherwise, it shall return -1 and set errno to indicate the error.
  *
  ****************************************************************************/
 
-int lchown(FAR const char *path, uid_t owner, gid_t group)
+int sys_lchown(FAR const char *path, uid_t owner, gid_t group)
 {
   struct stat buf;
 

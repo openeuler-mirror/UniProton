@@ -31,6 +31,7 @@
 #include <fcntl.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 #include "inode/inode.h"
 
 /****************************************************************************
@@ -84,14 +85,14 @@ int file_dup(FAR struct file *filep, int minfd, bool cloexec)
 }
 
 /****************************************************************************
- * Name: dup
+ * Name: sys_dup
  *
  * Description:
  *   Clone a file or socket descriptor to an arbitrary descriptor number
  *
  ****************************************************************************/
 
-int dup(int fd)
+int sys_dup(int fd)
 {
   FAR struct file *filep;
   int ret;
