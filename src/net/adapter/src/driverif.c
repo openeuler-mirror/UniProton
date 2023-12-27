@@ -263,9 +263,8 @@ err_t driverif_init(struct netif *netif)
     }
     linkLayerType = netif->link_layer_type;
     LWIP_ERROR("driverif_init : invalid link_layer_type in netif", \
-        ((linkLayerType == ETHERNET_DRIVER_IF) \
-        || (linkLayerType == WIFI_DRIVER_IF \
-        || linkLayerType == BT_PROXY_IF)), \
+        (linkLayerType == WIFI_DRIVER_IF \
+        || linkLayerType == BT_PROXY_IF), \
             return ERR_IF);
 
     LWIP_ERROR("driverif_init : netif hardware length is greater than maximum supported", \
@@ -276,6 +275,15 @@ err_t driverif_init(struct netif *netif)
 #if LWIP_NETIF_PROMISC
     LWIP_ERROR("driverif_init : drv_config is null", (netif->drv_config != NULL), return ERR_IF);
 #endif
+
+    LWIP_ERROR("driverif_init : drv_init is null", \
+        (netif->drv_init != NULL && linkLayerType == ETHERNET_DRIVER_IF), return ERR_IF);
+    
+    LWIP_ERROR("driverif_init : input is null", \
+        (netif->input != NULL && linkLayerType == ETHERNET_DRIVER_IF), return ERR_IF);
+    
+    LWIP_ERROR("driverif_init : set drv_init fail", \
+        (netif->drv_init(netif) != 0), return ERR_IF);
 
 #if LWIP_NETIF_HOSTNAME
     /* Initialize interface hostname */

@@ -28,6 +28,7 @@
 #endif
 
 #define linkoutput      linkoutput; \
+                        u8_t (*drv_init)(struct netif *netif); \
                         void (*drv_send)(struct netif *netif, struct pbuf *p); \
                         u8_t (*drv_set_hwaddr)(struct netif *netif, u8_t *addr, u8_t len); \
                         void (*drv_config)(struct netif *netif, u32_t config_flags, u8_t setBit); \
