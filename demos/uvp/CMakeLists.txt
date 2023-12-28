@@ -33,6 +33,7 @@ include_directories(
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -44,6 +45,7 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
     -Wl,--end-group
 )
 
@@ -51,9 +53,6 @@ add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
-if (${CONFIG_OS_SUPPORT_CXX})
-add_subdirectory(cplusplus)
-endif()
 
 # 打印依赖代理接口
 list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
@@ -120,13 +119,8 @@ endif()
 
 #rpmsg
 if (${APP} MATCHES "x86_64")
-    if ("${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y" AND "${CONFIG_OS_OPTION_LOCALE}" STREQUAL "y")
-        list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost>)
-        add_executable(${APP} ${OBJS})
-    else()
         list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
         add_executable(${APP} ${OBJS})
-    endif()
 elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "task-preempt" OR
         ${APP} STREQUAL "semaphore-shuffle" OR
