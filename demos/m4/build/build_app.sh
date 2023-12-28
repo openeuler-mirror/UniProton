@@ -11,6 +11,8 @@ for one_arg in $*; do
         SIM=""
     elif [[ $one_arg == "helloworld" || $one_arg == "HELLOWORLD" ]]; then
         export APP=helloworld
+    elif [[ $one_arg == "stdio" || $one_arg == "STDIO" ]]; then
+        export APP=stdio
     else
         echo "[Error] Not support args - $one_arg"
         exit 1

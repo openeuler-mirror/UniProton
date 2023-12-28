@@ -42,7 +42,12 @@ int vswprintf(wchar_t *restrict s, size_t n, const wchar_t *restrict fmt, va_lis
     FILE f = {
         .lbf = EOF,
         .write = sw_write,
+#ifdef OS_OPTION_NUTTX_VFS
+        .owner = -1,
+        .mutex = {PTHREAD_MUTEX_RECURSIVE, 0, 0},
+#else
         .lock = -1,
+#endif /* OS_OPTION_NUTTX_VFS */
         .buf = buf,
         .buf_size = sizeof buf,
         .cookie = &c,

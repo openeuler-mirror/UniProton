@@ -107,6 +107,9 @@ set(MUSL_MULTIBYTE_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/btowc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/internal.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbtowc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbsinit.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/mbsnrtowcs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/multibyte/wcsrtombs.c
 )
 
 if (${CPU_TYPE} STREQUAL "x86_64")
@@ -239,9 +242,24 @@ list(APPEND  MUSL_STDLIB_SOURCE
 )
 
 # 适配stdio
-set(MUSL_STDIO_SOURCE 
-    musl/src/stdio/snprintf.c
+file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
+list(APPEND MUSL_STDIO_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/lseek.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/temp/__randname.c
 )
+list(REMOVE_ITEM MUSL_STDIO_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/__fopen_rb_ca.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stdin.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stdout.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stderr.c
+)
+if (${CPU_TYPE} STREQUAL "x86_64")
+list(REMOVE_ITEM MUSL_STDIO_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/perror.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/printf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/puts.c
+)
+endif()
 
 # 需要编译的signal相关.c文件
 file(GLOB MUSL_SIGNAL_SOURCE musl/src/signal/*.c)
@@ -395,6 +413,8 @@ target_compile_options(musllibc PUBLIC
         -Wno-cast-function-type
         -Wno-float-conversion
         -Wno-unknown-pragmas
+        -Wno-maybe-uninitialized
+        -Wno-address
         -include ${CONFIG_FILE_PATH}/prt_buildef.h
         )
 if (${CONFIG_OS_POSIX_SET_TZDST})

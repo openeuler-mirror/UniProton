@@ -30,7 +30,9 @@ int fclose(FILE *f)
     if (f->next) f->next->prev = f->prev;
     if (*head == f) *head = f->next;
     __ofl_unlock();
-
+#ifdef OS_OPTION_NUTTX_VFS
+    r = pthread_mutex_destroy(&f->mutex);
+#endif
     free(f->getln_buf);
     free(f);
 

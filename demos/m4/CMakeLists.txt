@@ -27,13 +27,15 @@ if(${APP} STREQUAL "helloworld")
     endif()
 elseif(${APP} STREQUAL "shell")
     set(ldfile "${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
+elseif(${APP} STREQUAL "stdio")
+    set(ldfile "${CMAKE_CURRENT_SOURCE_DIR}/build/helloworld.ld")
 endif()
 
 if("${SIM}" STREQUAL "_SIM_")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D${SIM}")
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${ldfile}")
+set(CMAKE_EXE_LINKER_FLAGS "-nostdlib -Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${ldfile}")
 
 set(OUTPUT_PATH ${HOME_PATH}/output)
 include_directories(
@@ -52,7 +54,7 @@ include_directories(
 endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries("${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib")
-link_libraries(-lm -lc_nano -lnosys -lgcc)
+link_libraries(-lgcc)
 
 add_subdirectory(bsp)
 add_subdirectory(config)

@@ -1,5 +1,4 @@
 #include "stdio_impl.h"
-#include <wchar.h>
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
@@ -7,22 +6,21 @@
 #include "libc.h"
 
 struct cookie {
-    wchar_t **bufp;
+    char **bufp;
     size_t *sizep;
     size_t pos;
-    wchar_t *buf;
+    char *buf;
     size_t len;
     size_t space;
-    mbstate_t mbs;
 };
 
-struct wms_FILE {
+struct ms_FILE {
     FILE f;
     struct cookie c;
-    unsigned char buf[1];
+    unsigned char buf[BUFSIZ];
 };
 
-static off_t wms_seek(FILE *f, off_t off, int whence)
+static off_t ms_seek(FILE *f, off_t off, int whence)
 {
     ssize_t base;
     struct cookie *c = f->cookie;
@@ -32,43 +30,43 @@ fail:
         return -1;
     }
     base = (size_t [3]){0, c->pos, c->len}[whence];
-    if (off < -base || off > SSIZE_MAX/4-base) goto fail;
-    memset(&c->mbs, 0, sizeof c->mbs);
+    if (off < -base || off > SSIZE_MAX-base) goto fail;
     return c->pos = base+off;
 }
 
-static size_t wms_write(FILE *f, const unsigned char *buf, size_t len)
+static size_t ms_write(FILE *f, const unsigned char *buf, size_t len)
 {
     struct cookie *c = f->cookie;
-    size_t len2;
-    wchar_t *newbuf;
+    size_t len2 = f->wpos - f->wbase;
+    char *newbuf;
+    if (len2) {
+        f->wpos = f->wbase;
+        if (ms_write(f, f->wbase, len2) < len2) return 0;
+    }
     if (len + c->pos >= c->space) {
         len2 = 2*c->space+1 | c->pos+len+1;
-        if (len2 > SSIZE_MAX/4) return 0;
-        newbuf = realloc(c->buf, len2*4);
+        newbuf = realloc(c->buf, len2);
         if (!newbuf) return 0;
         *c->bufp = c->buf = newbuf;
-        memset(c->buf + c->space, 0, 4*(len2 - c->space));
+        memset(c->buf + c->space, 0, len2 - c->space);
         c->space = len2;
     }
-    
-    len2 = mbsnrtowcs(c->buf+c->pos, (void *)&buf, len, c->space-c->pos, &c->mbs);
-    if (len2 == -1) return 0;
-    c->pos += len2;
+    memcpy(c->buf+c->pos, buf, len);
+    c->pos += len;
     if (c->pos >= c->len) c->len = c->pos;
     *c->sizep = c->pos;
     return len;
 }
 
-static int wms_close(FILE *f)
+static int ms_close(FILE *f)
 {
     return 0;
 }
 
-FILE *open_wmemstream(wchar_t **bufp, size_t *sizep)
+FILE *open_memstream(char **bufp, size_t *sizep)
 {
-    struct wms_FILE *f;
-    wchar_t *buf;
+    struct ms_FILE *f;
+    char *buf;
 
     if (!(f=malloc(sizeof *f))) return 0;
     if (!(buf=malloc(sizeof *buf))) {
@@ -88,15 +86,26 @@ FILE *open_wmemstream(wchar_t **bufp, size_t *sizep)
     f->f.flags = F_NORD;
     f->f.fd = -1;
     f->f.buf = f->buf;
-    f->f.buf_size = 0;
+    f->f.buf_size = sizeof f->buf;
     f->f.lbf = EOF;
-    f->f.write = wms_write;
-    f->f.seek = wms_seek;
-    f->f.close = wms_close;
+    f->f.write = ms_write;
+    f->f.seek = ms_seek;
+    f->f.close = ms_close;
+    f->f.mode = -1;
 
+#ifdef OS_OPTION_NUTTX_VFS
+    pthread_mutexattr_t attr;
+
+    f->f.owner = -1;
+    if (pthread_mutexattr_init(&attr) != 0 
+            || pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) != 0
+            || pthread_mutex_init(&f->f.mutex, &attr) != 0) {
+        free(f);
+        return 0;
+    }
+#else
     if (!libc.threaded) f->f.lock = -1;
-
-    fwide(&f->f, 1);
+#endif /* OS_OPTION_NUTTX_VFS */
 
     return __ofl_add(&f->f);
 }

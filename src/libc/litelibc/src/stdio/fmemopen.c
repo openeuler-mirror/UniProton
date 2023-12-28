@@ -120,8 +120,19 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
     f->f.write = mwrite;
     f->f.seek = mseek;
     f->f.close = mclose;
+#ifdef OS_OPTION_NUTTX_VFS
+    pthread_mutexattr_t attr;
 
+    f->f.owner = -1;
+    if (pthread_mutexattr_init(&attr) != 0 
+            || pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) != 0
+            || pthread_mutex_init(&f->f.mutex, &attr) != 0) {
+        free(f);
+        return 0;
+    }
+#else
     if (!libc.threaded) f->f.lock = -1;
+#endif /* OS_OPTION_NUTTX_VFS */
 
     return __ofl_add(&f->f);
 }

@@ -7,23 +7,27 @@
 #include "syscall.h"
 #include "kstat.h"
 
+#ifdef OS_OPTION_NUTTX_VFS
+#include "nuttx/sys/sys_stat.h"
+#endif
+
 #define MAXTRIES 100
 
 char *tmpnam(char *buf)
 {
+#ifdef OS_OPTION_NUTTX_VFS
     static char internal[L_tmpnam];
     char s[] = "/tmp/tmpnam_XXXXXX";
     int try;
     int r;
     for (try=0; try<MAXTRIES; try++) {
         __randname(s+12);
-#ifdef SYS_lstat
-        r = __syscall(SYS_lstat, s, &(struct kstat){0});
-#else
-        r = __syscall(SYS_fstatat, AT_FDCWD, s,
-            &(struct kstat){0}, AT_SYMLINK_NOFOLLOW);
-#endif
-        if (r == -ENOENT) return strcpy(buf ? buf : internal, s);
+        r = sys_lstat(s, &(struct stat){0});
+        if (r == -1 && errno == ENOENT) return strcpy(buf ? buf : internal, s);
     }
     return 0;
+#else
+    errno = ENOTSUP;
+    return 0;
+#endif /* OS_OPTION_NUTTX_VFS */
 }

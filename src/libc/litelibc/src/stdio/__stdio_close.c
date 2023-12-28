@@ -1,5 +1,8 @@
 #include "stdio_impl.h"
 #include "aio_impl.h"
+#ifdef OS_OPTION_NUTTX_VFS
+#include "nuttx/sys/sys_unistd.h"
+#endif
 
 static int dummy(int fd)
 {
@@ -10,5 +13,9 @@ weak_alias(dummy, __aio_close);
 
 int __stdio_close(FILE *f)
 {
-    return syscall(SYS_close, __aio_close(f->fd));
+#ifdef OS_OPTION_NUTTX_VFS
+    return sys_close(f->fd);
+#else
+    return -1;
+#endif
 }

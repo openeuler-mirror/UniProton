@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "stdio_impl.h"
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -130,6 +129,16 @@ FILE *fopencookie(void *cookie, const char *mode, cookie_io_functions_t iofuncs)
     f->f.seek = cookieseek;
     f->f.close = cookieclose;
 
+#ifdef OS_OPTION_NUTTX_VFS
+    pthread_mutexattr_t attr;
+    f->f.owner = -1;
+    if (pthread_mutexattr_init(&attr) != 0 
+            || pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) != 0
+            || pthread_mutex_init(&f->f.mutex, &attr) != 0) {
+        free(f);
+        return 0;
+    }
+#endif /* OS_OPTION_NUTTX_VFS */
     /* Add new FILE to open file list */
     return __ofl_add(&f->f);
 }

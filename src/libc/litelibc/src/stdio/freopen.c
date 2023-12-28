@@ -1,6 +1,20 @@
+#define _BSD_SOURCE
+#ifdef _GNU_SOURCE
+#define HAD_SOURCE
+#undef _GNU_SOURCE
+#endif
+#include <stdio.h>
+#ifdef HAD_SOURCE
+#undef HAD_SOURCE
+#define _GNU_SOURCE
+#endif
 #include "stdio_impl.h"
 #include <fcntl.h>
 #include <unistd.h>
+#ifdef OS_OPTION_NUTTX_VFS
+#include <nuttx/sys/sys_fcntl.h>
+#include <nuttx/sys/sys_unistd.h>
+#endif
 
 /* The basic idea of this implementation is to open a new FILE,
  * hack the necessary parts of the new FILE into the old one, then
@@ -12,6 +26,7 @@
 
 FILE *freopen(const char *restrict filename, const char *restrict mode, FILE *restrict f)
 {
+#ifdef OS_OPTION_NUTTX_VFS
     int fl = __fmodeflags(mode);
     FILE *f2;
 
@@ -21,15 +36,15 @@ FILE *freopen(const char *restrict filename, const char *restrict mode, FILE *re
 
     if (!filename) {
         if (fl&O_CLOEXEC)
-            __syscall(SYS_fcntl, f->fd, F_SETFD, FD_CLOEXEC);
+            sys_fcntl(f->fd, F_SETFD, FD_CLOEXEC);
         fl &= ~(O_CREAT|O_EXCL|O_CLOEXEC);
-        if (syscall(SYS_fcntl, f->fd, F_SETFL, fl) < 0)
+        if (sys_fcntl(f->fd, F_SETFL, fl) < 0)
             goto fail;
     } else {
         f2 = fopen(filename, mode);
         if (!f2) goto fail;
         if (f2->fd == f->fd) f2->fd = -1; /* avoid closing in fclose */
-        else if (__dup3(f2->fd, f->fd, fl&O_CLOEXEC)<0) goto fail2;
+        else if (sys_dup2(f2->fd, f->fd)<0) goto fail2;
 
         f->flags = (f->flags & F_PERM) | f2->flags;
         f->read = f2->read;
@@ -47,6 +62,7 @@ fail2:
     fclose(f2);
 fail:
     fclose(f);
+#endif /* OS_OPTION_NUTTX_VFS */
     return NULL;
 }
 
