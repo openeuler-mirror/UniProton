@@ -7,37 +7,52 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
-#include "ff.h"			/* Obtains integer types */
-#include "diskio.h"		/* Declarations of disk functions */
+#include <stddef.h>
+#include "ff.h"            /* Obtains integer types */
+#include "diskio.h"        /* Declarations of disk functions */
+#include "nuttx/fs/fs.h"
 
 /* Definitions of physical drive number for each drive */
-#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
+#define DEV_RAM        0    /* Example: Map Ramdisk to physical drive 0 */
+#define DEV_MMC        1    /* Example: Map MMC/SD card to physical drive 1 */
+#define DEV_USB        2    /* Example: Map USB MSD to physical drive 2 */
 
+extern struct inode * regist_inode[FF_VOLUMES];
+
+static DSTATUS check_regist_inode (
+    BYTE pdrv        /* Physical drive nmuber to identify the drive */
+)
+{
+    if (pdrv >= FF_VOLUMES) {
+        return STA_NODISK;
+    }
+    if (regist_inode[pdrv] == NULL) {
+        return STA_NODISK;
+    }
+
+    return RES_OK;
+}
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_status (
-	BYTE pdrv		/* Physical drive nmuber to identify the drive */
+    BYTE pdrv        /* Physical drive nmuber to identify the drive */
 )
 {
-	return STA_NOINIT;
+    return check_regist_inode(pdrv);
 }
-
-
 
 /*-----------------------------------------------------------------------*/
 /* Inidialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_initialize (
-	BYTE pdrv				/* Physical drive nmuber to identify the drive */
+    BYTE pdrv                /* Physical drive nmuber to identify the drive */
 )
 {
-	return STA_NOINIT;
+    return check_regist_inode(pdrv);
 }
 
 
@@ -47,13 +62,29 @@ DSTATUS disk_initialize (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read (
-	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
-	BYTE *buff,		/* Data buffer to store read data */
-	LBA_t sector,	/* Start sector in LBA */
-	UINT count		/* Number of sectors to read */
+    BYTE pdrv,        /* Physical drive nmuber to identify the drive */
+    BYTE *buff,        /* Data buffer to store read data */
+    LBA_t sector,    /* Start sector in LBA */
+    UINT count        /* Number of sectors to read */
 )
 {
-	return RES_PARERR;
+    DSTATUS status = 0;
+    status = check_regist_inode(pdrv);
+    if (status != RES_OK) {
+        return status;
+    }
+
+    struct inode *inode = regist_inode[pdrv];
+    if (inode->u.i_bops == NULL || inode->u.i_bops->read == NULL) {
+        return RES_NOTRDY;
+    }
+
+    ssize_t read_count =  inode->u.i_bops->read(inode, buff, sector, count);
+    if (read_count == count) {
+        return RES_OK;
+    }
+
+    return RES_ERROR;
 }
 
 
@@ -65,13 +96,29 @@ DRESULT disk_read (
 #if FF_FS_READONLY == 0
 
 DRESULT disk_write (
-	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
-	const BYTE *buff,	/* Data to be written */
-	LBA_t sector,		/* Start sector in LBA */
-	UINT count			/* Number of sectors to write */
+    BYTE pdrv,            /* Physical drive nmuber to identify the drive */
+    const BYTE *buff,    /* Data to be written */
+    LBA_t sector,        /* Start sector in LBA */
+    UINT count            /* Number of sectors to write */
 )
 {
-	return RES_PARERR;
+    DSTATUS status = 0;
+    status = check_regist_inode(pdrv);
+    if (status != RES_OK) {
+        return status;
+    }
+
+    struct inode *inode = regist_inode[pdrv];
+    if (inode->u.i_bops == NULL || inode->u.i_bops->write == NULL) {
+        return RES_NOTRDY;
+    }
+
+    ssize_t write_count =  inode->u.i_bops->write(inode, buff, sector, count);
+    if (write_count == count) {
+        return RES_OK;
+    }
+
+    return RES_ERROR;
 }
 
 #endif
@@ -82,11 +129,27 @@ DRESULT disk_write (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_ioctl (
-	BYTE pdrv,		/* Physical drive nmuber (0..) */
-	BYTE cmd,		/* Control code */
-	void *buff		/* Buffer to send/receive control data */
+    BYTE pdrv,        /* Physical drive nmuber (0..) */
+    BYTE cmd,        /* Control code */
+    void *buff        /* Buffer to send/receive control data */
 )
 {
-	return RES_PARERR;
+    DSTATUS status = 0;
+    status = check_regist_inode(pdrv);
+    if (status != RES_OK) {
+        return status;
+    }
+
+    struct inode *inode = regist_inode[pdrv];
+    if (inode->u.i_bops == NULL || inode->u.i_bops->ioctl == NULL) {
+        return RES_NOTRDY;
+    }
+
+    int ret =  inode->u.i_bops->ioctl(inode, cmd, (unsigned long)buff);
+    if (ret == RES_OK) {
+        return RES_OK;
+    }
+
+    return RES_ERROR;
 }
 

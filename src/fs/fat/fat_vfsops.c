@@ -52,6 +52,8 @@
 #define FATATTR_VOLUMEID 0x08	/* Volume label */
 #define MSDOS_SUPER_MAGIC 0x4d44
 
+struct inode *regist_inode[FF_VOLUMES] = { 0 };
+
 struct fat_mountpt_s
 {
     FATFS *ff_fs;
@@ -860,6 +862,14 @@ static int fat_bind(FAR struct inode *blkdriver, FAR const void *data,
         return -ENODEV;
     }
 
+    const TCHAR *rp = (const TCHAR *)data;
+    BYTE volumeid = get_ldnumber(&rp);
+    if (volumeid >= FATATTR_VOLUMEID) {
+        return -ENODEV;
+    }
+
+    regist_inode[volumeid] = blkdriver;
+
     /* Create an instance of the mountpt state structure */
 
     fs = (struct fat_mountpt_s *)kmm_zalloc(sizeof(struct fat_mountpt_s));
@@ -936,21 +946,28 @@ static int fat_unbind(FAR void *handle, FAR struct inode **blkdriver,
 
     if (fs->fs_blkdriver) {
         FAR struct inode *inode = fs->fs_blkdriver;
+        int i = 0;
         if (inode) {
-              if (inode->u.i_bops && inode->u.i_bops->close) {
-                  inode->u.i_bops->close(inode);
-              }
+            if (inode->u.i_bops && inode->u.i_bops->close) {
+                inode->u.i_bops->close(inode);
+            }
 
-              /* We hold a reference to the block driver but should not but
-              * mucking with inodes in this context.  So, we will just return
-              * our contained reference to the block driver inode and let the
-              * umount logic dispose of it.
-              */
+            /* We hold a reference to the block driver but should not but
+            * mucking with inodes in this context.  So, we will just return
+            * our contained reference to the block driver inode and let the
+            * umount logic dispose of it.
+            */
 
-              if (blkdriver) {
-                  *blkdriver = inode;
-              }
-          }
+            if (blkdriver) {
+                *blkdriver = inode;
+            }
+        }
+        for (i = 0; i < FATATTR_VOLUMEID; i++) {
+            if (regist_inode[i] == inode) {
+                break;
+            }
+        }
+        regist_inode[i] = NULL;
     }
 
     nxmutex_destroy(&fs->fs_lock);

@@ -1,6 +1,6 @@
 diff -uprN ff15_old/source/ff.c ff15/source/ff.c
---- ff15_old/source/ff.c	2023-12-18 16:48:29.440926614 +0800
-+++ ff15/source/ff.c	2023-12-18 15:56:21.000000000 +0800
+--- ff15_old/source/ff.c	2022-11-11 19:16:52.000000000 +0800
++++ ff15/source/ff.c	2023-12-26 15:33:18.053961715 +0800
 @@ -943,7 +943,7 @@ static void unlock_volume (
  /*-----------------------------------------------------------------------*/
  
@@ -163,6 +163,15 @@ diff -uprN ff15_old/source/ff.c ff15/source/ff.c
  
  		dp->obj.c_scl = fs->cdc_scl;
  		dp->obj.c_size = fs->cdc_size;
+@@ -3135,7 +3137,7 @@ static FRESULT follow_path (	/* FR_OK(0)
+ /* Get logical drive number from path name                               */
+ /*-----------------------------------------------------------------------*/
+ 
+-static int get_ldnumber (	/* Returns logical drive number (-1:invalid drive number or null pointer) */
++int get_ldnumber (	/* Returns logical drive number (-1:invalid drive number or null pointer) */
+ 	const TCHAR** path		/* Pointer to pointer to the path name */
+ )
+ {
 @@ -3721,7 +3723,7 @@ FRESULT f_open (
  )
  {
@@ -326,8 +335,8 @@ diff -uprN ff15_old/source/ff.c ff15/source/ff.c
  	UINT di;
  	WCHAR wc;
 diff -uprN ff15_old/source/ff.h ff15/source/ff.h
---- ff15_old/source/ff.h	2023-12-18 16:48:29.440926614 +0800
-+++ ff15/source/ff.h	2023-12-18 15:02:33.000000000 +0800
+--- ff15_old/source/ff.h	2022-11-06 21:23:56.000000000 +0800
++++ ff15/source/ff.h	2023-12-26 15:32:44.475907650 +0800
 @@ -221,7 +221,7 @@ typedef struct {
  
  
@@ -363,3 +372,24 @@ diff -uprN ff15_old/source/ff.h ff15/source/ff.h
  FRESULT f_mkdir (const TCHAR* path);								/* Create a sub directory */
  FRESULT f_unlink (const TCHAR* path);								/* Delete an existing file or directory */
  FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new);	/* Rename/Move a file or directory */
+@@ -336,6 +336,8 @@ int f_puts (const TCHAR* str, FIL* cp);
+ int f_printf (FIL* fp, const TCHAR* str, ...);						/* Put a formatted string to the file */
+ TCHAR* f_gets (TCHAR* buff, int len, FIL* fp);						/* Get a string from the file */
+ 
++int get_ldnumber (const TCHAR** path); /* for adapter use get ld number */
++
+ /* Some API fucntions are implemented as macro */
+ 
+ #define f_eof(fp) ((int)((fp)->fptr == (fp)->obj.objsize))
+diff -uprN ff15_old/source/ffconf.h ff15/source/ffconf.h
+--- ff15_old/source/ffconf.h	2022-11-06 21:23:56.000000000 +0800
++++ ff15/source/ffconf.h	2023-12-26 15:31:51.476400712 +0800
+@@ -84,7 +84,7 @@
+ / Locale and Namespace Configurations
+ /---------------------------------------------------------------------------*/
+ 
+-#define FF_CODE_PAGE	932
++#define FF_CODE_PAGE	936
+ /* This option specifies the OEM code page to be used on the target system.
+ /  Incorrect code page setting can cause a file open failure.
+ /

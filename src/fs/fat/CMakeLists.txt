@@ -20,7 +20,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ff15)
 endif()
 
 set(FAT_SOURCE diskio.c
-               fs_fat32.c
+               fat_vfsops.c
                ff15/source/ff.c
                ff15/source/ffsystem.c 
                ff15/source/ffunicode.c
