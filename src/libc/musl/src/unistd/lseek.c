@@ -8,11 +8,10 @@
 #undef HAD_SOURCE
 #define _GNU_SOURCE
 #endif
-
 #include <errno.h>
-
+#include "syscall.h"
 #ifdef OS_OPTION_NUTTX_VFS
-#include "nuttx/sys/sys_unistd.h"
+#include <nuttx/sys/sys_unistd.h>
 #endif
 
 off_t __lseek(int fd, off_t offset, int whence)
@@ -22,7 +21,7 @@ off_t __lseek(int fd, off_t offset, int whence)
 #else
     errno = ENOTSUP;
     return -1;
-#endif
+#endif /* OS_OPTION_NUTTX_VFS */
 }
 
 weak_alias(__lseek, lseek);

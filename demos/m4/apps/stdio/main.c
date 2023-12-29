@@ -1,69 +1,46 @@
-#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/msg.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <termios.h>
-#include "prt_task.h"
-#include "shell.h"
-#include "console.h"
-#include "show.h"
-#include "nuttx/serial/serial.h"
-#include "test.h"
-#include "rtt_viewer.h"
+#include <stdarg.h>
 #include "securec.h"
+#include "prt_config.h"
 #include "prt_config_internal.h"
-#include "nuttx/sys/sys_fcntl.h"
-#include "nuttx/sys/sys_unistd.h"
-
-#define SHELL_EVENT 0x400
+#include "prt_clk.h"
+#include "prt_idle.h"
+#if defined(_SIM_)
+#include "semihosting_dbg.h"
+#else
+#include "rtt_viewer.h"
+#endif
 
 extern void arm_earlyserialinit(void);
 extern void arm_serialinit(void);
+extern int group_setupidlefiles();
 
-int osShellCmdTstReg(int argc, const char **argv)
+void stdio_task(U32 uwParam1, U32 uParam2, U32 uwParam3, U32 uwParam4)
 {
-    shprintf("tstreg: get %d arguments\n", argc);
-    for(int i = 0; i < argc; i++) {
-        shprintf("    no %d arguments: %s\n", i + 1, argv[i]);
-    }
-
-    return 0;
-}
-
-void shell_task(U32 uwParam1, U32 uParam2, U32 uwParam3, U32 uwParam4)
-{
-    int ret;
-    char *dir;
-    uart_dev_t *pdev;
     arm_earlyserialinit();
     arm_serialinit();
+    (void)group_setupidlefiles();
 
-    ret = OsShellInit(0);
-
-    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
-    if (ret == 0) {
-        printf("[INFO]: reg cmd 'tstreg' successed!\n");
-    } else {
-        printf("[INFO]: reg cmd 'tstreg' failed!\n");
-    }
-    
+    int val;
+    char str[32] = {0};
+    setbuf(stdout, NULL);
     while (1) {
-        PRT_TaskDelay(1000);
+        printf("Please input a string(<32): \n");
+        scanf("%s", str);
+        printf("The string is %s.\n", str);
+        PRT_TaskDelay(100);
     }
+
+    return;
 }
 
 U32 PRT_AppInit(void)
 {
     U32 ret;
     TskHandle taskPid;
-    struct TskInitParam stInitParam = {shell_task, 10, 0, {0}, 0x800, "TaskA", 0};
+    struct TskInitParam stInitParam = {stdio_task, 10, 0, {0}, 0x800, "TaskA", 0};
 
     ret = PRT_TaskCreate(&taskPid, &stInitParam);
     if (ret) {
@@ -115,7 +92,6 @@ U32 PRT_Printf(const char *format, ...)
     char buff[0x200] = { 0 };
     S32 count;
     U32 ret;
-    int fd;
 
     va_start(vaList, format);
     count = vsprintf_s(buff, 0x200, format, vaList);
@@ -125,10 +101,11 @@ U32 PRT_Printf(const char *format, ...)
         return OS_ERROR;
     }
 
+#if defined(_SIM_)
+    SemihostingDbgWrite(buff, count);
+#else
     RttViewerWrite(0, buff, count);
-    fd = sys_open(SHELL_PATH, O_RDWR | O_NOCTTY | O_NDELAY);
-    sys_write(fd, buff, count);
-    sys_close(fd);
+#endif
 
     return count;
 }
