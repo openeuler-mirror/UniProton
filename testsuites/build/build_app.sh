@@ -15,17 +15,18 @@ build_flag=""
 LIB_RUN_TYPE="FPGA"
 
 POSIX_APP=(
-    # "UniPorton_test_posix_time_interface" \
-    # "UniPorton_test_posix_thread_sem_interface" \
-    # "UniPorton_test_posix_thread_pthread_interface" \
-    # "UniPorton_test_posix_malloc_interface" \
-    # "UniPorton_test_posix_stdlib_interface" \
-    # "UniPorton_test_posix_ipc_interface" \
-    # "UniPorton_test_posix_signal_interface" \
-    # "UniPorton_test_posix_exit_interface" \
-    # "UniPorton_test_posix_string_interface" \
-    # "UniPorton_test_posix_regex_interface" \
+    "UniPorton_test_posix_time_interface" \
+    "UniPorton_test_posix_thread_sem_interface" \
+    "UniPorton_test_posix_thread_pthread_interface" \
+    "UniPorton_test_posix_malloc_interface" \
+    "UniPorton_test_posix_stdlib_interface" \
+    "UniPorton_test_posix_ipc_interface" \
+    "UniPorton_test_posix_signal_interface" \
+    "UniPorton_test_posix_exit_interface" \
+    "UniPorton_test_posix_string_interface" \
+    "UniPorton_test_posix_regex_interface" \
     "UniPorton_test_posix_prng_interface" \
+    "UniPorton_test_posix_rwflag_interface"
     )
 
 PROXY_APP=(

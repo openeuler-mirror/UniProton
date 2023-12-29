@@ -21,6 +21,10 @@ if (${CONFIG_OS_OPTION_NUTTX_UART})
     endif()
 endif()
 
+if (${CONFIG_CONFIG_PIPES})
+    add_subdirectory(pipes)
+endif()
+
 install(DIRECTORY
     ${DRIVERS_BASE_DIR}/include
     DESTINATION drivers/
