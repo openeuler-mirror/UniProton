@@ -41,6 +41,7 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/ntohl.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_addr.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_aton.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_ntoa.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_pton.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_ntop.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/if_freenameindex.c
