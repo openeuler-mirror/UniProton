@@ -6,15 +6,15 @@ list(REMOVE_ITEM STM32_UART_SOURCE
 add_custom_target(copy_board_h ALL)
 add_custom_command(TARGET copy_board_h
                 PRE_BUILD
-                COMMAND mkdir -p ${DRIVERS_BASE_DIR}/include/arch/board/
-                COMMAND cp ${DRIVERS_BASE_DIR}/board/stm32/stm32f407/board.h ${DRIVERS_BASE_DIR}/include/arch/board/
+                COMMAND mkdir -p ${SRC_ARCH_DIRECTORY}/arm/include/arch/board/
+                COMMAND cp ${DRIVERS_BASE_DIR}/board/stm32/stm32f407/board.h ${SRC_ARCH_DIRECTORY}/arm/include/arch/board/
 )
 add_library(stm32_uart OBJECT ${STM32_UART_SOURCE})
 add_dependencies(stm32_uart copy_board_h)
 target_include_directories(stm32_uart PUBLIC 
-    ${DRIVERS_BASE_DIR}/include
-    ${DRIVERS_BASE_DIR}/include/arch/arm/common
-    ${DRIVERS_BASE_DIR}/include/arch/arm/stm32
+    ${SRC_ARCH_DIRECTORY}/arm/include
+    ${SRC_ARCH_DIRECTORY}/arm/include/common
+    ${SRC_ARCH_DIRECTORY}/arm/include/stm32
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
 )

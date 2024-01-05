@@ -31,7 +31,7 @@
 
 #include <nuttx/config.h>
 #include <nuttx/irq.h>
-#include <arch/arm/stm32/chip.h>
+#include <stm32/chip.h>
 
 /****************************************************************************
  * Pre-processor Prototypes
@@ -70,21 +70,21 @@
  ****************************************************************************/
 
 #if defined(CONFIG_STM32_STM32L15XX)
-#  include <arch/arm/stm32/stm32l15xxx_irq.h>
+#  include <stm32/stm32l15xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F10XX)
-#  include <arch/arm/stm32/stm32f10xxx_irq.h>
+#  include <stm32/stm32f10xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F20XX)
-#  include <arch/arm/stm32/stm32f20xxx_irq.h>
+#  include <stm32/stm32f20xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F30XX)
-#  include <arch/arm/stm32/stm32f30xxx_irq.h>
+#  include <stm32/stm32f30xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F33XX)
-#  include <arch/arm/stm32/stm32f33xxx_irq.h>
+#  include <stm32/stm32f33xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F37XX)
-#  include <arch/arm/stm32/stm32f37xxx_irq.h>
+#  include <stm32/stm32f37xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32F4XXX)
-#  include <arch/arm/stm32/stm32f40xxx_irq.h>
+#  include <stm32/stm32f40xxx_irq.h>
 #elif defined(CONFIG_STM32_STM32G4XXX)
-#  include <arch/arm/stm32/stm32g4xxxx_irq.h>
+#  include <stm32/stm32g4xxxx_irq.h>
 #else
 #  error "Unsupported STM32 chip"
 #endif
