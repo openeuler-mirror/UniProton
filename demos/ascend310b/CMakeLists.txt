@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(exmaples LANGUAGES C ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set(OUTPUT_PATH ${HOME_PATH}/output)
 
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
@@ -43,6 +44,9 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
         ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
         ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+        ${HOME_PATH}/output/libc/include
+        ${HOME_PATH}/src/shell/adapter/include
+        ${HOME_PATH}/src/shell/full/include
     )
 elseif(${CONFIG_GUEST_OS})
     include_directories(
@@ -86,3 +90,13 @@ elseif(${CONFIG_GUEST_OS})
     list(APPEND OBJS $<TARGET_OBJECTS:apps> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
 endif()
 add_executable(${APP} ${OBJS})
+
+if(${CONFIG_LOSCFG_SHELL})
+set(LD_OPTS)
+list(APPEND LD_OPTS
+    -uhelp_shellcmd
+    -umemInfo_shellcmd
+    -utaskInfo_shellcmd
+)
+target_link_options(${APP} PUBLIC ${LD_OPTS})
+endif()
