@@ -149,7 +149,6 @@ endif()
 if (${CONFIG_OS_OPTION_NUTTX_VFS})
 include_directories(
   ./src/fs/include
-  ./src/drivers/include
 )
 endif()
 

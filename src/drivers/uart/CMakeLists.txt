@@ -50,7 +50,6 @@ endif()
 add_library(nuttx_uart OBJECT ${UART_SOURCE})
 
 target_include_directories(nuttx_uart PUBLIC 
-    ${DRIVERS_BASE_DIR}/include
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
 )

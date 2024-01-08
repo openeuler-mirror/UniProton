@@ -16,12 +16,9 @@ set(FS_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../fs/)
 
 if (${CONFIG_OS_OPTION_NUTTX_UART})
     add_subdirectory(uart)
-    if(${CONFIG_OS_OPTION_STM32F407_UART})
-        add_subdirectory(uart/stm32)
-    endif()
 endif()
 
 install(DIRECTORY
-    ${DRIVERS_BASE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/arch/arm/include
     DESTINATION drivers/
 )

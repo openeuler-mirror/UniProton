@@ -27,12 +27,12 @@ target_link_libraries(${BUILD_APP} PUBLIC testsuite_support)
 target_include_directories(${BUILD_APP} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/
     ${OUTPUT_PATH}/drivers/include/
+    ${OUTPUT_PATH}/drivers/include/common
+    ${OUTPUT_PATH}/drivers/include/stm32
 )
 if (${APP} STREQUAL "UniPorton_test_drivers_uart_interface")
 target_include_directories(${BUILD_APP} PUBLIC 
     ${UNIPROTON_PROJECT_DIR}/src/drivers/include
-    ${UNIPROTON_PROJECT_DIR}/src/drivers/include/arch/arm/common
-    ${UNIPROTON_PROJECT_DIR}/src/drivers/include/arch/arm/stm32
     ${UNIPROTON_PROJECT_DIR}/src/drivers/base/
 )
 endif()

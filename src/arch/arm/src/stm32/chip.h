@@ -29,7 +29,7 @@
 
 /* Include the chip capabilities file */
 
-#include <arch/arm/stm32/chip.h>
+#include <stm32/chip.h>
 
 /* Include the chip interrupt definition file */
 
