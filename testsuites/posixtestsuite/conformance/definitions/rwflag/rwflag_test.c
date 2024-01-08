@@ -150,6 +150,8 @@ int TEST_rwflag_4(void)
 
 /**
  * 修改inode_checkflags函数(fs_open.c.c:302)
+ * 修改pipecommon_open函数(pipe_common.c:170)
+ * 修改pipecommon_open函数(pipe_common.c:237)
 */
 int TEST_rwflag_5(void)
 {
@@ -168,6 +170,30 @@ int TEST_rwflag_5(void)
 
         if (read_ok_1 != read_ok_2 || write_ok_1 != write_ok_2) {
             printf("TEST_rwflag_5 error! i=%d, oflag1 = %x, oflag2=%x, ok_1 = %d, ok_2 = %d\n", i, oflag1, oflag2, read_ok_1, read_ok_2);
+            return PTS_FAIL;
+        }
+    }
+
+    return PTS_PASS;
+}
+
+/**
+ * 修改pipecommon_open函数(pipe_common.c:189)
+*/
+int TEST_rwflag_6(void)
+{
+    int oflag1, oflag2;
+    int ok_1, ok_2;
+    int len = sizeof(testcases) / sizeof(int);
+    for (int i = 0; i < len; i += 2) {
+        oflag1 = testcases[i];
+        oflag2 = testcases[i+1];
+    
+        ok_1 = (oflag1 & O_RDWR_OLD) == O_WRONLY_OLD;
+        ok_2 = (oflag2 & MASK) == O_WRONLY_NEW;
+
+        if (ok_1 != ok_2) {
+            printf("TEST_rwflag_6 error! i=%d, oflag1 = %x, oflag2=%x, ok_1 = %d, ok_2 = %d\n", i, oflag1, oflag2, ok_1, ok_2);
             return PTS_FAIL;
         }
     }

@@ -18,6 +18,10 @@ if (${CONFIG_OS_OPTION_NUTTX_UART})
     add_subdirectory(uart)
 endif()
 
+if (${CONFIG_CONFIG_PIPES})
+    add_subdirectory(pipes)
+endif()
+
 install(DIRECTORY
     ${PROJECT_SOURCE_DIR}/src/arch/arm/include
     DESTINATION drivers/
