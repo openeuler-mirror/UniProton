@@ -367,7 +367,7 @@ LITE_OS_SEC_TEXT_MINOR VOID ShellEntry(uintptr_t param1, uintptr_t param2, uintp
     ShellCB *shellCB = (ShellCB *)param1;
 
     (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
-#ifdef LOSCFG_SHELL_MICA_INPUT
+#ifndef LOSCFG_SHELL_MICA_INPUT
     ShellStdinLoop(shellCB);
 #endif
 }

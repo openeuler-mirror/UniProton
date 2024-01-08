@@ -7,6 +7,10 @@
 #include "prt_config_internal.h"
 #include "prt_task.h"
 #include "test.h"
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shell.h"
+#include "show.h"
+#endif
 
 TskHandle g_testTskHandle[2];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -23,23 +27,44 @@ int TestOpenamp()
 }
 #endif
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+static int osShellCmdTstReg(int argc, const char **argv)
+{
+    printf("tstreg: get %d arguments\n", argc);
+    for(int i = 0; i < argc; i++) {
+        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    }
+
+    return 0;
+}
+
+void micaShellInit()
+{
+    int ret = OsShellInit(0);
+    ShellCB *shellCB = OsGetShellCB();
+    if (ret != 0 || shellCB == NULL) {
+        PRT_Printf("shell init fail\n");
+        return;
+    }
+    (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'tstreg' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'tstreg' failed!\n");
+    }
+}
+#endif
+
 void Test1TaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
-    while (1) {
-        PRT_TaskDelay(200);
-        PRT_Printf("task 1 run.\n");
-    }
-}
 
-void Test2TaskEntry()
-{
-    while (1) {
-        PRT_TaskDelay(100);
-        PRT_Printf("task 2 run.\n");
-    }
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
+#endif
 }
 
 U32 OsTestInit(void)
@@ -61,23 +86,6 @@ U32 OsTestInit(void)
     }
 
     ret = PRT_TaskResume(g_testTskHandle[0]);
-    if (ret) {
-        return ret;
-    }
-
-    // task 2
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)Test2TaskEntry;
-    param.taskPrio = 30;
-    param.name = "Test2Task";
-    param.stackSize = 0x2000;
-
-    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
-    if (ret) {
-        return ret;
-    }
-
-    ret = PRT_TaskResume(g_testTskHandle[1]);
     if (ret) {
         return ret;
     }
