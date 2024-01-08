@@ -57,7 +57,7 @@
  *
  ****************************************************************************/
 
-int mkdir(const char *pathname, mode_t mode)
+int sys_mkdir(const char *pathname, mode_t mode)
 {
   struct inode_search_s desc;
   FAR struct inode *inode;

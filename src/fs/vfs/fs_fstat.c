@@ -33,6 +33,7 @@
 #include <nuttx/fs/fs.h>
 #include <nuttx/mtd/mtd.h>
 #include <nuttx/net/net.h>
+#include <nuttx/sys/sys_stat.h>
 #include "inode/inode.h"
 
 /****************************************************************************
@@ -245,7 +246,7 @@ int file_fstat(FAR struct file *filep, FAR struct stat *buf)
  *
  ****************************************************************************/
 
-int fstat(int fd, FAR struct stat *buf)
+int sys_fstat(int fd, FAR struct stat *buf)
 {
   FAR struct file *filep;
   int ret;
