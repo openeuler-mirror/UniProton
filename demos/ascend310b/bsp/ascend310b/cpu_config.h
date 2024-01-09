@@ -13,6 +13,8 @@
 #define OS_GIC_BASE_ADDR            0x7FFF000000ULL     // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
 #define GITS_BASE_ADDR              0x7FFF020000ULL     // GITS基地址
+#define UART_INT_NUM                0xcb
+#define SHM_WR_ADDR                 0x2AC00000          // 共享内存地址
 #else
 #define UART_BASE_ADDR              0xC4010000ULL
 #define TEST_CLK_INT                30

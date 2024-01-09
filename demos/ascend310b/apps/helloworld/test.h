@@ -6,6 +6,5 @@
 #include "prt_mem.h"
 
 extern U32 PRT_Printf(const char *format, ...);
-extern void uart_poll_send(unsigned char ch);
 extern void PRT_UartInit(void);
 #define printf PRT_Printf

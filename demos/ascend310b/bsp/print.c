@@ -2,36 +2,25 @@
 #include "prt_typedef.h"
 #include "cpu_config.h"
 #include "securec.h"
-
-#define WRITE_UINT32(value, addr) {          \
-    OS_EMBED_ASM("DSB SY");                  \
-    *(volatile U32 *)(addr) = (U32)(value);  \
-}
-
-#define GET_UINT32(addr) ({                  \
-    U32 r = *(volatile U32 *)(addr);         \
-    OS_EMBED_ASM("DSB SY"); r;               \
-})
-
-#define UART_DR                  0x0  /* data register */
-#define UART_IBRD                0x24 /* integer baudrate register */
-#define UART_FBRD                0x28 /* decimal baudrate register */
-#define UART_LCR_H               0x2C /* line control register */
-#define UART_CR                  0x30 /* control register */
-
-#define UART_CR_TX_EN            (0x01 << 8)
-#define UART_CR_EN               (0x01 << 0)
-
-#define UART_LCR_H_FIFO_EN       (0x01 << 4)
-#define UART_LCR_H_8_BIT         (0x03 << 5)
-
-#define PL011_CLK_DIV            16U
-#define PL011_NUM_8              8U
-#define CONSOLE_UART_BAUDRATE    115200
+#include "pl011.h"
+#include "ymodem.h"
 
 typedef U32 (*PrintFunc)(const char *format, va_list vaList);
 #define OS_MAX_SHOW_LEN 0x200
 
+#ifdef GUEST_OS
+static void TestPutc(unsigned char ch)
+{
+    /* 如果当前串口在传输，关闭打印 */
+    if (YMODEM_IsEnable()) {
+        return;
+    }
+    UartPutChar(ch);
+    if (ch == '\n') {
+        UartPutChar('\r');
+    }
+}
+#else
 void uart_poll_send(unsigned char ch)
 {
     volatile int time = 100;
@@ -46,7 +35,7 @@ void TestPutc(unsigned char ch)
         uart_poll_send('\r');
     }
 }
-
+#endif
 int TestPrintf(const char *format, va_list vaList)
 {
     int len;
@@ -76,51 +65,4 @@ U32 PRT_Printf(const char *format, ...)
     va_end(vaList);
 
     return count;
-}
-
-#if defined(GUEST_OS)
-
-static inline void UartSetBaudrate(uintptr_t regBase)
-{
-    U32 baudRate;
-    U32 divider;
-    U32 remainder;
-    U32 fraction;
-
-    baudRate  = PL011_CLK_DIV * CONSOLE_UART_BAUDRATE;
-    divider   = UART_CLK_INPUT / baudRate;
-    remainder = UART_CLK_INPUT % baudRate;
-    baudRate  = (PL011_NUM_8 * remainder) / CONSOLE_UART_BAUDRATE;
-    fraction  = (baudRate >> 1) + (baudRate & 1);
-
-    WRITE_UINT32(divider, regBase + UART_IBRD);
-    WRITE_UINT32(fraction, regBase + UART_FBRD);
-}
-
-static void UartEarlyInit(void)
-{
-    /* First, disable everything */
-    WRITE_UINT32(0x0, UART_BASE_ADDR + UART_CR);
-
-    /* set Scale factor of baud rate */
-    UartSetBaudrate(UART_BASE_ADDR);
-
-    /* Set the UART to be 8 bits, 1 stop bit, no parity, fifo enabled. */
-    WRITE_UINT32(UART_LCR_H_8_BIT | UART_LCR_H_FIFO_EN, UART_BASE_ADDR + UART_LCR_H);
-
-    /* enable the UART */
-    WRITE_UINT32(UART_CR_EN | UART_CR_TX_EN, UART_BASE_ADDR + UART_CR);
-}
-
-#endif
-
-void PRT_UartInit(void)
-{
-#if defined(GUEST_OS)
-    /* GPIO pin multiplexing */
-    WRITE_UINT32(0, GPIO_UTXD2_ADDR);
-    WRITE_UINT32(0, GPIO_URXD2_ADDR);
-
-    UartEarlyInit();
-#endif
 }

@@ -13,10 +13,13 @@
 #include "uniproton_shm_demo.h"
 #include "spi_1911.h"
 #include "uniproton_its_demo.h"
+#include "pl011.h"
+#include "file_transfer.h"
 
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
 
+/*
 void TestTaskEntry()
 {
     U64 n = 0;
@@ -28,6 +31,32 @@ void TestTaskEntry()
 #if defined(OS_GIC_ITS_TEST)
         its_test_demo_start();
 #endif
+    }
+    return;
+}*/
+void TestTaskEntry(void)
+{
+    U32 ret;
+    PRT_Printf("\nUniProton #");
+    while (1) {
+        unsigned char ch = 0;
+        UartGetChar(&ch, 1000);
+        if (ch == 0xd) {
+            PRT_Printf("\nUniProton #");
+        } else if (ch == 0x2) {
+            PRT_Printf("\nDownload file name:");
+            char fileName[32] = {0};
+            ret = PRT_GetDownloadFileName(fileName, 32);
+            if (ret != 0) {
+                PRT_Printf("\nUniProton #");
+                continue;
+            }
+            PRT_Printf("\nStart downloading...");
+            PRT_DownloadFile(fileName);
+            PRT_Printf("\nUniProton #");
+        } else {
+            UartPutChar(ch);
+        }
     }
     return;
 }
@@ -71,6 +100,11 @@ U32 PRT_AppInit(void)
     }
 
     ret = TestShmStart();
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_UartInterruptInit();
     if (ret) {
         return ret;
     }
