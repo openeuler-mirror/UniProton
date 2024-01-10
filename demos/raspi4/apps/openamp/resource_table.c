@@ -27,7 +27,7 @@ OS_SEC_RSC_TABLE static struct fw_resource_table resource_table = {
 
     /* Virtio device entry */
     .vdev = {
-        RSC_VDEV, VIRTIO_ID_RPMSG, 0, RPMSG_IPU_C0_FEATURES, 0, 0, 0,
+        RSC_VDEV, VIRTIO_ID_RPMSG, 2, RPMSG_IPU_C0_FEATURES, 0, 0, 0,
         VRING_COUNT, {0, 0},
     },
 
