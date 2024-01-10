@@ -13,21 +13,37 @@
 #include "uniproton_shm_demo.h"
 #include "spi_1911.h"
 #include "uniproton_its_demo.h"
+#include "pl011.h"
+#include "file_transfer.h"
+#include "ymodem.h"
 
+#define FILE_NAME_LEN 32
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
 
-void TestTaskEntry()
+void TestTaskEntry(void)
 {
-    U64 n = 0;
-
-    while (++n) {
-        PRT_TaskDelay(OS_TICK_PER_SECOND);
-        PRT_Printf("[uniproton] test [%llu]\n", n);
-
-#if defined(OS_GIC_ITS_TEST)
-        its_test_demo_start();
-#endif
+    U32 ret;
+    PRT_Printf("\nUniProton #");
+    while (1) {
+        unsigned char ch = 0;
+        UartGetChar(&ch, YMODEM_READ_TIMEOUT);
+        if (ch == 0xd) {
+            PRT_Printf("\nUniProton #");
+        } else if (ch == 0x2) {
+            PRT_Printf("\nDownload file name:");
+            char fileName[FILE_NAME_LEN] = {0};
+            ret = PRT_GetDownloadFileName(fileName, FILE_NAME_LEN);
+            if (ret != 0) {
+                PRT_Printf("\nUniProton #");
+                continue;
+            }
+            PRT_Printf("\nStart downloading...");
+            PRT_DownloadFile(fileName);
+            PRT_Printf("\nUniProton #");
+        } else {
+            UartPutChar(ch);
+        }
     }
     return;
 }
@@ -71,6 +87,11 @@ U32 PRT_AppInit(void)
     }
 
     ret = TestShmStart();
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_UartInterruptInit();
     if (ret) {
         return ret;
     }
