@@ -12,7 +12,7 @@ void EMMC_WriteFilePrepare(void)
 
 U32 EMMC_WriteFile(const char *data, U32 size)
 {
-    U32 i = 0;
+    U32 i;
     for (i = 0; i < size; i++) {
         *((char*)g_shm_wr->data + g_shm_wr->used_size + i) = data[i];
     }

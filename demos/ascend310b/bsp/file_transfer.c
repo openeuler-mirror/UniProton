@@ -83,11 +83,11 @@ U32 PRT_DownloadFile(const char *fileName)
 
 U32 PRT_GetDownloadFileName(char *fileName, U32 size)
 {
-    U32 i = 0;
+    U32 i;
     U32 ret;
     for (i = 0; i < size - 1; i++) {
         unsigned char ch = 0;
-        ret = UartGetChar(&ch, 3000);
+        ret = UartGetChar(&ch, YMODEM_READ_TIMEOUT);
         if (ret != YMODEM_STATUS_OK) {
             return ret;
         }

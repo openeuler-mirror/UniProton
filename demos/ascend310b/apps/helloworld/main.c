@@ -15,38 +15,25 @@
 #include "uniproton_its_demo.h"
 #include "pl011.h"
 #include "file_transfer.h"
+#include "ymodem.h"
 
+#define FILE_NAME_LEN 32
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 TskHandle g_testTskHandle;
 
-/*
-void TestTaskEntry()
-{
-    U64 n = 0;
-
-    while (++n) {
-        PRT_TaskDelay(OS_TICK_PER_SECOND);
-        PRT_Printf("[uniproton] test [%llu]\n", n);
-
-#if defined(OS_GIC_ITS_TEST)
-        its_test_demo_start();
-#endif
-    }
-    return;
-}*/
 void TestTaskEntry(void)
 {
     U32 ret;
     PRT_Printf("\nUniProton #");
     while (1) {
         unsigned char ch = 0;
-        UartGetChar(&ch, 1000);
+        UartGetChar(&ch, YMODEM_READ_TIMEOUT);
         if (ch == 0xd) {
             PRT_Printf("\nUniProton #");
         } else if (ch == 0x2) {
             PRT_Printf("\nDownload file name:");
-            char fileName[32] = {0};
-            ret = PRT_GetDownloadFileName(fileName, 32);
+            char fileName[FILE_NAME_LEN] = {0};
+            ret = PRT_GetDownloadFileName(fileName, FILE_NAME_LEN);
             if (ret != 0) {
                 PRT_Printf("\nUniProton #");
                 continue;
