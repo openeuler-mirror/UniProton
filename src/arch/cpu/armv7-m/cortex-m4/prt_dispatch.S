@@ -346,7 +346,43 @@ OsTskContextLoad:
     MSR    BASEPRI, R12
 
     @ skip excReturn
+    LDR    LR,  [SP], #4
+    TST    LR, #OS_FPU_SAVE_FLAG
+    BNE    OsContextNotLoadFloat
+    @load s16-s31
+    VLDMIA  SP!, {S16-S31}
+    LDR    R0,  [SP], #4
+    LDR    R1,  [SP], #4
+    LDR    R2,  [SP], #4
+    LDR    R3,  [SP], #4
+
+    @ temporary skip R12
     ADD    SP,  SP,   #4
+    LDR    LR,  [SP], #4
+    @ temporary skip PC
+    ADD    SP,  SP,   #4
+    @ load xPSR
+    LDR    R12, [SP], #4
+    MSR    xPSR, R12
+
+    VLDMIA SP!, {S0-S15}
+    @ load FPSCR
+    LDR R12, [SP], #4
+    VMSR fpscr, R12
+    @ skip  empty space
+    ADD SP, SP, #4
+
+    @ PC = PC + 1
+    LDR    R12, [SP, #-80]
+    ADD    R12, R12,  #1
+    STR    R12, [SP, #-80]
+
+    @ load R12
+    LDR    R12, [SP, #-88]
+    @ load PC
+    LDR    PC,  [SP, #-80]
+
+OsContextNotLoadFloat:
     LDR    R0,  [SP], #4
     LDR    R1,  [SP], #4
     LDR    R2,  [SP], #4
