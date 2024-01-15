@@ -39,6 +39,7 @@
 #include <nuttx/mtd/mtd.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/fs/fs.h>
 #ifdef CONFIG_FS_PROCFS
 #include <nuttx/fs/procfs.h>
 #endif

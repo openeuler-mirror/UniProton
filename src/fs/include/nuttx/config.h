@@ -7,6 +7,14 @@
 #include "prt_typedef.h"
 #include "prt_hwi.h"
 
+#if defined(CONFIG_FS_LARGEFILE)
+#define PRIdOFF PRId64
+#define PRIuOFF PRIu64
+#else
+#define PRIdOFF PRId32
+#define PRIuOFF PRIu32
+#endif
+
 #define DEBUGVERIFY(f) ((void)(f))
 #define DEBUGASSERT(f) assert(f)
 
@@ -86,10 +94,6 @@ typedef void* pthread_startroutine_t;
 /**
  * 以下类型FS暂不支持
  **/
-#ifdef CONFIG_FS_FAT
-#undef CONFIG_FS_FAT
-#endif
-
 #ifdef CONFIG_FS_ROMFS
 #undef CONFIG_FS_ROMFS
 #endif

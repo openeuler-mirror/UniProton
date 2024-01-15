@@ -170,7 +170,7 @@ static BYTE make_ff_mode(int oflags)
         {0, 0},
     };
 
-    for(int i = 0; modeflags[i][0] != 0; i++) {
+    for(int i = 0; modeflags[i][0] != sizeof(modeflags)/sizeof(*modeflags); i++) {
         if (modeflags[i][0] == oflags) {
             mode |= modeflags[i][1];
             return mode;
@@ -895,11 +895,32 @@ static int fat_bind(FAR struct inode *blkdriver, FAR const void *data,
     */
 
     ret = f_mount(fs->ff_fs, (const TCHAR *)data, 1);
-    if (ret != 0) {
-        nxmutex_destroy(&fs->fs_lock);
-        kmm_free(fs->ff_fs);
-        kmm_free(fs);
-        return ret;
+    if (ret == FR_NO_FILESYSTEM) {
+        MKFS_PARM opt = { 0 };
+        opt.fmt = FM_ANY;
+        char *work_buffer = kmm_zalloc(FF_MAX_SS * sizeof(char));
+        if (work_buffer == NULL) {
+            nxmutex_destroy(&fs->fs_lock);
+            kmm_free(fs->ff_fs);
+            kmm_free(fs);
+            return -1;
+        }
+        ret = f_mkfs((const TCHAR *)data, &opt, work_buffer, FF_MAX_SS);
+        kmm_free(work_buffer);
+        if (ret != 0) {
+            nxmutex_destroy(&fs->fs_lock);
+            kmm_free(fs->ff_fs);
+            kmm_free(fs);
+            return -1;
+        }
+        ret = f_mount(NULL, (const TCHAR *)data, 1);
+        ret += f_mount(fs->ff_fs, (const TCHAR *)data, 1);
+        if (ret != 0) {
+            nxmutex_destroy(&fs->fs_lock);
+            kmm_free(fs->ff_fs);
+            kmm_free(fs);
+            return -1;
+        }
     }
 
     memset(fs->name, 0, NAME_MAX + 1);

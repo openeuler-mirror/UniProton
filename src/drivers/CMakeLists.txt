@@ -22,6 +22,10 @@ if (${CONFIG_CONFIG_PIPES})
     add_subdirectory(pipes)
 endif()
 
+if (${CONFIG_CONFIG_MTD_PROGMEM})
+    add_subdirectory(mtd)
+endif()
+
 install(DIRECTORY
     ${PROJECT_SOURCE_DIR}/src/arch/arm/include
     DESTINATION drivers/

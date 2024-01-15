@@ -1,4 +1,4 @@
-if(NOT ${CONFIG_OS_OPTION_POSIX})
+if(NOT "${CONFIG_OS_OPTION_POSIX}")
     RETURN()
 endif()
 
@@ -47,7 +47,7 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/if_freenameindex.c
     )
 
-if(NOT ${CONFIG_OS_OPTION_PROXY})
+if(NOT "${CONFIG_OS_OPTION_PROXY}")
     list(APPEND  MULS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/select/poll.c)
 endif()
 
