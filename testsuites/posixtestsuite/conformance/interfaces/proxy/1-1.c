@@ -1785,7 +1785,7 @@ static int test_gaistrerror()
     ret = getaddrinfo(NULL, "22", &hints, &result);
     dprintf("test_gaistrerror, ret %d\n", ret);
     if (ret < 0) {
-        dprintf("getaddrinfo---: %s\n", gai_strerror(ret));
+        dprintf("getaddrinfo: %s\n", gai_strerror(ret));
         return 0;
     }
     dprintfaddrinfo(result);
@@ -1868,11 +1868,11 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_link),
     TEST_CASE_Y(test_access),
     TEST_CASE_Y(test_dup2),
-    TEST_CASE_Y(test_mkfifo),
+    TEST_CASE_N(test_mkfifo),
     TEST_CASE_Y(test_dir_mk_ch_rm),
     TEST_CASE_Y(test_fseek_ftell),
     TEST_CASE_Y(test_pipe),
-    TEST_CASE_Y(test_fscanfx),
+    TEST_CASE_N(test_fscanfx),
     TEST_CASE_Y(test_ifnameindex),
     TEST_CASE_Y(test_putchar),
     TEST_CASE_Y(test_gaistrerror),

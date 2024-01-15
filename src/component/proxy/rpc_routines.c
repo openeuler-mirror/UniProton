@@ -3211,7 +3211,10 @@ struct if_nameindex *PRT_ProxyIfNameIndex()
 {
     DEFINE_COMMON_RPC_VAR(if_nameindex)
     outp.if_index = (struct if_nameindex *)malloc(sizeof(struct if_nameindex)*MAX_IFNAMEINDEX_SIZE);
-    CHECK_INIT()
+    CHECK_RET_NULL(g_ept == NULL)
+    CHECK_RET_NULL(outp.if_index == NULL)
+    memset_s(outp.if_index, sizeof(struct if_nameindex)*MAX_IFNAMEINDEX_SIZE,
+        0, sizeof(struct if_nameindex)*MAX_IFNAMEINDEX_SIZE);
 
     slot_idx = new_slot(&outp);
     CHECK_RET(slot_idx)
@@ -3259,11 +3262,11 @@ int PRT_ProxyPutChar(int ch)
 const char *PRT_ProxyGaiStrError(int error)
 {
     DEFINE_COMMON_RPC_VAR(gai_strerror)
-    CHECK_INIT()
-    CHECK_ARG(error > 0, EINVAL)
+    CHECK_RET_NULL(g_ept == NULL)
+    CHECK_AND_SET_ERRNO(error > 0, NULL, EINVAL)
 
     slot_idx = new_slot(&outp);
-    CHECK_RET(slot_idx)
+    CHECK_RET_NULL(slot_idx < 0)
 
     req.func_id = GAISTRERROR_ID;
     req.error = error;
@@ -3271,7 +3274,7 @@ const char *PRT_ProxyGaiStrError(int error)
     RECORD_AT(slot_idx).cb = CONVERT(gai_strerror);
 
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret)
+    CHECK_RET_NULL(ret < 0)
 
     errno = outp.super.errnum;
     free_slot(slot_idx);
