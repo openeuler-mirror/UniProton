@@ -13,6 +13,8 @@ for one_arg in $*; do
         export APP=helloworld
     elif [[ $one_arg == "stdio" || $one_arg == "STDIO" ]]; then
         export APP=stdio
+    elif [[ $one_arg == "fatfs" || $one_arg == "FATFS" ]]; then
+        export APP=fatfs
     else
         echo "[Error] Not support args - $one_arg"
         exit 1

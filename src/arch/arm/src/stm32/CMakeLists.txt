@@ -26,6 +26,11 @@ target_include_directories(stm32_arch PUBLIC
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
 )
+if ("${CONFIG_OS_OPTION_STM32_FLASH}")
+target_include_directories(stm32_arch PUBLIC 
+    ${FS_BASE_DIR}/fat/ff15/source
+)
+endif()
 
 target_compile_options(stm32_arch PUBLIC 
         -Wno-shift-overflow

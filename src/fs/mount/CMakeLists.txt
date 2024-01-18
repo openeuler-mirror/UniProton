@@ -1,4 +1,8 @@
-if(NOT ${CONFIG_OS_OPTION_DRIVER})
+if(NOT "${CONFIG_OS_OPTION_DRIVER}")
+    RETURN()
+endif()
+
+if ("${CONFIG_CONFIG_DISABLE_MOUNTPOINT}")
     RETURN()
 endif()
 
@@ -8,13 +12,13 @@ set(MOUNT_SOURCE
     fs_foreachmountpoint.c
     )
 
-if(NOT ${CONFIG_CONFIG_DISABLE_MOUNTPOINT})
+if("${CONFIG_CONFIG_FS_AUTOMOUNTER}")
     list(APPEND MOUNT_SOURCE
         fs_automount.c
     )
 endif()
 
-if(${CONFIG_CONFIG_FS_PROCFS} AND (NOT ${CONFIG_CONFIG_FS_PROCFS_EXCLUDE_MOUNT}))
+if("${CONFIG_CONFIG_FS_PROCFS}" AND (NOT "${CONFIG_CONFIG_FS_PROCFS_EXCLUDE_MOUNT}"))
     list(APPEND MOUNT_SOURCE 
         fs_procfs_mount.c 
         fs_gettype.c

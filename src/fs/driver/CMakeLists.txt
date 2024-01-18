@@ -1,4 +1,4 @@
-if(NOT ${CONFIG_OS_OPTION_DRIVER})
+if(NOT "${CONFIG_OS_OPTION_DRIVER}")
     RETURN()
 endif()
 

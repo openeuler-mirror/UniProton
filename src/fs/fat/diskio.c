@@ -8,9 +8,11 @@
 /*-----------------------------------------------------------------------*/
 
 #include <stddef.h>
+#include <sys/time.h>
 #include "ff.h"            /* Obtains integer types */
 #include "diskio.h"        /* Declarations of disk functions */
 #include "nuttx/fs/fs.h"
+#include "nuttx/fs/ioctl.h"
 
 /* Definitions of physical drive number for each drive */
 #define DEV_RAM        0    /* Example: Map Ramdisk to physical drive 0 */
@@ -145,11 +147,40 @@ DRESULT disk_ioctl (
         return RES_NOTRDY;
     }
 
-    int ret =  inode->u.i_bops->ioctl(inode, cmd, (unsigned long)buff);
-    if (ret == RES_OK) {
-        return RES_OK;
+    struct partition_info_s info = { 0 };
+    int ret =  inode->u.i_bops->ioctl(inode, BIOC_PARTINFO, (unsigned long)&info);
+    if (ret != RES_OK) {
+        return RES_ERROR;
     }
+    switch (cmd) {
+        case CTRL_SYNC:
+            inode->u.i_bops->ioctl(inode, BIOC_FLUSH, (unsigned long)&info);
+            break;
+        case GET_SECTOR_COUNT:
+            *(DWORD *)buff = info.numsectors;
+            break;
+        case GET_SECTOR_SIZE:
+            *(DWORD *)buff = info.sectorsize;
+            break;
+        case GET_BLOCK_SIZE:
+            *(DWORD *)buff = 1;
+            break;
+        case CTRL_TRIM:
+        default:
+            break;
+    }
+    ret = RES_OK;
 
-    return RES_ERROR;
+    return ret;
+}
+
+DWORD get_fattime (void)
+{
+    struct timeval tv;
+    int ret = gettimeofday(&tv, NULL);
+    if (ret != 0) {
+        return 0;
+    }
+    return (DWORD)tv.tv_sec;
 }
 

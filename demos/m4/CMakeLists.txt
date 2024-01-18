@@ -5,7 +5,7 @@ set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/arm-none-eabi-g++)
-set(CMAKE_C_FLAGS "-g -O2 -mthumb -mcpu=cortex-m4 -std=gnu11 -fno-common -fomit-frame-pointer -mthumb -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -Wa,-mimplicit-it=thumb  -fstack-protector-strong  -funsigned-char -fdata-sections -ffunction-sections -fshort-enums")
+set(CMAKE_C_FLAGS "-g -O0 -mthumb -mcpu=cortex-m4 -std=gnu11 -fno-common -fomit-frame-pointer -mthumb -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -Wa,-mimplicit-it=thumb  -fstack-protector-strong  -funsigned-char -fdata-sections -ffunction-sections -fshort-enums")
 set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builtin -DEIGEN_NO_IO=1")
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
@@ -27,8 +27,8 @@ if(${APP} STREQUAL "helloworld")
     endif()
 elseif(${APP} STREQUAL "shell")
     set(ldfile "${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
-elseif(${APP} STREQUAL "stdio")
-    set(ldfile "${CMAKE_CURRENT_SOURCE_DIR}/build/helloworld.ld")
+elseif(${APP} STREQUAL "stdio" OR ${APP} STREQUAL "fatfs")
+    set(ldfile "${CMAKE_CURRENT_SOURCE_DIR}/build/fatfs.ld")
 endif()
 
 if("${SIM}" STREQUAL "_SIM_")
@@ -45,7 +45,7 @@ include_directories(
                     ${CMAKE_CURRENT_SOURCE_DIR}/config
                     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
-if(${APP} STREQUAL "shell")
+if(${APP} STREQUAL "shell" OR ${APP} STREQUAL "fatfs")
 include_directories(
                     ${OUTPUT_PATH}/drivers/include/
                     ${OUTPUT_PATH}/shell/include/
