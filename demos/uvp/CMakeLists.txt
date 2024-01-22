@@ -22,6 +22,8 @@ set(CMAKE_CXX_STANDARD 17)
 include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_x86_uvp/defconfig)
 
+set(LWIP_SRC_PATH ${HOME_PATH}/src/net/lwip)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
@@ -30,10 +32,16 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/x86_64
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/lwip/output/include
+    ${HOME_PATH}/src/net/lwip_port
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
     ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
+    ${HOME_PATH}/src/drivers/i40e
+    ${HOME_PATH}/src/osal/linux/include_self_def
+    ${CMAKE_CURRENT_SOURCE_DIR}/component/lwip
+    ${HOME_PATH}/src/net/adapter/include/arch
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -45,7 +53,10 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblwip.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
+    "${TOOLCHAIN_PATH}/../lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
+    "${TOOLCHAIN_PATH}/../lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
     -Wl,--end-group
 )
 

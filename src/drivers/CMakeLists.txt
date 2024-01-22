@@ -3,6 +3,10 @@ if (${CONFIG_OS_OPTION_PCIE})
     add_subdirectory(pcie)
 endif()
 
+if (${CONFIG_OS_SUPPORT_I40E})
+    add_subdirectory(i40e)
+endif()
+
 if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
     RETURN()
 endif()
