@@ -16,6 +16,10 @@
 #ifndef UNIPROTON_LWIPOPTS_H
 #define UNIPROTON_LWIPOPTS_H
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 // Just redirect
 #include "lwip/lwipopts.h"
 

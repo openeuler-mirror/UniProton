@@ -7,11 +7,22 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lwip)
         lwip
         URL https://gitee.com/src-openeuler/lwip/raw/openEuler-22.03-LTS-SP2/lwip-2.1.3.zip
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lwip
+        PATCH_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && patch -p1 -d lwip < ${CMAKE_CURRENT_SOURCE_DIR}/0000-adapter-fix-for-lwip.patch
     )
     FetchContent_Populate(lwip)
     FetchContent_GetProperties(lwip)
     message("--- End download lwip path: ${lwip_SOURCE_DIR}")
 endif()
+
+set(LWIP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lwip)
+include(lwip/src/Filelists.cmake)
+
+add_library(lwip OBJECT ${lwipnoapps_SRCS})
+
+target_include_directories(lwip PUBLIC 
+    adapter/include
+    lwip/src/include
+)
 
 ##############################下一级的编译目录 ###########################
 if(${CONFIG_OS_SUPPORT_NET})
