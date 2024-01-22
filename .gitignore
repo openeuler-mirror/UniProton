@@ -8,6 +8,7 @@
 /demos/*/libs/*.lib
 /demos/*/build/libmetal/
 /demos/*/build/open-amp/
+/demos/*/build/lwip/
 /demos/*/component/libmetal*
 /demos/*/component/open-amp*
 /demos/*/component/openamp*

@@ -11,6 +11,8 @@
 #include "prt_sys.h"
 #include "prt_lapic.h"
 
+#include "i40ecs.h"
+
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U64 g_cpuClock = 0;
@@ -55,6 +57,11 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("openamp test entry\n");
+
+#if defined(OS_SUPPORT_I40E)
+    i40e_init();
+    i40ecs_test_start();
+#endif
 }
 
 U32 OsTestInit(void)
