@@ -2,14 +2,14 @@ export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-e
 export APP=ascend310b
 export TMP_DIR=$APP
 
-sh ./build_static.sh ${APP}
+sh ./build_static.sh ascend310b
 DEFCONFIG=../../../build/uniproton_config/config_armv8_ascend310b/defconfig
 if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then
     sh ./build_openamp.sh $TOOLCHAIN_PATH
 fi
 
 echo "cmake start"
-cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
+cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="ascend310b"
 echo "cmake end"
 
 pushd $TMP_DIR

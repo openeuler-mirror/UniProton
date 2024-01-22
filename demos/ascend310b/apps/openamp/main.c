@@ -15,6 +15,11 @@
 TskHandle g_testTskHandle[2];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 extern U32 PRT_Printf(const char *format, ...);
+
+#if defined(POSIX_TESTCASE)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()
 {
@@ -64,6 +69,10 @@ void Test1TaskEntry()
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
     micaShellInit();
+#endif
+
+#if defined(POSIX_TESTCASE)
+    Init(0, 0, 0, 0);
 #endif
 }
 

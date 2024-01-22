@@ -14,6 +14,10 @@
 
 #include "rpmsg_backend.h"
 #include "stdio.h"
+#include "prt_buildef.h"
+#include "prt_proxy_ext.h"
+#include <openamp/rpmsg.h>
+#include <openamp/rpmsg_rpc_client_server.h>
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shmsg.h"
@@ -28,6 +32,13 @@ U32 g_receivedMsg;
 bool g_openampFlag = false;
 #define RPMSG_ENDPOINT_NAME "console"
 extern U32 PRT_Printf(const char *format, ...);
+extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
+
+extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
+                    void *data, size_t len,
+                    uint32_t src, void *priv);
+
+extern char *g_printf_buffer;
 
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -43,10 +54,7 @@ static int g_s0 = 0;
 char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
-    if (g_s0 == 0) {
-        send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
-        g_s0++;
-    }
+    rpmsg_client_cb(ept, data, len, src, priv);
 #ifdef LOSCFG_SHELL_MICA_INPUT
     ShellCB *shellCB = OsGetShellCB();
     if (shellCB != NULL) {
@@ -101,6 +109,11 @@ int rpmsg_service_init(void)
     }
 
     while (!is_rpmsg_ept_ready(&g_ept));
+
+    rpmsg_set_default_ept(&g_ept);
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
+
+    PRT_Printf("rpmsg_service_init, success\n");
 
     return OS_OK;
 }
