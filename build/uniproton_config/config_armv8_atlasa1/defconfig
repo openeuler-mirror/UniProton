@@ -1,0 +1,134 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# UniProton Configuration
+#
+
+#
+# Arch Modules Configuration
+#
+CONFIG_OS_ARCH_ARMV8=y
+# CONFIG_OS_OPTION_GUARD_STACK is not set
+
+#
+# ARMV8 Sepecfic Configuration
+#
+CONFIG_INTERNAL_OS_PLATFORM_ARMV8_AX=y
+CONFIG_INTERNAL_OS_ATLASA1=y
+
+#
+# ARMV8 DRV Features Configuration
+#
+CONFIG_INTERNAL_OS_GIC_VER="gicv600"
+CONFIG_OS_GIC_VER=3
+
+#
+# Generic Configuration
+#
+CONFIG_OS_HARDWARE_PLATFORM="OS_ARMV8"
+CONFIG_OS_CPU_TYPE="OS_ATLASA1"
+CONFIG_OS_MAX_CORE_NUM=16
+CONFIG_OS_THIS_CORE=15
+CONFIG_INTERNAL_OS_BYTE_ORDER_LE=y
+CONFIG_OS_BYTE_ORDER="OS_LITTLE_ENDIAN"
+# CONFIG_OS_OPTION_DCACHE is not set
+CONFIG_OS_CACHE_LINE_SIZE=64
+
+#
+# Core Modules Configuration
+#
+
+#
+# IPC Modules Configuration
+#
+
+#
+# Event feature configuration
+#
+CONFIG_OS_OPTION_EVENT=y
+CONFIG_OS_OPTION_QUEUE=y
+
+#
+# Semaphore feature configuration
+#
+
+#
+# Kernel Modules Configuration
+#
+
+#
+# IRQ Modules Configuration
+#
+# CONFIG_OS_OPTION_HWI_COMBINE is not set
+CONFIG_OS_OPTION_HWI_PRIORITY=y
+CONFIG_OS_OPTION_HWI_ATTRIBUTE=y
+# CONFIG_OS_OPTION_HWI_MAX_NUM_CONFIG is not set
+
+#
+# Exc Modules Configuration
+CONFIG_INTERNAL_OS_SCHEDULE_SINGLE_CORE_BY_CCODE=y
+CONFIG_OS_OPTION_SYS_TIME_USR=y
+
+#
+# Task module Configuration
+#
+CONFIG_OS_OPTION_TASK=y
+
+#
+# TASK features configuration
+#
+# CONFIG_OS_OPTION_TASK_MON is not set
+CONFIG_OS_OPTION_TASK_DELETE=y
+CONFIG_OS_OPTION_TASK_SUSPEND=y
+CONFIG_OS_OPTION_TASK_INFO=y
+CONFIG_OS_OPTION_TASK_YIELD=y
+CONFIG_OS_TSK_PRIORITY_HIGHEST=0
+CONFIG_OS_TSK_PRIORITY_LOWEST=63
+CONFIG_OS_TSK_NUM_OF_PRIORITIES=64
+CONFIG_OS_TSK_CORE_BYTES_IN_PID=2
+CONFIG_OS_OPTION_TICK=y
+
+#
+# Timer Modules Configuration
+#
+CONFIG_INTERNAL_OS_SWTMR=y
+
+#
+# MM Modules Configuration
+#
+
+#
+# OM Modules Configuration
+#
+# CONFIG_OS_OPTION_CPUP is not set
+
+#
+# CPUP features configuration
+#
+CONFIG_INTERNAL_OS_CPUP_THREAD=y
+CONFIG_OS_OPTION_CPUP_WARN=y
+
+#
+# Error Report Module Configuration
+#
+
+#
+# Hook feature configuration
+#
+
+#
+# security Modules Configuration
+#
+CONFIG_OS_OPTION_RND=y
+
+#
+# Utility Modules Configuration
+#
+CONFIG_OS_OPTION_POSIX=y
+CONFIG_OS_OPTION_POSIX_SIGNAL=y
+CONFIG_OS_POSIX_TYPE_NEWLIB=y
+CONFIG_OS_POSIX_SET_TZDST=y
+
+#
+# Openamp Modules Configuration
+#
+CONFIG_OS_OPTION_OPENAMP=y
