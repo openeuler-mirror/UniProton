@@ -27,6 +27,7 @@
 #include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "securec.h"
 
 #ifdef htons

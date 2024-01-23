@@ -15,8 +15,6 @@
 #ifndef LWIP_PORTING_LWIPOPTS_H
 #define LWIP_PORTING_LWIPOPTS_H
 
-#include "prt_config.h"
-
 // lwIP debug options, comment the ones you don't want
 #define LWIP_DEBUG 1
 #if LWIP_DEBUG
@@ -85,6 +83,7 @@
 #define LWIP_NETIF_HOSTNAME             1
 #define LWIP_NETIF_TX_SINGLE_PBUF       1
 #define LWIP_NETCONN_FULLDUPLEX         1
+#define LWIP_NETCONN_SEM_PER_THREAD     0
 #define LWIP_COMPAT_SOCKETS             2
 #define LWIP_POSIX_SOCKETS_IO_NAMES     0
 #define LWIP_TCP_KEEPALIVE              1
