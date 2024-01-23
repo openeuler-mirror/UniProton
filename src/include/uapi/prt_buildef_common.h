@@ -34,7 +34,8 @@
 #define OS_RK3568_JAILHOUSE 0x04
 #define OS_KP920            0x05
 #define OS_ASCEND310B       0x06
-#define OS_CPU_TYPE_INVALID 0x07
+#define OS_ATLASA1           0x07
+#define OS_CPU_TYPE_INVALID 0x08
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 
