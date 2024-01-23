@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <nuttx/sys/sys_stat.h>
 #include "inode/inode.h"
 
 /****************************************************************************
@@ -54,7 +55,7 @@
  *
  ****************************************************************************/
 
-int fstatfs(int fd, FAR struct statfs *buf)
+int sys_fstatfs(int fd, FAR struct statfs *buf)
 {
   FAR struct file *filep;
   FAR struct inode *inode;

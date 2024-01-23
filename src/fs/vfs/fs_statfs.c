@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <nuttx/sys/sys_stat.h>
+
 #include "inode/inode.h"
 
 /****************************************************************************
@@ -69,7 +71,7 @@ static int statpseudofs(FAR struct inode *inode, FAR struct statfs *buf)
  *
  ****************************************************************************/
 
-int statfs(FAR const char *path, FAR struct statfs *buf)
+int sys_statfs(FAR const char *path, FAR struct statfs *buf)
 {
   struct inode_search_s desc;
   FAR struct inode *inode;

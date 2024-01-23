@@ -31,6 +31,7 @@
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/sys/sys_unistd.h>
+#include <nuttx/sys/sys_stat.h>
 
 #include "inode/inode.h"
 
@@ -212,7 +213,7 @@ int file_fchstat(FAR struct file *filep, FAR struct stat *buf, int flags)
  *
  ****************************************************************************/
 
-int fchmod(int fd, mode_t mode)
+int sys_fchmod(int fd, mode_t mode)
 {
   struct stat buf;
 
@@ -269,7 +270,7 @@ int sys_fchown(int fd, uid_t owner, gid_t group)
  *
  ****************************************************************************/
 
-int futimens(int fd, FAR const struct timespec times[2])
+int sys_futimens(int fd, FAR const struct timespec times[2])
 {
   struct stat buf;
 

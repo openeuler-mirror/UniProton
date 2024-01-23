@@ -26,6 +26,8 @@
 #define __INCLUDE_SYS_STAT_H
 
 #include <sys/stat.h>
+#include <sys/statfs.h>
+#include <stddef.h>
 
 mode_t sys_umask(mode_t);
 
@@ -33,8 +35,42 @@ int sys_stat(const char *path, struct stat *buf);
 
 int sys_lstat(const char *path, struct stat *buf);
 
+int sys_fstat(int fd, struct stat *buf);
+
+int sys_fstatat(int dirfd, const char *path, struct stat *buf, int flags);
+
+int sys_chmod(const char *path, mode_t mode);
+
+int sys_lchmod(const char *path, mode_t mode);
+
+int sys_fchmod(int fd, mode_t mode);
+
+int sys_mkdir(const char *pathname, mode_t mode);
+
+int sys_mkdirat(int dirfd, const char *path, mode_t mode);
+
+int sys_mknod(const char *path, mode_t mode, dev_t dev);
+
+int sys_mknodat(int dirfd, const char *path, mode_t mode, dev_t dev);
+
+int sys_mkfifo(const char *pathname, mode_t mode);
+
+int sys_mkfifoat(int dirfd, const char *path, mode_t mode);
+
+int sys_fchmodat(int dirfd, const char *path, mode_t mode, int flags);
+
+int sys_utimensat(int dirfd, const char *path, const struct timespec times[2], int flags);
+
+int sys_futimens(int fd, const struct timespec times[2]);
+
+int sys_statfs(const char *path, struct statfs *buf);
+
+int sys_fstatfs(int fd, struct statfs *buf);
+
 int utimens(const char *path, const struct timespec times[2]);
 int lutimens(const char *path, const struct timespec times[2]);
 mode_t getumask(void);
+
+int lib_getfullpath(int dirfd, const char *path, char *fullpath, size_t fulllen);
 
 #endif /* __INCLUDE_SYS_STAT_H */

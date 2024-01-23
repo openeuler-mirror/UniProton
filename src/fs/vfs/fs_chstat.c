@@ -31,6 +31,7 @@
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/sys/sys_unistd.h>
+#include <nuttx/sys/sys_stat.h>
 
 #include "inode/inode.h"
 
@@ -207,7 +208,7 @@ errout:
  *
  ****************************************************************************/
 
-int chmod(FAR const char *path, mode_t mode)
+int sys_chmod(FAR const char *path, mode_t mode)
 {
   struct stat buf;
 
@@ -233,7 +234,7 @@ int chmod(FAR const char *path, mode_t mode)
  *
  ****************************************************************************/
 
-int lchmod(FAR const char *path, mode_t mode)
+int sys_lchmod(FAR const char *path, mode_t mode)
 {
   struct stat buf;
 

@@ -10,6 +10,7 @@ target_include_directories(base_sys PUBLIC
 
 target_compile_options(base_sys PUBLIC 
     -Wno-discarded-qualifiers
+    -Wno-address
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_sys)
