@@ -480,7 +480,7 @@ file(GLOB_RECURSE ALL_RWFLAG_SRC ${CMAKE_CURRENT_SOURCE_DIR}/definitions/rwflag/
 
 file(GLOB_RECURSE ALL_EXIT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/interfaces/exit/*.c)
 
-if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse")
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "ascend310b")
     include_directories(../include)
 elseif(${CPU_TYPE} STREQUAL "m4")
     list(APPEND OBJS 
@@ -540,7 +540,8 @@ if (${APP} STREQUAL "UniPorton_test_posix_exit_interface")
         add_custom_target(${BUILD_APP} ALL COMMAND echo 'build done' DEPENDS  ${ALL_EXE})
     endif()
 else()
-    if(${CPU_TYPE} STREQUAL "x86_64")
+    if(${CPU_TYPE} STREQUAL "x86_64" OR
+    ${CPU_TYPE} STREQUAL "ascend310b")
         add_library(posixTest OBJECT ${ALL_SRC})
     elseif(${CPU_TYPE} STREQUAL "m4")
         add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
