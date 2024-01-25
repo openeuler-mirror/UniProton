@@ -159,7 +159,6 @@ endif()
 if (${CPU_TYPE} STREQUAL "kp920")
     list(APPEND  MULS_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/asprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vasprintf.c
     )
 endif()
 
