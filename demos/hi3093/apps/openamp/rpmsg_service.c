@@ -13,6 +13,7 @@
  */
 
 #include "rpmsg_backend.h"
+#include "prt_proxy_ext.h"
 
 static struct virtio_device vdev;
 static struct rpmsg_virtio_device rvdev;
@@ -22,6 +23,12 @@ struct rpmsg_endpoint g_ept;
 U32 g_receivedMsg;
 bool g_openampFlag = false;
 #define RPMSG_ENDPOINT_NAME "console"
+extern char *g_printf_buffer;
+
+extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
+               void *data, size_t len,
+               uint32_t src, void *priv);
+extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
 
 void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -30,16 +37,15 @@ void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 
 int send_message(unsigned char *message, int len)
 {
-    return rpmsg_send(&g_ept, message, len);
+    return PRT_ProxyWriteStdOut(message, len);
 }
 
 char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
     g_openampFlag = true;
-    send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
 
-    return OS_OK;
+    return rpmsg_client_cb(ept, data, len, src, priv);
 }
 
 int openamp_init(void)
@@ -58,13 +64,15 @@ int openamp_init(void)
 
     g_rdev = rpmsg_virtio_get_rpmsg_device(&rvdev);
 
-
     err = rpmsg_create_ept(&g_ept, g_rdev, RPMSG_ENDPOINT_NAME,
-                           0xF, RPMSG_ADDR_ANY,
-                           rpmsg_endpoint_cb, rpmsg_service_unbind);
+                   RPMSG_ADDR_ANY, RPMSG_ADDR_ANY,
+                   rpmsg_endpoint_cb, NULL);
     if (err) {
         return err;
     }
+
+    rpmsg_set_default_ept(&g_ept);
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
 
     return OS_OK;
 }

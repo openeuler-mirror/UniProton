@@ -1,11 +1,17 @@
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
-export APP=hi3093
+if [ "$1" != "" ]
+then
+    export APP=$1
+else
+    export APP=hi3093
+fi
+
 export TMP_DIR=$APP
 
-sh ./build_static.sh $APP
+sh ./build_static.sh hi3093
 sh ./build_openamp.sh $TOOLCHAIN_PATH
 
-cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH
+cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="hi3093"
 pushd $TMP_DIR
 make $APP
 popd

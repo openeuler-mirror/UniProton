@@ -41,9 +41,17 @@ link_libraries(
     -Wl,--end-group
 )
 
+add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 
-list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
-add_executable(${APP} ${OBJS})
+if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+    add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
+    target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
+    add_executable(${APP} ${OBJS})
+else()
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
+    add_executable(${APP} ${OBJS})
+endif()
