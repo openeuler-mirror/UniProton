@@ -37,7 +37,7 @@ include_directories(
     ${HOME_PATH}/platform/libboundscheck/include
     ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
     ${HOME_PATH}/output/libc/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/cplusplus/boost_1_54_0
+    ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
     ${OUTPUT_PATH}/shell/include/
     ${OUTPUT_PATH}/shell/adapter/include
 )
@@ -62,7 +62,7 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 if (${CONFIG_OS_SUPPORT_CXX})
-add_subdirectory(cplusplus)
+add_subdirectory(component/boost_1_54_0)
 endif()
 
 # 打印依赖代理接口

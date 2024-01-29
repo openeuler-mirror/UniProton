@@ -16,6 +16,16 @@ cd libxml2
 patch -p1 -d . < UniProton-patch-for-libxml2.patch
 popd
 
+echo "################# get boost #################"
+pushd ../component
+rm -rf boost_1_54_0
+wget https://jaist.dl.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.bz2
+tar -xjf boost_1_54_0.tar.bz2
+cp UniProton-patch-for-boost_1_54_0.patch boost_1_54_0
+cd boost_1_54_0
+patch -p1 -d . < UniProton-patch-for-boost_1_54_0.patch
+popd
+
 echo "################# git clone ethercat #################"
 pushd ../../../src/net/
 rm -rf ./ethercat

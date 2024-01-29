@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 00000000..1849dcaa
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,3 @@
++add_compile_definitions(BOOST_HAS_PTHREADS)
++add_compile_definitions(BOOST_HAS_SCHED_YIELD)
++add_subdirectory(libs)
+\ No newline at end of file
+diff --git a/libs/CMakeLists.txt b/libs/CMakeLists.txt
+new file mode 100644
+index 00000000..ee0ef01f
+--- /dev/null
++++ b/libs/CMakeLists.txt
+@@ -0,0 +1,2 @@
++file(GLOB SRCS system/src/*.cpp filesystem/src/*.cpp thread/*.cpp thread/src/pthread/once.cpp thread/src/pthread/thread.cpp)
++add_library(boost OBJECT ${SRCS})
