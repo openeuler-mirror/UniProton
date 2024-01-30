@@ -20,6 +20,8 @@
 #include "lwip/dhcp.h"
 #include "lwip/if_api.h"
 
+#include "prt_typedef.h"
+
 #if !LWIP_COMPAT_SOCKETS
 #if LWIP_SOCKET
 
@@ -164,20 +166,6 @@ int inet_pton(int af, const char *src, void *dst)
 in_addr_t inet_addr(const char *cp)
 {
     return ipaddr_addr(cp);
-}
-#endif
-
-#ifndef LWIP_INET_NTOA_FUNC
-char *inet_ntoa(struct in_addr addr)
-{
-    return ip4addr_ntoa((const ip4_addr_t*)&(addr));
-}
-#endif
-
-#ifndef LWIP_INET_ATON_FUNC
-int inet_aton(const char *cp, struct in_addr *addr)
-{
-    return ip4addr_aton(cp, (ip4_addr_t*)addr);
 }
 #endif
 

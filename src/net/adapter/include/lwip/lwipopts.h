@@ -146,7 +146,9 @@
 #define TCPIP_MBOX_SIZE                 512
 #define TCPIP_THREAD_PRIO               5
 #define TCPIP_THREAD_STACKSIZE          0x800
+#undef TCP_MAXRTX
 #define TCP_MAXRTX                      64
+#undef TCP_MSS
 #define TCP_MSS                         1400
 #define TCP_SND_BUF                     65535
 #define TCP_SND_QUEUELEN                ((8 * TCP_SND_BUF) / TCP_MSS)

@@ -28,6 +28,9 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
+
+#define CONFIG_NET
+#define CONFIG_NET_DM90x0
 #if defined(CONFIG_NET) && defined(CONFIG_NET_DM90x0)
 
 /* Only one hardware interface supported at present (although there are
@@ -52,23 +55,17 @@
 #include <nuttx/irq.h>
 #include <nuttx/wdog.h>
 #include <nuttx/wqueue.h>
-#include <nuttx/net/netdev.h>
+#include <nuttx/net/netconfig.h>
 
 #ifdef CONFIG_NET_PKT
 #  include <nuttx/net/pkt.h>
 #endif
 
+#include "lwip/netif.h"
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
-
-/* If processing is not done at the interrupt level, then work queue support
- * is required.
- */
-
-#if !defined(CONFIG_SCHED_WORKQUEUE)
-#  error Work queue support is required in this configuration (CONFIG_SCHED_WORKQUEUE)
-#endif
 
 /* The low priority work queue is preferred.  If it is not enabled, LPWORK
  * will be the same as HPWORK.
@@ -270,15 +267,11 @@
 
 /* TX timeout = 1 minute */
 
-#define DM6X_TXTIMEOUT (60*CLK_TCK)
+#define DM6X_TXTIMEOUT (60*OsSysGetTickPerSecond())
 
 /* Packet buffer size */
 
 #define PKTBUF_SIZE (MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE)
-
-/* This is a helper pointer for accessing the contents of Ethernet header */
-
-#define BUF ((FAR struct eth_hdr_s *)priv->dm_dev.d_buf)
 
 /****************************************************************************
  * Private Types
@@ -315,9 +308,8 @@ struct dm9x_driver_s
   void (*dm_write)(const uint8_t *ptr, int len);
   void (*dm_discard)(int len);
 
-  /* This holds the information visible to the NuttX network */
-
-  struct net_driver_s dm_dev;
+  struct netif *dm_dev;
+  struct pbuf *send_p;
 };
 
 /****************************************************************************
@@ -366,15 +358,15 @@ static bool dm9x_rxchecksumready(uint8_t);
 /* Common TX logic */
 
 static int  dm9x_transmit(FAR struct dm9x_driver_s *priv);
-static int  dm9x_txpoll(FAR struct net_driver_s *dev);
+static int  dm9x_txpoll(FAR struct netif *dev);
 
 /* Interrupt handling */
 
 static void dm9x_receive(FAR struct dm9x_driver_s *priv);
-static void dm9x_txdone(FAR struct dm9x_driver_s *priv);
+static int dm9x_txdone(FAR struct dm9x_driver_s *priv);
 
 static void dm9x_interrupt_work(FAR void *arg);
-static int  dm9x_interrupt(int irq, FAR void *context, FAR void *arg);
+static int  dm9x_interrupt(FAR void *arg);
 
 /* Watchdog timer expirations */
 
@@ -383,15 +375,15 @@ static void dm9x_txtimeout_expiry(wdparm_t arg);
 
 /* NuttX callback functions */
 
-static int dm9x_ifup(FAR struct net_driver_s *dev);
-static int dm9x_ifdown(FAR struct net_driver_s *dev);
+static int dm9x_ifup(FAR struct netif *dev);
+static int dm9x_ifdown(FAR struct netif *dev);
 
 static void dm9x_txavail_work(FAR void *arg);
-static int dm9x_txavail(FAR struct net_driver_s *dev);
+static int dm9x_txavail(FAR struct netif *dev);
 
 #ifdef CONFIG_NET_MCASTGROUP
-static int dm9x_addmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac);
-static int dm9x_rmmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac);
+static int dm9x_addmac(FAR struct netif *dev, FAR const uint8_t *mac);
+static int dm9x_rmmac(FAR struct netif *dev, FAR const uint8_t *mac);
 #endif
 
 /* Initialization functions */
@@ -714,7 +706,6 @@ static int dm9x_transmit(FAR struct dm9x_driver_s *priv)
       /* Increment count of packets transmitted */
 
       priv->dm_ntxpending++;
-      NETDEV_TXPACKETS(&dm9x0->dm_dev);
 
       /* Disable all DM90x0 interrupts */
 
@@ -722,13 +713,19 @@ static int dm9x_transmit(FAR struct dm9x_driver_s *priv)
 
       /* Set the TX length */
 
-      putreg(DM9X_TXPLL, (priv->dm_dev.d_len & 0xff));
-      putreg(DM9X_TXPLH, (priv->dm_dev.d_len >> 8) & 0xff);
+      struct pbuf *p = priv->send_p;
+      putreg(DM9X_TXPLL, (priv->send_p->tot_len & 0xff));
+      putreg(DM9X_TXPLH, (priv->send_p->tot_len >> 8) & 0xff);
 
       /* Move the data to be sent into TX SRAM */
 
       DM9X_INDEX = DM9X_MWCMD;
-      priv->dm_write(priv->dm_dev.d_buf, priv->dm_dev.d_len);
+      size_t need_copy_len = priv->send_p->tot_len;
+      for (struct pbuf *q = p; q != NULL; q = q->next) {
+        size_t one_copy_len = need_copy_len > q->len ? q->len : need_copy_len;
+        priv->dm_write(p->payload, one_copy_len);
+        need_copy_len -= need_copy_len;
+      }
 
 #if !defined(CONFIG_DM9X_ETRANS)
       /* Issue TX polling command */
@@ -776,7 +773,7 @@ static int dm9x_transmit(FAR struct dm9x_driver_s *priv)
  *
  ****************************************************************************/
 
-static int dm9x_txpoll(FAR struct net_driver_s *dev)
+static int dm9x_txpoll(FAR struct netif *dev)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -821,6 +818,7 @@ static void dm9x_receive(FAR struct dm9x_driver_s *priv)
   union rx_desc_u rx;
   bool bchecksumready;
   uint8_t rxbyte;
+  struct pbuf *p = NULL;
 
   ninfo("Packet received\n");
 
@@ -858,7 +856,6 @@ static void dm9x_receive(FAR struct dm9x_driver_s *priv)
 
           nerr("ERROR: Received packet with errors: %02x\n",
                rx.desc.rx_status);
-          NETDEV_RXERRORS(&priv->dm_dev);
 
           /* Drop this packet and continue to check the next packet */
 
@@ -871,7 +868,6 @@ static void dm9x_receive(FAR struct dm9x_driver_s *priv)
                rx.desc.rx_len > (CONFIG_NET_ETH_PKTSIZE + 2))
         {
           nerr("ERROR: RX length error\n");
-          NETDEV_RXERRORS(&priv->dm_dev);
 
           /* Drop this packet and continue to check the next packet */
 
@@ -882,90 +878,26 @@ static void dm9x_receive(FAR struct dm9x_driver_s *priv)
           /* Good packet...
            * Copy the packet data out of SRAM and pass it one to the network
            */
-
-          priv->dm_dev.d_len = rx.desc.rx_len;
-          priv->dm_read(priv->dm_dev.d_buf, rx.desc.rx_len);
-
-#ifdef CONFIG_NET_PKT
-          /* When packet sockets are enabled, feed the frame into the tap */
-
-          pkt_input(&priv->dm_dev);
-#endif
-
-          /* We accept IP packets of the configured type and ARP packets */
-
-#ifdef CONFIG_NET_IPv4
-          if (BUF->type == HTONS(ETHTYPE_IP))
-            {
-              ninfo("IPv4 frame\n");
-              NETDEV_RXIPV4(&priv->dm_dev);
-
-              /* Receive an IPv4 packet from the network device */
-
-              ipv4_input(&priv->dm_dev);
-
-              /* If the above function invocation resulted in data that
-               * should be sent out on the network, the field  d_len will
-               * set to a value > 0.
-               */
-
-              if (priv->dm_dev.d_len > 0)
-                {
-                  /* And send the packet */
-
-                  dm9x_transmit(priv);
-                }
+          size_t copy_len = rx.desc.rx_len;
+          priv->dm_read((uint8_t *)g_pktbuf[0], rx.desc.rx_len);
+          if (p != NULL) {
+            pbuf_free(p);
+          }
+          p = pbuf_alloc(PBUF_RAW, rx.desc.rx_len, PBUF_POOL);
+          uint8_t *copy_date = (uint8_t *)g_pktbuf[0];
+          for (struct pbuf *q = p; q != NULL; q = q->next) {
+            if (copy_len <= 0) {
+              break;
             }
-          else
-#endif
-#ifdef CONFIG_NET_IPv6
-          if (BUF->type == HTONS(ETHTYPE_IP6))
-            {
-              ninfo("IPv6 frame\n");
-              NETDEV_RXIPV6(&priv->dm_dev);
+            size_t one_copy_size = copy_len > q->len ? q->len : copy_len;
+            memcpy(q->payload, copy_date, one_copy_size);
+            copy_date += one_copy_size;
+            copy_len -= one_copy_size;
+          }
 
-              /* Give the IPv6 packet to the network layer */
-
-              ipv6_input(&priv->dm_dev);
-
-              /* If the above function invocation resulted in data that
-               * should be sent out on the network, the field  d_len will
-               * set to a value > 0.
-               */
-
-              if (priv->dm_dev.d_len > 0)
-                {
-                  /* And send the packet */
-
-                  dm9x_transmit(priv);
-                }
-            }
-          else
-#endif
-#ifdef CONFIG_NET_ARP
-          if (BUF->type == HTONS(ETHTYPE_ARP))
-            {
-              arp_input(&priv->dm_dev);
-              NETDEV_RXARP(&priv->dm_dev);
-
-              /* If the above function invocation resulted in data that
-               * should be sent out on the network, the field  d_len will set
-               * to a value > 0.
-               */
-
-              if (priv->dm_dev.d_len > 0)
-                {
-                  dm9x_transmit(priv);
-                }
-            }
-#endif
-          else
-            {
-              NETDEV_RXDROPPED(&priv->dm_dev);
-            }
+          driverif_input(priv->dm_dev, p);
         }
 
-      NETDEV_RXPACKETS(&priv->dm_dev);
       priv->ncrxpackets++;
     }
   while ((rxbyte & 0x01) == DM9X_PKTRDY &&
@@ -989,7 +921,7 @@ static void dm9x_receive(FAR struct dm9x_driver_s *priv)
  *
  ****************************************************************************/
 
-static void dm9x_txdone(FAR struct dm9x_driver_s *priv)
+static int dm9x_txdone(FAR struct dm9x_driver_s *priv)
 {
   int  nsr;
 
@@ -1032,8 +964,7 @@ static void dm9x_txdone(FAR struct dm9x_driver_s *priv)
     }
 
   /* Then poll the network for new XMIT data */
-
-  devif_poll(&priv->dm_dev, dm9x_txpoll);
+  return dm9x_txpoll(priv->dm_dev);
 }
 
 /****************************************************************************
@@ -1174,7 +1105,7 @@ static void dm9x_interrupt_work(FAR void *arg)
  *
  ****************************************************************************/
 
-static int dm9x_interrupt(int irq, FAR void *context, FAR void *arg)
+static int dm9x_interrupt(FAR void *arg)
 {
 #if CONFIG_DM9X_NINTERFACES == 1
   FAR struct dm9x_driver_s *priv = &g_dm9x[0];
@@ -1235,7 +1166,6 @@ static void dm9x_txtimeout_work(FAR void *arg)
   /* Increment statistics and dump debug info */
 
   net_lock();
-  NETDEV_TXTIMEOUTS(priv->dm_dev);
 
   ninfo("  TX packet count:           %d\n", priv->dm_ntxpending);
   ninfo("  TX read pointer address:   0x%02x:%02x\n",
@@ -1249,7 +1179,7 @@ static void dm9x_txtimeout_work(FAR void *arg)
 
   /* Then poll the network for new XMIT data */
 
-  devif_poll(&priv->dm_dev, dm9x_txpoll);
+  dm9x_txpoll(priv->dm_dev);
   net_unlock();
 }
 
@@ -1348,7 +1278,7 @@ static inline void dm9x_phymode(FAR struct dm9x_driver_s *priv)
  *
  ****************************************************************************/
 
-static int dm9x_ifup(FAR struct net_driver_s *dev)
+static int dm9x_ifup(FAR struct netif *dev)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -1356,10 +1286,10 @@ static int dm9x_ifup(FAR struct net_driver_s *dev)
   int i;
 
   ninfo("Bringing up: %d.%d.%d.%d\n",
-        (int)(dev->d_ipaddr & 0xff),
-        (int)((dev->d_ipaddr >> 8) & 0xff),
-        (int)((dev->d_ipaddr >> 16) & 0xff),
-        (int)(dev->d_ipaddr >> 24));
+        (int)(((ip4_addr_t *)&dev->ip_addr)->addr & 0xff),
+        (int)((((ip4_addr_t *)&dev->ip_addr)->addr >> 8) & 0xff),
+        (int)((((ip4_addr_t *)&dev->ip_addr)->addr >> 16) & 0xff),
+        (int)(((ip4_addr_t *)&dev->ip_addr)->addr >> 24));
 
   /* Initialize DM90x0 chip */
 
@@ -1414,7 +1344,7 @@ static int dm9x_ifup(FAR struct net_driver_s *dev)
  *
  ****************************************************************************/
 
-static int dm9x_ifdown(FAR struct net_driver_s *dev)
+static int dm9x_ifdown(FAR struct netif *dev)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -1482,7 +1412,7 @@ static void dm9x_txavail_work(FAR void *arg)
         {
           /* If so, then poll the network for new XMIT data */
 
-          devif_poll(&priv->dm_dev, dm9x_txpoll);
+          dm9x_txpoll(priv->dm_dev);
         }
     }
 
@@ -1508,7 +1438,7 @@ static void dm9x_txavail_work(FAR void *arg)
  *
  ****************************************************************************/
 
-static int dm9x_txavail(FAR struct net_driver_s *dev)
+static int dm9x_txavail(FAR struct netif *dev)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -1547,7 +1477,7 @@ static int dm9x_txavail(FAR struct net_driver_s *dev)
  ****************************************************************************/
 
 #ifdef CONFIG_NET_MCASTGROUP
-static int dm9x_addmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac)
+static int dm9x_addmac(FAR struct netif *dev, FAR const uint8_t *mac)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -1579,7 +1509,7 @@ static int dm9x_addmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac)
  ****************************************************************************/
 
 #ifdef CONFIG_NET_MCASTGROUP
-static int dm9x_rmmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac)
+static int dm9x_rmmac(FAR struct netif *dev, FAR const uint8_t *mac)
 {
   FAR struct dm9x_driver_s *priv =
     (FAR struct dm9x_driver_s *)dev->d_private;
@@ -1681,7 +1611,6 @@ static void dm9x_bringup(FAR struct dm9x_driver_s *priv)
 
   priv->ncrxpackets   = 0; /* Number of continuous RX packets  */
   priv->dm_ntxpending = 0; /* Number of pending TX packets */
-  NETDEV_RESET_STATISTICS(&priv->dm_dev);
 
   /* Activate DM9000A/DM9010 */
 
@@ -1767,11 +1696,8 @@ static void dm9x_reset(FAR struct dm9x_driver_s *priv)
 
 int dm9x_initialize(void)
 {
-  uint8_t *mptr;
   uint16_t vid;
   uint16_t pid;
-  int i;
-  int j;
 
   /* Get the chip vendor ID and product ID */
 
@@ -1802,31 +1728,48 @@ int dm9x_initialize(void)
   /* Initialize the driver structure */
 
   memset(g_dm9x, 0, CONFIG_DM9X_NINTERFACES*sizeof(struct dm9x_driver_s));
-  g_dm9x[0].dm_dev.d_buf     = (FAR uint8_t *)g_pktbuf[0]; /* Single packet buffer */
-  g_dm9x[0].dm_dev.d_ifup    = dm9x_ifup;                  /* I/F down callback */
-  g_dm9x[0].dm_dev.d_ifdown  = dm9x_ifdown;                /* I/F up (new IP address) callback */
-  g_dm9x[0].dm_dev.d_txavail = dm9x_txavail;               /* New TX data callback */
-#ifdef CONFIG_NET_MCASTGROUP
-  g_dm9x[0].dm_dev.d_addmac  = dm9x_addmac;                /* Add multicast MAC address */
-  g_dm9x[0].dm_dev.d_rmmac   = dm9x_rmmac;                 /* Remove multicast MAC address */
-#endif
-  g_dm9x[0].dm_dev.d_private = g_dm9x;                     /* Used to recover private state from dev */
 
-  /* Read the MAC address */
-
-  mptr = g_dm9x[0].dm_dev.d_mac.ether.ether_addr_octet;
-  for (i = 0, j = DM9X_PAB0; i < ETHER_ADDR_LEN; i++, j++)
-    {
-      mptr[i] = getreg(j);
-    }
-
-  ninfo("MAC: %0x:%0x:%0x:%0x:%0x:%0x\n",
-       mptr[0], mptr[1], mptr[2], mptr[3], mptr[4], mptr[5]);
-
-  /* Register the device with the OS so that socket IOCTLs can be performed */
-
-  netdev_register(&g_dm9x[0].dm_dev, NET_LL_ETHERNET);
   return OK;
 }
 
+u8_t dm9x_init(struct netif *netif)
+{
+  int ret = dm9x_initialize();
+  if (ret != OK) {
+    return ERR_IF;
+  }
+  netif->d_private = g_dm9x;
+  g_dm9x[0].dm_dev = netif;
+
+  netif->hwaddr_len = ETHER_ADDR_LEN;
+  for (int i = 0, j = DM9X_PAB0; i < ETHER_ADDR_LEN; i++, j++) {
+    netif->hwaddr[i] = getreg(j);
+  }
+
+  ninfo("MAC: %0x:%0x:%0x:%0x:%0x:%0x\n",
+       netif->hwaddr[0], netif->hwaddr[1], netif->hwaddr[2], 
+       netif->hwaddr[3], netif->hwaddr[4], netif->hwaddr[5]);
+  
+  ret = dm9x_ifup(netif);
+
+  if (ret != OK) {
+    nerr("ERROR: dm9x_ifup() failed\n");
+    return ERR_IF;
+  }
+
+  return OK;
+}
+
+u8_t dm9x_send(struct netif *netif, struct pbuf *p)
+{
+  if (netif == NULL || netif->d_private == NULL) {
+    return ERR_IF;
+  }
+  ((struct dm9x_driver_s *)(netif->d_private))->send_p = p;
+  if (dm9x_txdone(netif->d_private) != 0) {
+    return ERR_IF;
+  }
+
+  return OK;
+}
 #endif /* CONFIG_NET && CONFIG_NET_DM90x0 */

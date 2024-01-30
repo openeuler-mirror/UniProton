@@ -18,6 +18,8 @@
 #include <lwip/netifapi.h>
 #include <lwip/priv/api_msg.h>
 
+#include "prt_typedef.h"
+
 #if LWIP_DHCP
 #include <lwip/dhcp.h>
 #include <lwip/prot/dhcp.h>
@@ -95,10 +97,11 @@ struct netif *OsNetifapiNetifFindByName(const char *name)
 #if LWIP_IPV6
 int ip6addr_aton(const char *cp, ip6_addr_t *addr)
 {
-    const S32 ipv6Blocks = 8;
+#define IPV6_BLOCK_NUM 8
+    const S32 ipv6Blocks = IPV6_BLOCK_NUM;
     U16 currentBlockIndex = 0;
     U16 currentBlockValue = 0;
-    U16 addr16[ipv6Blocks];
+    U16 addr16[IPV6_BLOCK_NUM];
     U16 *a16 = (u16_t *)addr->addr;
     S32 squashPos = ipv6Blocks;
     S32 i;

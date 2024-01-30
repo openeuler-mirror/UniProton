@@ -15,16 +15,15 @@
 #include <arch/sys_arch.h>
 #include <lwip/sys.h>
 #include <lwip/debug.h>
-#include "prt_config.h"
 #include "prt_task.h"
 #include "prt_queue.h"
 #include "prt_sem.h"
-#include "prt_config.h"
 #include "prt_sys.h"
 #include "prt_tick_external.h"
 #include "prt_task_external.h"
 #include "prt_clk.h"
 #include "prt_queue_external.h"
+#include "prt_sem_external.h"
 
 #if (OS_MAX_CORE_NUM > 1)
 OS_SPIN_LOCK_INIT(g_archProtectSpin);
@@ -78,7 +77,7 @@ void sys_init(void)
 
 u32_t sys_now(void)
 {
-    return (U32)(((U32)PRT_TickGetCount() * OS_SYS_MS_PER_SECOND) / OS_TICK_PER_SECOND);
+    return (U32)(((U32)PRT_TickGetCount() * OsSysGetTickPerSecond()) / OsSysGetTickPerSecond());
 }
 
 /**
@@ -201,7 +200,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeoutMs)
         return  (u32_t)ERR_ARG;
     }
     void *ignore = 0; /* if msg == NULL, the fetched msg should be dropped */
-    U64 tick = ROUND_UP_DIV((U64)timeoutMs * OS_TICK_PER_SECOND, OS_SYS_MS_PER_SECOND);
+    U64 tick = ROUND_UP_DIV((U64)timeoutMs * OsSysGetTickPerSecond(), OS_SYS_MS_PER_SECOND);
     U32 ret = PRT_QueueRead((U32)(*mbox), msg ? msg : &ignore, sizeof(void *), tick ? (U32)tick : OS_WAIT_FOREVER);
     switch (ret) {
         case OS_OK:
@@ -251,7 +250,7 @@ void sys_mbox_free(sys_mbox_t *mbox)
 
 int sys_mbox_valid(sys_mbox_t *mbox)
 {
-    if (*mbox == NULL) {
+    if (mbox == NULL) {
         LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_valid: mbox is null"));
         return ERR_ARG;
     }
@@ -267,7 +266,7 @@ void sys_mbox_set_invalid(sys_mbox_t *mbox)
         LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_set_invalid: mbox is null"));
         return;
     }
-    *mbox = OS_QUEUE_MAX_SUPPORT_NUM;
+    *mbox = g_maxQueue;
 }
 
 /**
@@ -303,7 +302,7 @@ u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeoutMs)
         LWIP_DEBUGF(SYS_DEBUG, ("sys_arch_sem_wait: sem is null"));
         return  (u32_t)ERR_ARG;
     }
-    U64 tick = ROUND_UP_DIV((U64)timeoutMs * OS_TICK_PER_SECOND, OS_SYS_MS_PER_SECOND);
+    U64 tick = ROUND_UP_DIV((U64)timeoutMs * OsSysGetTickPerSecond(), OS_SYS_MS_PER_SECOND);
     U32 ret = PRT_SemPend((SemHandle)(*sem), tick ? (U32)tick : OS_WAIT_FOREVER);
     switch (ret) {
         case OS_OK:
@@ -332,7 +331,7 @@ int sys_sem_valid(sys_sem_t *sem)
         LWIP_DEBUGF(SYS_DEBUG, ("sys_sem_valid: sem is null"));
         return ERR_ARG;
     }
-    return (SemHandle)(*sem) != OS_SEM_MAX_SUPPORT_NUM;
+    return (SemHandle)(*sem) != g_maxSem;
 }
 
 void sys_sem_set_invalid(sys_sem_t *sem)
@@ -341,7 +340,7 @@ void sys_sem_set_invalid(sys_sem_t *sem)
         LWIP_DEBUGF(SYS_DEBUG, ("sys_sem_set_invalid: sem is null"));
         return;
     }
-    *sem = OS_SEM_MAX_SUPPORT_NUM;
+    *sem = g_maxSem;
 }
 
 /**
@@ -399,7 +398,7 @@ int sys_mutex_valid(sys_mutex_t *mutex)
         return ERR_ARG;
     }
 
-    return *mutex != OS_SEM_MAX_SUPPORT_NUM;
+    return *mutex != g_maxSem;
 }
 
 void sys_mutex_set_invalid(sys_mutex_t *mutex)
@@ -409,7 +408,7 @@ void sys_mutex_set_invalid(sys_mutex_t *mutex)
         return;
     }
 
-    *mutex = OS_SEM_MAX_SUPPORT_NUM;
+    *mutex = g_maxSem;
 }
 
 void OsLwipLogPrintf(const char *fmt, ...)
