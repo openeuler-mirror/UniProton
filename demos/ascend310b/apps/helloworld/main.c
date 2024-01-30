@@ -16,6 +16,7 @@
 #include "pl011.h"
 #include "file_transfer.h"
 #include "ymodem.h"
+#include "i2c_1911.h"
 
 #define FILE_NAME_LEN 32
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -110,6 +111,13 @@ U32 PRT_HardDrvInit(void)
 
 #if (CONFIG_SPI_ENABLE == YES)
     ret = OsSpiInit();
+    if (ret) {
+        return ret;
+    }
+#endif
+
+#if (CONFIG_I2C_ENABLE == YES)
+    ret = I2cInit();
     if (ret) {
         return ret;
     }

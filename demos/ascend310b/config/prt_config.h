@@ -110,6 +110,9 @@ extern "C" {
 /* 使能SPI总线功能 */
 #define CONFIG_SPI_ENABLE NO
 
+/* 使能I2C总线功能 */
+#define CONFIG_I2C_ENABLE NO
+
 /* 硬件设备为Atlas 200I DK A2，支持SPI0，否则支持SPI5 */
 #define CONFIG_DEVICE_DK_A2 NO
 #endif
