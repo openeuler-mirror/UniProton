@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <errno.h>

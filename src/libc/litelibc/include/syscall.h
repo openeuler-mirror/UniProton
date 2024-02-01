@@ -15,4 +15,6 @@
 #ifndef _SYSCALL_H
 #define _SYSCALL_H
 
+long __syscall_ret(unsigned long r);
+
 #endif /* _SYSCALL_H */

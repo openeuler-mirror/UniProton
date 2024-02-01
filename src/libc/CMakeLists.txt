@@ -34,6 +34,11 @@ list(REMOVE_ITEM LITELIBC_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/popen.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/pclose.c
 )
+
+#移除litelibc中的stat模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入stat模块
+file(GLOB_RECURSE LITELIBC_STAT_SOURCE litelibc/src/stat/*.c)
+list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_STAT_SOURCE})
+
 endif()
 
 # 需要编译的musl的.c文件
@@ -67,6 +72,7 @@ set(MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_pton.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/inet_ntop.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/network/if_freenameindex.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/syscall_ret.c
     )
 
 if(NOT "${CONFIG_OS_OPTION_PROXY}")
@@ -104,6 +110,7 @@ list(APPEND  MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/pthread_cond_timedwait_time32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/cnd_timedwait_time32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/mtx_timedlock_time32.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/compat/time32/futimesat_time32.c
 )
 endif()
 
@@ -408,6 +415,15 @@ list(APPEND MULS_SOURCE
     ${MUSL_MULTIBYTE_SOURCE}
     ${MUSL_STDIO_SOURCE}
 )
+
+# 添加musl中的stat模块
+if(${CONFIG_OS_OPTION_NUTTX_VFS})
+
+file(GLOB MULS_STAT_SOURCE musl/src/stat/*.c)
+list(APPEND MULS_SOURCE
+    ${MULS_STAT_SOURCE}
+)
+endif()
 
 if(${CONFIG_OS_OPTION_POSIX_SIGNAL})
 list(APPEND MULS_SOURCE
