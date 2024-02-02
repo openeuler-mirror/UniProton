@@ -1,24 +1,39 @@
+#define _BSD_SOURCE
+#ifdef _GNU_SOURCE
+#define HAD_SOURCE
+#undef _GNU_SOURCE
+#endif
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
+#ifdef HAD_SOURCE
+#undef HAD_SOURCE
+#define _GNU_SOURCE
+#endif
+#include <errno.h>
 #include "syscall.h"
+#ifdef OS_OPTION_NUTTX_VFS
+#include "nuttx/sys/sys_stat.h"
+#endif
 
 static int __statfs(const char *path, struct statfs *buf)
 {
     *buf = (struct statfs){0};
-#ifdef SYS_statfs64
-    return syscall(SYS_statfs64, path, sizeof *buf, buf);
+#ifdef OS_OPTION_NUTTX_VFS
+    return sys_statfs(path, buf);
 #else
-    return syscall(SYS_statfs, path, buf);
+    errno = ENOTSUP;
+    return -1;
 #endif
 }
 
 static int __fstatfs(int fd, struct statfs *buf)
 {
     *buf = (struct statfs){0};
-#ifdef SYS_fstatfs64
-    return syscall(SYS_fstatfs64, fd, sizeof *buf, buf);
+#ifdef OS_OPTION_NUTTX_VFS
+    return sys_fstatfs(fd, buf);
 #else
-    return syscall(SYS_fstatfs, fd, buf);
+    errno = ENOTSUP;
+    return -1;
 #endif
 }
 
