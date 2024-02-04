@@ -8,10 +8,12 @@
 #undef HAD_SOURCE
 #define _GNU_SOURCE
 #endif
+#include <errno.h>
+#include "syscall.h"
 
-int creat(const char *filename, mode_t mode)
+int posix_fadvise(int fd, off_t base, off_t len, int advice)
 {
-	return open(filename, O_CREAT|O_WRONLY|O_TRUNC, mode);
+    return ENOTSUP;
 }
 
-weak_alias(creat, creat64);
+weak_alias(posix_fadvise, posix_fadvise64);

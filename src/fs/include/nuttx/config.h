@@ -29,6 +29,7 @@
             errno = (int)(e); \
         } \
     while (0)
+#define get_errno() errno
 
 typedef void* pthread_startroutine_t;
 

@@ -39,6 +39,10 @@ list(REMOVE_ITEM LITELIBC_SOURCE
 file(GLOB_RECURSE LITELIBC_STAT_SOURCE litelibc/src/stat/*.c)
 list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_STAT_SOURCE})
 
+#移除litelibc中的fcntl模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入fcntl模块
+file(GLOB_RECURSE LITELIBC_FCNTL_SOURCE litelibc/src/fcntl/*.c)
+list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_FCNTL_SOURCE})
+
 endif()
 
 # 需要编译的musl的.c文件
@@ -415,12 +419,19 @@ list(APPEND MULS_SOURCE
     ${MUSL_STDIO_SOURCE}
 )
 
-# 添加musl中的stat模块
 if(${CONFIG_OS_OPTION_NUTTX_VFS})
 
+# 添加musl中的stat模块
 file(GLOB MULS_STAT_SOURCE musl/src/stat/*.c)
+# 添加musl中的fcntl模块
+file(GLOB MULS_FCNTL_SOURCE musl/src/fcntl/*.c)
+# 添加musl中的dirent模块
+file(GLOB MULS_DIRENT_SOURCE musl/src/dirent/*.c)
+
 list(APPEND MULS_SOURCE
     ${MULS_STAT_SOURCE}
+    ${MULS_FCNTL_SOURCE}
+    ${MULS_DIRENT_SOURCE}
 )
 endif()
 
