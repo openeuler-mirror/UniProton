@@ -103,6 +103,14 @@ OS_SEC_L4_TEXT U32 OsHookConfigInit(void)
  */
 OS_SEC_L4_TEXT U32 OsMhookAdd(U32 hookType, OsVoidFunc hook)
 {
+    if (!OS_IS_MHOOK_TYPE(hookType)) {
+        return OS_ERRNO_HOOK_TYPE_INVALID;
+    }
+
+    if (hook == NULL) {
+        return OS_ERRNO_HOOK_PTR_NULL;
+    }
+
     uintptr_t intSave;
     OsVoidFunc *mHook = NULL;
     U32 ret = OS_OK;
@@ -166,6 +174,14 @@ OS_SEC_L4_TEXT U32 OsMhookAdd(U32 hookType, OsVoidFunc hook)
  */
 OS_SEC_L4_TEXT U32 OsMhookDel(U32 hookType, OsVoidFunc hook)
 {
+    if (!OS_IS_MHOOK_TYPE(hookType)) {
+        return OS_ERRNO_HOOK_TYPE_INVALID;
+    }
+
+    if (hook == NULL) {
+        return OS_ERRNO_HOOK_PTR_NULL;
+    }
+
     uintptr_t intSave;
     OsVoidFunc *mHook = NULL;
     U32 ret;
@@ -226,7 +242,7 @@ OS_SEC_L4_TEXT U32 OsMhookDel(U32 hookType, OsVoidFunc hook)
  */
 OS_SEC_L4_TEXT U32 OsHookAdd(enum HookType hookType, OsVoidFunc hook)
 {
-    if ((U32)hookType >= (U32)OS_HOOK_TYPE_NUM) {
+    if (!OS_IS_HOOK_TYPE(hookType)) {
         return OS_ERRNO_HOOK_TYPE_INVALID;
     }
 
@@ -234,7 +250,13 @@ OS_SEC_L4_TEXT U32 OsHookAdd(enum HookType hookType, OsVoidFunc hook)
         return OS_ERRNO_HOOK_PTR_NULL;
     }
 
-    return OsMhookAdd((U32)hookType, hook);
+    if (OS_IS_MHOOK_TYPE(hookType)) {
+        return OsMhookAdd((U32)hookType, hook);
+    }
+    else {
+        return OsShookReg((U32)hookType,hook);
+    }
+    
 }
 
 /*
@@ -242,15 +264,21 @@ OS_SEC_L4_TEXT U32 OsHookAdd(enum HookType hookType, OsVoidFunc hook)
  */
 OS_SEC_L4_TEXT U32 OsHookDel(enum HookType hookType, OsVoidFunc hook)
 {
-    if ((U32)hookType >= (U32)(OS_HOOK_TYPE_NUM)) {
+    if (!OS_IS_HOOK_TYPE(hookType)) {
         return OS_ERRNO_HOOK_TYPE_INVALID;
     }
 
-    if (hook == NULL) {
-        return OS_ERRNO_HOOK_PTR_NULL;
+    if (OS_IS_MHOOK_TYPE(hookType)) {
+        if (hook == NULL) {
+            return OS_ERRNO_HOOK_PTR_NULL;
+        }
+        else {
+            return OsMhookDel((U32)hookType, hook);
+        }
     }
-
-    return OsMhookDel((U32)hookType, hook);
+    else {
+        return OsShookReg((U32)hookType, NULL);
+    }    
 }
 
 /*

@@ -20,7 +20,7 @@
 
 OS_SEC_BSS struct TagMemFuncLib g_memArithAPI; /* 算法对应API */
 OS_SEC_BSS struct TagFscMemCtrl g_fscMemNodeList[OS_FSC_MEM_LAST_IDX];
-OS_SEC_BSS U32 g_fscMemBitMap = 1;
+OS_SEC_DATA U32 g_fscMemBitMap = 1;
 uintptr_t g_memTotalSize = 0;
 uintptr_t g_memUsage = 0;
 uintptr_t g_memPeakUsage = 0;

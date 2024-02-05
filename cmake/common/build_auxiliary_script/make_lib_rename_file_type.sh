@@ -20,6 +20,8 @@ elif [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TY
     then ARNAME=aarch64-none-elf-ar; OBJCOPYNAME=aarch64-none-elf-objcopy;
 elif [ "${CPU_TYPE}" = "x86_64" ];
     then ARNAME=x86_64-openeuler-linux-gnu-ar; OBJCOPYNAME=x86_64-openeuler-linux-gnu-objcopy;
+elif [ "${CPU_TYPE}" = "rv64virt" ]
+    then ARNAME=riscv64-unknown-elf-ar; OBJCOPYNAME=riscv64-unknown-elf-objcopy;
 else
     ARNAME=ar; OBJCOPYNAME=objcopy;
 fi
@@ -27,7 +29,7 @@ fi
 sleep 2
 pushd "$CK_LIB_PATH"
 ##为什么不加这一行要报错
-if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "atlasa1" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "x86_64" ] || [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ]; then
+if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "atlasa1" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "x86_64" ] || [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ] || [ "${CPU_TYPE}" = "rv64virt" ]; then
     [ -n tmp_"${file}" ] && rm -rf tmp_"${file}" 
 fi
 mkdir tmp_"${file}"
@@ -38,7 +40,7 @@ pushd tmp_"${file}"
 # 删除某变量指定的目录下所有文件。
 # 通过对变量${FILE_PATH}进行判断，当${FILE_PATH}为空时，不会错误删除根目录下的文件。
 [ -n "${file}" ] && rm -rf "${file}"
-if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "atlasa1" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ]; then  
+if [ "${CPU_TYPE}" = "m4" ] || [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE}" = "kp920" ] || [ "${CPU_TYPE}" = "atlasa1" ]|| [ "${CPU_TYPE}" = "rk3568_jailhouse" ] || [ "${CPU_TYPE}" = "ascend310b" ] || [ "${CPU_TYPE}" = "rv64virt" ]; then  
     find . -name '*.s.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.s.o ./{}.o
     find . -name '*.S.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.S.o ./{}.o
     find . -name '*.c.o'| awk -F "." '{print $2}'|xargs -I'{}' mv ./{}.c.o ./{}.o
@@ -65,6 +67,19 @@ if [ "${CPU_TYPE}" = "raspi4" ] || [ "${CPU_TYPE}" = "hi3093" ] || [ "${CPU_TYPE
         fi
     done
 fi
+
+if [ "${CPU_TYPE}" = "rv64virt" ]; then
+    for i in $(ls *.o);
+    do
+        if [ -f "${i}" ]  ; then
+            "${AR_TOOL_PATH}"/"${OBJCOPYNAME}" --remove-section=.comment -I  elf64-littleriscv -O  elf64-littleriscv "${i}" "${i}".oooo
+            "${AR_TOOL_PATH}"/"${OBJCOPYNAME}" --strip-unneeded "${i}".oooo
+	    mv "${i}".oooo "${i}"
+        fi
+    done
+fi
+
+
 
 "$AR_TOOL_PATH"/"${ARNAME}" -r -D "$file" *.o
 mv "$file" ../

@@ -16,6 +16,7 @@ mkdir -p /opt/buildtools && chmod -R 755 /opt/buildtools
 2. python 3.4+
 3. Cmake
 4. GNU Arm Embedded Toolchain 编译器，用于代码编译。
+5. 如果选择riscv 版本 请使用 riscv64-gcc交叉编译器
 
 
 
@@ -25,18 +26,23 @@ mkdir -p /opt/buildtools && chmod -R 755 /opt/buildtools
 
 1. 下载编译器
 - cortex_m4版本编译器，官方下载地址为：[GNU Arm Embedded Toolchain编译器](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)，指定版本:10-2020-q4-major。
+
 - armv8版本编译器，官方下载地址为：[gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz](https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz)
+
 - x86_64版本编译器，需使用docker容器，下载命令：
-   ```bash
-   docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v003
-   ```
+  ```bash
+  docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v003
+  ```
   或者使用oebuild环境，参考文档 [x86_64混合部署示例](./doc/demoUsageGuide/x86_64_demo_usage_guide.md)
+
+- riscv版本编译器, 官方下载地址为 https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.12.20/riscv64-elf-ubuntu-22.04-gcc-nightly-2023.12.20-nightly.tar.gz 
 
 2. 解压编译器
 - 可以参考如下命令完成解压：
 ```bash
 tar -xvf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2 -C /opt/buildtools
 tar -xvf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz -C /opt/buildtools
+tar -xvf riscv64-elf-ubuntu-22.04-gcc-nightly-2023.12.20-nightly.tar.gz -C /opt/buildtools
 ```
 
 

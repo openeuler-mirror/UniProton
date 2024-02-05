@@ -1,0 +1,165 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# UniProton Configuration
+#
+
+#
+# Arch Modules Configuration
+#
+# CONFIG_OS_ARCH_ARMV8 is not set
+# CONFIG_OS_ARCH_ARMV7_M is not set
+# CONFIG_OS_ARCH_X86_64 is not set
+CONFIG_OS_ARCH_RISCV64G=y
+#
+# RISCV64G Sepecfic Configuration
+#
+CONFIG_INTERNAL_OS_RISCV64G=y
+CONFIG_INTERNAL_OS_PLATFORM_RISCV64G=Y
+
+#
+# Generic Configuration
+#
+CONFIG_OS_HARDWARE_PLATFORM="OS_RISCV64G"
+CONFIG_OS_CPU_TYPE="OS_RV64_VIRT"
+CONFIG_OS_MAX_CORE_NUM=1
+CONFIG_INTERNAL_OS_BYTE_ORDER_LE=y
+CONFIG_OS_BYTE_ORDER="OS_LITTLE_ENDIAN"
+
+
+#
+# ISA Configuration for RISCV
+#
+
+#CONFIG_OS_ARCH_SURPORT_F=y 
+#don't support for f isa
+
+
+#
+# Core Modules Configuration
+#
+
+#
+# IPC Modules Configuration
+#
+
+
+#
+# Event feature configuration
+#
+CONFIG_OS_OPTION_EVENT=y
+
+#
+# Queue feature configuration
+#
+CONFIG_OS_OPTION_QUEUE=y
+
+#
+# Semaphore feature configuration
+#
+CONFIG_INTERNAL_OS_SEM=y
+
+#
+# Semaphore feature configuration
+#
+CONFIG_OS_OPTION_BIN_SEM=y
+CONFIG_OS_OPTION_SEM_RECUR_PV=y
+CONFIG_OS_OPTION_SEM_PRIOR=y
+
+#
+# Signal feature configuration
+#
+# CONFIG_OS_OPTION_SIGNAL is not set
+
+#
+# IRQ Modules Configuration
+#
+#CONFIG_OS_OPTION_HWI_COMBINE=y
+CONFIG_OS_OPTION_HWI_PRIORITY=y
+CONFIG_OS_OPTION_HWI_ATTRIBUTE=y
+CONFIG_OS_PLIC_VER=1
+
+#
+# Exc Modules Configuration
+#
+
+#
+# Task module Configuration
+#
+CONFIG_OS_OPTION_TASK=y
+
+#
+# TASK features configuration
+#
+CONFIG_OS_OPTION_TASK_DELETE=y
+CONFIG_OS_OPTION_TASK_SUSPEND=y
+CONFIG_OS_OPTION_TASK_INFO=y
+CONFIG_OS_OPTION_TASK_YIELD=y
+CONFIG_OS_TSK_PRIORITY_HIGHEST=0
+CONFIG_OS_TSK_PRIORITY_LOWEST=31
+CONFIG_OS_TSK_NUM_OF_PRIORITIES=32
+CONFIG_OS_TSK_CORE_BYTES_IN_PID=2
+
+#
+# Timer Modules Configuration
+#
+CONFIG_INTERNAL_OS_SWTMR=y
+
+#
+# OM Modules Configuration
+#
+CONFIG_OS_OPTION_CPUP=y
+
+#
+# CPUP features configuration
+#
+CONFIG_INTERNAL_OS_CPUP_THREAD=y
+CONFIG_OS_OPTION_CPUP_WARN=y
+
+#
+# OSAL Modules Configuration
+#
+CONFIG_OS_OPTION_MUSL_LIBC=y
+
+#
+# security Modules Configuration
+#
+# CONFIG_OS_OPTION_RND is not set
+
+#
+# Utility Modules Configuration
+#
+CONFIG_OS_OPTION_POSIX=y
+CONFIG_OS_OPTION_POSIX_SIGNAL=y
+CONFIG_OS_POSIX_TYPE_NEWLIB=y
+CONFIG_OS_POSIX_SET_TZDST=y
+CONFIG_OS_OPTION_LOCALE=y
+
+#
+# Filesystem Modules Configuration
+#
+# CONFIG_OS_OPTION_FS is not set
+
+#
+# EtherCAT Modules Configuration
+# depend on CONFIG_OS_OPTION_LINUX
+# CONFIG_OS_SUPPORT_ETHERCAT is not set
+
+#
+# Debug Modules Configuration
+#
+# CONFIG_OS_GDB_STUB is not set
+
+#
+# enable CXX
+#
+# CONFIG_OS_SUPPORT_CXX is not set
+
+#
+# enable Libxml2
+# depend on CONFIG_OS_OPTION_PROXY
+# CONFIG_OS_SUPPORT_LIBXML2 is not set
+
+#
+# Shell Modules Configuration.
+# CONFIG_LOSCFG_SHELL is not set
+# CONFIG_LOSCFG_SHELL_MICA_INPUT is not set

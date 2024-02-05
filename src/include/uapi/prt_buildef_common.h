@@ -24,7 +24,8 @@
 #define OS_CORTEX_M4        0x01
 #define OS_ARMV8            0x02
 #define OS_X86_64           0x03
-#define OS_PLATFORM_INVALID 0x04
+#define OS_RISCV64G         0x04
+#define OS_PLATFORM_INVALID 0x05
 
 /* To define OS_CPU_TYPE */
 /* 编译器有个bug, 未定义的宏的数值默认是0，所以不用使用'0' */
@@ -34,8 +35,9 @@
 #define OS_RK3568_JAILHOUSE 0x04
 #define OS_KP920            0x05
 #define OS_ASCEND310B       0x06
-#define OS_ATLASA1           0x07
-#define OS_CPU_TYPE_INVALID 0x08
+#define OS_ATLASA1          0x08
+#define OS_RV64_VIRT        0x09
+#define OS_CPU_TYPE_INVALID 0x0a
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 

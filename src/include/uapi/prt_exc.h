@@ -30,6 +30,10 @@
 #include "./hw/x86_64/os_exc_x86_64.h"
 #endif
 
+#if (OS_HARDWARE_PLATFORM == OS_RISCV64G)
+#include "./hw/riscv64G/os_exc_riscv64g.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {

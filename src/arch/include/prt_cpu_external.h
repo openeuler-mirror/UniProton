@@ -29,7 +29,7 @@ extern void OsAsmIll(void);
 extern void OsFirstTimeSwitch(void);
 extern void *OsTskContextInit(U32 taskId, U32 stackSize, uintptr_t *topStack, uintptr_t funcTskEntry);
 extern void OsTskContextGet(uintptr_t saveAddr, struct TskContext *context);
-extern void OsTickStartRegSet(U16 tickHwTimerIndex, U32 cyclePerTick);
+extern void OsTickStartRegSet(U16 tickHwTimerIndex, U32 cyclePerTick); 
 
 #if defined(OS_ARCH_ARMV7_M)
 #include "../cpu/armv7-m/common/os_cpu_armv7_m_external.h"
@@ -41,6 +41,10 @@ extern void OsTickStartRegSet(U16 tickHwTimerIndex, U32 cyclePerTick);
 
 #if defined(OS_ARCH_X86_64)
 #include "../cpu/x86_64/common/os_cpu_x86_64_external.h"
+#endif
+
+#if defined(OS_ARCH_RISCV64G)
+#include "../cpu/riscv64G/common/os_cpu_riscv64g_external.h"
 #endif
 
 #endif /* PRT_CPU_EXTERNAL_H */

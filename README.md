@@ -29,6 +29,8 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 [UniProton gdb-stub使用指南](./doc/gdbstub.md)
 
+[RISCV64_QEMU_HelloWorld工程](./doc/demoUsageGuide/riscv64_demo_usage_guide.md)
+
 ### 5、相关文档
 
 [UniProton用户指南](https://docs.openeuler.org/zh/docs/23.09/docs/Embedded/UniProton/UniProton%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-%E6%A6%82%E8%BF%B0.html)

@@ -24,6 +24,10 @@
  */
 #define OS_HOOK_EMPTY NULL
 
-#define OS_IS_SHOOK_TYPE(hookType) ((hookType) >= OS_SHOOK_TYPE_START && (hookType) < (U32)OS_HOOK_TYPE_TOTAL)
+#define OS_IS_SHOOK_TYPE(hookType) ((U32)(hookType) >= (U32)OS_SHOOK_TYPE_START && (U32)(hookType) < (U32)OS_HOOK_TYPE_TOTAL)
+
+#define OS_IS_MHOOK_TYPE(hookType) ((U32)(hookType) < (U32)OS_SHOOK_TYPE_START)
+
+#define OS_IS_HOOK_TYPE(hookType)  ((U32)(hookType) < (U32)OS_HOOK_TYPE_TOTAL)
 
 #endif /* PRT_HOOK_INTERNAL_H */
