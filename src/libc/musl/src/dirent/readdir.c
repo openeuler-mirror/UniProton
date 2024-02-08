@@ -1,4 +1,13 @@
+#define _BSD_SOURCE
+#ifdef _GNU_SOURCE
+#define HAD_SOURCE
+#undef _GNU_SOURCE
+#endif
 #include <dirent.h>
+#ifdef HAD_SOURCE
+#undef HAD_SOURCE
+#define _GNU_SOURCE
+#endif
 #include <errno.h>
 #include <stddef.h>
 #include "__dirent.h"
@@ -18,7 +27,7 @@ struct dirent *readdir(DIR *dir)
 #ifdef OS_OPTION_PROXY
 		int len = PRT_ProxyGetDents64(dir->fd, dir->buf, sizeof dir->buf);
 #else
-		int len = __syscall(SYS_getdents, dir->fd, dir->buf, sizeof dir->buf);
+		int len = -ENOTSUP;
 #endif
 		if (len <= 0) {
 			if (len < 0 && len != -ENOENT) errno = -len;

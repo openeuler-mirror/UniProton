@@ -26,8 +26,11 @@
 #define __INCLUDE_FS_FCNTL_H
 
 #include <stdarg.h>
+#include <fcntl.h>
 
 int sys_open(const char *path, int oflags, ...);
 int sys_fcntl(int fd, int cmd, ...);
+int sys_openat(int dirfd, const char *path, int oflags, ...);
+int sys_posix_fallocate(int fd, off_t offset, off_t len);
 
 #endif /* __INCLUDE_FS_FCNTL_H */

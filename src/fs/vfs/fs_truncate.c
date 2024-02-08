@@ -31,6 +31,7 @@
 #include <debug.h>
 
 #include <nuttx/fs/fs.h>
+#include <nuttx/sys/sys_unistd.h>
 
 #include "inode/inode.h"
 
