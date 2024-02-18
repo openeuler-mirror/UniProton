@@ -27,6 +27,7 @@ fi
 
 sh ./build_static.sh uvp
 sh ./build_openamp.sh $CROSS_TOOLCHAIN_PREFIX
+sh ./build_lwip.sh $TOOLCHAIN_PATH
 
 function build()
 {

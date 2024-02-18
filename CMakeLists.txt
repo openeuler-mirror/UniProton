@@ -116,6 +116,12 @@ include_directories(
 )
 endif()
 
+if (${CONFIG_OS_SUPPORT_I40E})
+include_directories(
+    ./src/drivers/i40e
+)
+endif()
+
 if (${PLAM_TYPE} STREQUAL "x86_64")
     add_compile_options(-std=gnu99)
 else()
