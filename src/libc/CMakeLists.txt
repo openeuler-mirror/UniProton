@@ -254,7 +254,7 @@ list(REMOVE_ITEM MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stdout.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stderr.c
 )
-if (${CPU_TYPE} STREQUAL "x86_64")
+if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp")
 list(REMOVE_ITEM MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/perror.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/printf.c
