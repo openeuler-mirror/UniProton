@@ -17,4 +17,6 @@
 
 long __syscall_ret(unsigned long r);
 
+void __procfdname(char __buf[static 15+3*sizeof(int)], unsigned);
+
 #endif /* _SYSCALL_H */

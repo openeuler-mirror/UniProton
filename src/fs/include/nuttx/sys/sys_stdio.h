@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/sys/sys_uio.h
+ * include/nuttx/sys/sys_stdio.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,15 +25,8 @@
 #ifndef __INCLUDE_SYS_UIO_H
 #define __INCLUDE_SYS_UIO_H
 
-#include <sys/uio.h>
-#include <unistd.h>
+int sys_rename(const char *oldpath, const char *newpath);
 
-ssize_t sys_readv(int fildes, const struct iovec *iov, int iovcnt);
-
-ssize_t sys_writev(int fildes, const struct iovec *iov, int iovcnt);
-
-ssize_t sys_preadv(int fildes, const struct iovec *iov, int iovcnt, off_t offset);
-
-ssize_t sys_pwritev(int fildes, const struct iovec *iov, int iovcnt, off_t offset);
+int sys_renameat(int olddirfd, const char *oldpath, int newdirfd, const char *newpath);
 
 #endif /* __INCLUDE_SYS_UIO_H */

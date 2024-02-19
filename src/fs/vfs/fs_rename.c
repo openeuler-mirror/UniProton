@@ -34,7 +34,7 @@
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/sys/sys_unistd.h>
-
+#include <nuttx/sys/sys_stdio.h>
 #include "inode/inode.h"
 
 /****************************************************************************

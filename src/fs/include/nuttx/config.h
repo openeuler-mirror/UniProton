@@ -44,6 +44,13 @@ typedef void* pthread_startroutine_t;
 #define NUTTX_O_ACCMODE 03
 
 /**
+ *  From Nuttx libc.h
+ **/
+#ifndef CONFIG_LIBC_HOMEDIR
+#define CONFIG_LIBC_HOMEDIR "/"
+#endif
+
+/**
  * 仅支持单核, 该功能不支持
  **/
 #ifdef CONFIG_SMP
