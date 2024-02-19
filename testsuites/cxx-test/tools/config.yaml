@@ -1,0 +1,56 @@
+#select testcases
+testcases:
+  - ../misc
+  # - ../20_util
+  # - ../23_containers/stack
+  # - ../23_containers/queue
+  # - ../23_containers/priority_queue
+  # - ../23_containers/vector/modifiers
+  # - ../23_containers/bitset
+  # - ../23_containers/deque
+  # - ../18_support/exception
+  # - ../18_support/typeinfo
+  # - ../18_support/nested_exception
+  # - ../18_support/uncaught_exception
+  # - ../18_support/uncaught_exceptions
+  # - ../20_util/allocator
+  # - ../23_containers/set
+  # - ../23_containers/map
+  # - ../23_containers/multimap
+  # - ../23_containers/multiset
+  # - ../23_containers/array
+  # - ../23_containers/forward_list 
+  # - ../23_containers/unordered_map
+  # - ../23_containers/unordered_set
+  # - ../30_threads/mutex
+  # - ../23_containers/forward_list/allocator
+  # - ../30_threads/thread
+  # - ../30_threads/lock_guard
+  # - ../30_threads/condition_variable
+  # - ../30_threads/unique_lock
+  # - ../23_containers/unordered_multiset
+  # - ../23_containers/unordered_multimap
+  # - ../27_io/basic_filebuf/showmanyc
+  # - ../27_io/basic_filebuf/seekoff
+  # - ../27_io/basic_filebuf/setbuf
+  # - ../27_io/basic_filebuf/in_avail
+  # - ../27_io/basic_filebuf/seekpos
+  # - ../27_io/basic_filebuf/underflow
+  # - ../27_io/basic_filebuf/open
+  # - ../27_io/basic_filebuf/close
+  # - ../27_io/basic_filebuf/sungetc
+  # - ../27_io/basic_filebuf/sputn
+  # - ../27_io/basic_filebuf/sbumpc
+  # - ../27_io/basic_filebuf/overflow
+  # - ../27_io/basic_filebuf/sputc
+  # - ../27_io/basic_filebuf/cons
+  # - ../27_io/basic_filebuf/imbue
+  # - ../27_io/basic_filebuf/sync
+  # - ../27_io/basic_fstream
+  # - ../27_io/basic_ofstream
+  # - ../21_strings/c_strings
+#use default value
+exclude_prefix: []
+testcases_base: ../
+run_test_tmpl: ./run_test.cc.tmpl
+run_test: ./.run_test.cc
