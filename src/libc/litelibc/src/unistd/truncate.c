@@ -28,7 +28,7 @@ int truncate(const char *path, off_t length)
 
     fd = sys_open(path, O_WRONLY);
     if (fd < 0) {
-	    return ERROR;
+        return ERROR;
     }
 
     /* Then let ftruncate() do the work */
@@ -38,7 +38,8 @@ int truncate(const char *path, off_t length)
     sys_close(fd);
     return ret;
 #else
-	return -EAFNOSUPPORT;
+    errno = ENOTSUP;
+    return -1;
 #endif
 }
 

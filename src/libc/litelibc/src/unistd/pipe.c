@@ -1,13 +1,13 @@
+#include <unistd.h>
 #include <errno.h>
-
 #ifdef OS_OPTION_NUTTX_VFS
-#include "nuttx/sys/sys_unistd.h"
+#include <nuttx/sys/sys_unistd.h>
 #endif
 
-int fsync(int fd)
+int pipe(int fd[2])
 {
 #ifdef OS_OPTION_NUTTX_VFS
-    return sys_fsync(fd);
+    return sys_pipe2(fd, 0);
 #else
     errno = ENOTSUP;
     return -1;

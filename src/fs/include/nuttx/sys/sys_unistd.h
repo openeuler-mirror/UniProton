@@ -58,6 +58,8 @@ void sys_sync(void);
 
 ssize_t sys_readlink(FAR const char *path, FAR char *buf, size_t bufsize);
 
+ssize_t sys_readlinkat(int dirfd, FAR const char *path, FAR char *buf, size_t bufsize);
+
 int sys_link(FAR const char *path1, FAR const char *path2);
 
 int sys_fchown(int fd, uid_t owner, gid_t group);
@@ -66,6 +68,26 @@ int sys_lchown(FAR const char *path, uid_t owner, gid_t group);
 
 int sys_symlink(FAR const char *path1, FAR const char *path2);
 
+int sys_symlinkat(FAR const char *path1, int dirfd, FAR const char *path2);
+
 int sys_ftruncate(int fd, off_t length);
+
+char *sys_getcwd(FAR char *buf, size_t size);
+
+int sys_pipe2(int fd[2], int flags);
+
+int sys_unlinkat(int dirfd, FAR const char *path, int flags);
+
+int sys_linkat(int olddirfd, FAR const char *path1, int newdirfd, FAR const char *path2, int flags);
+
+int sys_fchownat(int dirfd, FAR const char *path, uid_t owner, gid_t group, int flags);
+
+int sys_access(FAR const char *path, int amode);
+
+int sys_faccessat(int dirfd, FAR const char *path, int amode, int flags);
+
+int sys_chdir(FAR const char *path);
+
+int sys_fchdir(int fd);
 
 #endif /* __INCLUDE_FS_UNISTD_H */

@@ -5,7 +5,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lwip)
     include(FetchContent)
     FetchContent_Declare(
         lwip
-        URL https://gitee.com/src-openeuler/lwip/raw/openEuler-22.03-LTS-SP2/lwip-2.1.3.zip
+        URL https://gitee.com/src-openeuler/lwip/raw/openEuler-22.03-LTS-SP3-release/lwip-2.1.3.zip
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lwip
         PATCH_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && patch -p1 -d lwip < ${CMAKE_CURRENT_SOURCE_DIR}/0000-adapter-fix-for-lwip.patch
     )

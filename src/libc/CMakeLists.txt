@@ -321,6 +321,23 @@ list(REMOVE_ITEM MUSL_STDIO_SOURCE
 )
 endif()
 
+# 适配unistd
+set(MULS_UNISTD_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/ualarm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/lseek.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/posix_close.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/misc/realpath.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/setenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/putenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/env/unsetenv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/alarm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/setpgrp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/ttyname.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/ttyname_r.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/tcgetpgrp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/procfdname.c
+)
+
 # 需要编译的signal相关.c文件
 file(GLOB MUSL_SIGNAL_SOURCE musl/src/signal/*.c)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/setjmp/${CMAKE_SYSTEM_PROCESSOR})
@@ -417,6 +434,7 @@ list(APPEND MULS_SOURCE
     ${MUSL_CTYPE_SOURCE}
     ${MUSL_MULTIBYTE_SOURCE}
     ${MUSL_STDIO_SOURCE}
+    ${MULS_UNISTD_SOURCE}
 )
 
 if(${CONFIG_OS_OPTION_NUTTX_VFS})
