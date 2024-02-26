@@ -29,8 +29,8 @@
 #include "../cpu/x86_64/common/os_attr_x86_64_external.h"
 #endif
 
-#if defined(OS_ARCH_RISCV64G)
-#include "../cpu/riscv64G/common/os_attr_riscv64g_external.h"
+#if defined(OS_ARCH_RISCV64)
+#include "../cpu/riscv64/common/os_attr_riscv64_external.h"
 #endif
 
 #endif /* PRT_ATTR_EXTERNAL_H */

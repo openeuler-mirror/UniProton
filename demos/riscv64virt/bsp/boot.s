@@ -7,5 +7,3 @@ _start:
 _spin:
     wfi 
     j _spin
-    j _start
-

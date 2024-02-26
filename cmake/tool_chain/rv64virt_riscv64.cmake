@@ -118,10 +118,10 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 	)
 
 	##{GLOB 所有文件 | GLOB_RECURSE 递归查找文件&文件夹 =======}
-	file(GLOB hw_board_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/hw/riscv64G/*)
+	file(GLOB hw_board_include_files  ${PROJECT_SOURCE_DIR}/src/include/uapi/hw/riscv64/*)
 	install(FILES
 		${hw_board_include_files}
-		DESTINATION ${INSTALL_RV64VIRT_RISCV64_INCLUDE_DIR}/hw/riscv64G
+		DESTINATION ${INSTALL_RV64VIRT_RISCV64_INCLUDE_DIR}/hw/riscv64
 	)
 
 	

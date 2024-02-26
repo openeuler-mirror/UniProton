@@ -1,2 +1,5 @@
-set(SRCS main.c console.c)
-add_library(app OBJECT ${SRCS})
+if (APP STREQUAL "hello_world")
+	add_subdirectory(hello_world)
+elseif (APP MATCHES "^rhealstone.*")
+	add_subdirectory(rhealstone)
+endif()
