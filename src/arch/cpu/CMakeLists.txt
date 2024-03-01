@@ -8,6 +8,6 @@ if(${CONFIG_OS_ARCH_X86_64})
     add_subdirectory(x86_64)
 endif()
 
-if(${CONFIG_OS_ARCH_RISCV64G})
-    add_subdirectory(riscv64G)
+if(${CONFIG_OS_ARCH_RISCV64})
+    add_subdirectory(riscv64)
 endif()

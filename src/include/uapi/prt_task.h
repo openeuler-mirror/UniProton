@@ -30,8 +30,8 @@
 #include "./hw/x86_64/os_cpu_x86_64.h"
 #endif
 
-#if ((OS_HARDWARE_PLATFORM == OS_RISCV64G))
-#include "./hw/riscv64G/os_cpu_riscv64g.h"
+#if ((OS_HARDWARE_PLATFORM == OS_RISCV64))
+#include "./hw/riscv64/os_cpu_riscv64.h"
 #endif
 
 #ifdef __cplusplus

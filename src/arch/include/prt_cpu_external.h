@@ -43,8 +43,8 @@ extern void OsTickStartRegSet(U16 tickHwTimerIndex, U32 cyclePerTick);
 #include "../cpu/x86_64/common/os_cpu_x86_64_external.h"
 #endif
 
-#if defined(OS_ARCH_RISCV64G)
-#include "../cpu/riscv64G/common/os_cpu_riscv64g_external.h"
+#if defined(OS_ARCH_RISCV64)
+#include "../cpu/riscv64/common/os_cpu_riscv64_external.h"
 #endif
 
 #endif /* PRT_CPU_EXTERNAL_H */

@@ -24,7 +24,7 @@
 #define OS_CORTEX_M4        0x01
 #define OS_ARMV8            0x02
 #define OS_X86_64           0x03
-#define OS_RISCV64G         0x04
+#define OS_RISCV64          0x04
 #define OS_PLATFORM_INVALID 0x05
 
 /* To define OS_CPU_TYPE */
