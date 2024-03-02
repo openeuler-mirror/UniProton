@@ -54,13 +54,14 @@ static int g_s0 = 0;
 char *g_s1 = "Hello, UniProton! \r\n";
 int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
-    rpmsg_client_cb(ept, data, len, src, priv);
 #ifdef LOSCFG_SHELL_MICA_INPUT
     ShellCB *shellCB = OsGetShellCB();
     if (shellCB != NULL) {
         char c = ((char *)data)[0];
         ShellCmdLineParse(c, (pf_OUTPUT)printf, shellCB);
     }
+#else
+    rpmsg_client_cb(ept, data, len, src, priv);
 #endif
     return OS_OK;
 }

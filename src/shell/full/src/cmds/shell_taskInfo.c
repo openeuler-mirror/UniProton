@@ -26,38 +26,43 @@ static void OsShellCmdListAllTask()
             continue;
         }
 
-        PRINTK("%-16u %-16s %-16u\n", index + g_tskBaseId, taskCb->name, taskCb->taskStatus);
+        PRINTK("%-16u %-16s 0x%-16x\n", taskCb->taskPid, taskCb->name, taskCb->taskStatus);
     }
 }
 
 int OsShellCmdTaskInfo(int argc, const char **argv)
 {
-    if (argc == 0) {
-        OsShellCmdListAllTask();
-        return 0;
+    if (g_tskMaxNum == 0) {
+        PRINTK("task is not enable.\n");
+        return OS_OK;
     }
 
-    if (!strcmp("help", argv[0])) {
-        PRINTK("Usage: taskInfo [TASKID]");
-        return 0;
+    if (argc == 0) {
+        OsShellCmdListAllTask();
+        return OS_OK;
+    }
+
+    if (!strcmp("--help", argv[0]) || argc > 1) {
+        PRINTK("\nUsage: taskInfo [TASKID]\n");
+        return OS_OK;
     }
     char *endptr = NULL;
     U32 taskId = strtoul(argv[0], &endptr, 0);
     if (endptr == NULL || endptr == argv[0] || *endptr != '\0') {
-        PRINTK("Invalid task id.");
-        return 0;
+        PRINTK("Invalid task id.\n");
+        return OS_ERROR;
     }
 
     if (taskId > U32_MAX) {
-        PRINTK("Task id out of range.");
-        return 0;
+        PRINTK("Task id out of range.\n");
+        return OS_ERROR;
     }
 
     struct TskInfo taskInfo = {0};
     U32 ret = PRT_TaskGetInfo(taskId, &taskInfo);
     if (ret != 0) {
-        PRINTK("Task not found.");
-        return 0;
+        PRINTK("Task not found.\n");
+        return OS_ERROR;
     }
 
     PRINTK("TaskBasicInfo:\n");
@@ -69,7 +74,7 @@ int OsShellCmdTaskInfo(int argc, const char **argv)
     PRINTK(" stackSize:  %16u topOfStack: %16p\n", taskInfo.stackSize, taskInfo.topOfStack);
     PRINTK(" stackBottom:%16p currUsed:   %16u\n", taskInfo.bottom, taskInfo.currUsed);
     PRINTK(" peakUsed:   %16u overflow:   %16s\n", taskInfo.peakUsed, (taskInfo.ovf ? "True" : "False"));
-    return 0;
+    return OS_OK;
 }
 
 SHELLCMD_ENTRY(taskInfo_shellcmd, CMD_TYPE_EX, "taskInfo", 1, (CmdCallBackFunc)OsShellCmdTaskInfo);

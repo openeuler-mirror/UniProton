@@ -23,11 +23,32 @@ if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
     )
 endif()
 
+if(NOT "${CONFIG_OS_OPTION_CPUP}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_cpup.c
+    )
+endif()
+
+if(NOT "${CONFIG_INTERNAL_OS_SWTMR}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_swtmr.c
+    )
+endif()
+
+if(NOT "${CONFIG_OS_OPTION_QUEUE}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_queue.c
+    )
+endif()
+
 add_library(libshell OBJECT ${SHELL_SOURCE})
 
 target_include_directories(libshell PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/full/include
         ${CMAKE_CURRENT_SOURCE_DIR}/adapter/include
+        ${HOME_PATH}/src/core/kernel/irq
+        ${HOME_PATH}/src/core/kernel/include
+        ${HOME_PATH}/src/om/cpup
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS libshell)

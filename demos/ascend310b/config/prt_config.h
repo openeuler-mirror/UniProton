@@ -42,7 +42,7 @@ extern "C" {
 
 /* ***************************** 配置定时器模块 ***************************** */
 /* 基于TICK的软件定时器裁剪开关 */
-#define OS_INCLUDE_TICK_SWTMER                          NO
+#define OS_INCLUDE_TICK_SWTMER                          YES
 /* 基于TICK的软件定时器最大个数 */
 #define OS_TICK_SWITIMER_MAX_NUM                        32
 
@@ -60,11 +60,11 @@ extern "C" {
 
 /* ***************************** 配置CPU占用率及CPU告警模块 **************** */
 /* CPU占用率模块裁剪开关 */
-#define OS_INCLUDE_CPUP                                 NO
+#define OS_INCLUDE_CPUP                                 YES
 /* 采样时间间隔(单位tick)，若其值大于0，则作为采样周期，否则两次调用PRT_CpupNow或PRT_CpupThread间隔作为周期 */
-#define OS_CPUP_SAMPLE_INTERVAL                         10
+#define OS_CPUP_SAMPLE_INTERVAL                         1000
 /* CPU占用率告警动态配置项 */
-#define OS_CONFIG_CPUP_WARN                             NO
+#define OS_CONFIG_CPUP_WARN                             YES
 /* CPU占用率告警阈值(精度为万分比) */
 #define OS_CPUP_SHORT_WARN                              8500
 /* CPU占用率告警恢复阈值(精度为万分比) */
