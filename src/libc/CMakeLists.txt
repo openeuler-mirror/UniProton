@@ -377,7 +377,7 @@ endif()
 
 
 # lua依赖的相关.c文件
-if(${CPU_TYPE} STREQUAL "rk3568_jailhouse")
+if(${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "rk3588")
 list(APPEND MULS_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strcmp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/string/strchrnul.c

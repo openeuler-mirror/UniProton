@@ -32,7 +32,7 @@ add_executable(${BUILD_APP} ${ALL_SRC} ${CXX_LIB} ${OBJS})
 target_link_libraries(${BUILD_APP} PUBLIC testsuite_support rhealstone_support)
 endif()
 
-if (${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "armv8")
+if (${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "rk3588" OR ${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "armv8")
     add_library(rhealstoneTest OBJECT ${ALL_SRC} ./support/banchmark_support.c)
     target_include_directories(rhealstoneTest PUBLIC ./support)
 endif()
