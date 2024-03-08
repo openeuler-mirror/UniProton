@@ -12,11 +12,19 @@
  * Description: openamp rsctable backend
  */
 
+#include <metal/device.h>
+#include <metal/cache.h>
 #include "rpmsg_backend.h"
 #include "resource_table.h"
-#include "metal/device.h"
 #include "prt_hwi.h"
 #include "prt_sem.h"
+
+/*
+ * Use resource tables's  reserved[0] to carry some extra information.
+ * The following IDs come from PSCI definition
+ */
+#define CPU_ON_FUNCID    0xC4000003
+#define SYSTEM_RESET     0x84000009
 
 static SemHandle msg_sem;
 static struct virtio_device *vdev;
@@ -66,9 +74,66 @@ static int virtio_notify(void *priv, uint32_t id)
     return 0;
 }
 
+static void reset_vq(void)
+{
+    if (rvdev.svq != NULL) {
+        /*
+         * For svq:
+         * vq_free_cnt: Set to vq_nentries, all descriptors in the svq are available.
+         * vq_queued_cnt: Set to 0, no descriptors waiting to be processed in the svq.
+         * vq_desc_head_idx: Set to 0, the next available descriptor is at the beginning
+         *                   of the descriptor table.
+         * vq_available_idx: Set to 0, No descriptors have been added to the available ring.
+         * vq_used_cons_idx: No descriptors have been added to the used ring.
+         * vq_ring.avail->idx and vq_ring.used->idx will be set at host.
+         */
+        rvdev.svq->vq_free_cnt = rvdev.svq->vq_nentries;
+        rvdev.svq->vq_queued_cnt = 0;
+        rvdev.svq->vq_desc_head_idx = 0;
+        rvdev.svq->vq_available_idx = 0;
+        rvdev.svq->vq_used_cons_idx = 0;
+    }
+
+    if (rvdev.rvq != NULL) {
+        /*
+         * For rvq:
+         * Because host resets its tx vq, on the remote side,
+         * it also needs to reset the rx rq.
+         */
+        rvdev.rvq->vq_available_idx = 0;
+        rvdev.rvq->vq_used_cons_idx = 0;
+        rvdev.rvq->vq_ring.used->idx = 0;
+        rvdev.rvq->vq_ring.avail->idx = 0;
+        metal_cache_flush(&(rvdev.rvq->vq_ring.used->idx),
+                          sizeof(rvdev.rvq->vq_ring.used->idx));
+        metal_cache_flush(&(rvdev.rvq->vq_ring.avail->idx),
+                          sizeof(rvdev.rvq->vq_ring.avail->idx));
+    }
+}
+
 static void rpmsg_ipi_handler(void)
 {
-    PRT_SemPost(msg_sem);
+    void *rsc;
+    int rsc_size;
+    uint32_t status;
+    struct fw_resource_table *rsc_table;
+
+    rsc_table_get(&rsc, &rsc_size);
+    rsc_table = (struct fw_resource_table *)rsc;
+
+    os_asm_invalidate_dcache_all();
+    status = rsc_table->reserved[0];
+
+    if (status == CPU_ON_FUNCID || status == 0) {
+        /* normal work */
+        PRT_SemPost(msg_sem);
+    } else if (status == SYSTEM_RESET) {
+        /* attach work: reset virtqueue */
+        reset_vq();
+        /* clear reserved[0] as the reset work is done */
+        rsc_table->reserved[0] = 0;
+        os_asm_invalidate_dcache_all();
+    }
 }
 
 void receive_message(void)
