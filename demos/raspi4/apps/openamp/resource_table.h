@@ -16,7 +16,8 @@
 #define RESOURCE_TABLE_H__
 
 #include <stddef.h>
-#include "openamp/remoteproc.h"
+#include <openamp/rpmsg.h>
+#include <openamp/remoteproc.h>
 #include "openamp_common.h"
 
 #ifdef __cplusplus
@@ -31,11 +32,30 @@ extern "C" {
 #define NUM_RPMSG_BUFF          8
 
 #define VIRTIO_ID_RPMSG         7
+#define RSC_VENDOR_EPT_TABLE    128 /* List of bound endpoints */
 
 enum rsc_table_entries {
+    RSC_TABLE_EPT_TABLE_ENTRY,
     RSC_TABLE_VDEV_ENTRY,
     RSC_TABLE_NUM_ENTRY
 };
+
+METAL_PACKED_BEGIN
+struct ept_info {
+	char name[RPMSG_NAME_SIZE];
+	uint32_t addr;
+	uint32_t dest_addr;
+} METAL_PACKED_END;
+
+#define MAX_NUM_OF_EPTS 64
+
+METAL_PACKED_BEGIN
+struct fw_rsc_ept {
+	uint32_t type;
+	uint32_t num_of_epts;
+	struct ept_info endpoints[MAX_NUM_OF_EPTS];
+} METAL_PACKED_END;
+
 
 METAL_PACKED_BEGIN
 struct fw_resource_table {
@@ -44,6 +64,7 @@ struct fw_resource_table {
     unsigned int reserved[2];
     unsigned int offset[RSC_TABLE_NUM_ENTRY];
 
+    struct fw_rsc_ept ept_table;
     struct fw_rsc_vdev vdev;
     struct fw_rsc_vdev_vring vring0;
     struct fw_rsc_vdev_vring vring1;

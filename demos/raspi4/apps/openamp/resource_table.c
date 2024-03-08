@@ -22,7 +22,13 @@ OS_SEC_RSC_TABLE static struct fw_resource_table resource_table = {
     .ver = 1,
     .num = RSC_TABLE_NUM_ENTRY,
     .offset = {
+        offsetof(struct fw_resource_table, ept_table),
         offsetof(struct fw_resource_table, vdev),
+    },
+
+    .ept_table = {
+        .type = RSC_VENDOR_EPT_TABLE,
+	.num_of_epts = 0,
     },
 
     /* Virtio device entry */
