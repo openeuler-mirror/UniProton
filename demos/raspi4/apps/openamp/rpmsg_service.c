@@ -78,6 +78,7 @@ static void *rpmsg_tty_task(void *arg)
 {
     int ret;
     char tx_buff[512];
+    char *tty_data;
 
     ret = PRT_SemCreate(0, &tty_sem);
     if (ret != OS_OK) {
@@ -99,7 +100,9 @@ static void *rpmsg_tty_task(void *arg)
     while (tty_ept.addr !=  RPMSG_ADDR_ANY) {
         PRT_SemPend(tty_sem, OS_WAIT_FOREVER);
         if (tty_msg.len) {
-            ret = snprintf(tx_buff, 512, "Hello, UniProton! Recv: %s\r\n", tty_msg.data);
+            tty_data = (char *)tty_msg.data;
+            tty_data[tty_msg.len] = '\0';
+            ret = snprintf(tx_buff, 512, "Hello, UniProton! Recv: %s\r\n", tty_data);
             rpmsg_send(&tty_ept, tx_buff, ret);
             rpmsg_release_rx_buffer(&tty_ept, tty_msg.data);
         }
