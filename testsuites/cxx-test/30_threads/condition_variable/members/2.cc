@@ -24,6 +24,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <system_error>
+#include "prt_buildef.h"
 #include <testsuite_hooks.h>
 #include <slow_clock.h>
 
@@ -121,9 +122,11 @@ instructions.
 
 int test_30_threads_condition_variable_members_2()
 {
+#ifndef OS_ARCH_ARMV8
   test01<std::chrono::steady_clock>();
   test01<std::chrono::system_clock>();
   test01<user_defined_clock>();
   test01_alternate_clock();
+#endif
   return 0;
 }

@@ -45,7 +45,7 @@ function build()
 
     if [ "${APP}" == "cxxTest" ]
     then
-        python ./bin_helper.py -f ./$APP.elf --nocopy
+        python ./../../../bin_helper.py -f ./$APP.elf --nocopy
     fi
 
     $OBJCOPY -O binary ./$APP.elf $APP.bin

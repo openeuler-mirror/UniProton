@@ -21,14 +21,14 @@
 #include <memory>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
-namespace {
+
 struct T { int i; };
 
 using __gnu_test::SimpleAllocator;
 
 template class std::deque<T, SimpleAllocator<T>>;
 
-void test01()
+static void test01()
 {
   typedef SimpleAllocator<T> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
@@ -36,7 +36,7 @@ void test01()
   test_type v(1, alloc_type{});
   VERIFY( v.max_size() == traits_type::max_size(v.get_allocator()) );
 }
-}
+
 int test_23_containers_deque_allocator_minimal()
 {
   test01();

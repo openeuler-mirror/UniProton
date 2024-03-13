@@ -17,7 +17,7 @@ extern U32 PRT_PrintfInit();
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
-#if defined(OS_OPTION_OPENAMP)
+#if defined(OS_OPTION_OPENAMP) || defined(CXX_TESTCASE)
 int TestOpenamp()
 {
     int ret;
@@ -37,7 +37,7 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
 
-#if defined(POSIX_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE)
     Init(0, 0, 0, 0);
 #endif
 }
@@ -70,6 +70,9 @@ U32 OsTestInit(void)
 U32 PRT_AppInit(void)
 {
     U32 ret;
+#ifdef OS_SUPPORT_CXX
+    PRT_CppSystemInit();
+#endif
 
     ret = OsTestInit();
     if (ret) {

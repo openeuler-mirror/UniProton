@@ -21,21 +21,21 @@
 #include <memory>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
-namespace {
+
 struct T { int i; };
 
 using __gnu_test::CustomPointerAlloc;
 
 template class std::deque<T, CustomPointerAlloc<T>>;
 
-void test01()
+static void test01()
 {
   typedef CustomPointerAlloc<T> alloc_type;
   typedef std::deque<T, alloc_type> test_type;
   test_type v(1);
   VERIFY( ++v.begin() == v.end() );
 }
-}
+
 int test_23_containers_deque_allocator_ext_ptr()
 {
   test01();

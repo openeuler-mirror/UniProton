@@ -38,7 +38,7 @@ function build()
 
     if [ "${APP}" == "cxxTest" ]
     then
-        python ./bin_helper.py -f ./$APP.elf --nocopy
+        python ./../../../bin_helper.py -f ./$APP.elf --nocopy
     fi
 
     $TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-objcopy -O binary ./$APP.elf $APP.bin

@@ -118,6 +118,13 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
+if (${CPU_TYPE} STREQUAL "hi3093" AND "${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y")
+    list(APPEND  MULS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/misc/getauxval.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
+    )
+endif()
+
 set(MUSL_LOCALE_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/wcscoll.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/locale/strxfrm.c
@@ -275,7 +282,10 @@ list(APPEND  MUSL_STDLIB_SOURCE
 )
 
 # 适配stdio
-file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
+if (NOT (${CPU_TYPE} STREQUAL "hi3093"))
+    file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
+endif()
+
 list(APPEND MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/lseek.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/temp/__randname.c

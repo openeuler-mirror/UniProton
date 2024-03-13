@@ -29,7 +29,7 @@ _Noreturn void _Exit(int ec)
         if (g_tskCbArray[i].taskStatus == OS_TSK_UNUSED) {
             continue;
         }
-        if (g_tskCbArray[i].taskStatus == OS_TSK_RUNNING) {
+        if (g_tskCbArray[i].taskStatus == OS_TSK_RUNNING && g_tskCbArray[i].retval != NULL) {
             *((int *)g_tskCbArray[i].retval) = ec;
             continue;
         }
@@ -47,7 +47,9 @@ _Noreturn void _Exit(int ec)
 
         g_tskCbArray[i].taskStatus &= (~(OS_TSK_SUSPEND));
         g_tskCbArray[i].taskStatus |= OS_TSK_UNUSED;
-        *((int *)g_tskCbArray[i].retval) = ec;
+        if (g_tskCbArray[i].retval != NULL) {
+            *((int *)g_tskCbArray[i].retval) = ec;
+        }
     }
     OsIntRestore(intSave);
     PRT_TaskUnlock();
