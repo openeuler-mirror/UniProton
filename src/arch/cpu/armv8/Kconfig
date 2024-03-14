@@ -5,6 +5,7 @@ depends on (OS_ARCH_ARMV8)
 config INTERNAL_OS_PLATFORM_ARMV8_AX
     bool
     select INTERNAL_OS_BYTE_ORDER_LE
+    select OS_OPTION_SMP if (OS_MAX_CORE_NUM != 1)
 
 choice
     prompt "Cpu Type"

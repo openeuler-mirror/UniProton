@@ -4,12 +4,13 @@
 #include "prt_sys.h"
 #include "prt_task.h"
 #include "cpu_config.h"
+#include "prt_gic_external.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_module_external.h"
+#endif
 
 #if (OS_GIC_VER == 3)
-enum GicIntState {
-    GIC_DISABLE = 0,
-    GIC_ENABLE = 1
-};
+
 
 enum SicGroupType {
     SIC_GROUP_G0S  = 0,
@@ -321,6 +322,12 @@ void OsGicInitCpuInterface(void)
     GIC_REG_WRITE(GICC_CTLR, val);
 }
 #endif
+
+INIT_SEC_L4_TEXT U32 OsGicInitSecondary(void) {
+    OsSicInitLocal();
+    return OS_OK;
+}
+
 U32 OsHwiInit(void)
 {
 #if (OS_GIC_VER == 3)
@@ -330,6 +337,10 @@ U32 OsHwiInit(void)
     if (ret != OS_OK) {
         return ret;
     }
+
+#if defined(OS_OPTION_SMP)
+    OsHwiSetSecondaryInitHook(OsGicInitSecondary);
+#endif
 
     if(PRT_GetCoreID() == 0) {
         OsSicInitGlobal();

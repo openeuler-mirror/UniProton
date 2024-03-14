@@ -150,7 +150,11 @@ extern uintptr_t g_gicrOffset;
 /* GICR核间偏移向量配置 */
 extern uintptr_t g_gicrStride;
 /* 存放Core Map值 */
+#if defined(OS_OPTION_SMP)
+extern union GicCoreMap g_gicCoreMap[OS_MAX_CORE_NUM];
+#else
 extern union GicCoreMap g_gicCoreMap;
+#endif
 
 extern void OsGicEnableInt(U32 intId);
 extern void OsGicDisableInt(U32 intId);
@@ -179,4 +183,5 @@ extern void OsGicrLpiDisableInt(U32 intId);
 extern void OsGicrLpiSetPriority(U32 intId, U32 priority);
 extern U32 OsGicrLpiGetPriority(U32 intId);
 
+extern U32 g_cfgPrimaryCore;
 #endif /* PRT_GIC_EXTERNAL_H */

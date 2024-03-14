@@ -17,7 +17,6 @@
 
 #include "prt_hwi.h"
 #include "prt_buildef.h"
-
 #define OS_HWI_NUM_MASK 0x1FU
 
 /*
@@ -31,7 +30,9 @@ extern U8 g_hwiNum[];
 extern void OsHwiGICInit(void);
 extern U32 OsHwiPriorityGet(HwiHandle hwiNum);
 extern void OsHwiPrioritySet(HwiHandle hwiNum, HwiPrior hwiPrio);
+#if !defined(OS_OPTION_SMP)
 extern void OsHwiMcTrigger(U32 coreMask, U32 hwiNum);
+#endif
 extern void OsHwiDisableAll(void);
 
 #endif /* PRT_HWI_EXTERNAL_H */

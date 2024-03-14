@@ -1,6 +1,8 @@
 #include "prt_buildef.h"
+#include "prt_asm_arm_external.h"
 
     .global   OsResetVector
+    .global   OsArmSmccSmc
     .global   mmu_init
     
     .type     mmu_init, function
@@ -46,11 +48,11 @@ OsEl2Entry:
     MRS    x10, CNTHCTL_EL2
     ORR    x10, x10, #0x3
     MSR    CNTHCTL_EL2, x10
-    
+
     MRS    x10, CNTKCTL_EL1
     ORR    x10, x10, #0x3
     MSR    CNTKCTL_EL1, x10
-    
+
     MRS    x10, MIDR_EL1
     MRS    x1, MPIDR_EL1
     MSR    VPIDR_EL2, x10
@@ -59,11 +61,11 @@ OsEl2Entry:
     MOV    x10, #0x33ff
     MSR    CPTR_EL2, x10
     MSR    HSTR_EL2, xzr
-    
+
     MRS    x10, CPACR_EL1
     MOV    x10, #3 << 20
     MSR    CPACR_EL1, x10
-    
+
     MOV    x10, #(HCR_EL2_RW)
     ORR    x10, x10, #(HCR_EL2_HCD)
     BIC    x10, x10, #(HCR_EL2_TVM)
@@ -94,14 +96,49 @@ OsEl2SwitchToEl1:
     ERET
     
 Start:
+#if defined(OS_OPTION_SMP)
+    OsAsmGetCoreId  x0 // 读取核号
+    LDR x4, =g_cfgPrimaryCore
+    LDR w4, [x4]
+    CMP w0, w4
+    BNE OsSlaveCoreProcess
+    
+#endif
     LDR    x1, =__os_sys_sp_end
     BIC    sp, x1, #0xf
 
     BL     mmu_init
+
+#if !defined(OS_OPTION_SMP)
+    B      OsResetVector
+#endif
+    BL    OsSetValidAllCoresMask
+    B     OsMasterCoreProcess
+
+OsSlaveCoreProcess:
+    OsAsmGetCoreId  x0 // 读取核号
+    MOV x2, #0x1000
+    mul x0, x0, x2
+    LDR x1, =__os_sys_sp_end
+    SUB x1, x1, x0
+    BIC sp, x1, #0xf
+
+OsSlaveStart:
+#ifdef OS_OPTION_OPENAMP
+    BL     mmu_init
+#endif
+
+    B      OsResetVector
+
+OsMasterCoreProcess:
     B      OsResetVector
 
 OsEnterReset:
     B      OsEnterReset
-    
+
     .section .text, "ax"
     .balign 4
+
+OsArmSmccSmc:
+    smc     #0x0
+    ret

@@ -86,3 +86,19 @@ U32 TestClkStart(void)
     
     return OS_OK;
 }
+
+#if defined(OS_OPTION_SMP)
+U32 OsCoreTimerSecondaryInit(void)
+{
+    U32 ret;
+    ret = PRT_HwiEnable(TEST_CLK_INT);
+    if (ret != OS_OK) {
+        return ret;
+    }
+    ret = CoreTimerStart();
+    if (ret != OS_OK) {
+        return ret;
+    }
+    return ret;
+}
+#endif

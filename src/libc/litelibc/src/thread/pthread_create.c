@@ -17,7 +17,11 @@
 #endif
 #include "pthread.h"
 #include "prt_posix_internal.h"
-#include "../../../core/kernel/task/prt_task_internal.h"
+#if defined(OS_OPTION_SMP)
+#include "../../../core/kernel/task/smp/prt_task_internal.h"
+#else
+#include "../../../core/kernel/task/amp/prt_task_internal.h"
+#endif
 #include "prt_err_external.h"
 #include "prt_signal_external.h"
 #if defined(OS_OPTION_POSIX_LOCALE)
@@ -130,6 +134,18 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
 #if defined(OS_OPTION_POSIX_LOCALE)
     tskCb->locale = (locale_t)libc_global_locale;
 #endif
+#if defined(OS_OPTION_SMP)
+    OS_LIST_INIT(&tskCb->pushAbleList.nodeList);
+    TSK_CORE_SET(tskCb, OsGetHwThreadId());
+    tskCb->timeCoreID = tskCb->coreID;
+    tskCb->isOnRq = FALSE;
+    tskCb->taskOperating = OS_TSK_OP_FREE;
+    tskCb->opBusy = 0;
+    tskCb->pushAbleList.prio = attr->schedparam.sched_priority;
+    tskCb->scheClass = RT_SINGLE_CLASS();
+    tskCb->coreAllowedMask = (OS_CORE_MASK)OS_ALLCORES_MASK;
+    tskCb->nrCoresAllowed = g_maxNumOfCores;
+#endif
 }
 
 int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*threadroutine)(void *), void *arg)
@@ -150,7 +166,11 @@ int __pthread_create(pthread_t *newthread, const pthread_attr_t *attr, void *(*t
     }
 
     intSave = OsIntLock();
-    ret = OsTaskCreateChkAndGetTcb(&tskCb);
+#if defined(OS_OPTION_SMP)
+    ret = OsTaskCreateChkAndGetTcb(&tskCb, FALSE);
+#else
+    ret = OsTaskCreateChkAndGetTcb(&tskCb);  
+#endif
     if (ret != OS_OK) {
         OsIntRestore(intSave);
         return ENOMEM;

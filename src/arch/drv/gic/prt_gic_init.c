@@ -17,6 +17,7 @@
 #include "prt_gic_internal.h"
 #include "prt_attr_external.h"
 #include "prt_task.h"
+#include "prt_sys_external.h"
 
 #if (OS_GIC_VER == 2)
 union IccSgirEl1 {
@@ -59,15 +60,26 @@ OS_SEC_BSS uintptr_t g_gicrOffset;
 /* GICR核间偏移向量配置 */
 OS_SEC_BSS uintptr_t g_gicrStride;
 /* 存放Core Map值 */
+#if defined(OS_OPTION_SMP)
+OS_SEC_DATA union GicCoreMap g_gicCoreMap[OS_MAX_CORE_NUM] = {0};
+#else
 OS_SEC_DATA union GicCoreMap g_gicCoreMap = {0};
-
+#endif
 /*
  * 描述: 去使能指定中断
  */
 OS_SEC_L4_TEXT void OsGicDisableInt(U32 intId)
 {
     if (intId <= MAX_NNSPI_ID) {
+#if defined(OS_OPTION_SMP)
+        U32 coreId;
+
+        for (coreId = g_cfgPrimaryCore; coreId < g_cfgPrimaryCore + g_numOfCores; coreId++) {
+            OsGicrDisableInt(coreId, intId);
+        }
+#else
         OsGicrDisableInt(PRT_GetCoreID(), intId);
+#endif
     } else if (intId <= MAX_SPI_ID) {
         OsGicdDisableInt(intId);
     } else if (intId >= MIN_LPI_ID) {
@@ -81,7 +93,15 @@ OS_SEC_L4_TEXT void OsGicDisableInt(U32 intId)
 OS_SEC_L4_TEXT void OsGicEnableInt(U32 intId)
 {
     if (intId <= MAX_NNSPI_ID) {
+#if defined(OS_OPTION_SMP)
+        U32 coreId;
+
+        for (coreId = g_cfgPrimaryCore; coreId < g_cfgPrimaryCore + g_numOfCores; coreId++) {
+            OsGicrEnableInt(coreId, intId);
+        }
+#else
         OsGicrEnableInt(PRT_GetCoreID(), intId);
+#endif
     } else if (intId <= MAX_SPI_ID) {
         OsGicdEnableInt(intId);
     } else if (intId >= MIN_LPI_ID) {
@@ -117,18 +137,32 @@ OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
 OS_SEC_TEXT void OsGicTrigIntToCores(U32 intId, U32 targetList)
 {
     union IccSgirEl1 iccSgirEl1;
-    U32 core;
+    U32 coreId;
+#if defined(OS_OPTION_SMP)
+    U8 aff0;
+#else
     U16 targetMask = 0x1;
+#endif
     
     PRT_DSB();
-    for (core = 0; (core < OS_MAX_CORE_NUM) && (targetList != 0); ++core) {
-        if ((targetList & (1U << core)) != 0) {
+    for (coreId = 0; (coreId < OS_MAX_CORE_NUM) && (targetList != 0); coreId++) {
+        if ((targetList & (1U << coreId)) != 0) {
             iccSgirEl1.value           = 0;   // 每个位域默认为0
             iccSgirEl1.bits.intId      = intId;
+#if defined(OS_OPTION_SMP)
+            aff0                       = g_gicCoreMap[coreId].bits.aff0;
+            iccSgirEl1.bits.targetlist = (U16)(1U << OS_GET_8BIT_LOW_4BIT((U32)aff0));
+            iccSgirEl1.bits.aff1       = g_gicCoreMap[coreId].bits.aff1;
+            iccSgirEl1.bits.aff2       = g_gicCoreMap[coreId].bits.aff2;
+            iccSgirEl1.bits.aff3       = g_gicCoreMap[coreId].bits.aff3;
+            iccSgirEl1.bits.rs         = OS_GET_8BIT_HIGH_4BIT((U32)aff0);
+            targetList &= ~(1U << coreId);
+#else
             iccSgirEl1.bits.targetlist = targetMask;
-            iccSgirEl1.bits.aff1       = core;
+            iccSgirEl1.bits.aff1       = coreId;
             iccSgirEl1.bits.aff2       = g_gicCoreMap.bits.aff2;
             iccSgirEl1.bits.aff3       = g_gicCoreMap.bits.aff3;
+#endif
             OS_EMBED_ASM("MSR " REG_ALIAS(ICC_SGI1R_EL1) ", %0 \n" : : "r"(iccSgirEl1.value) : "memory");
         }
     }
@@ -152,6 +186,16 @@ OS_SEC_L4_TEXT U32 OsGicSetPriority(U32 intId, U32 priority)
     
     /* 修改配置前，务必保证中断处于禁能状态 */
     if (intId <= MAX_NNSPI_ID) {
+#if defined(OS_OPTION_SMP)
+        for (coreId = g_cfgPrimaryCore; coreId < g_cfgPrimaryCore + g_numOfCores; coreId++) {
+            state = OsGicrGetIntState(coreId, intId);
+            OsGicrDisableInt(coreId, intId);
+            OsGicrSetPriority(coreId, intId, priority);
+            if (state == GIC_ENABLE) {
+                OsGicrEnableInt(coreId, intId);
+            }
+        }
+#else
         coreId = OsGetCoreID();
         state = OsGicrGetIntState(coreId, intId);
         OsGicrDisableInt(coreId, intId);
@@ -159,6 +203,7 @@ OS_SEC_L4_TEXT U32 OsGicSetPriority(U32 intId, U32 priority)
         if (state == GIC_ENABLE) {
             OsGicrEnableInt(coreId, intId);
         }
+#endif
     } else {
         state = OsGicdGetIntState(intId);
         OsGicdDisableInt(intId);

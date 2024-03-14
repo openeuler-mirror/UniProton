@@ -107,6 +107,7 @@ include_directories(
         ./src/core/ipc/rwlock
         ./src/kal/include
         ./src/drivers/i210
+        ./src/core/kernel/task
 )
 
 if (${CONFIG_OS_OPTION_LINUX})

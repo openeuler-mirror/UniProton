@@ -18,6 +18,12 @@
 #include "prt_typedef.h"
 #include "bits/list_types.h"
 
+#define OS_LIST_INIT(head)     \
+    do {                       \
+        (head)->prev = (head); \
+        (head)->next = (head); \
+    } while (0)
+
 #define LIST_OBJECT_INIT(object) { \
         &(object), &(object)       \
     }
@@ -29,7 +35,6 @@
     } while (0)
 
 #define LIST_LAST(object) ((object)->prev)
-#define LIST_FIRST(object) ((object)->next)
 #define OS_LIST_FIRST(object) ((object)->next)
 
 /* list action low level add */
@@ -62,6 +67,18 @@ OS_SEC_ALW_INLINE INLINE void ListLowLevelDelete(struct TagListObject *prevNode,
 }
 
 /* list action delete */
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE void ListDelAndInit(struct TagListObject *node)
+{
+    ListLowLevelDelete(node->prev, node->next);
+    OS_LIST_INIT(node);
+}
+
+OS_SEC_ALW_INLINE INLINE void ListDelete(struct TagListObject *node)
+{
+    ListDelAndInit(node);
+}
+#else
 OS_SEC_ALW_INLINE INLINE void ListDelete(struct TagListObject *node)
 {
     ListLowLevelDelete(node->prev, node->next);
@@ -69,13 +86,20 @@ OS_SEC_ALW_INLINE INLINE void ListDelete(struct TagListObject *node)
     node->next = NULL;
     node->prev = NULL;
 }
+#endif
 
 /* list action empty */
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE bool ListEmpty(const struct TagListObject *listObject)
+{
+    return (bool)(listObject->next == listObject);
+}
+#else
 OS_SEC_ALW_INLINE INLINE bool ListEmpty(const struct TagListObject *listObject)
 {
     return (bool)((listObject->next == listObject) && (listObject->prev == listObject));
 }
-
+#endif
 #define OFFSET_OF_FIELD(type, field) ((uintptr_t)((uintptr_t)(&((type *)0x10)->field) - (uintptr_t)0x10))
 
 #define COMPLEX_OF(ptr, type, field) ((type *)((uintptr_t)(ptr) - OFFSET_OF_FIELD(type, field)))
@@ -86,6 +110,9 @@ OS_SEC_ALW_INLINE INLINE bool ListEmpty(const struct TagListObject *listObject)
 #define LIST_FOR_EACH(posOfList, listObject, typeOfList, field)                                                    \
     for ((posOfList) = LIST_COMPONENT((listObject)->next, typeOfList, field); &(posOfList)->field != (listObject); \
          (posOfList) = LIST_COMPONENT((posOfList)->field.next, typeOfList, field))
+
+#define LIST_FIRST_ENTITY(listForFirstEntity, typeOfList, field)    \
+    LIST_COMPONENT((listForFirstEntity)->next, typeOfList, field)
 
 #define LIST_FOR_EACH_SAFE(posOfList, listObject, typeOfList, field)                \
     for ((posOfList) = LIST_COMPONENT((listObject)->next, typeOfList, field);       \

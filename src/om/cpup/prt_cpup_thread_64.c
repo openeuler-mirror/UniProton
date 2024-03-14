@@ -56,7 +56,9 @@ OS_SEC_L2_TEXT void OsNowTskCycleEnd(void)
 OS_SEC_L2_TEXT void OsCpupFirstSwitch(void)
 {
     g_cpuWinStart = OsCurCycleGet64();
+#if !defined(OS_OPTION_SMP)
     OS_TASK_CYCLE_START(g_highestTask->taskPid, g_cpuWinStart);
+#endif
 }
 
 /*

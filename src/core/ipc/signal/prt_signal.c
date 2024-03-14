@@ -289,8 +289,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalWait(const signalSet *set, signalInfo *info, U32 ti
 {
     U32 ret = OS_OK;
 
-    if (set == NULL || *set == 0 || info == NULL)
-    {
+    if (set == NULL || *set == 0 || info == NULL) {
         return OS_ERRNO_SIGNAL_PARA_INVALID;
     }
 

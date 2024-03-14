@@ -18,6 +18,7 @@
 #include "prt_queue.h"
 #include "prt_list_external.h"
 #include "prt_cpu_external.h"
+#include "prt_raw_spinlock_external.h"
 
 /* 模块间宏定义 */
 #define OS_QUEUE_NODE_HEAD_LEN (sizeof(struct QueNode) - 2)
@@ -33,11 +34,35 @@
 
 #define OS_QUEUE_INNER_ID(queueId)  ((queueId) - 1)
 #define OS_QUEUE_ID(innerId)  ((innerId) + 1)
+extern volatile uintptr_t g_mcInitGuard;
+#if defined(OS_OPTION_SMP)
+#define QUEUE_CB_LOCK(queue)    OS_MCMUTEX_LOCK(0, &(queue)->queueLock)
+#define QUEUE_CB_UNLOCK(queue)    OS_MCMUTEX_UNLOCK(0, &(queue)->queueLock)
+#define QUEUE_CB_IRQ_LOCK(queue, intSave)    OS_MCMUTEX_IRQ_LOCK(0, &(queue)->queueLock, (intSave))
+#define QUEUE_CB_IRQ_UNLOCK(queue, intSave)    OS_MCMUTEX_IRQ_UNLOCK(0, &(queue)->queueLock, (intSave))
+#define QUEUE_INIT_IRQ_LOCK(intSave)    OS_MCMUTEX_IRQ_LOCK(0, &g_mcInitGuard, (intSave))
+#define QUEUE_INIT_IRQ_UNLOCK(intSave)    OS_MCMUTEX_IRQ_UNLOCK(0, &g_mcInitGuard, (intSave))
+#define QUEUE_INIT_LOCK()    OS_MCMUTEX_LOCK(0, &g_mcInitGuard)
+#define QUEUE_INIT_UNLOCK()    OS_MCMUTEX_UNLOCK(0, &g_mcInitGuard)
+#else
+#define QUEUE_CB_LOCK(queue)    (void)(queue)
+#define QUEUE_CB_UNLOCK(queue)    (void)(queue)
+#define QUEUE_CB_IRQ_LOCK(queue, intSave)    ((intSave) = OsIntLock())
+#define QUEUE_CB_IRQ_UNLOCK(queue, intSave)    (OsIntRestore(intSave))
+#define QUEUE_INIT_IRQ_LOCK(intSave)    ((intSave) = OsIntLock())
+#define QUEUE_INIT_IRQ_UNLOCK(intSave)    (OsIntRestore(intSave))
+#define QUEUE_INIT_LOCK()    (void)NULL
+#define QUEUE_INIT_UNLOCK()    (void)NULL
+#endif
 
 #define OS_QUEUE_NAME_LEN   16
 
 /* 队列控制块结构体 */
 struct TagQueCb {
+#if defined(OS_OPTION_SMP)
+    /* 队列锁，放第一个不能动 */
+    uintptr_t queueLock;
+#endif
     /* 队列起始地址指针 */
     U8 *queue;
     /* 队列状态 */

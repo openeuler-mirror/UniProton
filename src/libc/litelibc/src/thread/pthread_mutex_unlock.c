@@ -25,12 +25,12 @@ int __pthread_mutex_unlock(pthread_mutex_t *mutex)
         return EINVAL;
     }
 
-    intSave = PRT_HwiLock();
+    SEM_INIT_IRQ_LOCK(intSave);
     if (mutex->magic != MUTEX_MAGIC) {
-        PRT_HwiRestore(intSave);
+        SEM_INIT_IRQ_UNLOCK(intSave);
         return EINVAL;
     }
-    PRT_HwiRestore(intSave);
+    SEM_INIT_IRQ_UNLOCK(intSave);
 
     ret = PRT_SemPost(mutex->mutex_sem);
     if (ret != OS_OK) {

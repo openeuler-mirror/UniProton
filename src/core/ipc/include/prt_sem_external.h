@@ -17,6 +17,9 @@
 
 #include "prt_sem.h"
 #include "prt_task_external.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_raw_spinlock_external.h"
+#endif
 #if defined(OS_OPTION_POSIX)
 #include "bits/semaphore_types.h"
 #endif
@@ -40,8 +43,47 @@
 #define GET_SEM_TYPE(semType) (U32)((semType) & ((1U << SEM_TYPE_BIT_WIDTH) - 1))
 #define GET_MUTEX_TYPE(semType) (U32)(((semType) >> SEM_TYPE_BIT_WIDTH) & ((1U << SEM_TYPE_BIT_WIDTH) - 1))
 #define GET_SEM_PROTOCOL(semType) (U32)((semType) >> SEM_PROTOCOL_BIT_WIDTH)
+#if defined(OS_OPTION_SMP)
+extern volatile uintptr_t g_semPrioLock;
+#define SEM_CB_LOCK(sem) OS_MCMUTEX_LOCK(0, &(sem)->semLock)
+#define SEM_CB_UNLOCK(sem) OS_MCMUTEX_UNLOCK(0, &(sem)->semLock)
+#define SEM_CB_IRQ_LOCK(sem, intSave)           \
+    do {                                        \
+        (intSave) = OsIntLock();                \
+        SEM_CB_LOCK(sem);                       \
+    } while (0)
+#define SEM_CB_IRQ_UNLOCK(sem, intSave)         \
+    do {                                        \
+        SEM_CB_UNLOCK(sem);                     \
+        OsIntRestore(intSave);                  \
+    } while (0)
+#define SEM_INIT_IRQ_LOCK(intSave) OS_MCMUTEX_IRQ_LOCK(0, &g_mcInitGuard, (intSave))
+#define SEM_INIT_IRQ_UNLOCK(intSave) OS_MCMUTEX_IRQ_UNLOCK(0, &g_mcInitGuard, (intSave))
+#define SEM_INIT_LOCK() OS_MCMUTEX_LOCK(0, &g_mcInitGuard)
+#define SEM_INIT_UNLOCK() OS_MCMUTEX_UNLOCK(0, &g_mcInitGuard)
+#else
+#define SEM_CB_LOCK(sem) (void)(sem)
+#define SEM_CB_UNLOCK(sem) (void)(sem)
+#define SEM_CB_IRQ_LOCK(sem, intSave)           \
+    do {                                        \
+        (void)(sem);                            \
+        ((intSave) = OsIntLock());              \
+    } while (0)
+#define SEM_CB_IRQ_UNLOCK(sem, intSave)         \
+    do {                                        \
+        (void)(sem);                            \
+        (OsIntRestore(intSave));                  \
+    } while (0)
+#define SEM_INIT_IRQ_LOCK(intSave) ((intSave) = OsIntLock())
+#define SEM_INIT_IRQ_UNLOCK(intSave) (OsIntRestore(intSave))
+#define SEM_INIT_LOCK() (void)NULL
+#define SEM_INIT_UNLOCK() (void)NULL
+#endif
 
 struct TagSemCb {
+#if defined(OS_OPTION_SMP)
+    volatile uintptr_t semLock;
+#endif
     /* 是否使用 OS_SEM_UNUSED/OS_SEM_USED */
     U16 semStat;
     /* 核内信号量索引号 */
@@ -76,6 +118,51 @@ extern U16 g_maxSem;
 
 /* 指向核内信号量控制块 */
 extern struct TagSemCb *g_allSem;
+
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE void OsSemPrioLock(void)
+{
+    OS_MCMUTEX_LOCK(0, &g_semPrioLock);
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemPrioUnLock(void)
+{
+    OS_MCMUTEX_UNLOCK(0, &g_semPrioLock);
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemIfPrioLock(struct TagSemCb *sem)
+{
+   if (sem->semMode == SEM_MODE_PRIOR) {
+        OsSemPrioLock();
+   }
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemIfPrioUnLock(struct TagSemCb *sem)
+{
+   if (sem->semMode == SEM_MODE_PRIOR) {
+        OsSemPrioUnLock();
+   }
+}
+#else
+OS_SEC_ALW_INLINE INLINE void OsSemPrioLock(void)
+{
+
+}
+OS_SEC_ALW_INLINE INLINE void OsSemPrioUnLock(void)
+{
+    
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemIfPrioLock(struct TagSemCb *sem)
+{
+   (void)sem;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSemIfPrioUnLock(struct TagSemCb *sem)
+{
+   (void)sem;
+}
+#endif
 
 extern U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode, SemHandle *semHandle, U32 cookie);
 extern bool OsSemBusy(SemHandle semHandle);

@@ -21,7 +21,9 @@ _Noreturn void _Exit(int ec)
     uintptr_t intSave;
     PRT_TaskLock();
     intSave = OsIntLock();
+#if !defined(OS_OPTION_SMP)
     g_uniTaskLock = 1;
+#endif
     for (int i = 0; i < g_tskMaxNum; i++) {
         if (g_tskCbArray[i].taskPid == IDLE_TASK_ID) {
             continue;

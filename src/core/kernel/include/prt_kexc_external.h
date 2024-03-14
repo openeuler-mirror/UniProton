@@ -16,7 +16,7 @@
 #define PRT_KEXC_EXTERNAL_H
 
 #include "prt_exc.h"
-
+#include "prt_cpu_external.h"
 /*
  * 模块内宏定义
  */
@@ -36,10 +36,18 @@ struct TagExcInfoInternal {
  */
 extern struct ExcModInfo g_excModInfo;
 
+#if !defined(OS_OPTION_SMP)
 extern U32 g_curNestCount;
 #define CUR_NEST_COUNT g_curNestCount
 
 extern struct TagExcInfoInternal g_excInfoInternal;
 #define EXC_INFO_INTERNAL g_excInfoInternal
+#else
+extern U32 g_curNestCount[OS_MAX_CORE_NUM];
+#define CUR_NEST_COUNT (g_curNestCount[THIS_CORE()])
+
+extern struct TagExcInfoInternal g_excInfoInternal[OS_MAX_CORE_NUM];
+#define EXC_INFO_INTERNAL (g_excInfoInternal[THIS_CORE()])
+#endif
 
 #endif /* PRT_KEXC_EXTERNAL_H */

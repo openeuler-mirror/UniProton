@@ -17,6 +17,8 @@
 #include "prt_irq_external.h"
 #include "prt_hwi_internal.h"
 
+OS_SEC_DATA OsVoidFunc g_hwiSplLockHook = NULL;
+OS_SEC_DATA OsVoidFunc g_hwiSplUnLockHook = NULL;
 /*
  * 描述: GIC模块初始化
  */
@@ -67,6 +69,33 @@ OS_SEC_L2_TEXT U32 PRT_HwiEnable(HwiHandle hwiNum)
     return OS_OK;
 }
 
+#if defined(OS_OPTION_SMP)
+/*
+ * 描述: 出发核间SGI中断，SMP调度频繁使用，放置OS_SEC_TEXT段
+ */
+OS_SEC_TEXT void OsHwiMcTrigger(enum OsHwiIpiType type, U32 coreMask, U32 hwiNum)
+{
+    /* 判断输入参数的合法性 */
+    if (type >= OS_TYPE_TRIGGER_BUTT) {
+        return OS_ERRNO_HWI_TRIGGER_TYPE_INVALID;
+    }
+    
+    U32 coreList = coreMask;
+    if (type == OS_TYPE_TRIGGER_TO_SELF) {
+        coreList = (1U << OsGetCoreID());
+    } else if (type == OS_TYPE_TRIGGER_TO_OTHER) {
+        coreList = OS_ALLCORES_MASK;
+        coreList &= ~(1U << OsGetCoreID());
+        for(U32 coreId = 0; coreId < g_cfgPrimaryCore; coreId++) {
+            coreList &= ~(1U << coreId);
+        }
+    }
+
+    OsGicTrigIntToCores(hwiNum, coreList);
+    return;
+}
+
+#else
 /*
  * 描述: 触发核间SGI中断,放置OS_SEC_TEXT段
  */
@@ -75,7 +104,7 @@ OS_SEC_TEXT void OsHwiMcTrigger(U32 coreMask, U32 hwiNum)
     OsGicTrigIntToCores(hwiNum, coreMask);
     return;
 }
-
+#endif
 /*
  * 描述: 上报中断号错误
  */
@@ -132,7 +161,7 @@ OS_SEC_L0_TEXT void OsHwiDispatch(uintptr_t sp, U32 arg1)
     if (!OS_INT_ACTIVE) {
         // 被打断的是任务
         RUNNING_TASK->stackPointer = (void *)sp;
-        OsSetSysStackSP(OsGetSysStackSP(), arg1);
+        OsSetSysStackSP(OsGetSysStackSP(OsGetHwThreadId()), arg1);
     }
 
     // 有可能切栈, 中断入口函数不使用局部变量

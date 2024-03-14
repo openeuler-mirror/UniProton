@@ -110,12 +110,3 @@ OS_SEC_L0_TEXT void OsTskTimerAdd(struct TagTskCb *taskCb, uintptr_t timeout)
 
     return;
 }
-
-OS_SEC_L4_TEXT U32 PRT_TaskDelSwitchHook(TskSwitchHook hook)
-{
-    return OsHookDel(OS_HOOK_TSK_SWITCH, (OsVoidFunc)(uintptr_t)hook);
-}
-OS_SEC_L4_TEXT U32 PRT_TaskAddSwitchHook(TskSwitchHook hook)
-{
-    return OsHookAdd(OS_HOOK_TSK_SWITCH, (OsVoidFunc)(uintptr_t)hook);
-}

@@ -27,6 +27,19 @@ config OS_BYTE_ORDER
 	default "OS_LITTLE_ENDIAN" if INTERNAL_OS_BYTE_ORDER_LE
 	default "OS_BIG_ENDIAN" if !INTERNAL_OS_BYTE_ORDER_LE
 
+config OS_OPTION_CPU64
+	bool "Whether support hardware 64 bit or not"
+	default n
+
+config OS_OPTION_SMP
+	bool "Whether support mutilple smp os"
+	default n
+
+config OS_THIS_CORE
+	bool "CoreID used when SMP is disabled"
+	depends on !(OS_OPTION_SMP)
+    default 3
+	
 endmenu
 
 endmenu

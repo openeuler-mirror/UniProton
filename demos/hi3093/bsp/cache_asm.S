@@ -1,4 +1,6 @@
 .global os_asm_invalidate_dcache_all
+.global os_asm_flush_dcache_all
+.global os_asm_clean_dcache_all
 .global os_asm_invalidate_icache_all
 .global os_asm_invalidate_tlb_all
 
@@ -73,6 +75,16 @@ finished:
     .type os_asm_invalidate_dcache_all, "function"
 os_asm_invalidate_dcache_all:
     mov    x0, #0x1
+    b      os_asm_dcache_all
+
+    .type os_asm_flush_dcache_all, "function"
+os_asm_flush_dcache_all:
+    mov    x0, #0x0
+    b      os_asm_dcache_all
+
+    .type os_asm_clean_dcache_all, "function"
+os_asm_clean_dcache_all:
+    mov    x0, #0x2
     b      os_asm_dcache_all
 
     .type os_asm_invalidate_icache_all, "function"

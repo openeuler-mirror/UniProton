@@ -43,6 +43,10 @@ extern U32 OsCpupRegister(struct CpupModInfo *modInfo);
 extern U32 OsSemRegister(const struct SemModInfo *modInfo);
 extern U32 OsHookRegister(struct HookModInfo *modInfo);
 
+#if defined(OS_OPTION_SMP)
+extern U32 OsModuleInit(void);
+extern void OsSchedRunQueInit(void);
+#endif
 extern U32 OsHwiConfigInit(void);
 extern U32 OsTickConfigInit(void);
 extern U32 OsTskInit(void);

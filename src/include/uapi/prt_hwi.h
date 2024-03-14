@@ -247,6 +247,59 @@ enum OsHwiIpiType {
 #define OS_ERROR_HWI_BASE_ADDR_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x12)
 
 /*
+ * 系统基本功能错误码：关中断超时注册形参非法
+ *
+ * 值: 0x02000813
+ *
+ * 解决方案: 请确认传入的形参非空
+ */
+#define OS_ERROR_HWI_INT_LOCK_REG_PARA_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x13)
+/*
+ * 系统基本功能错误码：ARM核间触发中断号非法
+ *
+ * 值: 0x02000814
+ *
+ * 解决方案: ARM平台确保软件触发中断传入的中断为SGI中断
+ */
+#define OS_ERRNO_HWI_TRIGGER_HWINUM_NOT_SGI OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x14)
+
+/*
+ * 系统基本功能错误码：ARM核间触发中断类型非法
+ *
+ * 值: 0x02000815
+ *
+ * 解决方案: ARM平台确保软件触发中断传入的触发类型正确
+ */
+#define OS_ERRNO_HWI_TRIGGER_TYPE_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x15)
+
+/*
+ * 系统基本功能错误码：ARM核间触发中断核掩码非法
+ *
+ * 值: 0x02000816
+ *
+ * 解决方案: ARM平台确保软件触发中断传入的触发核掩码正确
+ */
+#define OS_ERRNO_HWI_TRIGGER_MASK_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x16)
+
+/*
+ * 系统基本功能错误码：中断绑定的核掩码非法
+ *
+ * 值: 0x02000817
+ *
+ * 解决方案: 确保中断绑定传入的核掩码正确
+ */
+#define OS_ERRNO_HWI_AFFINITY_MASK_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x17)
+
+/*
+ * 系统基本功能错误码：中断绑定的中断号时SGI
+ *
+ * 值: 0x02000818
+ *
+ * 解决方案: 确保中断绑定的中断号不是SGI
+ */
+#define OS_ERRNO_HWI_AFFINITY_HWINUM_SGI OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x18)
+
+/*
  * 硬中断优先级的类型定义。
  */
 typedef U16 HwiPrior;
@@ -639,6 +692,11 @@ extern uintptr_t PRT_HwiLock(void);
  * @see PRT_HwiUnLock | PRT_HwiLock
  */
 extern void PRT_HwiRestore(uintptr_t intSave);
+
+#if defined(OS_OPTION_SMP)
+extern U32 PRT_HwiSetAffinity(U32 hwiNum, U32 coreMask);
+extern U32 PRT_HwiMcTrigger(enum OsHwiIpiType type, U32 coreMask, U32 hwiNum);
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus

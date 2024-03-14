@@ -40,6 +40,7 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${CMAKE_CURRENT_SOURCE_DIR}/bsp
         ${CMAKE_CURRENT_SOURCE_DIR}/bsp/ascend310b
         ${HOME_PATH}/src/arch/include
+        ${HOME_PATH}/src/core/kernel/include
         ${HOME_PATH}/src/utility/lib/include
         ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
         ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include

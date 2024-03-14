@@ -33,6 +33,10 @@ extern SwitchScanFunc g_swtmrScanHook;
 extern TskmonTickHook g_tskMonHook;
 
 extern void OsTickDispatcher(void);
+#if defined(OS_OPTION_SMP)
+extern void OsTickForward(U32 coreMask);
+extern void OsTickForwardISR(void);
+#endif
 
 extern U32 g_cyclePerTick;
 OS_SEC_ALW_INLINE INLINE U32 OsGetCyclePerTick(void)

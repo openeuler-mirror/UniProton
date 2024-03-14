@@ -14,6 +14,7 @@
  */
 #include "prt_event.h"
 #include "prt_task_external.h"
+#include "prt_task_sched_external.h"
 
 // 支持功能宏裁剪
 #if defined(OS_OPTION_EVENT)
@@ -61,7 +62,7 @@ OS_SEC_ALW_INLINE INLINE void OsEventTimeOutSet(U32 timeOut, struct TagTskCb *ru
     }
 }
 
-OS_SEC_ALW_INLINE INLINE U32 OsEventReadNeedSche(U32 flags, struct TagTskCb *runTsk,
+OS_SEC_ALW_INLINE INLINE U32 OsEventReadNeedSche(struct TagOsRunQue **runQue, U32 flags, struct TagTskCb *runTsk,
                                                  U32 timeOut, U32 *event)
 {
     /* 读事件处于等待读取模式 */
@@ -79,8 +80,12 @@ OS_SEC_ALW_INLINE INLINE U32 OsEventReadNeedSche(U32 flags, struct TagTskCb *run
     TSK_STATUS_SET(runTsk, OS_TSK_EVENT_PEND);
 
     OsEventTimeOutSet(timeOut, runTsk);
+    
+    OsSpinUnLockRunTaskRq(*runQue);
 
     OsTskSchedule();
+
+    *runQue = OsSpinLockRunTaskRq();
 
     /* 判断是否超时返回并做超时处理 */
     if ((runTsk->taskStatus & OS_TSK_TIMEOUT) != 0) {
@@ -102,6 +107,7 @@ OS_SEC_L4_TEXT U32 PRT_EventRead(U32 eventMask, U32 flags, U32 timeOut, U32 *eve
     uintptr_t intSave;
     struct TagTskCb *runTsk = NULL;
     bool needSchedule = FALSE;
+    struct TagOsRunQue *runQue = NULL;
 
     ret = OsEventReadParaCheck(eventMask, flags, timeOut);
     if (ret != OS_OK) {
@@ -116,14 +122,16 @@ OS_SEC_L4_TEXT U32 PRT_EventRead(U32 eventMask, U32 flags, U32 timeOut, U32 *eve
     }
 
     runTsk = RUNNING_TASK;
+    runQue = OsSpinLockRunTaskRq();
     runTsk->eventMask = eventMask;
     event = runTsk->event;
 
     needSchedule = OsIsEventNotMatch(flags, event, eventMask, runTsk);
     /* 期望的事件一件都没有发生,或者在OS_EVENT_ALL情况下没有发生期望所有事件 */
     if (needSchedule == TRUE) {
-        ret = OsEventReadNeedSche(flags, runTsk, timeOut, &event);
+        ret = OsEventReadNeedSche(&runQue, flags, runTsk, timeOut, &event);
         if (ret != OS_OK) {
+            OsSpinUnLockRunTaskRq(runQue);
             OsIntRestore(intSave);
             return ret;
         }
@@ -135,6 +143,7 @@ OS_SEC_L4_TEXT U32 PRT_EventRead(U32 eventMask, U32 flags, U32 timeOut, U32 *eve
     if (events != NULL) {
         *events = event & eventMask;
     }
+    OsSpinUnLockRunTaskRq(runQue);
     OsIntRestore(intSave);
 
     return OS_OK;
@@ -177,8 +186,11 @@ OS_SEC_L4_TEXT U32 PRT_EventWrite(U32 taskId, U32 events)
 
     intSave = OsIntLock();
     taskCb = (struct TagTskCb *)GET_TCB_HANDLE(taskId);
+    OsSpinLockTaskRq(taskCb);
+
     taskStatus = taskCb->taskStatus;
     if (TSK_IS_UNUSED(taskCb)) {
+        OsSpinUnlockTaskRq(taskCb);
         OsIntRestore(intSave);
 
         return OS_ERRNO_EVENT_TSK_NOT_CREATED;
@@ -206,12 +218,15 @@ OS_SEC_L4_TEXT U32 PRT_EventWrite(U32 taskId, U32 events)
 
             OsEventStateChange(taskStatus, taskCb);
 
+            OsSpinUnlockTaskRq(taskCb);
+
             OsTskSchedule();
 
             OsIntRestore(intSave);
             return OS_OK;
         }
     }
+    OsSpinUnlockTaskRq(taskCb);
     OsIntRestore(intSave);
     return OS_OK;
 }

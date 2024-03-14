@@ -212,9 +212,11 @@ struct OsModuleConfigInfo g_moduleConfigTab[] = {
     {OS_MID_HARDDRV, {NULL, PRT_HardDrvInit}},
     {OS_MID_HOOK, {OsHookConfigReg, OsHookConfigInit}},
     {OS_MID_EXC, {NULL, OsExcConfigInit}},
+
 #if (OS_INCLUDE_TASK == YES)
     {OS_MID_TSK, {OsTskConfigReg, OsTskConfigInit}},
 #endif
+
 #if (OS_INCLUDE_TICK == YES)
     {OS_MID_TICK, {OsTickConfigReg, OsTickConfigInit}},
 #endif
@@ -276,7 +278,6 @@ U32 OsInitialize(void)
 U32 OsStart(void)
 {
     U32 ret;
-
 #if (OS_INCLUDE_TICK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入TICK模块的启动 */
     ret = OsTickStart();
@@ -284,7 +285,6 @@ U32 OsStart(void)
         return ret;
     }
 #endif
-
 #if (OS_INCLUDE_TASK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入任务模块的启动 */
     ret = OsActivate();
@@ -306,7 +306,7 @@ S32 main(void)
     if (ret != OS_OK) {
         return (S32)ret;
     }
-
+    
     /* OS模块初始化 */
     ret = OsInitialize();
     if (ret != OS_OK) {

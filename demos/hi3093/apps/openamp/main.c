@@ -5,10 +5,11 @@
 #include "securec.h"
 #include "prt_config.h"
 #include "prt_config_internal.h"
+#include "prt_hwi.h"
 #include "prt_task.h"
 #include "test.h"
 
-TskHandle g_testTskHandle;
+TskHandle g_testTskHandle[3];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
@@ -66,6 +67,65 @@ void TestTaskEntry()
 #endif
 }
 
+void Test2TaskEntry()
+{
+    while (1) {
+        PRT_Printf("task 1.\n");
+        PRT_TaskDelay(600);
+    }
+}
+
+void Test3TaskEntry()
+{
+    while (1) {
+        PRT_Printf("task 2.\n");
+        PRT_TaskDelay(400);
+    }
+}
+
+U32 TaskTest()
+{
+    U32 ret;
+    U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
+    struct TskInitParam param = {0};
+
+    // task 2
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)Test2TaskEntry;
+    param.taskPrio = 15;
+    param.name = "Test2Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_testTskHandle[1]);
+    if (ret) {
+        return ret;
+    }
+
+    // task 3
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)Test3TaskEntry;
+    param.taskPrio = 20;
+    param.name = "Test3Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&g_testTskHandle[2], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_testTskHandle[2]);
+    if (ret) {
+        return ret;
+    }
+
+    return OS_OK;
+}
+
 U32 OsTestInit(void)
 {
     U32 ret;
@@ -77,13 +137,13 @@ U32 OsTestInit(void)
     param.taskPrio = 25;
     param.name = "TestTask";
     param.stackSize = 0x2000;
-    
-    ret = PRT_TaskCreate(&g_testTskHandle, &param);
+
+    ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
     if (ret) {
         return ret;
     }
     
-    ret = PRT_TaskResume(g_testTskHandle);
+    ret = PRT_TaskResume(g_testTskHandle[0]);
     if (ret) {
         return ret;
     }
@@ -97,6 +157,11 @@ U32 PRT_AppInit(void)
 #ifdef OS_SUPPORT_CXX
     PRT_CppSystemInit();
 #endif
+    
+    ret =TaskTest();
+    if (ret) {
+        return ret;
+    }
 
     ret = OsTestInit();
     if (ret) {

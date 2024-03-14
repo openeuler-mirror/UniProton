@@ -20,7 +20,7 @@ OS_SEC_ALW_INLINE INLINE bool OsRwlockPriCompare(struct TagTskCb *runTask, struc
     struct TagTskCb *task;
 
     if (!ListEmpty(rwList)) {
-        task = GET_TCB_PEND(LIST_FIRST(rwList));
+        task = GET_TCB_PEND(OS_LIST_FIRST(rwList));
         if (runTask->priority < task->priority) {
             return TRUE;
         }
@@ -58,7 +58,7 @@ struct TagListObject *OsRwLockPendFindPos(struct TagTskCb *runTask, struct TagLi
     if (ListEmpty(lockList)) {
         node = lockList;
     } else {
-        taskFirst = GET_TCB_PEND(LIST_FIRST(lockList));
+        taskFirst = GET_TCB_PEND(OS_LIST_FIRST(lockList));
         taskLast = GET_TCB_PEND(LIST_LAST(lockList));
         if (taskFirst->priority > runTask->priority) {
             node = lockList->next;
@@ -293,8 +293,8 @@ U32 OsRwLockGetMode(struct TagListObject *readList, struct TagListObject *writeL
         return RWLOCK_WRITE_MODE;
     }
 
-    struct TagTskCb *pendedReadTask = GET_TCB_PEND(LIST_FIRST(readList));
-    struct TagTskCb *pendedWriteTask = GET_TCB_PEND(LIST_FIRST(writeList));
+    struct TagTskCb *pendedReadTask = GET_TCB_PEND(OS_LIST_FIRST(readList));
+    struct TagTskCb *pendedWriteTask = GET_TCB_PEND(OS_LIST_FIRST(writeList));
     if (pendedWriteTask->priority <= pendedReadTask->priority) {
         return RWLOCK_WRITEFIRST_MODE;
     }
@@ -316,7 +316,7 @@ U32 OsRwLockPost(pthread_rwlock_t *rwl, bool *needSched)
 
     /* 唤醒第一个被pend的写锁任务 */
     if ((rwlockMode == RWLOCK_WRITE_MODE) || (rwlockMode == RWLOCK_WRITEFIRST_MODE)) {
-        resumedTask = GET_TCB_PEND(LIST_FIRST(&(rwl->rw_write)));
+        resumedTask = GET_TCB_PEND(OS_LIST_FIRST(&(rwl->rw_write)));
         rwl->rw_count = -1;
         rwl->rw_owner = (void *)resumedTask;
         OsRwLockTaskWake(resumedTask);
@@ -328,14 +328,14 @@ U32 OsRwLockPost(pthread_rwlock_t *rwl, bool *needSched)
 
     /* 唤醒被pend的读锁任务 */
     if (rwlockMode == RWLOCK_READFIRST_MODE) {
-        pendedWriteTaskPri = GET_TCB_PEND(LIST_FIRST(&(rwl->rw_write)))->priority;
+        pendedWriteTaskPri = GET_TCB_PEND(OS_LIST_FIRST(&(rwl->rw_write)))->priority;
     }
 
-    resumedTask = GET_TCB_PEND(LIST_FIRST(&(rwl->rw_read)));
+    resumedTask = GET_TCB_PEND(OS_LIST_FIRST(&(rwl->rw_read)));
     rwl->rw_count = 1;
     OsRwLockTaskWake(resumedTask);
     while (!ListEmpty(&(rwl->rw_read))) {
-        resumedTask = GET_TCB_PEND(LIST_FIRST(&(rwl->rw_read)));
+        resumedTask = GET_TCB_PEND(OS_LIST_FIRST(&(rwl->rw_read)));
         if ((rwlockMode == RWLOCK_READFIRST_MODE) && (resumedTask->priority >= pendedWriteTaskPri)) {
             break;
         }

@@ -36,6 +36,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/hi3093
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
+    ${HOME_PATH}/src/arch/include
+    ${HOME_PATH}/src/core/kernel/include
+    ${HOME_PATH}/src/utility/lib/include
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include

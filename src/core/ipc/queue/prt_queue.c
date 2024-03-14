@@ -15,6 +15,7 @@
 #include "prt_queue_external.h"
 #include "prt_task_external.h"
 #include "prt_asm_cpu_external.h"
+#include "prt_task_sched_external.h"
 
 OS_SEC_ALW_INLINE INLINE U32 OsGetSrcPid(void)
 {
@@ -22,7 +23,11 @@ OS_SEC_ALW_INLINE INLINE U32 OsGetSrcPid(void)
 
     if (OS_HWI_ACTIVE) {
         /* 硬中断创建消息不具体区别中断号 */
+#if defined(OS_OPTION_SMP)
+        srcPid = COMPOSE_PID(OsGetHwThreadId(), OS_HWI_HANDLE);
+#else
         srcPid = COMPOSE_PID(0x0U, OS_HWI_HANDLE);
+#endif
     } else {
         srcPid = RUNNING_TASK->taskPid;
     }
@@ -33,7 +38,8 @@ OS_SEC_ALW_INLINE INLINE U32 OsGetSrcPid(void)
 /*
  * 描述：内部Pend操作，这个函数在调用之前必须关中断。
  */
-OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendList, U32 timeOut)
+OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendList, U32 timeOut,
+                                         struct TagQueCb *queueCb)
 {
     struct TagTskCb *runTsk = NULL;
 
@@ -61,6 +67,7 @@ OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendL
     runTsk = (struct TagTskCb *)RUNNING_TASK;
 
     /* 从任务的Ready list上把当前任务删除，添加到pend list上 */
+    OsSpinLockTaskRq(runTsk);
     OsTskReadyDel(runTsk);
 
     TSK_STATUS_SET(runTsk, OS_TSK_QUEUE_PEND);
@@ -73,18 +80,26 @@ OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendL
         OsTskTimerAdd(runTsk, timeOut);
     }
 
+    OsSpinUnlockTaskRq(runTsk);
+
     /* 调用函数之前已经关中断，此处关中断进行调度 */
     /* 触发任务调度 */
+    QUEUE_CB_LOCK(queueCb);
     OsTskSchedule();
+    QUEUE_CB_UNLOCK(queueCb);
+
+    OsSpinLockTaskRq(runTsk);
     TSK_STATUS_CLEAR(runTsk, OS_TSK_QUEUE_BUSY);
 
     /* 判断是否是等待队列超时 */
     if ((runTsk->taskStatus & OS_TSK_TIMEOUT) != 0) {
         TSK_STATUS_CLEAR(runTsk, OS_TSK_TIMEOUT);
+        OsSpinUnlockTaskRq(runTsk);
 
         /* 在函数的外面会开中断 */
         return OS_ERRNO_QUEUE_TIMEOUT;
     }
+    OsSpinUnlockTaskRq(runTsk);
     /* 在函数的外面会开中断 */
     return OS_OK;
 }
@@ -101,6 +116,7 @@ OS_SEC_ALW_INLINE INLINE bool OsQueuePendNeedProc(struct TagListObject *objectLi
     /* 激活阻塞在该队列的首个任务 */
     resumedTask = GET_TCB_PEND(OS_LIST_FIRST(objectList));
     ListDelete(OS_LIST_FIRST(objectList));
+    OsSpinLockTaskRq(resumedTask);
 
     /* 去除该任务的队列阻塞位 */
     TSK_STATUS_CLEAR(resumedTask, OS_TSK_QUEUE_PEND);
@@ -120,6 +136,7 @@ OS_SEC_ALW_INLINE INLINE bool OsQueuePendNeedProc(struct TagListObject *objectLi
     if ((resumedTask->taskStatus & OS_TSK_SUSPEND) == 0) {
         OsTskReadyAddBgd(resumedTask);
     }
+    OsSpinUnlockTaskRq(resumedTask);
     return TRUE;
 }
 
@@ -151,14 +168,14 @@ OS_SEC_L4_TEXT U32 PRT_QueueRead(U32 queueId, void *bufferAddr, U32 *len, U32 ti
     /* 获取指定队列控制块 */
     queueCb = (struct TagQueCb *)GET_QUEUE_HANDLE(innerId);
 
-    intSave = OsIntLock();
+    QUEUE_CB_IRQ_LOCK(queueCb, intSave);
     if (queueCb->queueState == OS_QUEUE_UNUSED) {
         ret = OS_ERRNO_QUEUE_NOT_CREATE;
         goto QUEUE_END;
     }
 
     /* 读队列PEND */
-    ret = OsInnerPend(&queueCb->readableCnt, &queueCb->readList, timeOut);
+    ret = OsInnerPend(&queueCb->readableCnt, &queueCb->readList, timeOut, queueCb);
     if (ret != OS_OK) {
         goto QUEUE_END;
     }
@@ -185,6 +202,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueRead(U32 queueId, void *bufferAddr, U32 *len, U32 ti
     }
 
     if (OsQueuePendNeedProc(&queueCb->writeList)) {
+        QUEUE_CB_UNLOCK(queueCb);
         OsTskSchedule();
         OsIntRestore(intSave);
         return OS_OK;
@@ -193,7 +211,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueRead(U32 queueId, void *bufferAddr, U32 *len, U32 ti
     queueCb->writableCnt++;
 
 QUEUE_END:
-    OsIntRestore(intSave);
+    QUEUE_CB_IRQ_UNLOCK(queueCb, intSave);
     return ret;
 }
 
@@ -274,7 +292,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueWrite(U32 queueId, void *bufferAddr, U32 bufferSize,
 
     /* 获取指定队列控制块 */
     queueCb = (struct TagQueCb *)GET_QUEUE_HANDLE(innerId);
-    intSave = OsIntLock();
+    QUEUE_CB_IRQ_LOCK(queueCb, intSave);
     if (queueCb->queueState == OS_QUEUE_UNUSED) {
         ret = OS_ERRNO_QUEUE_NOT_CREATE;
         goto QUEUE_END;
@@ -286,7 +304,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueWrite(U32 queueId, void *bufferAddr, U32 bufferSize,
     }
 
     /* 读队列PEND */
-    ret = OsInnerPend(&queueCb->writableCnt, &queueCb->writeList, timeOut);
+    ret = OsInnerPend(&queueCb->writableCnt, &queueCb->writeList, timeOut, queueCb);
     if (ret != OS_OK) {
         goto QUEUE_END;
     }
@@ -295,6 +313,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueWrite(U32 queueId, void *bufferAddr, U32 bufferSize,
     OsQueueCpData2Node(prio, (uintptr_t)bufferAddr, bufferSize, queueCb);
 
     if (OsQueuePendNeedProc(&queueCb->readList)) {
+        QUEUE_CB_UNLOCK(queueCb);
         OsTskSchedule();
         OsIntRestore(intSave);
         return OS_OK;
@@ -303,6 +322,6 @@ OS_SEC_L4_TEXT U32 PRT_QueueWrite(U32 queueId, void *bufferAddr, U32 bufferSize,
     queueCb->readableCnt++;
 
 QUEUE_END:
-    OsIntRestore(intSave);
+    QUEUE_CB_IRQ_UNLOCK(queueCb, intSave);
     return ret;
 }

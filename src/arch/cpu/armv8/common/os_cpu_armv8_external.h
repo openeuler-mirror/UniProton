@@ -18,6 +18,7 @@
 #include "prt_buildef.h"
 #include "prt_hwi.h"
 #include "prt_gic_external.h"
+#include "prt_atomic.h"
 
 /*
  * 模块间宏定义
@@ -48,34 +49,77 @@
 #define OS_HWI_PRIO_CHECK(hwiPrio)     ((hwiPrio) >= OS_HWI_PRI_NUM || ((hwiPrio) & 1U))
 #define OS_HWI_SET_HOOK_ATTR(hwiNum, hwiPrio, hook)
 
+#if defined(OS_OPTION_HWI_AFFINITY)
+/* 仅1-1/1-N SPI中断支持中断路由 */
+#define OS_HWI_AFFINITY_CHECK(hwiNum) OsGicIsSpi(hwiNum)
+
+#endif
+
 #define OS_HWI_CLEAR_CHECK(hwiNum)    ((hwiNum) == GIC_INT_ID_MASK)
+
+/*
+ * SMP系统占用的硬件SGI号
+ */
+#define OS_SMP_SCHED_TRIGGER_OTHER_CORE_SGI OS_HWI_IPI_NO_01 // 触发它核响应一次调度的IPI中断号
+#define OS_SMP_EXC_STOP_OTHER_CORE_SGI      OS_HWI_IPI_NO_02 // 一个核异常后将其他核停住的IPI中断号
+#define OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI  OS_HWI_IPI_NO_03 // 响应tick中断的核触发它核的模拟tickIPI中断号
+#define OS_SMP_MC_CORE_IPC_SGI              OS_HWI_IPI_NO_04 // SMP核间通信使用的IPI中断号
+
+/*
+ * SMP系统占用的硬件SGI的优先级
+ */
+#define OS_SMP_SCHED_TRIGGER_OTHER_CORE_SGI_PRI 0
+#define OS_SMP_EXC_STOP_OTHER_CORE_SGI_PRI      0  // 一个核异常后将其他核停住的IPI中断号
+#define OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI_PRI  0
+#define OS_SMP_MC_CORE_IPC_SGI_PRI              0
 
 #define OS_HWI_INTERNAL_NUM 5
 
-#define OS_TICK_COUNT_UPDATE()
+#define OS_DI_STATE_CHECK(intSave)   ((intSave) & 0x80U)
 
+#define OS_TICK_COUNT_UPDATE()
+OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
+{
+    *lockVar = OS_SPINLOCK_UNLOCK;
+}
+
+#define OS_SPINLOCK_INIT_FOREACH(maxNum, structName, field)
+#define OS_SPIN_FREE_FOREACH(maxNum, structName, field)
+#define OS_SPIN_FREE(lockVar)
+
+#if defined(OS_OPTION_SMP)
+#define OS_HW_TICK_INIT() OsHwTickInitSmp()
+#else
 #define OS_HW_TICK_INIT() OS_OK
+#endif
 
 #define OS_IS_TICK_PERIOD_INVALID(cyclePerTick) (FALSE)
 
 #define OS_TSK_STACK_SIZE_ALIGN  16U
 #define OS_TSK_STACK_SIZE_ALLOC_ALIGN MEM_ADDR_ALIGN_016
 #define OS_TSK_STACK_ADDR_ALIGN  16U
+#define OS_ALLCORES_MASK g_validAllCoreMask
 
 #define OS_MAX_CACHE_LINE_SIZE   4 /* 单核芯片定义为4 */
 
 /* 任务栈最小值 */
 #define OS_TSK_MIN_STACK_SIZE (ALIGN((0x1D0 + 0x10 + 0x4), 16))
-
 /* Idle任务的消息队列数 */
 #define OS_IDLE_TASK_QUE_NUM 1
+
+/* SPINLOCK 相关 */
+#define OS_SPINLOCK_RELOCK_NEGATIVE 0x80000000U
 
 #define DIV64(a, b) ((a) / (b))
 #define DIV64_REMAIN(a, b) ((a) % (b))
 
 #define OsIntUnLock() PRT_HwiUnLock()
 #define OsIntLock()   PRT_HwiLock()
-#define OsIntRestore(intSave) PRT_HwiRestore(intSave)
+#define OsIntRestore(intSave) PRT_IntRestore(intSave)
+
+#if defined(OS_OPTION_SMP)
+#define OsTaskTrap(task) OsTskTrapSmp(task)
+#endif
 
 /* 硬件平台保存的任务上下文 */
 struct TagHwContext {
@@ -93,19 +137,67 @@ struct TagHwContext {
  */
 extern uintptr_t __os_sys_sp_end;
 extern uintptr_t __os_sys_sp_start;
+extern OsVoidFunc g_hwiSplLockHook;
+extern OsVoidFunc g_hwiSplUnLockHook;
 extern uintptr_t __bss_end__;
 extern uintptr_t __bss_start__;
+extern U32 g_validAllCoreMask;
 
 /*
  * 模块间函数声明
  */
-extern uintptr_t OsGetSysStackSP(void);
+extern uintptr_t OsGetSysStackSP(U32 core);
 extern void OsSetSysStackSP(uintptr_t stackPointer, U32 hwiNum);
-extern uintptr_t OsGetSysStackStart(void);
-extern uintptr_t OsGetSysStackEnd(void);
+extern uintptr_t OsGetSysStackStart(U32 core);
+extern uintptr_t OsGetSysStackEnd(U32 core);
+#if defined(OS_OPTION_SMP)
+extern void OsTskTrapSmp(uintptr_t task);
+#else
 extern void OsTaskTrap(void);
+#endif
 extern void OsTskContextLoad(uintptr_t stackPointer);
 
+#if defined(OS_OPTION_SMP)
+extern void OsHwiMcTrigger(enum OsHwiIpiType type, U32 coreMask, U32 hwiNum);
+#endif
+/*
+ * 描述: spinlock初始化
+ */
+OS_SEC_ALW_INLINE INLINE U32 OsSplLockInit(struct PrtSpinLock *spinLock)
+{
+    OsSpinLockInitInner(&spinLock->rawLock);
+    return OS_OK;
+}
+
+/*
+ * 描述: 获取硬线程ID
+ */
+OS_SEC_ALW_INLINE INLINE U32 OsGetHwThreadId(void)
+{
+    return PRT_GetCoreID();
+}
+
+/* 计算一个32bit非0数字的最右位     */
+/* e.g. 0x01000020 ----> 结果返回 5 */
+OS_SEC_ALW_INLINE INLINE U32 OsGetRMB(U32 bit)
+{
+    U32 rev = bit - 1;
+    U32 result;
+
+    OS_EMBED_ASM("EOR %0, %1, %2" : "=r"(result) : "r"(rev), "r"(bit));
+    OS_EMBED_ASM("CLZ %0, %1" : "=r"(rev) : "r"(result));
+    return (OS_DWORD_BIT_NUM - rev -1);
+}
+
+/* 计算一个32bit非0 bit的最左位数   */
+OS_SEC_ALW_INLINE INLINE U32 OsGetLMB1(U32 value)
+{
+    U32 mb;
+
+    OS_EMBED_ASM("CLZ %w0, %w1" : "=r"(mb) : "r"(value));
+
+    return mb;
+}
 /*
  * 描述: 使能IRQ中断
  */
@@ -141,6 +233,22 @@ OS_SEC_ALW_INLINE INLINE void OsIntDisable(void)
         : "i"(DAIF_IRQ_BIT) // IRQ mask
         : "memory", "cc");
 }
+/*
+ * 描述: 设置中断亲核性
+ */
+OS_SEC_ALW_INLINE INLINE U32 OsHwiAffinitySet(HwiHandle hwiNum, U32 coreMask)
+{
+    U32 targetCore;
+
+    if ((coreMask & (coreMask - 1)) != 0) {
+        return OS_ERRNO_MULTI_TARGET_CORE;
+    }
+
+    targetCore = OsGetRMB(coreMask);
+    OsGicSetTargetId(hwiNum, targetCore);
+
+    return OS_OK;
+}
 #if (OS_GIC_VER == 2)
 OS_SEC_ALW_INLINE INLINE U32 OsHwiNumGet(void)
 {
@@ -164,6 +272,15 @@ OS_SEC_ALW_INLINE INLINE U32 OsHwiNumGet(void)
     return iar;
 }
 #endif
+
+OS_SEC_ALW_INLINE INLINE U32 OsGetMpidr(void)
+{
+    U32 mpid;
+
+    OS_EMBED_ASM("MRS   %0, MPIDR_EL1" : "=r"(mpid)::"memory", "cc");
+
+    return mpid;
+}
 
 #if (OS_GIC_VER == 2)
 OS_SEC_ALW_INLINE INLINE void OsHwiClear(U32 intId)
@@ -212,6 +329,20 @@ OS_SEC_ALW_INLINE INLINE uintptr_t OsTskGetInstrAddr(uintptr_t addr)
     return ((struct TagHwContext *)addr)->pc;
 }
 
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE void OsHwiTriggerSelf(U32 core, U32 hwiNum)
+{
+    (void)core;
+    OsHwiMcTrigger(OS_TYPE_TRIGGER_TO_SELF, 0, hwiNum);
+}
+
+OS_SEC_ALW_INLINE INLINE void OsWakeUpProcessors(void)
+{
+    OS_EMBED_ASM("sev" : : : "memory");
+}
+#endif
+
+#if !defined(OS_OPTION_SMP)
 OS_SEC_ALW_INLINE INLINE void OsTaskTrapFast(void)
 {
     OsTaskTrap();
@@ -222,5 +353,163 @@ OS_SEC_ALW_INLINE INLINE void OsTaskTrapFastPs(uintptr_t intSave)
     (void)intSave;
     OsTaskTrap();
 }
+#endif
 
+#if (OS_MAX_CORE_NUM > 1)
+/*
+ * 描述: 自旋锁上锁
+ */
+OS_SEC_ALW_INLINE INLINE void OsSplLock(volatile uintptr_t *spinLock)
+{
+    U32 tmp = 0;
+    
+    OS_EMBED_ASM(
+        "1: ldaxr %w0, [%1]         \n"
+        "   cbnz  %w0, 1b           \n"
+        "   stxr  %w0, %w2, [%1]    \n"
+        "   cbnz  %w0, 1b           \n"
+        : "=&r"  (tmp)
+        : "r" (spinLock), "r" (1)
+        : "memory", "cc");
+    return;
+}
+
+/*
+ * 描述: 自旋锁解锁
+ */
+OS_SEC_ALW_INLINE INLINE void OsSplUnlock(volatile uintptr_t *spinLock)
+{    
+    OS_EMBED_ASM(
+        "stlr %w1, [%0]"
+        :
+        : "r"(spinLock), "r"(0)
+        : "memory");
+    return;
+}
+
+/*
+ * 描述: 自旋锁尝试上锁
+ */
+OS_SEC_ALW_INLINE INLINE bool OsSplTryLock(volatile uintptr_t *spinLock)
+{
+    bool tmp;
+
+    OS_EMBED_ASM(
+        "   ldaxr   %w0, [%1]       \n"
+        "   cbnz    %w0, 1f         \n"
+        "   stxr    %w0, %w2, [%1]  \n"
+        "1:                         \n"
+        : "=&r"(tmp), "+r"(spinLock)
+        : "r"(1)
+        : "memory");
+    
+    return !tmp;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplReadLock(volatile uintptr_t *spinLock)
+{
+    U32 tmp0 = 0;
+    U32 tmp1 = 0;
+
+    OS_EMBED_ASM(
+        "1: ldaxr   %w0, [%2]                  \n"
+        "   add     %w0, %w0,       #0x1       \n"
+        "   tbnz    %w0, #31, 1b               \n"
+        "   stxr    %w1, %w0, [%2]             \n"
+        "   cbnz    %w1, 1b                    \n"
+        : "=&r"(tmp0), "+r"(tmp1)
+        : "r"(spinLock)
+        : "memory", "cc");
+    return;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplReadUnlock(volatile uintptr_t *spinLock)
+{
+    U32 tmp0 = 0;
+    U32 tmp1 = 0;
+
+    OS_EMBED_ASM(
+        "1: ldaxr   %w0, [%2]                  \n"
+        "   sub     %w0, %w0,       #0x1       \n"
+        "   stxr    %w1, %w0, [%2]             \n"
+        "   cbnz    %w1, 1b                    \n"
+        : "=&r"(tmp0), "+r"(tmp1)
+        : "r"(spinLock)
+        : "memory", "cc");
+    return;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplWriteLock(volatile uintptr_t *spinLock)
+{
+    U32 tmp0 = 0;
+    U32 tmp1 = 0;
+
+    OS_EMBED_ASM(
+        "1: ldaxr   %w0, [%2]                  \n"
+        "   cbnz    %w0, 1b                    \n"
+        "   stxr    %w0, %w2, [%1]             \n"
+        "   cbnz    %w0, 1b                    \n"
+        : "=&r"(tmp0)
+        : "r"(spinLock), "r"(OS_SPINLOCK_RELOCK_NEGATIVE)
+        : "memory", "cc");
+    return;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplWriteUnlock(volatile uintptr_t *spinLock)
+{
+    OS_EMBED_ASM(
+        "stlr wzr, [%0]         \n"
+        : 
+        : "r"(spinLock)
+        : "memory", "cc");
+    return;
+}
+#else
+OS_SEC_ALW_INLINE INLINE void OsSplLock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplUnlock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplReadLock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplReadUnlock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplWriteLock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsSplWriteUnlock(volatile uintptr_t *spinLock)
+{
+    (void)spinLock;
+}
+#endif
+
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE void OsHwiTriggerByMask(U32 coreMask, U32 hwiNum)
+{
+    OsHwiMcTrigger(OS_TYPE_TRIGGER_BY_MASK, coreMask, hwiNum);
+}
+#endif
+
+OS_SEC_ALW_INLINE INLINE void OsHwiSetSplLockHook(OsVoidFunc hook)
+{
+    (void)hook;
+}
+
+OS_SEC_ALW_INLINE INLINE void OsHwiSetSplUnlockHook(OsVoidFunc hook)
+{
+    (void)hook;
+}
 #endif /* OS_CPU_ARMV8_EXTERNAL_H */

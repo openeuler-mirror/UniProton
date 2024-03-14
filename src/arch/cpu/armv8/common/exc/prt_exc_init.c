@@ -18,6 +18,9 @@
 #include "prt_task_external.h"
 #endif
 
+#if defined(OS_OPTION_SMP)
+OS_SEC_BSS uintptr_t g_uniFlagAddr[OS_MAX_CORE_NUM];
+#endif
 /*
  * 描述: 获取异常类型
  */
@@ -146,6 +149,13 @@ OS_SEC_L4_TEXT U32 OsExcConfigInit(void)
     OsCdaExcInit();
 #endif
 
+#if defined(OS_OPTION_SMP)
+    U32 index;
+    for(index = 0; index < OS_MAX_CORE_NUM; index++) {
+        g_uniFlagAddr[index] = (uintptr_t)&g_runQueue[index].uniFlag;
+    }
+#endif
+
 #if defined(OS_OPTION_POWEROFF)
     U32 ret;
     ret = PRT_HwiSetAttr(OS_EXC_STOP_CORE_HWI_NUM, 0, OS_HWI_MODE_ENGROSS);
@@ -177,9 +187,10 @@ INIT_SEC_L4_TEXT uintptr_t OsSwitchToSysStack(uintptr_t sp)
     uintptr_t sysStackHigh;
     uintptr_t sysStackLow;
     uintptr_t dstSp;
-
-    sysStackHigh = OsGetSysStackEnd();
-    sysStackLow  = OsGetSysStackStart();
+    
+    U32 core = THIS_CORE();
+    sysStackHigh = OsGetSysStackEnd(core);
+    sysStackLow  = OsGetSysStackStart(core);
     if (sp <= sysStackHigh && sp >= sysStackLow) {
         return sp;
     }

@@ -18,6 +18,7 @@
 #include "prt_buildef.h"
 #include "prt_module.h"
 #include "prt_errno.h"
+#include "prt_hook.h"
 #if (OS_HARDWARE_PLATFORM == OS_CORTEX_M4)
 #include "./hw/armv7-m/prt_task.h"
 #endif
@@ -830,6 +831,39 @@ extern "C" {
  */
 #define OS_ERRNO_TSK_STACKADDR_TOO_BIG OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1b)
 
+
+#define OS_ERRNO_TSK_OPERATION_BUSY OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1c)
+
+#define OS_ERRNO_TSK_BIND_CORE_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1d)
+
+#define OS_ERRNO_TSK_BIND_IN_HWI OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1e)
+
+#define OS_ERRNO_TSK_BIND_SELF_WITH_TASKLOCK OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1f)
+
+#define OS_ERRNO_TSK_GET_CURRENT_COREID_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x21)
+
+#define OS_ERRNO_TSK_DESTCORE_NOT_RUNNING OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x22)
+
+#define OS_ERRNO_BUILD_ID_INVALID   OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x23)
+
+
+// #if defined(OS_OPTION_SMP)
+
+/*
+ * 任务或任务控制块状态标志
+ *
+ * OS_TSK_DELETING      --- 任务正在被删除
+ */
+#define OS_TSK_DELETING 0X8000U
+
+/*
+ * 任务或任务控制块状态标志
+ *
+ * OS_TSK_CRG_IDLE_SUSPEND      --- CRG执行队列空闲自动挂起。
+ */
+#define OS_TSK_CRG_IDLE_SUSPEND 0X20000U
+
+// #endif
 /*
  * 任务ID的类型定义。
  */
@@ -863,6 +897,8 @@ struct TskInfo {
     uintptr_t topOfStack;
     /* 任务名 */
     char name[OS_TSK_NAME_LEN];
+    /* 任务当前核 */
+    U32 core;
     /* 任务入口函数 */
     void *entry;
     /* 任务控制块地址 */
@@ -969,6 +1005,8 @@ typedef U32(*TskSwitchHook)(TskHandle lastTaskPid, TskHandle nextTaskPid);
  * 调用PRT_TaskYield时，使用OS_TSK_NULL_ID，由OS选择就绪队列中的第一个任务。
  */
 #define OS_TSK_NULL_ID 0xFFFFFFFF
+
+// extern struct TagTskCb;
 
 /*
  * 任务栈信息的结构体定义。
@@ -1379,7 +1417,10 @@ extern U32 PRT_TaskSetName(TskHandle taskId, const char *name);
  * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
  * @see PRT_TaskDelSwitchHook | PRT_TaskDeleteHookAdd | PRT_TaskCreateHookAdd
  */
-extern U32 PRT_TaskAddSwitchHook(TskSwitchHook hook);
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskAddSwitchHook(TskSwitchHook hook)
+{
+    return OsHookAdd(OS_HOOK_TSK_SWITCH, (OsVoidFunc)(uintptr_t)hook);
+}
 
 /*
  * @brief 取消任务切换钩子。
@@ -1395,7 +1436,102 @@ extern U32 PRT_TaskAddSwitchHook(TskSwitchHook hook);
  * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
  * @see PRT_TaskAddSwitchHook
  */
-extern U32 PRT_TaskDelSwitchHook(TskSwitchHook hook);
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskDelSwitchHook(TskSwitchHook hook)
+{
+    return OsHookDel(OS_HOOK_TSK_SWITCH, (OsVoidFunc)(uintptr_t)hook);
+}
+
+/*
+ * @brief 注册任务创建钩子。
+ *
+ * @par 描述
+ * 注册任务创建钩子函数。钩子函数在任务创建成功侯被调用。
+ *
+ * @attention
+ * <ul>
+ * <li>不应在任务任务创建钩子里创建任务。</li>
+ * </ul>
+ *
+ * @param hook [IN]  类型#OS_HOOK_TSK_CREATE，任务创建钩子函数。
+ *
+ * @par 依赖
+ * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_TaskCreateHookDelete | PRT_TaskDeleteHookAdd | PRT_TaskCreateHookAdd
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskCreateHookAdd(TskCreateHook hook)
+{
+    return OsHookAdd(OS_HOOK_TSK_CREATE, (OsVoidFunc)hook);
+}
+
+/*
+ * @brief 取消任务创建钩子。
+ *
+ * @par 描述
+ * 取消指定的任务创建钩子。钩子函数在切入新任务前被调用。
+ *
+ * @attention  无
+ *
+ * @param hook [IN]  类型#OS_HOOK_TSK_CREATE，任务创建钩子函数。
+ *
+ * @par 依赖
+ * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_TaskCreateHookAdd
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskCreateHookDelete(TskCreateHook hook)
+{
+    return OsHookDel(OS_HOOK_TSK_CREATE, (OsVoidFunc)hook);
+}
+
+/*
+ * @brief 注册任务删除钩子。
+ *
+ * @par 描述
+ * 注册任务删除钩子函数。钩子函数在资源回收前被调用。
+ *
+ * @attention
+ * <ul>
+ * <li>任务删除钩子中不允许进行pend信号量操作。</li>
+ * </ul>
+ *
+ * @param hook [IN]  类型#OS_HOOK_TSK_DELETE，任务删除钩子函数。
+ *
+ * @par 依赖
+ * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_TaskDeleteHookDelete | PRT_TaskDeleteHookAdd | PRT_TaskCreateHookAdd
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskDeleteHookAdd(TskDeleteHook hook)
+{
+    return OsHookAdd(OS_HOOK_TSK_DELETE, (OsVoidFunc)hook);
+}
+
+/*
+ * @brief 取消任务删除钩子。
+ *
+ * @par 描述
+ * 取消指定的任务删除钩子。钩子函数在切入新任务前被调用。
+ *
+ * @attention  无
+ *
+ * @param hook [IN]  类型#OS_HOOK_TSK_DELETE，任务删除钩子函数。
+ *
+ * @par 依赖
+ * <ul><li>prt_task.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_TaskDeleteHookAdd
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_TaskDeleteHookDelete(TskDeleteHook hook)
+{
+    return OsHookDel(OS_HOOK_TSK_DELETE, (OsVoidFunc)hook);
+}
+
+
+#if defined(OS_OPTION_SMP)
+extern U32 PRT_TaskGetCurrentOnCore(U32 coreId, TskHandle *taskPid);
+
+extern U32 PRT_TaskGetNrRunningOnCore(U32 coreId, U32 *nrRunning);
+
+extern void PRT_TaskLockNoIntLock(void);
+extern U32 PRT_TaskCoreBind(TskHandle taskPid, U32 coreMask);
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus

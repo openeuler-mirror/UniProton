@@ -29,6 +29,12 @@ extern "C" {
 #define OS_SYS_CLOCK                                    250000000
 /* 用户注册的获取系统时间的函数*/
 #define OS_SYS_TIME_HOOK                                NULL
+/* 实际运行的核数，单位：个 */
+#define OS_SYS_CORE_RUN_NUM                             2
+/* 最大可支持的核数，单位：个 */
+#define OS_SYS_CORE_MAX_NUM                             4
+/* 主核ID */
+#define OS_SYS_CORE_PRIMARY                             2
 
 /* ***************************** 中断模块配置 ************************** */
 /* 硬中断最大支持个数 */
@@ -100,6 +106,10 @@ extern "C" {
 #define OS_HOOK_HWI_ENTRY_NUM                           5
 /* 硬中断退出钩子最大支持个数, 范围[0, 255] */
 #define OS_HOOK_HWI_EXIT_NUM                            5
+/* 任务创建钩子最大支持个数, 范围[0, 255] */
+#define OS_HOOK_TSK_CREATE_NUM                          1
+/* 任务删除钩子最大支持个数, 范围[0, 255] */
+#define OS_HOOK_TSK_DELETE_NUM                          1
 /* 任务切换钩子最大支持个数, 范围[0, 255] */
 #define OS_HOOK_TSK_SWITCH_NUM                          8
 /* IDLE钩子最大支持个数, 范围[0, 255] */
