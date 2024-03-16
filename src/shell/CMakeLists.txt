@@ -21,6 +21,10 @@ if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
     list(REMOVE_ITEM SHELL_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/full/src/base/porting/port_uart.c
     )
+else()
+    list(REMOVE_ITEM SHELL_SOURCE
+	${CMAKE_CURRENT_SOURCE_DIR}/full/src/base/porting/port_uart_no_vfs.c
+    )
 endif()
 
 add_library(libshell OBJECT ${SHELL_SOURCE})

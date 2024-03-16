@@ -10,6 +10,15 @@
 #define _XOPEN_SOURCE 600
 #include <unistd.h>
 
+#if(OS_CPU_TYPE == OS_RV64_VIRT)
+// if we use board riscv64 qemu virt
+// we need to use uart_printf insteadof printf
+// because now we didn't redirect printf to our uart0
+// and we will delete it if we  redirect printf to uart0
+#include "uart.h"
+#define printf uart_printf
+#endif
+
 long sysconf(int name)
 {
     switch(name) {

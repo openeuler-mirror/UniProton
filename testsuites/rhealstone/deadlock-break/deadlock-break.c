@@ -11,7 +11,7 @@
 #include <prt_sys.h>
 
 #define BENCHMARKS 20000
-
+#define WARM_UP_TIMES 2000
 TskHandle taskIds[3];
 SemHandle semId;
 U32 status;
@@ -117,7 +117,6 @@ void Task03(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
 void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     struct TskInitParam taskParam = { 0 };
-    U32 status;
     TskHandle selfTaskPid;
 
     PRT_SemCreate(1, &semId);
@@ -148,11 +147,15 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     directive_failed(status, "PRT_TaskCreate of TA03");
 
     /* find overhead of obtaining semaphore*/
-    benchmark_timer_initialize();
-    PRT_SemPend(semId, OS_WAIT_FOREVER);
-    obtainOverhead = benchmark_timer_read();
-    PRT_SemPost(semId);
-
+    for(int i=0;i<WARM_UP_TIMES;i++)
+    {
+        benchmark_timer_initialize();
+        PRT_SemPend(semId, OS_WAIT_FOREVER);
+        obtainOverhead += benchmark_timer_read();
+        PRT_SemPost(semId);
+    }
+    obtainOverhead /= WARM_UP_TIMES;
+    
     status = PRT_TaskSelf(&selfTaskPid);
     directive_failed(status, "PRT_TaskSelf");
     status = PRT_TaskSetPriority(selfTaskPid, OS_TSK_PRIORITY_25);

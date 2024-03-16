@@ -34,11 +34,12 @@
   - **目前支持的APP**
 
     - **hello_world** [跑一个简单的shell]
-    - **rhealstone-task-switch** [实时性能测试-上下文切换]
-    - **rhealstone-task-preempt** [实时性能测试-任务抢占]
-    - **rhealstone-semaphore-shuffle** [实时性能测试 - 信号量混洗]
-    - **rhealstone-message-latency** [实时性能测试 - 消息队列延迟]
-    - **rhealstone-deadlock-break** [实时性能测试-死锁解除]
+    - **task-switch** [实时性能测试-上下文切换]
+    - **task-preempt** [实时性能测试-任务抢占]
+    - **semaphore-shuffle** [实时性能测试 - 信号量混洗]
+    - **message-latency** [实时性能测试 - 消息队列延迟]
+    - **deadlock-break** [实时性能测试-死锁解除]
+    - **shell ** [UniProton shell 组件]
 
 - 运行 **bash build_app.sh 'APP名字'** 进行编译，编译完成后，会在**当前out目录** 生成对应工程的ELF文件 和 BIN文件
 

@@ -10,20 +10,10 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Create: 2024-02-22
- * Description: rhealstone support cde
+ * Description: console相关的代码头文件
  */
-#ifndef BANCHMARK_SUPPORT_H
-#define BANCHMARK_SUPPORT_H
-
-#include <uart.h>
-#include <platform.h>
-
-extern uintptr_t g_cycle;
-#define PRT_Printf uart_printf
-#define rtems_test_assert(x) 
-#define trans( _total_time, _iterations, _loop_overhead, _overhead) (((_total_time) - (_loop_overhead)) / (_iterations)) - (_overhead)
-#define benchmark_timer_initialize()  g_cycle = (*(U64 *)(CLINT_TIME))
-#define benchmark_timer_read()       ((*(U64 *)(CLINT_TIME)) - g_cycle)
-
+#ifndef CONSOLE_H
+#define CONSOLE_H
+void console_init(void);
 
 #endif

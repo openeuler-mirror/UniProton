@@ -9,8 +9,8 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2024-02-22
- * Description: main函数入口,初始化内核以及执行console_init()函数
+ * Create: 2024-03-09
+ * Description: 初始化内核，同时创建libc测试线程Init
  */
 #include "prt_task.h"
 #include "prt_config.h"
@@ -19,11 +19,9 @@
 #include "riscv.h"
 #include "platform.h"
 #include "uart.h"
-#include "console.h"
 
 // 初始配置函数入口
 extern S32 OsConfigStart(void);
-
 
 // 用户可以使用的接口，需要写入mtvec
 extern void trap(); 
@@ -35,7 +33,6 @@ void OsHwInit()
     w_mie(r_mie() | MEIE | MSIE | MTIE);
     U64 x = (U64)trap;
     OS_EMBED_ASM("csrw mtvec, %0"::"r"(x):);
-    //w_mtvec((U64)trap);
     U64 coreId = PRT_GetCoreID();
     U64 nowTime = *(U64 *)CLINT_TIME;
     *(U64* )CLINT_TIMECMP(coreId) = (nowTime + OS_TICK_PER_SECOND);    
@@ -45,46 +42,31 @@ void OsHwInit()
 U32 PRT_HardDrvInit(void)
 {
     uart_init(NULL);
-    uart_printf("hard driver init end!!! test printf %d %p %x %f %lf\n",2,0x93,0x12,3.421,5.67);
     return OS_OK;
 }
 
-
-
-void thread_read_console(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
-{
-    static char  buf[1030];
-    uart_putstr_sync(">> ");
-    while(1) {
-        if(console_gets(buf,1030) != 0) {
-            console_handle(buf);
-        }
-    }
-}
-
-
 U32 PRT_AppInit(void)
 {
-    console_init();
+    extern void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
     struct TskInitParam para;
-    para.taskEntry = thread_read_console;
-    para.taskPrio = 25;
+    para.taskEntry = Init;
+    para.taskPrio = 1;
     para.stackSize = 0x1000;
-    para.name ="console thread";
+    para.name ="Init thread";
     para.stackAddr = 0;
     para.args[0] = 0;
     para.args[1] = 0;
     para.args[2] = 0;
     para.args[3] = 0;
-    
+
     if(PRT_TaskCreate(&g_pid,&para) != OS_OK) {
-        uart_putstr_sync("err in prt_task_create");
+        uart_putstr_sync("err in prt_task_create\n");
         while(1) {
             OS_EMBED_ASM("wfi");
         }
     }
     if(PRT_TaskResume(g_pid) != OS_OK ) {
-        uart_putstr_sync("err in prt_task_resume");
+        uart_putstr_sync("err in prt_task_resume\n");
         while(1) {
             OS_EMBED_ASM("wfi");
         }
@@ -113,8 +95,8 @@ extern void *__wrap_memset(void *dest, int set, U32 len)
 extern void *__wrap_memcpy(void *dest, const void *src, size_t size)
 {
     if(dest == NULL || src == NULL) {
-    	return NULL;
-    } 
+	return NULL;
+    }
     for (size_t i = 0; i < size; ++i) {
         *(char *)(dest + i) = *(char *)(src + i);
     }
