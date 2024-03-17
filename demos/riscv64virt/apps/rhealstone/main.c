@@ -9,7 +9,7 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2024-02-22
+ * Create: 2024-03-08
  * Description: main函数入口,创建rhealstone的support线程以及初始化内核
  */
 #include "prt_task.h"
@@ -42,7 +42,6 @@ void OsHwInit()
 U32 PRT_HardDrvInit(void)
 {
     uart_init(NULL);
-    uart_printf("hard driver init end!!! test printf %d %p %x\n",2,0x93,0x12);
     return OS_OK;
 }
 
@@ -51,7 +50,7 @@ U32 PRT_AppInit(void)
     extern void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
     struct TskInitParam para;
     para.taskEntry = Init;
-    para.taskPrio = 25;
+    para.taskPrio = 1;
     para.stackSize = 0x1000;
     para.name ="Init thread";
     para.stackAddr = 0;
@@ -82,7 +81,7 @@ int main()
 
 extern void *__wrap_memset(void *dest, int set, U32 len)
 {
-    if (dest == NULL || len == 0) {
+    if (dest == NULL) {
         return NULL;
     }
     
@@ -95,6 +94,9 @@ extern void *__wrap_memset(void *dest, int set, U32 len)
 
 extern void *__wrap_memcpy(void *dest, const void *src, size_t size)
 {
+    if(dest == NULL || src == NULL) {
+	return NULL;
+    }
     for (size_t i = 0; i < size; ++i) {
         *(char *)(dest + i) = *(char *)(src + i);
     }

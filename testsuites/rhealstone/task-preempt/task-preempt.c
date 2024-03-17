@@ -10,7 +10,7 @@
 #include "timesys.h"
 
 #define BENCHMARKS 50000
-#define WARMUP_TIMES 100
+#define WARMUP_TIMES 1000
 
 TskHandle taskIds[2];
 uintptr_t telapsed;
@@ -23,10 +23,10 @@ void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
 {
     for (count = 0; count < WARMUP_TIMES; count++) {
         status = PRT_TaskResume(taskIds[1]);
-        tswitch = benchmark_timer_read();
+        tswitch += benchmark_timer_read();
         directive_failed(status, "PRT_TaskResume of TA02");
     }
-
+    tswitch /= WARMUP_TIMES;
     benchmark_timer_initialize();
 
     for (count = 0; count < BENCHMARKS; count++) {
@@ -82,8 +82,8 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
     directive_failed(status, "PRT_TaskCreate of TA02");
 
     benchmark_timer_initialize();
-    for (count = 0; count < (BENCHMARKS * 2) - 1; count++); {
-        asm volatile("");
+    for (count = 0; count < (BENCHMARKS * 2) - 1; count++) {
+        __asm__ __volatile__("");
     }
     tloop = benchmark_timer_read();
 

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <prt_tick.h>
 #include "prt_buildef.h"
-
+#include <prt_clk.h>
 uintptr_t g_cycle = 0;
 U64 g_tick = 0;
 
@@ -38,6 +38,11 @@ void benchmark_timer_initialize(void)
 #if defined(OS_ARCH_ARMV8)
     __asm__ __volatile__ ("MRS %0, CNTPCT_EL0" : "=r"(g_cycle) :: "memory", "cc");
 #endif
+
+#if defined(OS_ARCH_RISCV64)
+    g_cycle = PRT_ClkGetCycleCount64();
+#endif
+
 }
 
 uintptr_t benchmark_timer_read(void)
@@ -62,6 +67,11 @@ uintptr_t benchmark_timer_read(void)
 #if defined(OS_ARCH_ARMV8)
     U64 end;
     __asm__ __volatile__ ("MRS %0, CNTPCT_EL0" : "=r"(end) :: "memory", "cc");
+    return end - g_cycle;
+#endif
+
+#if defined(OS_ARCH_RISCV64)
+    U64 end = PRT_ClkGetCycleCount64();
     return end - g_cycle;
 #endif
 }

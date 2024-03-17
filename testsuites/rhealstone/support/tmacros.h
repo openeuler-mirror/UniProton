@@ -32,6 +32,11 @@ extern U32 PRT_Printf(const char *format, ...);
 #define printf PRT_Printf
 #endif
 
+#if (OS_CPU_TYPE == OS_RV64_VIRT)
+#include "uart.h"
+#define printf uart_printf
+#endif
+
 void benchmark_timer_initialize(void);
 uintptr_t benchmark_timer_read(void);
 

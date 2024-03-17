@@ -89,18 +89,21 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 
     benchmark_timer_initialize();
     for (count1 = 0; count1 < BENCHMARKS - 1; count1++) {
-        asm volatile("");
+        __asm__ __volatile__("");
     }
     for (count2 = 0; count2 < BENCHMARKS; count2++) {
-        asm volatile("");
+        __asm__ __volatile__("");
     }
     loopCycle = benchmark_timer_read();
 
-    PRT_TaskDelay(0);
-    benchmark_timer_initialize();
-    PRT_TaskDelay(0);
-    dirOverhead = benchmark_timer_read();
-
+    dirOverhead = 0;
+    for(int i=0;i<BENCHMARKS;i++)
+    {
+    	benchmark_timer_initialize();
+    	PRT_TaskDelay(0);
+    	dirOverhead += benchmark_timer_read();
+    }
+    dirOverhead /= BENCHMARKS;
     status = PRT_TaskResume(taskIds[0]);
     directive_failed(status, "PRT_TaskResume of TA01");
 

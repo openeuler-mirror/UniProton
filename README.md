@@ -15,6 +15,10 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 [hello word示例](./doc/getting_started.md)
 
+[qemu-riscv64-virt 开发环境搭建](./doc/riscv_qemu_start.md)
+
+[qemu-riscv64-virt 工程创建示例](./doc/creat_app_in_riscv_qemu.md)
+
 ### 3、编译
 
 [编译步骤](./doc/UniProton_build.md)
