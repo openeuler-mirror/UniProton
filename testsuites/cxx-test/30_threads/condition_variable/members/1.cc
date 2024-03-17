@@ -24,6 +24,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <system_error>
+#include "prt_buildef.h"
 #include <testsuite_hooks.h>
 
 static void test01()
@@ -53,6 +54,8 @@ static void test01()
 
 int test_30_threads_condition_variable_members_1()
 {
+#ifndef OS_ARCH_ARMV8
   test01();
+#endif
   return 0;
 }

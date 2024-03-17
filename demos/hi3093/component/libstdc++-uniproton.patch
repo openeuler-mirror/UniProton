@@ -1,0 +1,985 @@
+diff --git a/libgcc/gthr-default.h b/libgcc/gthr-default.h
+new file mode 120000
+index 000000000..eb424911e
+--- /dev/null
++++ b/libgcc/gthr-default.h
+@@ -0,0 +1 @@
++gthr-posix.h
+\ No newline at end of file
+diff --git a/libstdc++-v3/config/io/basic_file_stdio.cc b/libstdc++-v3/config/io/basic_file_stdio.cc
+index ba830fb9e..3707aa7bf 100644
+--- a/libstdc++-v3/config/io/basic_file_stdio.cc
++++ b/libstdc++-v3/config/io/basic_file_stdio.cc
+@@ -64,6 +64,7 @@
+ #endif
+ 
+ #include <limits> // For <off_t>::max() and min() and <streamsize>::max()
++extern "C" int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len);
+ 
+ namespace
+ {
+@@ -365,7 +366,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ #ifdef FIONREAD
+     // Pipes and sockets.
+     int __num = 0;
+-    int __r = ioctl(this->fd(), FIONREAD, &__num);
++    int __r = PRT_ProxyIoctl(this->fd(), FIONREAD, &__num, sizeof(__num));
+     if (!__r && __num >= 0)
+       return __num;
+ #endif
+diff --git a/libstdc++-v3/config/os/gnu-linux/arm-eabi-extra.ver b/libstdc++-v3/config/os/gnu-linux/arm-eabi-extra.ver
+deleted file mode 100644
+index 5c7dc19e6..000000000
+--- a/libstdc++-v3/config/os/gnu-linux/arm-eabi-extra.ver
++++ /dev/null
+@@ -1,18 +0,0 @@
+-# Appended to version file.
+-
+-CXXABI_ARM_1.3.3 {
+-   # ARM ABI helper functions provided in libsupc++.
+-   __aeabi_atexit;
+-   __aeabi_vec_ctor_nocookie_nodtor;
+-   __aeabi_vec_ctor_cookie_nodtor;
+-   __aeabi_vec_cctor_nocookie_nodtor;
+-   __aeabi_vec_new_cookie_noctor;
+-   __aeabi_vec_new_nocookie;
+-   __aeabi_vec_new_cookie_nodtor;
+-   __aeabi_vec_new_cookie;
+-   __aeabi_vec_dtor;
+-   __aeabi_vec_dtor_cookie;
+-   __aeabi_vec_delete;
+-   __aeabi_vec_delete3;
+-   __aeabi_vec_delete3_nodtor;
+-};
+diff --git a/libstdc++-v3/config/os/gnu-linux/ctype_base.h b/libstdc++-v3/config/os/gnu-linux/ctype_base.h
+index 24bff55d1..11bba857f 100644
+--- a/libstdc++-v3/config/os/gnu-linux/ctype_base.h
++++ b/libstdc++-v3/config/os/gnu-linux/ctype_base.h
+@@ -22,16 +22,11 @@
+ // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ // <http://www.gnu.org/licenses/>.
+ 
+-/** @file bits/ctype_base.h
+- *  This is an internal header file, included by other library headers.
+- *  Do not attempt to use it directly. @headername{locale}
+- */
+-
+ //
+ // ISO C++ 14882: 22.1  Locales
+ //
+ 
+-// Information as gleaned from /usr/include/ctype.h
++// Default information, may not be appropriate for specific host.
+ 
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+@@ -45,21 +40,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+     // NB: Offsets into ctype<char>::_M_table force a particular size
+     // on the mask type. Because of this, we don't use an enum.
+-    typedef unsigned short 	mask;
+-    static const mask upper    	= _ISupper;
+-    static const mask lower 	= _ISlower;
+-    static const mask alpha 	= _ISalpha;
+-    static const mask digit 	= _ISdigit;
+-    static const mask xdigit 	= _ISxdigit;
+-    static const mask space 	= _ISspace;
+-    static const mask print 	= _ISprint;
+-    static const mask graph 	= _ISalpha | _ISdigit | _ISpunct;
+-    static const mask cntrl 	= _IScntrl;
+-    static const mask punct 	= _ISpunct;
+-    static const mask alnum 	= _ISalpha | _ISdigit;
+-#if __cplusplus >= 201103L
+-    static const mask blank	= _ISblank;
+-#endif
++    typedef unsigned int 	mask;
++    static const mask upper    	= 1 << 0;
++    static const mask lower 	= 1 << 1;
++    static const mask alpha 	= 1 << 2;
++    static const mask digit 	= 1 << 3;
++    static const mask xdigit 	= 1 << 4;
++    static const mask space 	= 1 << 5;
++    static const mask print 	= 1 << 6;
++    static const mask graph 	= (1 << 2) | (1 << 3) | (1 << 9); // alnum|punct
++    static const mask cntrl 	= 1 << 8;
++    static const mask punct 	= 1 << 9;
++    static const mask alnum 	= (1 << 2) | (1 << 3);  // alpha|digit
++    static const mask blank	= 1 << 10;
+   };
+ 
+ _GLIBCXX_END_NAMESPACE_VERSION
+diff --git a/libstdc++-v3/config/os/gnu-linux/ctype_configure_char.cc b/libstdc++-v3/config/os/gnu-linux/ctype_configure_char.cc
+index f57ed8114..f27da9310 100644
+--- a/libstdc++-v3/config/os/gnu-linux/ctype_configure_char.cc
++++ b/libstdc++-v3/config/os/gnu-linux/ctype_configure_char.cc
+@@ -38,140 +38,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+ // Information as gleaned from /usr/include/ctype.h
+ 
+-#if _GLIBCXX_C_LOCALE_GNU
+   const ctype_base::mask*
+   ctype<char>::classic_table() throw()
+-  { return _S_get_c_locale()->__ctype_b; }
+-#else
+-  const ctype_base::mask*
+-  ctype<char>::classic_table() throw()
+-  {
+-    const ctype_base::mask* __ret;
+-    char* __old = setlocale(LC_CTYPE, NULL);
+-    char* __sav = NULL;
+-    if (__builtin_strcmp(__old, "C"))
+-      {
+-	const size_t __len = __builtin_strlen(__old) + 1;
+-	__sav = new char[__len];
+-	__builtin_memcpy(__sav, __old, __len);
+-	setlocale(LC_CTYPE, "C");
+-      }
+-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+-    __ret = *__ctype_b_loc();
+-#else
+-    __ret = __ctype_b;
+-#endif
+-    if (__sav)
+-      {
+-	setlocale(LC_CTYPE, __sav);
+-	delete [] __sav;
+-      }
+-    return __ret;
+-  }
+-#endif
++  { return 0; }
+ 
+-#if _GLIBCXX_C_LOCALE_GNU
+-  ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del,
+-		     size_t __refs)
+-  : facet(__refs), _M_c_locale_ctype(_S_clone_c_locale(__cloc)),
+-  _M_del(__table != 0 && __del),
+-  _M_toupper(_M_c_locale_ctype->__ctype_toupper),
+-  _M_tolower(_M_c_locale_ctype->__ctype_tolower),
+-  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b),
+-  _M_widen_ok(0), _M_narrow_ok(0)
+-  {
+-    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+-    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
+-  }
+-#else
+   ctype<char>::ctype(__c_locale, const mask* __table, bool __del,
+ 		     size_t __refs)
+-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
+-  _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
++  : facet(__refs), _M_del(__table != 0 && __del),
++  _M_toupper(NULL), _M_tolower(NULL),
++  _M_table(__table ? __table : classic_table())
+   {
+-    char* __old = setlocale(LC_CTYPE, NULL);
+-    char* __sav = NULL;
+-    if (__builtin_strcmp(__old, "C"))
+-      {
+-	const size_t __len = __builtin_strlen(__old) + 1;
+-	__sav = new char[__len];
+-	__builtin_memcpy(__sav, __old, __len);
+-	setlocale(LC_CTYPE, "C");
+-      }
+-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+-    _M_toupper = *__ctype_toupper_loc();
+-    _M_tolower = *__ctype_tolower_loc();
+-    _M_table = __table ? __table : *__ctype_b_loc();
+-#else
+-    _M_toupper = __ctype_toupper;
+-    _M_tolower = __ctype_tolower;
+-    _M_table = __table ? __table : __ctype_b;
+-#endif
+-    if (__sav)
+-      {
+-	setlocale(LC_CTYPE, __sav);
+-	delete [] __sav;
+-      }
+-    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+-    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
++    memset(_M_widen, 0, sizeof(_M_widen));
++    _M_widen_ok = 0;
++    memset(_M_narrow, 0, sizeof(_M_narrow));
++    _M_narrow_ok = 0;
+   }
+-#endif
+ 
+-#if _GLIBCXX_C_LOCALE_GNU
+   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
+-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
+-  _M_del(__table != 0 && __del),
+-  _M_toupper(_M_c_locale_ctype->__ctype_toupper),
+-  _M_tolower(_M_c_locale_ctype->__ctype_tolower),
+-  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b),
+-  _M_widen_ok(0), _M_narrow_ok(0)
++  : facet(__refs), _M_del(__table != 0 && __del),
++  _M_toupper(NULL), _M_tolower(NULL),
++  _M_table(__table ? __table : classic_table())
+   {
+-    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+-    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
+-  }
+-#else
+-  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
+-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
+-  _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
+-  {
+-    char* __old = setlocale(LC_CTYPE, NULL);
+-    char* __sav = NULL;
+-    if (__builtin_strcmp(__old, "C"))
+-      {
+-	const size_t __len = __builtin_strlen(__old) + 1;
+-	__sav = new char[__len];
+-	__builtin_memcpy(__sav, __old, __len);
+-	setlocale(LC_CTYPE, "C");
+-      }
+-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+-    _M_toupper = *__ctype_toupper_loc();
+-    _M_tolower = *__ctype_tolower_loc();
+-    _M_table = __table ? __table : *__ctype_b_loc();
+-#else
+-    _M_toupper = __ctype_toupper;
+-    _M_tolower = __ctype_tolower;
+-    _M_table = __table ? __table : __ctype_b;
+-#endif
+-    if (__sav)
+-      {
+-	setlocale(LC_CTYPE, __sav);
+-	delete [] __sav;
+-      }
+-    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+-    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
++    memset(_M_widen, 0, sizeof(_M_widen));
++    _M_widen_ok = 0;
++    memset(_M_narrow, 0, sizeof(_M_narrow));
++    _M_narrow_ok = 0;
+   }
+-#endif
+ 
+   char
+   ctype<char>::do_toupper(char __c) const
+-  { return _M_toupper[static_cast<unsigned char>(__c)]; }
++  { return ::toupper((int) __c); }
+ 
+   const char*
+   ctype<char>::do_toupper(char* __low, const char* __high) const
+   {
+     while (__low < __high)
+       {
+-	*__low = _M_toupper[static_cast<unsigned char>(*__low)];
++	*__low = ::toupper((int) *__low);
+ 	++__low;
+       }
+     return __high;
+@@ -179,14 +82,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+   char
+   ctype<char>::do_tolower(char __c) const
+-  { return _M_tolower[static_cast<unsigned char>(__c)]; }
++  { return ::tolower((int) __c); }
+ 
+   const char*
+   ctype<char>::do_tolower(char* __low, const char* __high) const
+   {
+     while (__low < __high)
+       {
+-	*__low = _M_tolower[static_cast<unsigned char>(*__low)];
++	*__low = ::tolower((int) *__low);
+ 	++__low;
+       }
+     return __high;
+diff --git a/libstdc++-v3/config/os/gnu-linux/ctype_inline.h b/libstdc++-v3/config/os/gnu-linux/ctype_inline.h
+index ae8a2f4de..f24736492 100644
+--- a/libstdc++-v3/config/os/gnu-linux/ctype_inline.h
++++ b/libstdc++-v3/config/os/gnu-linux/ctype_inline.h
+@@ -34,6 +34,13 @@
+ // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
+ // functions go in ctype.cc
+ 
++// The following definitions are portable, but insanely slow. If one
++// cares at all about performance, then specialized ctype
++// functionality should be added for the native os in question: see
++// the config/os/bits/ctype_*.h files.
++
++// Constructing a synthetic "C" table should be seriously considered...
++
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+@@ -41,14 +48,96 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+   bool
+   ctype<char>::
+   is(mask __m, char __c) const
+-  { return _M_table[static_cast<unsigned char>(__c)] & __m; }
++  {
++    if (_M_table)
++      return _M_table[static_cast<unsigned char>(__c)] & __m;
++    else
++      {
++	bool __ret = false;
++	const size_t __bitmasksize = 15;
++	size_t __bitcur = 0; // Lowest bitmask in ctype_base == 0
++	for (; __bitcur <= __bitmasksize; ++__bitcur)
++	  {
++	    const mask __bit = static_cast<mask>(1 << __bitcur);
++	    if (__m & __bit)
++	      {
++		bool __testis;
++		switch (__bit)
++		  {
++		  case space:
++		    __testis = isspace(__c);
++		    break;
++		  case print:
++		    __testis = isprint(__c);
++		    break;
++		  case cntrl:
++		    __testis = iscntrl(__c);
++		    break;
++		  case upper:
++		    __testis = isupper(__c);
++		    break;
++		  case lower:
++		    __testis = islower(__c);
++		    break;
++		  case alpha:
++		    __testis = isalpha(__c);
++		    break;
++		  case digit:
++		    __testis = isdigit(__c);
++		    break;
++		  case punct:
++		    __testis = ispunct(__c);
++		    break;
++		  case xdigit:
++		    __testis = isxdigit(__c);
++		    break;
++		  case alnum:
++		    __testis = isalnum(__c);
++		    break;
++		  case graph:
++		    __testis = isgraph(__c);
++		    break;
++#ifdef _GLIBCXX_USE_C99_CTYPE_TR1
++		  case blank:
++		    __testis = isblank(__c);
++		    break;
++#endif
++		  default:
++		    __testis = false;
++		    break;
++		  }
++		__ret |= __testis;
++	      }
++	  }
++	return __ret;
++      }
++  }
+ 
+   const char*
+   ctype<char>::
+   is(const char* __low, const char* __high, mask* __vec) const
+   {
+-    while (__low < __high)
+-      *__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
++    if (_M_table)
++      while (__low < __high)
++	*__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
++    else
++      {
++	// Highest bitmask in ctype_base == 11.
++	const size_t __bitmasksize = 15;
++	for (;__low < __high; ++__vec, ++__low)
++	  {
++	    mask __m = 0;
++	    // Lowest bitmask in ctype_base == 0
++	    size_t __i = 0;
++	    for (;__i <= __bitmasksize; ++__i)
++	      {
++		const mask __bit = static_cast<mask>(1 << __i);
++		if (this->is(__bit, *__low))
++		  __m |= __bit;
++	      }
++	    *__vec = __m;
++	  }
++      }
+     return __high;
+   }
+ 
+@@ -56,9 +145,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+   ctype<char>::
+   scan_is(mask __m, const char* __low, const char* __high) const
+   {
+-    while (__low < __high
+-	   && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
+-      ++__low;
++    if (_M_table)
++      while (__low < __high
++	     && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
++	++__low;
++    else
++      while (__low < __high && !this->is(__m, *__low))
++	++__low;
+     return __low;
+   }
+ 
+@@ -66,9 +159,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+   ctype<char>::
+   scan_not(mask __m, const char* __low, const char* __high) const
+   {
+-    while (__low < __high
+-	   && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
+-      ++__low;
++    if (_M_table)
++      while (__low < __high
++	     && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
++	++__low;
++    else
++      while (__low < __high && this->is(__m, *__low) != 0)
++	++__low;
+     return __low;
+   }
+ 
+diff --git a/libstdc++-v3/config/os/gnu-linux/error_constants.h b/libstdc++-v3/config/os/gnu-linux/error_constants.h
+new file mode 100644
+index 000000000..0d34f7179
+--- /dev/null
++++ b/libstdc++-v3/config/os/gnu-linux/error_constants.h
+@@ -0,0 +1,178 @@
++// Specific definitions for generic platforms  -*- C++ -*-
++
++// Copyright (C) 2007-2020 Free Software Foundation, Inc.
++//
++// This file is part of the GNU ISO C++ Library.  This library is free
++// software; you can redistribute it and/or modify it under the
++// terms of the GNU General Public License as published by the
++// Free Software Foundation; either version 3, or (at your option)
++// any later version.
++
++// This library is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU General Public License for more details.
++
++// Under Section 7 of GPL version 3, you are granted additional
++// permissions described in the GCC Runtime Library Exception, version
++// 3.1, as published by the Free Software Foundation.
++
++// You should have received a copy of the GNU General Public License and
++// a copy of the GCC Runtime Library Exception along with this program;
++// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
++// <http://www.gnu.org/licenses/>.
++
++/** @file bits/error_constants.h
++ *  This is an internal header file, included by other library headers.
++ *  Do not attempt to use it directly. @headername{system_error}
++ */
++
++#ifndef _GLIBCXX_ERROR_CONSTANTS
++#define _GLIBCXX_ERROR_CONSTANTS 1
++
++#include <bits/c++config.h>
++#include <cerrno>
++
++namespace std _GLIBCXX_VISIBILITY(default)
++{
++_GLIBCXX_BEGIN_NAMESPACE_VERSION
++
++  enum class errc
++    {
++      address_family_not_supported = 		EAFNOSUPPORT,
++      address_in_use = 				EADDRINUSE,
++      address_not_available = 			EADDRNOTAVAIL,
++      already_connected = 			EISCONN,
++      argument_list_too_long = 			E2BIG,
++      argument_out_of_domain = 			EDOM,
++      bad_address = 				EFAULT,
++      bad_file_descriptor = 			EBADF,
++
++#ifdef EBADMSG
++      bad_message = 				EBADMSG,
++#endif
++
++      broken_pipe = 				EPIPE,
++      connection_aborted = 			ECONNABORTED,
++      connection_already_in_progress = 		EALREADY,
++      connection_refused = 			ECONNREFUSED,
++      connection_reset = 			ECONNRESET,
++      cross_device_link = 			EXDEV,
++      destination_address_required = 		EDESTADDRREQ,
++      device_or_resource_busy = 		EBUSY,
++      directory_not_empty = 			ENOTEMPTY,
++      executable_format_error = 		ENOEXEC,
++      file_exists = 	       			EEXIST,
++      file_too_large = 				EFBIG,
++      filename_too_long = 			ENAMETOOLONG,
++      function_not_supported = 			ENOSYS,
++      host_unreachable = 			EHOSTUNREACH,
++
++#ifdef EIDRM
++      identifier_removed = 			EIDRM,
++#endif
++
++      illegal_byte_sequence = 			EILSEQ,
++      inappropriate_io_control_operation = 	ENOTTY,
++      interrupted = 				EINTR,
++      invalid_argument = 			EINVAL,
++      invalid_seek = 				ESPIPE,
++      io_error = 				EIO,
++      is_a_directory = 				EISDIR,
++      message_size = 				EMSGSIZE,
++      network_down = 				ENETDOWN,
++      network_reset = 				ENETRESET,
++      network_unreachable = 			ENETUNREACH,
++      no_buffer_space = 			ENOBUFS,
++      no_child_process = 			ECHILD,
++
++#ifdef ENOLINK
++      no_link = 				ENOLINK,
++#endif
++
++      no_lock_available = 			ENOLCK,
++
++#ifdef ENODATA
++      no_message_available = 			ENODATA,
++#endif
++
++      no_message = 				ENOMSG,
++      no_protocol_option = 			ENOPROTOOPT,
++      no_space_on_device = 			ENOSPC,
++
++#ifdef ENOSR
++      no_stream_resources = 			ENOSR,
++#endif
++
++      no_such_device_or_address = 		ENXIO,
++      no_such_device = 				ENODEV,
++      no_such_file_or_directory = 		ENOENT,
++      no_such_process = 			ESRCH,
++      not_a_directory = 			ENOTDIR,
++      not_a_socket = 				ENOTSOCK,
++
++#ifdef ENOSTR
++      not_a_stream = 				ENOSTR,
++#endif
++
++      not_connected = 				ENOTCONN,
++      not_enough_memory = 			ENOMEM,
++
++#ifdef ENOTSUP
++      not_supported = 				ENOTSUP,
++#endif
++
++#ifdef ECANCELED
++      operation_canceled = 			ECANCELED,
++#endif
++
++      operation_in_progress = 			EINPROGRESS,
++      operation_not_permitted = 		EPERM,
++      operation_not_supported = 		EOPNOTSUPP,
++      operation_would_block = 			EWOULDBLOCK,
++
++#ifdef EOWNERDEAD
++      owner_dead = 				EOWNERDEAD,
++#endif
++
++      permission_denied = 			EACCES,
++
++#ifdef EPROTO
++      protocol_error = 				EPROTO,
++#endif
++
++      protocol_not_supported = 			EPROTONOSUPPORT,
++      read_only_file_system = 			EROFS,
++      resource_deadlock_would_occur = 		EDEADLK,
++      resource_unavailable_try_again = 		EAGAIN,
++      result_out_of_range = 			ERANGE,
++
++#ifdef ENOTRECOVERABLE
++      state_not_recoverable = 			ENOTRECOVERABLE,
++#endif
++
++#ifdef ETIME
++      stream_timeout = 				ETIME,
++#endif
++
++#ifdef ETXTBSY
++      text_file_busy = 				ETXTBSY,
++#endif
++
++      timed_out = 				ETIMEDOUT,
++      too_many_files_open_in_system = 		ENFILE,
++      too_many_files_open = 			EMFILE,
++      too_many_links = 				EMLINK,
++      too_many_symbolic_link_levels = 		ELOOP,
++
++#ifdef EOVERFLOW
++      value_too_large = 			EOVERFLOW,
++#endif
++
++      wrong_protocol_type = 			EPROTOTYPE
++    };
++
++_GLIBCXX_END_NAMESPACE_VERSION
++} // namespace
++
++#endif
+diff --git a/libstdc++-v3/config/os/gnu-linux/ldbl-extra.ver b/libstdc++-v3/config/os/gnu-linux/ldbl-extra.ver
+deleted file mode 100644
+index 5ef4a6cb6..000000000
+--- a/libstdc++-v3/config/os/gnu-linux/ldbl-extra.ver
++++ /dev/null
+@@ -1,47 +0,0 @@
+-# Appended to version file.
+-
+-GLIBCXX_LDBL_3.4 {
+-  _ZNSt14numeric_limitsIgE*;
+-  _ZNSirsERg;
+-  _ZNSolsEg;
+-  _ZNSt13basic_istreamIwSt11char_traitsIwEErsERg;
+-  _ZNSt13basic_ostreamIwSt11char_traitsIwEElsEg;
+-  _ZSt14__convert_to_vIgEvPKcRT_RSt12_Ios_IostateRKP*;
+-  _ZStlsIg[cw]St11char_traitsI[cw]EERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E;
+-  _ZStrsIg[cw]St11char_traitsI[cw]EERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E;
+-  *__gnu_cxx_ldbl128[1-6]*;
+-  *St9has_facetINSt17__gnu_cxx_ldbl1287*;
+-  *St9use_facetINSt17__gnu_cxx_ldbl1287*;
+-  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][0-2]E?;
+-  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
+-  *__gnu_cxx_ldbl1287num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+-  *__gnu_cxx_ldbl1287num_getI[cw]*getE*;
+-  *__gnu_cxx_ldbl1287num_getI[cw]*14_M_extract_intI*;
+-  *__gnu_cxx_ldbl1287num_getI[cw]*16_M_extract_floatE*;
+-  *__gnu_cxx_ldbl1287num_putI[cw]*;
+-  *__gnu_cxx_ldbl128[8-9]*;
+-};
+-
+-# Corresponding to exports in GLIBCXX_3.4.9, not GLIBCXX_3.4.7
+-GLIBCXX_LDBL_3.4.7 {
+-  _ZNSi10_M_extractIgEERSiRT_;
+-  _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractIgEERS2_RT_;
+-  _ZNSo9_M_insertIgEERSoT_;
+-  _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertIgEERS2_T_;
+-} GLIBCXX_LDBL_3.4;
+-
+-GLIBCXX_LDBL_3.4.10 {
+-  _ZNKSt3tr14hashIgEclEg;
+-  _ZNKSt4hashIgEclEg;
+-} GLIBCXX_LDBL_3.4.7;
+-
+-GLIBCXX_LDBL_3.4.21 {
+-  __gnu_cxx_ldbl1287num_getI[cw]*14_M_extract_intB5cxx11*;
+-  __gnu_cxx_ldbl1287num_getI[cw]*16_M_extract_floatB5cxx11*;
+-} GLIBCXX_LDBL_3.4.10;
+-
+-CXXABI_LDBL_1.3 {
+-  _ZT[IS]g;
+-  _ZT[IS]Pg;
+-  _ZT[IS]PKg;
+-};
+diff --git a/libstdc++-v3/config/os/gnu-linux/os_defines.h b/libstdc++-v3/config/os/gnu-linux/os_defines.h
+index 01bfa9ddd..81af53f60 100644
+--- a/libstdc++-v3/config/os/gnu-linux/os_defines.h
++++ b/libstdc++-v3/config/os/gnu-linux/os_defines.h
+@@ -1,4 +1,4 @@
+-// Specific definitions for GNU/Linux  -*- C++ -*-
++// Specific definitions for generic platforms  -*- C++ -*-
+ 
+ // Copyright (C) 2000-2020 Free Software Foundation, Inc.
+ //
+@@ -33,32 +33,9 @@
+ // System-specific #define, typedefs, corrections, etc, go here.  This
+ // file will come before all others.
+ 
+-// This keeps isanum, et al from being propagated as macros.
+-#define __NO_CTYPE 1
+-
+-#include <features.h>
+-
+-// Provide a declaration for the possibly deprecated gets function, as
+-// glibc 2.15 and later does not declare gets for ISO C11 when
+-// __GNU_SOURCE is defined.
+-#if __GLIBC_PREREQ(2,15) && defined(_GNU_SOURCE)
+-# undef _GLIBCXX_HAVE_GETS
+-#endif
+-
+-// Glibc 2.23 removed the obsolete isinf and isnan declarations. Check the
+-// version dynamically in case it has changed since libstdc++ was configured.
+-#define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
+-
+-#if __GLIBC_PREREQ(2, 27)
+-// Since glibc 2.27 pthread_self() is usable without linking to libpthread.
+-# define _GLIBCXX_NATIVE_THREAD_ID pthread_self()
+-#else
+-// Before then it was in libc.so.6 but not libc.a, and always returns 0,
+-// which breaks the invariant this_thread::get_id() != thread::id{}.
+-// So only use it if we know the libpthread version is available.
+-// Otherwise use (__gthread_t)1 as the ID of the main (and only) thread.
+-# define _GLIBCXX_NATIVE_THREAD_ID \
+-  (__gthread_active_p() ? __gthread_self() : (__gthread_t)1)
+-#endif
++// Disable the weak reference logic in gthr.h for os/generic because it
++// is broken on every platform unless there is implementation specific
++// workaround in gthr-posix.h and at link-time for static linking.
++#define _GLIBCXX_GTHREAD_USE_WEAK 0
+ 
+ #endif
+diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
+index 766a0a8d5..39b235772 100755
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -19505,99 +19505,99 @@ $as_echo "#define HAVE_S_IFREG 1" >>confdefs.h
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res" >&5
+ $as_echo "$res" >&6; }
+ 
+-  CXXFLAGS="$ac_save_CXXFLAGS"
+-  ac_ext=c
+-ac_cpp='$CPP $CPPFLAGS'
+-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+-ac_compiler_gnu=$ac_cv_c_compiler_gnu
+-
+-
+-
+-# For xsputn_2().
+-for ac_header in sys/uio.h
+-do :
+-  ac_fn_c_check_header_mongrel "$LINENO" "sys/uio.h" "ac_cv_header_sys_uio_h" "$ac_includes_default"
+-if test "x$ac_cv_header_sys_uio_h" = xyes; then :
+-  cat >>confdefs.h <<_ACEOF
+-#define HAVE_SYS_UIO_H 1
+-_ACEOF
+-
+-fi
+-
+-done
+-
+-
+-
+-
+-  ac_ext=cpp
+-ac_cpp='$CXXCPP $CPPFLAGS'
+-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+-
+-  ac_save_CXXFLAGS="$CXXFLAGS"
+-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+-
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for writev" >&5
+-$as_echo_n "checking for writev... " >&6; }
+-  if ${glibcxx_cv_WRITEV+:} false; then :
+-  $as_echo_n "(cached) " >&6
+-else
+-
+-    if test x$gcc_no_link = xyes; then
+-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-#include <sys/uio.h>
+-int
+-main ()
+-{
+-struct iovec iov[2];
+-       writev(0, iov, 0);
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_cxx_try_compile "$LINENO"; then :
+-  glibcxx_cv_WRITEV=yes
+-else
+-  glibcxx_cv_WRITEV=no
+-fi
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-else
+-  if test x$gcc_no_link = xyes; then
+-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+-fi
+-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-#include <sys/uio.h>
+-int
+-main ()
+-{
+-struct iovec iov[2];
+-       writev(0, iov, 0);
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_cxx_try_link "$LINENO"; then :
+-  glibcxx_cv_WRITEV=yes
+-else
+-  glibcxx_cv_WRITEV=no
+-fi
+-rm -f core conftest.err conftest.$ac_objext \
+-    conftest$ac_exeext conftest.$ac_ext
+-fi
+-
+-fi
+-
+-  if test $glibcxx_cv_WRITEV = yes; then
+-
+-$as_echo "#define HAVE_WRITEV 1" >>confdefs.h
+-
+-  fi
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_WRITEV" >&5
+-$as_echo "$glibcxx_cv_WRITEV" >&6; }
++#   CXXFLAGS="$ac_save_CXXFLAGS"
++#   ac_ext=c
++# ac_cpp='$CPP $CPPFLAGS'
++# ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
++# ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
++# ac_compiler_gnu=$ac_cv_c_compiler_gnu
++
++
++
++# # For xsputn_2().
++# for ac_header in sys/uio.h
++# do :
++#   ac_fn_c_check_header_mongrel "$LINENO" "sys/uio.h" "ac_cv_header_sys_uio_h" "$ac_includes_default"
++# if test "x$ac_cv_header_sys_uio_h" = xyes; then :
++#   cat >>confdefs.h <<_ACEOF
++# #define HAVE_SYS_UIO_H 1
++# _ACEOF
++
++# fi
++
++# done
++
++
++
++
++#   ac_ext=cpp
++# ac_cpp='$CXXCPP $CPPFLAGS'
++# ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
++# ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
++# ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++
++#   ac_save_CXXFLAGS="$CXXFLAGS"
++#   CXXFLAGS="$CXXFLAGS -fno-exceptions"
++
++#   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for writev" >&5
++# $as_echo_n "checking for writev... " >&6; }
++#   if ${glibcxx_cv_WRITEV+:} false; then :
++#   $as_echo_n "(cached) " >&6
++# else
++
++#     if test x$gcc_no_link = xyes; then
++#   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++# /* end confdefs.h.  */
++# #include <sys/uio.h>
++# int
++# main ()
++# {
++# struct iovec iov[2];
++#        writev(0, iov, 0);
++#   ;
++#   return 0;
++# }
++# _ACEOF
++# if ac_fn_cxx_try_compile "$LINENO"; then :
++#   glibcxx_cv_WRITEV=yes
++# else
++#   glibcxx_cv_WRITEV=no
++# fi
++# rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++# else
++#   if test x$gcc_no_link = xyes; then
++#   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
++# fi
++# cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++# /* end confdefs.h.  */
++# #include <sys/uio.h>
++# int
++# main ()
++# {
++# struct iovec iov[2];
++#        writev(0, iov, 0);
++#   ;
++#   return 0;
++# }
++# _ACEOF
++# if ac_fn_cxx_try_link "$LINENO"; then :
++#   glibcxx_cv_WRITEV=yes
++# else
++#   glibcxx_cv_WRITEV=no
++# fi
++# rm -f core conftest.err conftest.$ac_objext \
++#     conftest$ac_exeext conftest.$ac_ext
++# fi
++
++# fi
++
++#   if test $glibcxx_cv_WRITEV = yes; then
++
++# $as_echo "#define HAVE_WRITEV 1" >>confdefs.h
++
++#   fi
++#   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_WRITEV" >&5
++# $as_echo "$glibcxx_cv_WRITEV" >&6; }
+ 
+   CXXFLAGS="$ac_save_CXXFLAGS"
+   ac_ext=c
+@@ -76157,7 +76157,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
+ 
+ 
+ # For Networking TS.
+-for ac_header in fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h
++# for ac_header in fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h
++for ac_header in fcntl.h sys/ioctl.h sys/socket.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h
+ do :
+   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+diff --git a/libstdc++-v3/include/experimental/socket b/libstdc++-v3/include/experimental/socket
+index 4c4734837..c49b266e7 100644
+--- a/libstdc++-v3/include/experimental/socket
++++ b/libstdc++-v3/include/experimental/socket
+@@ -59,7 +59,7 @@
+ #  include <fcntl.h>		// fcntl, F_GETFL, F_SETFL
+ # endif
+ #endif
+-
++extern "C" int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len);
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+@@ -637,7 +637,7 @@ inline namespace v1
+ 	void
+ 	io_control(_IoControlCommand& __command, error_code& __ec)
+ 	{
+-#ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
++#if 0
+ 	  int __result = ::ioctl(_M_sockfd, __command.name(),
+ 				 __command.data());
+ 	  if (__result == -1)
+@@ -851,7 +851,7 @@ inline namespace v1
+ 	  }
+ #if defined _GLIBCXX_HAVE_SYS_IOCTL_H && defined FIONREAD
+ 	int __avail = 0;
+-	if (::ioctl(this->_M_sockfd, FIONREAD, &__avail) == -1)
++	if (PRT_ProxyIoctl(this->_M_sockfd, FIONREAD, &__avail, sizeof(__avail)) == -1)
+ 	  {
+ 	    __ec.assign(errno, generic_category());
+ 	    return 0;
+diff --git a/libstdc++-v3/src/c++11/random.cc b/libstdc++-v3/src/c++11/random.cc
+index 62ed27447..af79958f0 100644
+--- a/libstdc++-v3/src/c++11/random.cc
++++ b/libstdc++-v3/src/c++11/random.cc
+@@ -73,7 +73,7 @@
+ // Use the mt19937 member of the union, as in previous GCC releases.
+ # define USE_MT19937 1
+ #endif
+-
++extern "C" int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len);
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+   namespace
+@@ -405,7 +405,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
+       return 0.0;
+ 
+     int ent;
+-    if (::ioctl(fd, RNDGETENTCNT, &ent) < 0)
++    if (PRT_ProxyIoctl(fd, RNDGETENTCNT, &ent, sizeof(ent)) < 0)
+       return 0.0;
+ 
+     if (ent < 0)

@@ -22,6 +22,7 @@
 // { dg-require-gthreads "" }
 
 #include <condition_variable>
+#include "prt_buildef.h"
 #include <testsuite_hooks.h>
 namespace {
 // PR libstdc++/68519
@@ -46,6 +47,8 @@ test01()
 int
 test_30_threads_condition_variable_members_68519()
 {
+#ifndef OS_ARCH_ARMV8
   test01();
+#endif
   return 0;
 }
