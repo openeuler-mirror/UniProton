@@ -107,6 +107,7 @@ Start:
     MSR    CPACR_EL1, x10
     ISB
 
+    BL     mmu_init
     B      OsResetVector
 
 OsEnterReset:

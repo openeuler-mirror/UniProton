@@ -12,8 +12,8 @@ U32 PRT_UartInit(void)
 
 void uart_poll_send(unsigned char ch)
 {
-    /* 暂不使用uart，先直接写串口寄存器地址 */
-    volatile int time = 1000;
+    /* 暂不使用uart，先直接写串口寄存器地址，启用MMU后速度加快，延时相应的增加 */
+    volatile int time = 25000;
     *(unsigned int *)UART_BASE_ADDR = ch;
     while (time--);
 }
