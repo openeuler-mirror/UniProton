@@ -20,7 +20,7 @@
 #include "prt_buildef.h"
 
 #define VDEV_START_ADDR		MMU_OPENAMP_ADDR
-#define VDEV_SIZE		0x30000
+#define VDEV_SIZE		0x100000
 
 #define VDEV_STATUS_ADDR	VDEV_START_ADDR
 #define VDEV_STATUS_SIZE	0x4000
