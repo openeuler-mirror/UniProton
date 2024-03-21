@@ -7,7 +7,7 @@ else
     export APP=hi3093
 fi
 
-if [ "${APP}" == "cxxTest" ]
+if [[ "${APP}" == "cxxTest" || "${APP}" == "eigenTest" ]]
 then
     export CXX_TOOLCHAIN_PATH=/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr
 fi
@@ -23,7 +23,7 @@ then
     sh ./libcxx_build.sh
 fi
 
-if [ "${APP}" == "cxxTest" ]
+if [[ "${APP}" == "cxxTest" || "${APP}" == "eigenTest" ]]
 then
     cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCXX_TOOLCHAIN_PATH:STRING=$CXX_TOOLCHAIN_PATH -DCPU_TYPE:SRTING="hi3093"
 else
@@ -35,7 +35,7 @@ make $APP
 popd
 cp ./$TMP_DIR/$APP $APP.elf
 
-if [ "${APP}" == "cxxTest" ]
+if [[ "${APP}" == "cxxTest" || "${APP}" == "eigenTest" ]]
 then
     python ./../../../bin_helper.py -f ./$APP.elf --nocopy
     $CXX_TOOLCHAIN_PATH/bin/aarch64-openeuler-linux-objcopy -O binary ./$APP.elf $APP.bin

@@ -3,7 +3,7 @@ project(exmaples LANGUAGES C CXX ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
-if (${APP} STREQUAL "cxxTest")
+if (${APP} STREQUAL "cxxTest" OR ${APP} STREQUAL "eigenTest")
     set(CMAKE_C_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
     set(CMAKE_CXX_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-g++)
     set(CMAKE_ASM_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
@@ -42,6 +42,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
     ${HOME_PATH}/output/libc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
+    ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -56,7 +57,7 @@ link_libraries(
     -Wl,--end-group
 )
 
-if (${APP} STREQUAL "cxxTest")
+if (${APP} STREQUAL "cxxTest" OR ${APP} STREQUAL "eigenTest")
     link_libraries(
         "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
         "${CXX_TOOLCHAIN_PATH}/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/libgcc.a"
@@ -68,7 +69,7 @@ add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
-if (${APP} STREQUAL "cxxTest")
+if (${APP} STREQUAL "cxxTest" OR ${APP} STREQUAL "eigenTest")
 add_subdirectory(component/boost_1_54_0)
 endif()
 
@@ -87,6 +88,11 @@ elseif(${APP} STREQUAL "cxxTest")
         message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_CXX AND CONFIG_OS_OPTION_LOCALE")
         return()
     endif()
+elseif(${APP} STREQUAL "eigenTest")
+    add_subdirectory(${HOME_PATH}/testsuites/eigen-test tmp)
+    target_compile_options(rpmsg PUBLIC -DEIGEN_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:boost> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:eigentest>)
+    add_executable(${APP} ${OBJS})
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
     add_executable(${APP} ${OBJS})
