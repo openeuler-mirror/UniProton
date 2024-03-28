@@ -5,3 +5,5 @@ if (${CONFIG_OS_GDB_STUB})
 endif()
 
 add_library(bsp OBJECT ${SRCS})
+
+add_subdirectory(hal)
