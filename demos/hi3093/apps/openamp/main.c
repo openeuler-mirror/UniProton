@@ -31,6 +31,10 @@ int TestOpenamp()
 }
 #endif
 
+#if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
+int xml2_test_entry();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -39,6 +43,10 @@ void TestTaskEntry()
 
 #if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE)
     Init(0, 0, 0, 0);
+#endif
+
+#if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
+    xml2_test_entry();
 #endif
 }
 
