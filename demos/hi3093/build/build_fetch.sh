@@ -33,3 +33,11 @@ cp UniProton-patch-for-boost_1_54_0.patch boost_1_54_0
 cd boost_1_54_0
 patch -p1 -d . < UniProton-patch-for-boost_1_54_0.patch
 popd
+
+echo "################# get eigen #################"
+pushd ../component
+rm -rf eigen-3.4.0
+wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+tar -zxvf eigen-3.4.0.tar.gz
+cp eigen-3.4.0/doc/examples/*cpp* ./../../../testsuites/eigen-test/
+popd
