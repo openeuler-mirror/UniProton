@@ -35,6 +35,10 @@ int TestOpenamp()
 int xml2_test_entry();
 #endif
 
+#if defined(LIBCCL_TESTCASE)
+extern void test_ccl();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -47,6 +51,10 @@ void TestTaskEntry()
 
 #if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)
     xml2_test_entry();
+#endif
+
+#if defined(LIBCCL_TESTCASE)
+    test_ccl();
 #endif
 }
 
