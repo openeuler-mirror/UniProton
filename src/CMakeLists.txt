@@ -27,6 +27,6 @@ if(${CONFIG_LOSCFG_SHELL})
     add_subdirectory(shell)
 endif()
 
-if(${CONFIG_OS_SUPPORT_LIBXML2})
+if((${CONFIG_OS_SUPPORT_LIBXML2}) AND (EXISTS ${UNIPROTON_SRC_DIR}/component/libxml2))
     add_subdirectory(component/libxml2)
 endif()

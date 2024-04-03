@@ -26,7 +26,7 @@ popd
 
 echo "################# get boost #################"
 pushd ../component
-rm -rf boost_1_54_0
+rm -rf boost_1_54_0*
 wget https://jaist.dl.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.bz2
 tar -xjf boost_1_54_0.tar.bz2
 cp UniProton-patch-for-boost_1_54_0.patch boost_1_54_0
@@ -36,8 +36,25 @@ popd
 
 echo "################# get eigen #################"
 pushd ../component
-rm -rf eigen-3.4.0
+rm -rf eigen-3.4.0*
 wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
 tar -zxvf eigen-3.4.0.tar.gz
 cp eigen-3.4.0/doc/examples/*cpp* ./../../../testsuites/eigen-test/
+popd
+
+echo "################# get libxml2 #################"
+pushd ../component
+rm -rf ./libxml2
+git clone https://gitee.com/src-openeuler/libxml2.git
+cd ./libxml2
+git checkout openEuler-22.03-LTS-SP2
+cd ../
+cp ./libxml2/libxml2-2.9.14.tar.xz ./
+rm -rf ./libxml2
+tar -xf libxml2-2.9.14.tar.xz
+rm libxml2-2.9.14.tar.xz
+mv ./libxml2-2.9.14 ./libxml2
+cp ./../../../src/component/UniProton-patch-for-libxml2.patch ./libxml2
+cd libxml2
+patch -p1 -d . < UniProton-patch-for-libxml2.patch
 popd

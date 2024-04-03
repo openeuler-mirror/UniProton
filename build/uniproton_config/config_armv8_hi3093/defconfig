@@ -145,3 +145,8 @@ CONFIG_OS_SUPPORT_CXX=y
 # enable Eigen
 # depend on CONFIG_OS_SUPPORT_CXX
 # CONFIG_OS_SUPPORT_EIGEN is not set
+
+#
+# enable Libxml2
+# depend on CONFIG_OS_OPTION_PROXY
+# CONFIG_OS_SUPPORT_LIBXML2 is not set
