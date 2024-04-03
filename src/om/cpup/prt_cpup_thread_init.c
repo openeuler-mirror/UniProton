@@ -30,7 +30,6 @@ OS_SEC_L4_TEXT U32 OsCpupReg(struct CpupModInfo *modInfo)
     OsMhookReserve((U32)OS_HOOK_TICK_EXIT, 1);
 
     g_ticksPerSample = modInfo->sampleTime;
-
     return OS_OK;
 }
 /*

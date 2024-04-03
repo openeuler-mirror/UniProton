@@ -25,6 +25,11 @@ static double OsShellGetMemUsageRate(uintptr_t usedSize, uintptr_t totalSize) {
 
 int OsShellCmdMemInfo(int argc, const char **argv)
 {
+    if (argc > 0) {
+        PRINTK("\nUsage: memInfo\n");
+        return OS_ERROR;
+    }
+
     PRINTK("PtNo.  ARITHMETIC        StartAddr         EndAddr           TotalSize   "
         "UsedSize    FreeSize    PeakSize    MemUsage  \n");
     PRINTK("-----  ----------------  ----------------  ----------------  ----------  "
@@ -44,7 +49,7 @@ int OsShellCmdMemInfo(int argc, const char **argv)
             g_memUsage, (g_memTotalSize - g_memUsage), g_memPeakUsage, memUsageRate);
     }
 
-    return 0;
+    return OS_OK;
 }
 
 SHELLCMD_ENTRY(memInfo_shellcmd, CMD_TYPE_EX, "memInfo", 0, (CmdCallBackFunc)OsShellCmdMemInfo);

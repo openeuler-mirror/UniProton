@@ -87,9 +87,13 @@ add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
 
 if (${CONFIG_OS_OPTION_OPENAMP})
-    add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
-    target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
-    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+    if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+        add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
+        target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+    else()
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    endif()
 elseif(${CONFIG_GUEST_OS})
     list(APPEND OBJS $<TARGET_OBJECTS:apps> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
 endif()
@@ -101,6 +105,13 @@ list(APPEND LD_OPTS
     -uhelp_shellcmd
     -umemInfo_shellcmd
     -utaskInfo_shellcmd
+    -uuname_shellcmd
+    -uhwi_shellcmd
+    -ucpup_shellcmd
+    -usem_shellcmd
+    -uswtmr_shellcmd
+    -uqueue_shellcmd
+    -usysteminfo_shellcmd
 )
 target_link_options(${APP} PUBLIC ${LD_OPTS})
 endif()
