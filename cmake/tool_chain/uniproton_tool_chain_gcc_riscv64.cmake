@@ -25,9 +25,15 @@ set(TOOLCHAIN_DIR "$ENV{HCC_PATH}") #该路径应该是外部传入,指向编译
 set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/riscv64-unknown-elf-gcc" CACHE PATH "gcc C compiler" FORCE)
 set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/riscv64-unknown-elf-gcc" CACHE PATH "gcc ASM compiler" FORCE)
 
+#if use rv64virt open -g for debug information and -O0
+if( ${CPU_TYPE} STREQUAL "rv64virt")
 set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -g -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
-set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER>  -mcmodel=medany  -g ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
-
+set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O0  -mcmodel=medany  -g ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+else()
+#if use real board, customize CFLAGS for your board
+set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER>  -mcmodel=medany ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+endif()
 
 file(STRINGS "$ENV{CONFIG_FILE_PATH}/defconfig" config_options REGEX "^CONFIG_OS_OPTION_POSIX" ENCODING "UTF-8")
 foreach(config_option ${config_options})

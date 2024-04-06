@@ -38,7 +38,8 @@
 #define OS_ASCEND310B       0x07
 #define OS_ATLASA1          0x08
 #define OS_RV64_VIRT        0x09
-#define OS_CPU_TYPE_INVALID 0x0a
+#define OS_RV64_D1S	        0x0a
+#define OS_CPU_TYPE_INVALID 0x0b
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 
