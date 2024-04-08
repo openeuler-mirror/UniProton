@@ -9,30 +9,22 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2024-01-14
- * Description: RISCV64 clint控制器对内驱动头文件
+ * Create: 2024-02-22
+ * Description: 平台信息描述
  */
+#ifndef __PLATFORM_H
+#define __PLATFORM_H
 
-#ifndef PRT_HW_CLIENT_H
-#define PRT_HW_CLIENT_H
 
-#include "prt_buildef_common.h"
-#include "prt_buildef.h"
-#include "prt_typedef.h"
-#include "prt_attr_external.h"
-#include "../common/prt_riscv.h"
+#define UART0 0x02500000
+#define UART0_IRQ 18
+#define UART_PRIO 3
 
-#if (OS_CPU_TYPE == OS_RV64_VIRT)
-#include "./board/qemu_rv64virt/platform.h"
-#endif
-
-#if (OS_CPU_TYPE == OS_RV64_D1S)
-#include "./board/ds_d1s/platform.h"
-#endif
+#define PLIC    0x10000000L
+#define CLINT   0x4000000L
 
 #define CLINT_MSI              (CLINT)
 #define CLINT_TIME             (CLINT+0xBFF8)
 #define CLINT_TIMECMP(hart_id) (CLINT+0x4000+8*(hart_id))
 
-
-#endif
+#endif 

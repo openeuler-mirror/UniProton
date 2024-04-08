@@ -25,7 +25,9 @@
 #include "./board/qemu_rv64virt/platform.h"
 #endif
 
-
+#if (OS_CPU_TYPE == OS_RV64_D1S)
+#include "./board/ds_d1s/platform.h"
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus
