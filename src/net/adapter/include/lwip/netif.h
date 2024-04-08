@@ -33,7 +33,8 @@
                         u8_t (*drv_set_hwaddr)(struct netif *netif, u8_t *addr, u8_t len); \
                         void (*drv_config)(struct netif *netif, u32_t config_flags, u8_t setBit); \
                         char full_name[IFNAMSIZ]; \
-                        u16_t link_layer_type
+                        u16_t link_layer_type; \
+                        void *d_private
 #include_next <lwip/netif.h>
 #undef linkoutput
 #if LWIP_DHCPS

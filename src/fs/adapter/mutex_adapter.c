@@ -67,3 +67,55 @@ int nxrmutex_destroy(FAR rmutex_t *rmutex)
 {
     return pthread_mutex_destroy(rmutex);
 }
+
+bool nxmutex_is_hold(FAR mutex_t *mutex)
+{
+    return GET_SEM(mutex->mutex_sem)->semOwner == RUNNING_TASK->taskPid;
+}
+
+bool nxrmutex_is_hold(FAR rmutex_t *rmutex)
+{
+    return GET_SEM(rmutex->mutex_sem)->semOwner == RUNNING_TASK->taskPid;
+}
+
+int nxrmutex_breaklock(FAR rmutex_t *rmutex, FAR unsigned int *count)
+{
+    int ret = 0;
+    *count = 0;
+    if (nxrmutex_is_hold(rmutex)) {
+        return ret;
+    }
+    *count = GET_SEM(rmutex->mutex_sem)->semCount;
+    ret = nxmutex_unlock(rmutex);
+    if (ret != 0) {
+        GET_SEM(rmutex->mutex_sem)->semCount = *count;
+    }
+
+    return ret;
+}
+
+int nxrmutex_trylock(FAR rmutex_t *rmutex)
+{
+    return pthread_mutex_trylock(rmutex);
+}
+
+int nxrmutex_restorelock(FAR rmutex_t *rmutex, unsigned int count)
+{
+    int ret = OK;
+    if (count != 0) {
+        ret = nxmutex_lock(rmutex);
+        if (ret != 0) {
+            GET_SEM(rmutex->mutex_sem)->semCount = count;
+        }
+    }
+
+    return ret;
+}
+
+int nxmutex_timedlock(FAR mutex_t *mutex, unsigned int timeout)
+{
+    struct timespec time;
+    time.tv_sec = 0;
+    time.tv_nsec = timeout * NSEC_PER_MSEC;
+    return pthread_mutex_timedlock(mutex, &time);
+}

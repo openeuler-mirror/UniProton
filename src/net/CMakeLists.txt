@@ -17,14 +17,18 @@ endif()
 set(LWIP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lwip)
 include(lwip/src/Filelists.cmake)
 
-add_library(lwip OBJECT ${lwipnoapps_SRCS})
+add_library(lwip OBJECT ${lwipnoapps_SRCS} ${lwipallapps_SRCS})
 
 target_include_directories(lwip PUBLIC 
     adapter/include
     lwip/src/include
 )
 
+list(APPEND ALL_OBJECT_LIBRARYS lwip)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
+
 ##############################下一级的编译目录 ###########################
+set(NET_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 if(${CONFIG_OS_SUPPORT_NET})
 add_subdirectory(adapter)
 endif()

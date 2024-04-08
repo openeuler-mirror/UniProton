@@ -20,6 +20,8 @@
 #include <lwip/sockets.h>
 #include <lwip/ethip6.h>
 
+#include "prt_typedef.h"
+
 #define LWIP_NETIF_HOSTNAME_DEFAULT         "default"
 #define LINK_SPEED_OF_YOUR_NETIF_IN_BPS     100000000 // 100Mbps
 

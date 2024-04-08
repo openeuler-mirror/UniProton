@@ -73,3 +73,32 @@ int nxsig_usleep(useconds_t usec)
 {
     return usleep(usec);
 }
+
+int nxsem_tickwait_uninterruptible(FAR sem_t *sem, uint32_t delay)
+{
+    clock_t end = clock_systime_ticks() + delay;
+    int ret;
+
+    while(true) {
+        ret = nxsem_tickwait(sem, delay);
+        if (ret == OS_OK || ret == -ETIMEDOUT) {
+            break;
+        }
+        delay = end - clock_systime_ticks();
+        if ((int32_t)delay < 0) {
+            delay = 0;
+        }
+    }
+
+    return ret;
+}
+
+int nxsem_wait_uninterruptible(FAR sem_t *sem)
+{
+    int ret;
+    do {
+        ret = sem_wait(sem);
+    } while (ret != OS_OK);
+
+    return ret;
+}
