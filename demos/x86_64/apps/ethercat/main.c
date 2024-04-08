@@ -90,7 +90,7 @@ int xml2_test_entry();
 #endif
 
 #if defined(LIBCCL_TESTCASE)
-extern int test_ccl(const char *conf_path);
+extern void test_ccl();
 #endif
 
 void TestTaskEntry()
@@ -135,7 +135,7 @@ void TestTaskEntry()
     Init(0, 0, 0, 0);
 #endif
 #if defined(LIBCCL_TESTCASE)
-    test_ccl(NULL);
+    test_ccl();
 #endif
 }
 

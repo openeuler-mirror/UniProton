@@ -52,23 +52,21 @@ diff -uprN ccl-0.1.1.orig/CMakeLists.txt ccl-0.1.1/CMakeLists.txt
 diff -uprN ccl-0.1.1.orig/demo/test_entry.c ccl-0.1.1/demo/test_entry.c
 --- ccl-0.1.1.orig/demo/test_entry.c	1970-01-01 08:00:00.000000000 +0800
 +++ ccl-0.1.1/demo/test_entry.c	2023-12-12 09:29:53.759992817 +0800
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,41 @@
 +#include <stdio.h>
 +
 +#include "ccl/ccl.h"
 +
-+int test_ccl(const char *conf_path)
++int test_ccl_conf(const char *conf_path)
 +{
 +    struct ccl_t             config;
 +    const struct ccl_pair_t  *iter;
++    int ret;
 +
 +    config.comment_char = '#';
 +    config.sep_char = '=';
 +    config.str_char = '"';
-+    if (conf_path == NULL) {
-+        conf_path = "./simple.conf";
-+    }
-+    ccl_parse(&config, conf_path);
++    ret = ccl_parse(&config, conf_path);
 +
 +    while((iter = ccl_iterate(&config)) != 0) {
 +        printf("(%s,%s)\n", iter->key, iter->value);
@@ -76,5 +74,23 @@ diff -uprN ccl-0.1.1.orig/demo/test_entry.c ccl-0.1.1/demo/test_entry.c
 +
 +    ccl_release(&config);
 +
-+    return 0;
++    return ret;
++}
++
++void test_ccl()
++{
++    printf("\ntest ccl start\n");
++    const char *simple_path = "./simple.conf";
++    const char *example_path = "./example.conf";
++    printf("\ntest simple.conf\n");
++    if (test_ccl_conf(simple_path)) {
++        printf("test simple.conf failed\n");
++    }
++
++    printf("\ntest example.conf\n");
++    if (test_ccl_conf(example_path)) {
++        printf("test example.conf failed\n");
++    }
++
++    printf("\ntest ccl end\n");
 +}
