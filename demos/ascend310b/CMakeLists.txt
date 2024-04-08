@@ -47,6 +47,7 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${HOME_PATH}/output/libc/include
         ${HOME_PATH}/src/shell/adapter/include
         ${HOME_PATH}/src/shell/full/include
+        ${HOME_PATH}/src/component/mica
     )
 elseif(${CONFIG_GUEST_OS})
     include_directories(
@@ -87,6 +88,8 @@ add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
 list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
 
 if (${CONFIG_OS_OPTION_OPENAMP})
+    add_subdirectory(${HOME_PATH}/src/component/mica mica)
+    list(APPEND OBJS $<TARGET_OBJECTS:mica>)
     if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
         add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
         target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)

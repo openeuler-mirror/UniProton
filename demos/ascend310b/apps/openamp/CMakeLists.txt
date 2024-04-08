@@ -1,2 +1,2 @@
-set(SRC rpmsg_backend.c rpmsg_service.c main.c)
+set(SRC main.c)
 add_library(rpmsg OBJECT ${SRC})
