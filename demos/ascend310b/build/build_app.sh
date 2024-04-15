@@ -1,3 +1,4 @@
+# UniPorton_test_proxy_posix_interface  ascend310b
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
 export APP=ascend310b
 export TMP_DIR=$APP
