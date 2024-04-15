@@ -3,7 +3,7 @@
 
 #include "cache_asm.h"
 
-#define MMU_IMAGE_ADDR             0x7A000000ULL
+#define MMU_IMAGE_ADDR             0x7B000000ULL
 #define MMU_GIC_ADDR               0xFF800000ULL
 #define MMU_UART_ADDR              0xFE200000ULL
 #define MMU_OPENAMP_ADDR           0x70000000ULL
