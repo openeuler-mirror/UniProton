@@ -25,11 +25,11 @@ void schedTest(void);
 void waitTest(void);
 #endif
 
-#if defined(OS_SUPPORT_ETHERCAT)
+#if defined(OS_SUPPORT_IGH_ETHERCAT)
 int ethercat_init(void);
 #endif
 
-#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
+#if defined(OS_SUPPORT_IGH_ETHERCAT) && defined(ETHERCAT_TESTCASE)
 int ethercat_main(void);
 void test_ethercat_main();
 bool wait_for_slave_scan_complete();
@@ -104,11 +104,11 @@ void TestTaskEntry()
     micaShellInit();
 #endif
 
-#if defined(OS_SUPPORT_ETHERCAT)
+#if defined(OS_SUPPORT_IGH_ETHERCAT)
     ethercat_init();
 #endif
 
-#if defined(OS_SUPPORT_ETHERCAT) && defined(ETHERCAT_TESTCASE)
+#if defined(OS_SUPPORT_IGH_ETHERCAT) && defined(ETHERCAT_TESTCASE)
     if (!wait_for_slave_respond()) {
         printf("[TEST] no slave responding!\n");
         return;

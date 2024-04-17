@@ -43,6 +43,7 @@ include_directories(
     ${HOME_PATH}/output/libc/include
     ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
     ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
+    ${HOME_PATH}/output/soem/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -106,6 +107,16 @@ elseif (${APP} STREQUAL "libcclTest")
     target_compile_options(rpmsg PUBLIC -DLIBCCL_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:ccl>)
     add_executable(${APP} ${OBJS})
+elseif (${APP} STREQUAL "UniProton_soem_demo")
+    if ("${CONFIG_OS_SUPPORT_SOEM}" STREQUAL "y")
+        add_subdirectory(${HOME_PATH}/testsuites/soemTest tmp)
+        target_compile_options(rpmsg PUBLIC -DSOEM_DEMO)
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:soemTest>)
+        add_executable(${APP} ${OBJS})
+    else()
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_SOEM")
+        return()
+    endif()
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
     add_executable(${APP} ${OBJS})

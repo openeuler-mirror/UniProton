@@ -4,7 +4,7 @@
 
 ## 1 编译时使能ethercat功能：
 
-defconfig 设置CONFIG_OS_SUPPORT_ETHERCAT=y
+defconfig 设置CONFIG_OS_SUPPORT_IGH_ETHERCAT=y
 
 ## 2 igh命令行使用：
 

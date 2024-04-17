@@ -12,7 +12,7 @@
 └─libs            # UniProton实时部分的静态库，build目录中的makefile示例已经将头文件和静态库的引用准备好，应用可直接使用；
 
 ## Ethercat支持
-如果需要支持Ethercat，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_ETHERCAT
+如果需要支持Ethercat，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_IGH_ETHERCAT
 
 ## C++支持
 如果需要支持C++，需要在build/uniproton_config/config_x86_64/defconfig中使能CONFIG_OS_SUPPORT_CXX

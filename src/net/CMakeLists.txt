@@ -33,6 +33,10 @@ if(${CONFIG_OS_SUPPORT_NET})
 add_subdirectory(adapter)
 endif()
 
-if (${CONFIG_OS_SUPPORT_ETHERCAT})
+if (${CONFIG_OS_SUPPORT_IGH_ETHERCAT})
 add_subdirectory(ethercat)
+endif()
+
+if (${CONFIG_OS_SUPPORT_SOEM})
+add_subdirectory(soem)
 endif()

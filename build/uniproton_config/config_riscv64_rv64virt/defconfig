@@ -141,8 +141,8 @@ CONFIG_OS_OPTION_LOCALE=y
 
 #
 # EtherCAT Modules Configuration
-# depend on CONFIG_OS_OPTION_LINUX
-# CONFIG_OS_SUPPORT_ETHERCAT is not set
+# IGH EtherCAT depend on CONFIG_OS_OPTION_LINUX
+# CONFIG_OS_SUPPORT_IGH_ETHERCAT is not set
 
 #
 # Debug Modules Configuration
