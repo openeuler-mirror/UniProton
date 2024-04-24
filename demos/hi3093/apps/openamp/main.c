@@ -35,6 +35,10 @@ int TestOpenamp()
 int xml2_test_entry();
 #endif
 
+#if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
+void soem_test(const char *ifname);
+#endif
+
 #if defined(LIBCCL_TESTCASE)
 extern void test_ccl();
 #endif
@@ -43,6 +47,10 @@ void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
+#endif
+
+#if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
+    soem_test("eth3");
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE)

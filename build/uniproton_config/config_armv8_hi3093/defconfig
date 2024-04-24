@@ -150,3 +150,7 @@ CONFIG_OS_SUPPORT_CXX=y
 # enable Libxml2
 # depend on CONFIG_OS_OPTION_PROXY
 # CONFIG_OS_SUPPORT_LIBXML2 is not set
+
+#
+# EtherCAT Modules Configuration
+# CONFIG_OS_SUPPORT_SOEM is not set

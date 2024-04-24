@@ -11,7 +11,7 @@
 #include "prt_task.h"
 #include "prt_config.h"
 
-#ifdef OS_SUPPORT_ETHERCAT
+#ifdef OS_SUPPORT_IGH_ETHERCAT
 
 static TskHandle pids[WORKERS];
 

@@ -8,3 +8,6 @@
 ├─config          # 配置选项，供用户调整运行时参数；
 ├─include         # UniProton实时部分提供的编程接口API；
 └─libs            # UniProton实时部分的静态库，build目录中的makefile示例已经将头文件和静态库的引用准备好，应用可直接使用；
+
+## SOEM支持
+如果需要支持SOEM，需要在build/uniproton_config/config_armv8_hi3093/defconfig中使能CONFIG_OS_SUPPORT_SOEM

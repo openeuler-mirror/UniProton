@@ -604,7 +604,7 @@ int rpmsg_client_cb(struct rpmsg_endpoint *ept,
 #endif
     }
 
-#ifdef OS_SUPPORT_ETHERCAT
+#ifdef OS_SUPPORT_IGH_ETHERCAT
     if (is_valid_cmd_func_id(msg->id)) {
         cmd_base_req_t *cmd_req = (cmd_base_req_t *)&(msg->params[0]);
         U32 ret = PRT_QueueWrite(g_cmd_req_queue, cmd_req, len - MAX_FUNC_ID_LEN, 0, OS_QUEUE_NORMAL);
@@ -2076,9 +2076,6 @@ int PRT_ProxyFeof(FILE *f)
 
 static int __fprintf(FILE *f, const char *format, va_list list)
 {
-    rpc_fprintf_req_t req;
-    int ret = 0;
-    int hlen = sizeof(req.func_id) + sizeof(req.len) + sizeof(req.fhandle);
     if (g_printf_buffer == NULL) {
         return -1;
     }
@@ -2624,7 +2621,7 @@ int PRT_ProxyFflush(FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2647,7 +2644,7 @@ wint_t PRT_ProxyGetwc(FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(getwc);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2671,7 +2668,7 @@ wint_t PRT_ProxyPutwc(wchar_t wc, FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(getwc);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2695,7 +2692,7 @@ int PRT_ProxyPutc(int c, FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2719,7 +2716,7 @@ wint_t PRT_ProxyUngetwc(wint_t wc, FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(getwc);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2786,7 +2783,6 @@ char *PRT_ProxyGetcwd(char *buf, size_t size)
 
     CHECK_RET_NULL(g_ept == NULL)
     CHECK_AND_SET_ERRNO(buf != NULL && size == 0, NULL, EINVAL)
-    int isNull = 0;
 
     slot_idx = new_slot(&outp);
     CHECK_RET_NULL(slot_idx < 0)
@@ -2800,7 +2796,6 @@ char *PRT_ProxyGetcwd(char *buf, size_t size)
             errno = ENOMEM;
             goto getcwd_exit;
         }
-        isNull = 1;
     } else {
         outp.buf = buf;
     }
@@ -2861,7 +2856,7 @@ FILE *PRT_ProxyFdopen(int fd, const char *mode)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(fcommon);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
+    ret = wait4resp(slot_idx, &req, payload_size);
     CHECK_RET_NULL(ret < 0)
     errno = outp.super.errnum;
     free_slot(slot_idx);
@@ -2887,8 +2882,8 @@ int PRT_ProxyFileno(FILE *f)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
-    CHECK_RET(ret < 0)
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -2910,8 +2905,8 @@ int PRT_ProxySetvbuf(FILE *f, char *buf, int mode, size_t size)
     req.trace_id = RECORD_AT(slot_idx).trace_id;
     RECORD_AT(slot_idx).cb = CONVERT(common);
 
-    ret = wait4resp(slot_idx, &req, sizeof(req));
-    CHECK_RET(ret < 0)
+    ret = wait4resp(slot_idx, &req, payload_size);
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -2932,7 +2927,7 @@ int PRT_ProxySystem(const char *command)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.buf) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -2956,7 +2951,7 @@ ssize_t PRT_ProxyReadLink(const char *pathname, char *buf, size_t bufsiz)
     outp.buf = buf;
     outp.bufsiz = bufsiz;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -2979,7 +2974,7 @@ int PRT_ProxyAccess(const char *pathname, int mode)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.pathname) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -2998,7 +2993,7 @@ int PRT_ProxyDup2(int oldfd, int newfd)
     req.newfd = newfd;
     RECORD_AT(slot_idx).cb = CONVERT(common);
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3021,7 +3016,7 @@ int PRT_ProxyMkfifo(const char *pathname, mode_t mode)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.pathname) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3044,7 +3039,7 @@ int PRT_ProxyChmod(const char *pathname, mode_t mode)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.pathname) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3065,7 +3060,7 @@ int PRT_ProxyChdir(const char *path)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.buf) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3088,7 +3083,7 @@ int PRT_ProxyMkdir(const char *pathname, mode_t mode)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.pathname) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3109,7 +3104,7 @@ int PRT_ProxyRmdir(const char *path)
     RECORD_AT(slot_idx).cb = CONVERT(common);
     payload_size = payload_size - sizeof(req.buf) + len;
     ret = wait4resp(slot_idx, &req, payload_size);
-    CHECK_RET(ret < 0)
+    CHECK_RET(ret)
     errno = outp.super.errnum;
     free_slot(slot_idx);
     return outp.ret;
@@ -3217,7 +3212,7 @@ struct if_nameindex *PRT_ProxyIfNameIndex()
         0, sizeof(struct if_nameindex)*MAX_IFNAMEINDEX_SIZE);
 
     slot_idx = new_slot(&outp);
-    CHECK_RET(slot_idx)
+    CHECK_RET_NULL(slot_idx < 0)
 
     req.func_id = IFNAMEINDEX_ID;
     req.trace_id = RECORD_AT(slot_idx).trace_id;

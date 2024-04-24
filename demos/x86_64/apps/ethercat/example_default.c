@@ -10,7 +10,7 @@ extern int rpmsg_client_cb(struct rpmsg_endpoint *ept,
                     void *data, size_t len,
                     uint32_t src, void *priv);
 extern void rpmsg_set_default_ept(struct rpmsg_endpoint *ept);
-#ifdef OS_SUPPORT_ETHERCAT
+#ifdef OS_SUPPORT_IGH_ETHERCAT
 extern int workers_init(struct rpmsg_endpoint *ept);
 #endif
 
@@ -49,7 +49,7 @@ void example_init()
         __asm__ __volatile__ ("mfence");
     }
     g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
-#ifdef OS_SUPPORT_ETHERCAT
+#ifdef OS_SUPPORT_IGH_ETHERCAT
     workers_init(&g_ept);
 #endif
 }

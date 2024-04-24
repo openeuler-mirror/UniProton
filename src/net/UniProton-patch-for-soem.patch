@@ -1,0 +1,247 @@
+diff -urN SOEM-1.4.0/CMakeLists.txt soem/CMakeLists.txt
+--- SOEM-1.4.0/CMakeLists.txt	2019-06-13 14:06:41.000000000 +0800
++++ soem/CMakeLists.txt	2024-04-17 17:52:52.213015732 +0800
+@@ -1,88 +1,44 @@
+-cmake_minimum_required(VERSION 2.8.4)
+-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+-project(SOEM C)
+-
+-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+-  # Default to installing in SOEM source directory
+-  set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
+-endif()
+-
+-set(SOEM_INCLUDE_INSTALL_DIR include/soem)
+-set(SOEM_LIB_INSTALL_DIR lib)
+-set(BUILD_TESTS TRUE)
+-
+-if(WIN32)
+-  set(OS "win32")
+-  include_directories(oshw/win32/wpcap/Include)
+-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-    link_directories(${CMAKE_SOURCE_DIR}/oshw/win32/wpcap/Lib/x64)
+-  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+-    link_directories(${CMAKE_SOURCE_DIR}/oshw/win32/wpcap/Lib)
+-  endif()
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  /WX")
+-  set(OS_LIBS wpcap.lib Packet.lib Ws2_32.lib Winmm.lib)
+-elseif(UNIX AND NOT APPLE)
+-  set(OS "linux")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+-  set(OS_LIBS pthread rt)
+-elseif(APPLE)
+-  # This must come *before* linux or MacOSX will identify as Unix.
+-  set(OS "macosx")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+-  set(OS_LIBS pthread pcap)
+-elseif(${CMAKE_SYSTEM_NAME} MATCHES "rt-kernel")
+-  set(OS "rtk")
+-  message("ARCH is ${ARCH}")
+-  message("BSP is ${BSP}")
+-  include_directories(oshw/${OS}/${ARCH})
+-  file(GLOB OSHW_EXTRA_SOURCES oshw/${OS}/${ARCH}/*.c)
+-  set(OSHW_SOURCES "${OS_HW_SOURCES} ${OSHW_ARCHSOURCES}")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
+-  set(OS_LIBS "-Wl,--start-group -l${BSP} -l${ARCH} -lkern -ldev -lsio -lblock -lfs -lusb -llwip -leth -li2c -lrtc -lcan -lnand -lspi -lnor -lpwm -ladc -ltrace -lc -lm -Wl,--end-group")
+-elseif(${CMAKE_SYSTEM_NAME} MATCHES "rtems")
+-  message("Building for RTEMS")
+-  set(OS "rtems")
+-  set(SOEM_LIB_INSTALL_DIR ${LIB_DIR})
+-  set(BUILD_TESTS FALSE)
+-endif()
+-
+-message("OS is ${OS}")
+-
+ file(GLOB SOEM_SOURCES soem/*.c)
+-file(GLOB OSAL_SOURCES osal/${OS}/*.c)
+-file(GLOB OSHW_SOURCES oshw/${OS}/*.c)
++file(GLOB OSAL_SOURCES osal/linux/*.c)
++file(GLOB OSHW_SOURCES oshw/linux/*.c)
+ 
+ file(GLOB SOEM_HEADERS soem/*.h)
+-file(GLOB OSAL_HEADERS osal/osal.h osal/${OS}/*.h)
+-file(GLOB OSHW_HEADERS oshw/${OS}/*.h)
++file(GLOB OSAL_HEADERS osal/osal.h osal/linux/*.h)
++file(GLOB OSHW_HEADERS oshw/linux/*.h)
+ 
+ include_directories(soem)
+ include_directories(osal)
+-include_directories(osal/${OS})
+-include_directories(oshw/${OS})
+-
+-add_library(soem STATIC
+-  ${SOEM_SOURCES}
+-  ${OSAL_SOURCES}
+-  ${OSHW_SOURCES}
+-  ${OSHW_EXTRA_SOURCES})
+-target_link_libraries(soem ${OS_LIBS})
++include_directories(osal/linux)
++include_directories(oshw/linux)
+ 
+-message("LIB_DIR: ${SOEM_LIB_INSTALL_DIR}")
+-
+-install(TARGETS soem DESTINATION ${SOEM_LIB_INSTALL_DIR})
+ install(FILES
+   ${SOEM_HEADERS}
+   ${OSAL_HEADERS}
+   ${OSHW_HEADERS}
+-  DESTINATION ${SOEM_INCLUDE_INSTALL_DIR})
++  DESTINATION soem/include)
++
++
++# list(APPEND SOEM_SOURCES
++#     ${CMAKE_CURRENT_SOURCE_DIR}/test/linux/simple_test/simple_test.c
++#     ${CMAKE_CURRENT_SOURCE_DIR}/test/linux/slaveinfo/slaveinfo.c
++# )
++
++add_library(libsoem OBJECT ${SOEM_SOURCES} ${OSAL_SOURCES} ${OSHW_SOURCES})
++
++target_compile_options(libsoem PUBLIC
++        -Wno-bad-function-cast
++        -Wno-unused-value
++        -Wno-switch-default
++        -Wno-float-equal
++        -Wno-unused-but-set-variable
++        -Wno-discarded-qualifiers
++        -Wno-implicit-fallthrough
++        -Wno-cast-function-type
++        -Werror=incompatible-pointer-types
++        -Werror=missing-parameter-type
++        -Werror=implicit-function-declaration
++        -Werror=return-type
++        )
+ 
+-if(BUILD_TESTS) 
+-  add_subdirectory(test/linux/slaveinfo)
+-  add_subdirectory(test/linux/eepromtool)
+-  add_subdirectory(test/linux/simple_test)
+-endif()
++list(APPEND ALL_OBJECT_LIBRARYS libsoem)
++set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
+diff -urN SOEM-1.4.0/oshw/linux/nicdrv.c soem/oshw/linux/nicdrv.c
+--- SOEM-1.4.0/oshw/linux/nicdrv.c	2019-06-13 14:06:41.000000000 +0800
++++ soem/oshw/linux/nicdrv.c	2024-04-16 15:17:46.696435705 +0800
+@@ -56,6 +56,8 @@
+    ECT_RED_DOUBLE
+ };
+ 
++int PRT_ProxyIoctl(int fd, unsigned long request, void *arg, size_t len);
++
+ 
+ /** Primary source MAC address used for EtherCAT.
+  * This address is not the MAC address used from the NIC.
+@@ -153,15 +155,15 @@
+    r = setsockopt(*psock, SOL_SOCKET, SO_DONTROUTE, &i, sizeof(i));
+    /* connect socket to NIC by name */
+    strcpy(ifr.ifr_name, ifname);
+-   r = ioctl(*psock, SIOCGIFINDEX, &ifr);
++   r = PRT_ProxyIoctl(*psock, SIOCGIFINDEX, &ifr, sizeof(struct ifreq));
+    ifindex = ifr.ifr_ifindex;
+    strcpy(ifr.ifr_name, ifname);
+    ifr.ifr_flags = 0;
+    /* reset flags of NIC interface */
+-   r = ioctl(*psock, SIOCGIFFLAGS, &ifr);
++   r = PRT_ProxyIoctl(*psock, SIOCGIFFLAGS, &ifr, sizeof(struct ifreq));
+    /* set flags of NIC interface, here promiscuous and broadcast */
+    ifr.ifr_flags = ifr.ifr_flags | IFF_PROMISC | IFF_BROADCAST;
+-   r = ioctl(*psock, SIOCSIFFLAGS, &ifr);
++   r = PRT_ProxyIoctl(*psock, SIOCSIFFLAGS, &ifr, sizeof(struct ifreq));
+    /* bind socket to protocol, in this case RAW EtherCAT */
+    sll.sll_family = AF_PACKET;
+    sll.sll_ifindex = ifindex;
+diff -urN SOEM-1.4.0/test/linux/simple_test/simple_test.c soem/test/linux/simple_test/simple_test.c
+--- SOEM-1.4.0/test/linux/simple_test/simple_test.c	2019-06-13 14:06:41.000000000 +0800
++++ soem/test/linux/simple_test/simple_test.c	2024-04-17 16:57:51.590874949 +0800
+@@ -17,13 +17,13 @@
+ 
+ #define EC_TIMEOUTMON 500
+ 
+-char IOmap[4096];
+-OSAL_THREAD_HANDLE thread1;
+-int expectedWKC;
+-boolean needlf;
+-volatile int wkc;
+-boolean inOP;
+-uint8 currentgroup = 0;
++static char IOmap[4096];
++static OSAL_THREAD_HANDLE thread1;
++static int expectedWKC;
++static boolean needlf;
++static volatile int wkc;
++static boolean inOP;
++static uint8 currentgroup = 0;
+ 
+ void simpletest(char *ifname)
+ {
+@@ -220,17 +220,17 @@
+     }
+ }
+ 
+-int main(int argc, char *argv[])
++int soem_simple_test(const char *ifname)
+ {
+    printf("SOEM (Simple Open EtherCAT Master)\nSimple test\n");
+ 
+-   if (argc > 1)
++   if (ifname != NULL)
+    {
+       /* create thread to handle slave error handling in OP */
+ //      pthread_create( &thread1, NULL, (void *) &ecatcheck, (void*) &ctime);
+       osal_thread_create(&thread1, 128000, &ecatcheck, (void*) &ctime);
+       /* start cyclic part */
+-      simpletest(argv[1]);
++      simpletest(ifname);
+    }
+    else
+    {
+diff -urN SOEM-1.4.0/test/linux/slaveinfo/slaveinfo.c soem/test/linux/slaveinfo/slaveinfo.c
+--- SOEM-1.4.0/test/linux/slaveinfo/slaveinfo.c	2019-06-13 14:06:41.000000000 +0800
++++ soem/test/linux/slaveinfo/slaveinfo.c	2024-04-17 17:53:54.988643520 +0800
+@@ -17,13 +17,13 @@
+ 
+ #include "ethercat.h"
+ 
+-char IOmap[4096];
+-ec_ODlistt ODlist;
+-ec_OElistt OElist;
+-boolean printSDO = FALSE;
+-boolean printMAP = FALSE;
+-char usdo[128];
+-char hstr[1024];
++static char IOmap[4096];
++static ec_ODlistt ODlist;
++static ec_OElistt OElist;
++static boolean printSDO = FALSE;
++static boolean printMAP = FALSE;
++static char usdo[128];
++static char hstr[1024];
+ 
+ char* dtype2string(uint16 dtype)
+ {
+@@ -619,17 +619,17 @@
+ 
+ char ifbuf[1024];
+ 
+-int main(int argc, char *argv[])
++int soem_slave_info(const char *ifname)
+ {
+    ec_adaptert * adapter = NULL;
+    printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n");
+ 
+-   if (argc > 1)
++   if (ifname != NULL)
+    {
+-      if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
+-      if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
++    printSDO = TRUE;
++    printMAP = TRUE;
+       /* start slaveinfo */
+-      strcpy(ifbuf, argv[1]);
++      strcpy(ifbuf, ifname);
+       slaveinfo(ifbuf);
+    }
+    else

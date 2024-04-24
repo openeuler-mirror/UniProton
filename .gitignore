@@ -27,3 +27,6 @@
 /output
 /src/net/lwip
 /src/fs/fat/ff15
+/src/net/soem
+/testsuites/eigen-test
+/testsuites/soemTest/test
