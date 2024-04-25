@@ -1,7 +1,7 @@
 # Allowed compilation APP:
 # x86_64 UniPorton_test_posix_time_interface UniPorton_test_proxy_posix_interface UniPorton_test_libxml2_interface
 # task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency
-# linuxTest ethercatTest
+# linuxTest ethercatTest UniProton_modbus_demo
 export ALL="x86_64"
 
 gcc_file=/opt/buildtools/openeuler_gcc_x86_64/bin/x86_64-openeuler-linux-gnu-gcc
@@ -28,6 +28,11 @@ function build()
 {
     export APP=$1
     export TMP_DIR=$APP
+
+    if [ "${APP}" == "UniProton_modbus_demo" ]
+    then
+        sh ./build_modbus.sh $TOOLCHAIN_PATH
+    fi
 
     cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="x86_64" -DCMAKE_C_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-gcc -DCMAKE_CXX_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-g++
     pushd $TMP_DIR

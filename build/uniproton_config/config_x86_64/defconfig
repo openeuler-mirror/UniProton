@@ -151,3 +151,8 @@ CONFIG_OS_OPTION_LOCALE=y
 # Shell Modules Configuration.
 # CONFIG_LOSCFG_SHELL is not set
 # CONFIG_LOSCFG_SHELL_MICA_INPUT is not set
+
+#
+# Modbus Modules Configuration
+#
+# CONFIG_OS_OPTION_MODBUS is not set
