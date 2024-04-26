@@ -30,3 +30,7 @@ endif()
 if(${CONFIG_OS_SUPPORT_LIBXML2})
     add_subdirectory(component/libxml2)
 endif()
+
+if(${CONFIG_OS_SUPPORT_RPMSGLITE})
+    add_subdirectory(component/rpmsg-lite)
+endif()

@@ -29,6 +29,8 @@ for one_arg in $*; do
 	export APP=UniProton_test_posix_regex_interface
     elif [[ $one_arg == "UniProton_test_posix_prng_interface" ]]; then
 	export APP=UniProton_test_posix_prng_interface
+    elif [[ $one_arg == "rpmsglite_env_test" ]]; then
+    export APP=rpmsglite_env_test
     else
         echo "[Error] Not support args - $one_arg"
         exit 1
