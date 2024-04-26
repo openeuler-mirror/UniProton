@@ -2,6 +2,7 @@
 #include "prt_typedef.h"
 #include "cpu_config.h"
 #include "securec.h"
+#include "hal_base.h"
 
 #define OS_MAX_SHOW_LEN 0x200
 
@@ -10,12 +11,9 @@ U32 PRT_UartInit(void)
     return OS_FAIL;
 }
 
-void uart_poll_send(unsigned char ch)
+static inline void uart_poll_send(unsigned char ch)
 {
-    /* 暂不使用uart，先直接写串口寄存器地址，启用MMU后速度加快，延时相应的增加 */
-    volatile int time = 25000;
-    *(unsigned int *)UART_BASE_ADDR = ch;
-    while (time--);
+    HAL_UART_SerialOutChar(UART2, ch);
 }
 
 void TestPutc(unsigned char ch)

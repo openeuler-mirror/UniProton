@@ -24,6 +24,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/hal
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/rk3588
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
     ${HOME_PATH}/output/libc/include
@@ -52,7 +53,7 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
     add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
     target_compile_options(openamp PUBLIC -DTESTSUITE_CASE)
-    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:hal> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
     add_executable(${APP} ${OBJS})
 elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "task-preempt" OR
@@ -62,9 +63,9 @@ elseif(${APP} STREQUAL "task-switch" OR
         ${APP} STREQUAL "message-latency")
     add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
     target_compile_options(openamp PUBLIC -DTESTSUITE_CASE)
-    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
+    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:hal> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
     add_executable(${APP} ${OBJS})
 else()
-    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    list(APPEND OBJS $<TARGET_OBJECTS:openamp> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:hal> $<TARGET_OBJECTS:config>)
     add_executable(${APP} ${OBJS})
 endif()
