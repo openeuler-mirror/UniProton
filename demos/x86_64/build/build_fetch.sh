@@ -87,3 +87,21 @@ cp UniProton-patch-for-ccl.patch ./ccl
 cd ./ccl
 patch -p1 -d . < UniProton-patch-for-ccl.patch
 popd
+
+echo "################# git clone modbus #################"
+pushd ../component
+rm -rf ./libmodbus
+git clone --depth=1 --filter=blob:none --sparse https://gitee.com/openeuler/oee_archive.git
+cd oee_archive
+git sparse-checkout init --cone
+git sparse-checkout set "libmodbus"
+cp libmodbus/libmodbus-3.1.10.tar.gz ../
+cd ../
+rm -rf oee_archive
+tar -zxf libmodbus-3.1.10.tar.gz
+mv libmodbus-3.1.10 libmodbus
+rm libmodbus-3.1.10.tar.gz
+cp UniProton-patch-for-libmodbus.patch ./libmodbus
+cd libmodbus
+patch -p1 -d . < UniProton-patch-for-libmodbus.patch
+popd

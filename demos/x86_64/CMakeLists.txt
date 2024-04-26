@@ -34,6 +34,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/ethercat
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/modbus/include/modbus
+    ${HOME_PATH}/testsuites/modbusTest/
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
@@ -115,6 +117,24 @@ if (${APP} STREQUAL "ethercatTest")
     list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
     target_compile_options(ethercat PUBLIC -DETHERCAT_TESTCASE)
     add_executable(${APP} ${OBJS})
+endif()
+
+if (${APP} STREQUAL "UniProton_modbus_demo")
+    if ("${CONFIG_OS_OPTION_MODBUS}" STREQUAL "y")
+        link_libraries(
+            -Wl,--start-group
+            -Wl,--no-whole-archive
+            "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmodbus.a"
+            -Wl,--end-group
+        )
+        add_subdirectory(${HOME_PATH}/testsuites/modbusTest tmp)
+        target_compile_options(ethercat PUBLIC -DMODBUS_DEMO)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:modbusTest>)
+        add_executable(${APP} ${OBJS})
+    else()
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_MODBUS")
+        return()
+    endif()
 endif()
 
 if (${APP} STREQUAL "libcclTest")

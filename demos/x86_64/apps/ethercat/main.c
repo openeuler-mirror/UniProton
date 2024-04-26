@@ -42,6 +42,10 @@ U64 g_cpuClock = 0;
 char g_modelID[64] = {0};
 const TskPrior g_testTskPri = 25;
 
+#if defined(OS_OPTION_MODBUS)
+int modbus_client();
+#endif
+
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()
 {
@@ -99,6 +103,10 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+
+#if defined(MODBUS_DEMO) && defined(OS_OPTION_MODBUS)
+    modbus_client();
+#endif
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
     micaShellInit();

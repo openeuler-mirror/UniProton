@@ -1,0 +1,655 @@
+diff -urN libmodbus/.clabot modbus/.clabot
+--- libmodbus/.clabot	2022-12-08 03:00:14.000000000 +0800
++++ modbus/.clabot	2024-04-25 15:00:00.647532025 +0800
+@@ -25,7 +25,9 @@
+         "sirsoweird",
+         "taikiakita",
+         "vvck",
+-        "woodsnake"
++        "woodsnake",
++        "vancepym",
++        "mek-x"
+     ],
+     "message": "We require contributors to sign our Contributor License Agreement. In order for us to review and merge your code, please fill https://forms.gle/5635zjphDo5JEJQSA to get added. Your document will be manually checked by the maintainer. Be patient..."
+ }
+diff -urN libmodbus/.github/FUNDING.yml modbus/.github/FUNDING.yml
+--- libmodbus/.github/FUNDING.yml	2022-12-08 03:00:14.000000000 +0800
++++ modbus/.github/FUNDING.yml	2024-04-25 15:00:00.647532025 +0800
+@@ -1 +1,2 @@
+ github: [stephane]
++polar: stephane
+diff -urN libmodbus/configure.ac modbus/configure.ac
+--- libmodbus/configure.ac	2022-12-08 03:00:14.000000000 +0800
++++ modbus/configure.ac	2024-04-25 15:00:00.647532025 +0800
+@@ -82,7 +82,6 @@
+     errno.h \
+     fcntl.h \
+     limits.h \
+-    linux/serial.h \
+     netdb.h \
+     netinet/in.h \
+     netinet/tcp.h \
+@@ -133,9 +132,9 @@
+ fi
+ 
+ # Check for RS485 support (Linux kernel version 2.6.28+)
+-AC_CHECK_DECLS([TIOCSRS485], [], [], [[#include <sys/ioctl.h>]])
++# AC_CHECK_DECLS([TIOCSRS485], [], [], [[#include <sys/ioctl.h>]])
+ # Check for RTS flags
+-AC_CHECK_DECLS([TIOCM_RTS], [], [], [[#include <sys/ioctl.h>]])
++# AC_CHECK_DECLS([TIOCM_RTS], [], [], [[#include <sys/ioctl.h>]])
+ 
+ # Wtype-limits is not supported by gcc 4.2 (default on recent Mac OS X)
+ my_CFLAGS="-Wall \
+diff -urN libmodbus/docs/index.md modbus/docs/index.md
+--- libmodbus/docs/index.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/index.md	2024-04-25 15:00:00.647532025 +0800
+@@ -77,7 +77,7 @@
+ response or an indication is considered complete when all expected characters
+ have been received. This implementation offers very fast communication but you
+ must take care to set a response timeout of slaves less than response timeout of
+-master (ortherwise other slaves may ignore master requests when one of the slave
++master (otherwise other slaves may ignore master requests when one of the slaves
+ is not responding).
+ 
+ To create a Modbus RTU context, you should use [modbus_new_rtu](modbus_new_rtu.md).
+@@ -107,7 +107,7 @@
+ calculation as lower layer takes care of the same.
+ 
+ Contrary to the TCP IPv4 only backend, the TCP PI backend offers hostname
+-resolution but it consumes about 1Kb of additional memory.
++resolution but it consumes about 1 kB of additional memory.
+ 
+ Create a Modbus TCP PI context, you should use [modbus_new_tcp_pi](modbus_new_tcp_pi.md).
+ 
+diff -urN libmodbus/docs/modbus_free.md modbus/docs/modbus_free.md
+--- libmodbus/docs/modbus_free.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_free.md	2024-04-25 15:00:00.647532025 +0800
+@@ -12,7 +12,7 @@
+ 
+ ## Description
+ 
+-The *modbus_free()* function shall free an allocated modbus_t structure.
++The *modbus_free()* function shall free an allocated *modbus_t* structure.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_get_byte_from_bits.md modbus/docs/modbus_get_byte_from_bits.md
+--- libmodbus/docs/modbus_get_byte_from_bits.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_get_byte_from_bits.md	2024-04-25 15:00:00.647532025 +0800
+@@ -14,7 +14,7 @@
+ 
+ The *modbus_get_byte_from_bits()* function shall extract a value from many
+ bits. All `nb_bits` bits from `src` at position `index` will be read as a
+-single value. To obtain a full byte, set nb_bits to 8.
++single value. To obtain a full byte, set `nb_bits` to 8.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_get_header_length.md modbus/docs/modbus_get_header_length.md
+--- libmodbus/docs/modbus_get_header_length.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_get_header_length.md	2024-04-25 15:00:00.647532025 +0800
+@@ -14,7 +14,7 @@
+ 
+ The *modbus_get_header_length()* function shall retrieve the current header
+ length from the backend. This function is convenient to manipulate a message and
+-so its limited to low-level operations.
++so it's limited to low-level operations.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_mapping_free.md modbus/docs/modbus_mapping_free.md
+--- libmodbus/docs/modbus_mapping_free.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_mapping_free.md	2024-04-25 15:00:00.647532025 +0800
+@@ -12,8 +12,8 @@
+ 
+ ## Description
+ 
+-The function shall free the four arrays of mb_mapping_t structure and finally
+-the mb_mapping_t referenced by `mb_mapping`.
++The function shall free the four arrays of *modbus_mapping_t* structure and finally
++the *modbus_mapping_t* itself referenced by `mb_mapping`.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_mapping_new.md modbus/docs/modbus_mapping_new.md
+--- libmodbus/docs/modbus_mapping_new.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_mapping_new.md	2024-04-25 15:00:00.647532025 +0800
+@@ -14,7 +14,7 @@
+ 
+ The *modbus_mapping_new()* function shall allocate four arrays to store bits,
+ input bits, registers and inputs registers. The pointers are stored in
+-modbus_mapping_t structure. All values of the arrays are initialized to zero.
++*modbus_mapping_t* structure. All values of the arrays are initialized to zero.
+ 
+ This function is equivalent to a call of the
+ [modbus_mapping_new_start_address](modbus_mapping_new_start_address.md) function
+diff -urN libmodbus/docs/modbus_mapping_new_start_address.md modbus/docs/modbus_mapping_new_start_address.md
+--- libmodbus/docs/modbus_mapping_new_start_address.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_mapping_new_start_address.md	2024-04-25 15:00:00.647532025 +0800
+@@ -18,12 +18,12 @@
+ 
+ The `modbus_mapping_new_start_address()` function shall allocate four arrays to
+ store bits, input bits, registers and inputs registers. The pointers are stored
+-in modbus_mapping_t structure. All values of the arrays are initialized to zero.
++in *modbus_mapping_t* structure. All values of the arrays are initialized to zero.
+ 
+ The different starting addresses make it possible to place the mapping at any
+-address in each address space. This way, you can give access to the clients at
++address in each address space. This way, you can give access to clients to
+ values stored at high addresses without allocating memory from the address zero,
+-for eg. to make available registers from 340 to 349, you can use:
++for example to make available registers from 340 to 349, you can use:
+ 
+ ```c
+ mb_mapping = modbus_mapping_new_start_address(0, 0, 0, 0, 340, 10, 0, 0);
+@@ -33,8 +33,8 @@
+ 
+ - `tab_bits` set to NULL
+ - `tab_input_bits` set to NULL
+-- `tab_input_registers` allocated to store 10 registers (`uint16_t`)
+-- `tab_registers` set to NULL.
++- `tab_registers` allocated to store 10 registers (`uint16_t`)
++- `tab_input_registers` set to NULL
+ 
+ The clients can read the first register by using the address 340 in its request.
+ On the server side, you should use the first index of the array to set the value
+diff -urN libmodbus/docs/modbus_new_tcp.md modbus/docs/modbus_new_tcp.md
+--- libmodbus/docs/modbus_new_tcp.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_new_tcp.md	2024-04-25 15:00:00.647532025 +0800
+@@ -12,7 +12,7 @@
+ 
+ ## Description
+ 
+-The *modbus_new_tcp()* function shall allocate and initialize a modbus_t
++The *modbus_new_tcp()* function shall allocate and initialize a *modbus_t*
+ structure to communicate with a Modbus TCP IPv4 server.
+ 
+ The `ip` argument specifies the IP address of the server to which the client
+@@ -20,8 +20,8 @@
+ server mode.
+ 
+ The `port` argument is the TCP port to use. Set the port to
+-`MODBUS_TCP_DEFAULT_PORT` to use the default one (502). It’s convenient to use a
+-port number greater than or equal to 1024 because it’s not necessary to have
++`MODBUS_TCP_DEFAULT_PORT` to use the default one (502). It's convenient to use a
++port number greater than or equal to 1024 because it's not necessary to have
+ administrator privileges.
+ 
+ ## Return value
+diff -urN libmodbus/docs/modbus_new_tcp_pi.md modbus/docs/modbus_new_tcp_pi.md
+--- libmodbus/docs/modbus_new_tcp_pi.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_new_tcp_pi.md	2024-04-25 15:00:00.647532025 +0800
+@@ -12,7 +12,7 @@
+ 
+ ## Description
+ 
+-The *modbus_new_tcp_pi()* function shall allocate and initialize a modbus_t
++The *modbus_new_tcp_pi()* function shall allocate and initialize a *modbus_t*
+ structure to communicate with a Modbus TCP IPv4 or IPv6 server.
+ 
+ The `node` argument specifies the host name or IP address of the host to connect
+@@ -21,8 +21,8 @@
+ 
+ The `service` argument is the service name/port number to connect to. To use the
+ default Modbus port, you can provide an NULL value or the string "502". On many
+-Unix systems, it’s convenient to use a port number greater than or equal to 1024
+-because it’s not necessary to have administrator privileges.
++Unix systems, it's convenient to use a port number greater than or equal to 1024
++because it's not necessary to have administrator privileges.
+ 
+ :octicons-tag-24: v3.1.8 handles NULL value for `service` (no *EINVAL* error).
+ 
+diff -urN libmodbus/docs/modbus_read_input_bits.md modbus/docs/modbus_read_input_bits.md
+--- libmodbus/docs/modbus_read_input_bits.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_read_input_bits.md	2024-04-25 15:00:00.647532025 +0800
+@@ -13,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_read_input_bits()* function shall read the content of the `nb` input
+-bits to the address `addr` of the remote device.  The result of reading is stored
++bits to the address `addr` of the remote device. The result of reading is stored
+ in `dest` array as unsigned bytes (8 bits) set to `TRUE` or `FALSE`.
+ 
+ You must take care to allocate enough memory to store the results in `dest`
+diff -urN libmodbus/docs/modbus_receive.md modbus/docs/modbus_receive.md
+--- libmodbus/docs/modbus_receive.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_receive.md	2024-04-25 15:00:00.647532025 +0800
+@@ -13,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_receive()* function shall receive an indication request from the
+-socket of the context `ctx`. This function is used by Modbus slave/server to
++socket of the context `ctx`. This function is used by a Modbus slave/server to
+ receive and analyze indication request sent by the masters/clients.
+ 
+ If you need to use another socket or file descriptor than the one defined in the
+diff -urN libmodbus/docs/modbus_reply.md modbus/docs/modbus_reply.md
+--- libmodbus/docs/modbus_reply.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_reply.md	2024-04-25 15:00:00.647532025 +0800
+@@ -21,7 +21,7 @@
+ 
+ If an error occurs, an exception response will be sent.
+ 
+-This function is designed for Modbus server.
++This function is designed for Modbus servers.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_rtu_get_rts.md modbus/docs/modbus_rtu_get_rts.md
+--- libmodbus/docs/modbus_rtu_get_rts.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_rtu_get_rts.md	2024-04-25 15:00:00.647532025 +0800
+@@ -23,8 +23,8 @@
+ 
+ ## Return value
+ 
+-The function shall return the current RTS mode if successful. Otherwise it shall
+-return -1 and set errno.
++The function shall return the current RTS mode if successful. Otherwise it
++shall return -1 and set errno to one of the values defined below.
+ 
+ ## Errors
+ 
+diff -urN libmodbus/docs/modbus_rtu_get_rts_delay.md modbus/docs/modbus_rtu_get_rts_delay.md
+--- libmodbus/docs/modbus_rtu_get_rts_delay.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_rtu_get_rts_delay.md	2024-04-25 15:00:00.647532025 +0800
+@@ -19,8 +19,8 @@
+ 
+ ## Return value
+ 
+-The `modbus_rtu_get_rts_delay()` function shall return the current RTS delay in
+-microseconds if successful. Otherwise it shall return -1 and set errno.
++The function shall return the current RTS delay in microseconds if successful.
++Otherwise it shall return -1 and set errno to one of the values defined below.
+ 
+ ## Errors
+ 
+diff -urN libmodbus/docs/modbus_rtu_get_serial_mode.md modbus/docs/modbus_rtu_get_serial_mode.md
+--- libmodbus/docs/modbus_rtu_get_serial_mode.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_rtu_get_serial_mode.md	2024-04-25 15:00:00.647532025 +0800
+@@ -15,13 +15,13 @@
+ The *modbus_rtu_get_serial_mode()* function shall return the serial mode
+ currently used by the libmodbus context:
+ 
+-- **MODBUS_RTU_RS232**, the serial line is set for RS232 communication. RS-232
++- **MODBUS_RTU_RS232**, the serial line is set for RS-232 communication. RS-232
+   (Recommended Standard 232) is the traditional name for a series of standards
+   for serial binary single-ended data and control signals connecting between a
+   DTE (Data Terminal Equipment) and a DCE (Data Circuit-terminating Equipment).
+   It is commonly used in computer serial ports
+ 
+-- **MODBUS_RTU_RS485**, the serial line is set for RS485 communication. EIA-485,
++- **MODBUS_RTU_RS485**, the serial line is set for RS-485 communication. EIA-485,
+   also known as TIA/EIA-485 or RS-485, is a standard defining the electrical
+   characteristics of drivers and receivers for use in balanced digital
+   multipoint systems. This standard is widely used for communications in
+diff -urN libmodbus/docs/modbus_rtu_set_rts.md modbus/docs/modbus_rtu_set_rts.md
+--- libmodbus/docs/modbus_rtu_set_rts.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_rtu_set_rts.md	2024-04-25 15:00:00.647532025 +0800
+@@ -13,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_rtu_set_rts()* function shall set the Request To Send mode to
+-communicate on a RS485 serial bus. By default, the mode is set to
++communicate on a RS-485 serial bus. By default, the mode is set to
+ `MODBUS_RTU_RTS_NONE` and no signal is issued before writing data on the wire.
+ 
+ To enable the RTS mode, the values `MODBUS_RTU_RTS_UP` or `MODBUS_RTU_RTS_DOWN`
+diff -urN libmodbus/docs/modbus_rtu_set_serial_mode.md modbus/docs/modbus_rtu_set_serial_mode.md
+--- libmodbus/docs/modbus_rtu_set_serial_mode.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_rtu_set_serial_mode.md	2024-04-25 15:00:00.647532025 +0800
+@@ -15,13 +15,13 @@
+ The *modbus_rtu_set_serial_mode()* function shall set the selected serial
+ mode:
+ 
+-- **MODBUS_RTU_RS232**, the serial line is set for RS232 communication. RS-232
++- **MODBUS_RTU_RS232**, the serial line is set for RS-232 communication. RS-232
+   (Recommended Standard 232) is the traditional name for a series of standards
+   for serial binary single-ended data and control signals connecting between a
+   DTE (Data Terminal Equipment) and a DCE (Data Circuit-terminating Equipment).
+   It is commonly used in computer serial ports.
+ 
+-- **MODBUS_RTU_RS485**, the serial line is set for RS485 communication.
++- **MODBUS_RTU_RS485**, the serial line is set for RS-485 communication.
+ EIA-485, also known as TIA/EIA-485 or RS-485, is a standard defining the
+ electrical characteristics of drivers and receivers for use in balanced
+ digital multipoint systems. This standard is widely used for communications
+diff -urN libmodbus/docs/modbus_set_error_recovery.md modbus/docs/modbus_set_error_recovery.md
+--- libmodbus/docs/modbus_set_error_recovery.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_set_error_recovery.md	2024-04-25 15:00:00.647532025 +0800
+@@ -38,7 +38,7 @@
+ 
+ The modes are mask values and so they are complementary.
+ 
+-It's not recommended to enable error recovery for slave/server.
++It's not recommended to enable error recovery for a Modbus slave/server.
+ 
+ ## Return value
+ 
+diff -urN libmodbus/docs/modbus_strerror.md modbus/docs/modbus_strerror.md
+--- libmodbus/docs/modbus_strerror.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_strerror.md	2024-04-25 15:00:00.647532025 +0800
+@@ -13,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_strerror()* function shall return a pointer to an error message
+-string corresponding to the error number specified by the `errnum` argument.  As
++string corresponding to the error number specified by the `errnum` argument. As
+ libmodbus defines additional error numbers over and above those defined by the
+ operating system, applications should use *modbus_strerror()* in preference to
+ the standard *strerror()* function.
+diff -urN libmodbus/docs/modbus_tcp_listen.md modbus/docs/modbus_tcp_listen.md
+--- libmodbus/docs/modbus_tcp_listen.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_tcp_listen.md	2024-04-25 15:00:00.647532025 +0800
+@@ -4,7 +4,6 @@
+ 
+ modbus_tcp_listen - create and listen a TCP Modbus socket (IPv4)
+ 
+-
+ ## Synopsis
+ 
+ ```c
+@@ -14,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_tcp_listen()* function shall create a socket and listen to maximum
+-`nb_connection` incoming connections on the specified IP address.  The context
++`nb_connection` incoming connections on the specified IP address. The context
+ `ctx` must be allocated and initialized with [modbus_new_tcp](modbus_new_tcp.md) before to
+ set the IP address to listen, if IP address is set to NULL or '0.0.0.0', any addresses will be
+ listen.
+diff -urN libmodbus/docs/modbus_tcp_pi_listen.md modbus/docs/modbus_tcp_pi_listen.md
+--- libmodbus/docs/modbus_tcp_pi_listen.md	2022-12-08 03:00:14.000000000 +0800
++++ modbus/docs/modbus_tcp_pi_listen.md	2024-04-25 15:00:00.647532025 +0800
+@@ -13,7 +13,7 @@
+ ## Description
+ 
+ The *modbus_tcp_pi_listen()* function shall create a socket and listen to
+-maximum `nb_connection` incoming connections on the specified nodes.  The
++maximum `nb_connection` incoming connections on the specified nodes. The
+ context *ctx* must be allocated and initialized with [modbus_new_tcp_pi](modbus_new_tcp_pi.md)
+ before to set the node to listen, if node is set to NULL or '0.0.0.0', any addresses will be
+ listen.
+diff -urN libmodbus/src/Makefile.am modbus/src/Makefile.am
+--- libmodbus/src/Makefile.am	2022-12-08 03:00:14.000000000 +0800
++++ modbus/src/Makefile.am	2024-04-25 15:00:00.647532025 +0800
+@@ -14,9 +14,6 @@
+         modbus.h \
+         modbus-data.c \
+         modbus-private.h \
+-        modbus-rtu.c \
+-        modbus-rtu.h \
+-        modbus-rtu-private.h \
+         modbus-tcp.c \
+         modbus-tcp.h \
+         modbus-tcp-private.h \
+@@ -35,7 +32,7 @@
+ 
+ # Header files to install
+ libmodbusincludedir = $(includedir)/modbus
+-libmodbusinclude_HEADERS = modbus.h modbus-version.h modbus-rtu.h modbus-tcp.h
++libmodbusinclude_HEADERS = modbus.h modbus-version.h modbus-tcp.h
+ 
+ DISTCLEANFILES = modbus-version.h
+ EXTRA_DIST += modbus-version.h.in
+diff -urN libmodbus/src/modbus-private.h modbus/src/modbus-private.h
+--- libmodbus/src/modbus-private.h	2022-12-08 03:00:14.000000000 +0800
++++ modbus/src/modbus-private.h	2024-04-25 15:00:00.647532025 +0800
+@@ -112,10 +112,6 @@
+ void _error_print(modbus_t *ctx, const char *context);
+ int _modbus_receive_msg(modbus_t *ctx, uint8_t *msg, msg_type_t msg_type);
+ 
+-#ifndef HAVE_STRLCPY
+-size_t strlcpy(char *dest, const char *src, size_t dest_size);
+-#endif
+-
+ MODBUS_END_DECLS
+ 
+ #endif /* MODBUS_PRIVATE_H */
+diff -urN libmodbus/src/modbus-tcp.c modbus/src/modbus-tcp.c
+--- libmodbus/src/modbus-tcp.c	2022-12-08 03:00:14.000000000 +0800
++++ modbus/src/modbus-tcp.c	2024-04-25 15:00:00.647532025 +0800
+@@ -403,6 +403,7 @@
+         if (ctx->debug) {
+             fprintf(stderr, "Error returned by getaddrinfo: %s\n", gai_strerror(rc));
+         }
++        freeaddrinfo(ai_list);
+         errno = ECONNREFUSED;
+         return -1;
+     }
+@@ -628,6 +629,7 @@
+         if (ctx->debug) {
+             fprintf(stderr, "Error returned by getaddrinfo: %s\n", gai_strerror(rc));
+         }
++        freeaddrinfo(ai_list);
+         errno = ECONNREFUSED;
+         return -1;
+     }
+diff -urN libmodbus/src/modbus.c modbus/src/modbus.c
+--- libmodbus/src/modbus.c	2022-12-08 03:00:14.000000000 +0800
++++ modbus/src/modbus.c	2024-04-25 15:00:00.647532025 +0800
+@@ -2029,42 +2029,3 @@
+     free(mb_mapping->tab_bits);
+     free(mb_mapping);
+ }
+-
+-#ifndef HAVE_STRLCPY
+-/*
+- * Function strlcpy was originally developed by
+- * Todd C. Miller <Todd.Miller@courtesan.com> to simplify writing secure code.
+- * See ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/strlcpy.3
+- * for more information.
+- *
+- * Thank you Ulrich Drepper... not!
+- *
+- * Copy src to string dest of size dest_size.  At most dest_size-1 characters
+- * will be copied.  Always NUL terminates (unless dest_size == 0).  Returns
+- * strlen(src); if retval >= dest_size, truncation occurred.
+- */
+-size_t strlcpy(char *dest, const char *src, size_t dest_size)
+-{
+-    register char *d = dest;
+-    register const char *s = src;
+-    register size_t n = dest_size;
+-
+-    /* Copy as many bytes as will fit */
+-    if (n != 0 && --n != 0) {
+-        do {
+-            if ((*d++ = *s++) == 0)
+-                break;
+-        } while (--n != 0);
+-    }
+-
+-    /* Not enough room in dest, add NUL and traverse rest of src */
+-    if (n == 0) {
+-        if (dest_size != 0)
+-            *d = '\0'; /* NUL-terminate dest */
+-        while (*s++)
+-            ;
+-    }
+-
+-    return (s - src - 1); /* count does not include NUL */
+-}
+-#endif
+diff -urN libmodbus/src/modbus.h modbus/src/modbus.h
+--- libmodbus/src/modbus.h	2022-12-08 03:00:14.000000000 +0800
++++ modbus/src/modbus.h	2024-04-25 15:00:00.647532025 +0800
+@@ -321,7 +321,6 @@
+ MODBUS_API void modbus_set_float_badc(float f, uint16_t *dest);
+ MODBUS_API void modbus_set_float_cdab(float f, uint16_t *dest);
+ 
+-#include "modbus-rtu.h"
+ #include "modbus-tcp.h"
+ 
+ MODBUS_END_DECLS
+diff -urN libmodbus/tests/Makefile.am modbus/tests/Makefile.am
+--- libmodbus/tests/Makefile.am	2022-12-08 03:00:14.000000000 +0800
++++ modbus/tests/Makefile.am	2024-04-25 15:00:00.647532025 +0800
+@@ -1,11 +1,6 @@
+ EXTRA_DIST = README.md unit-tests.sh LICENSE
+ 
+ noinst_PROGRAMS = \
+-	bandwidth-server-one \
+-	bandwidth-server-many-up \
+-	bandwidth-client \
+-	random-test-server \
+-	random-test-client \
+ 	unit-test-server \
+ 	unit-test-client \
+ 	version
+@@ -13,21 +8,6 @@
+ common_ldflags = \
+ 	$(top_builddir)/src/libmodbus.la
+ 
+-bandwidth_server_one_SOURCES = bandwidth-server-one.c
+-bandwidth_server_one_LDADD = $(common_ldflags)
+-
+-bandwidth_server_many_up_SOURCES = bandwidth-server-many-up.c
+-bandwidth_server_many_up_LDADD = $(common_ldflags)
+-
+-bandwidth_client_SOURCES = bandwidth-client.c
+-bandwidth_client_LDADD = $(common_ldflags)
+-
+-random_test_server_SOURCES = random-test-server.c
+-random_test_server_LDADD = $(common_ldflags)
+-
+-random_test_client_SOURCES = random-test-client.c
+-random_test_client_LDADD = $(common_ldflags)
+-
+ unit_test_server_SOURCES = unit-test-server.c unit-test.h
+ unit_test_server_LDADD = $(common_ldflags)
+ 
+diff -urN libmodbus/tests/unit-test-client.c modbus/tests/unit-test-client.c
+--- libmodbus/tests/unit-test-client.c	2022-12-08 03:00:14.000000000 +0800
++++ modbus/tests/unit-test-client.c	2024-04-25 15:00:00.657532024 +0800
+@@ -118,11 +118,10 @@
+ 
+     if (use_backend == TCP) {
+         ctx = modbus_new_tcp(ip_or_device, 1502);
+-    } else if (use_backend == TCP_PI) {
+-        ctx = modbus_new_tcp_pi(ip_or_device, "1502");
+     } else {
+-        ctx = modbus_new_rtu(ip_or_device, 115200, 'N', 8, 1);
+-    }
++        ctx = modbus_new_tcp_pi(ip_or_device, "1502");
++    } 
++
+     if (ctx == NULL) {
+         fprintf(stderr, "Unable to allocate libmodbus context\n");
+         return -1;
+@@ -506,62 +505,18 @@
+     modbus_set_slave(ctx, INVALID_SERVER_ID);
+     rc = modbus_read_registers(
+         ctx, UT_REGISTERS_ADDRESS, UT_REGISTERS_NB, tab_rp_registers);
+-    if (use_backend == RTU) {
+-        const int RAW_REQ_LENGTH = 6;
+-        uint8_t raw_req[] = {INVALID_SERVER_ID, 0x03, 0x00, 0x01, 0x01, 0x01};
+-        /* Too many points */
+-        uint8_t raw_invalid_req[] = {INVALID_SERVER_ID, 0x03, 0x00, 0x01, 0xFF, 0xFF};
+-        const int RAW_RSP_LENGTH = 7;
+-        uint8_t raw_rsp[] = {INVALID_SERVER_ID, 0x03, 0x04, 0, 0, 0, 0};
+-        uint8_t rsp[MODBUS_RTU_MAX_ADU_LENGTH];
+-
+-        /* No response in RTU mode */
+-        printf("1-A/3 No response from slave %d: ", INVALID_SERVER_ID);
+-        ASSERT_TRUE(rc == -1 && errno == ETIMEDOUT, "");
+-
+-        /* The slave raises a timeout on a confirmation to ignore because if an
+-         * indication for another slave is received, a confirmation must follow */
+-
+-        /* Send a pair of indication/confirmation to the slave with a different
+-         * slave ID to simulate a communication on a RS485 bus. At first, the
+-         * slave will see the indication message then the confirmation, and it must
+-         * ignore both. */
+-        modbus_send_raw_request(ctx, raw_req, RAW_REQ_LENGTH * sizeof(uint8_t));
+-        modbus_send_raw_request(ctx, raw_rsp, RAW_RSP_LENGTH * sizeof(uint8_t));
+-        rc = modbus_receive_confirmation(ctx, rsp);
+-
+-        printf("1-B/3 No response from slave %d on indication/confirmation messages: ",
+-               INVALID_SERVER_ID);
+-        ASSERT_TRUE(rc == -1 && errno == ETIMEDOUT, "");
+-
+-        /* Send an INVALID request for another slave */
+-        modbus_send_raw_request(ctx, raw_invalid_req, RAW_REQ_LENGTH * sizeof(uint8_t));
+-        rc = modbus_receive_confirmation(ctx, rsp);
+-
+-        printf("1-C/3 No response from slave %d with invalid request: ",
+-               INVALID_SERVER_ID);
+-        ASSERT_TRUE(rc == -1 && errno == ETIMEDOUT, "");
+-
+-        rc = modbus_set_slave(ctx, MODBUS_BROADCAST_ADDRESS);
+-        ASSERT_TRUE(rc == 0, "Invalid broadcast address");
+-
+-        rc = modbus_read_registers(
+-            ctx, UT_REGISTERS_ADDRESS, UT_REGISTERS_NB, tab_rp_registers);
+-        printf("2/3 No reply after a broadcast query: ");
+-        ASSERT_TRUE(rc == -1 && errno == ETIMEDOUT, "");
+-    } else {
+-        /* Response in TCP mode */
+-        printf("1/3 Response from slave %d: ", INVALID_SERVER_ID);
+-        ASSERT_TRUE(rc == UT_REGISTERS_NB, "");
++    
++    /* Response in TCP mode */
++    printf("1/3 Response from slave %d: ", INVALID_SERVER_ID);
++    ASSERT_TRUE(rc == UT_REGISTERS_NB, "");
+ 
+-        rc = modbus_set_slave(ctx, MODBUS_BROADCAST_ADDRESS);
+-        ASSERT_TRUE(rc == 0, "Invalid broacast address");
++    rc = modbus_set_slave(ctx, MODBUS_BROADCAST_ADDRESS);
++    ASSERT_TRUE(rc == 0, "Invalid broacast address");
+ 
+-        rc = modbus_read_registers(
+-            ctx, UT_REGISTERS_ADDRESS, UT_REGISTERS_NB, tab_rp_registers);
+-        printf("2/3 Reply after a query with unit id == 0: ");
+-        ASSERT_TRUE(rc == UT_REGISTERS_NB, "");
+-    }
++    rc = modbus_read_registers(
++        ctx, UT_REGISTERS_ADDRESS, UT_REGISTERS_NB, tab_rp_registers);
++    printf("2/3 Reply after a query with unit id == 0: ");
++    ASSERT_TRUE(rc == UT_REGISTERS_NB, "");
+ 
+     /* Restore slave */
+     modbus_set_slave(ctx, old_slave);
+@@ -722,11 +677,11 @@
+ 
+     /* Test init functions */
+     printf("\nTEST INVALID INITIALIZATION:\n");
+-    ctx = modbus_new_rtu(NULL, 1, 'A', 0, 0);
+-    ASSERT_TRUE(ctx == NULL && errno == EINVAL, "");
++    // ctx = modbus_new_rtu(NULL, 1, 'A', 0, 0);
++    // ASSERT_TRUE(ctx == NULL && errno == EINVAL, "");
+ 
+-    ctx = modbus_new_rtu("/dev/dummy", 0, 'A', 0, 0);
+-    ASSERT_TRUE(ctx == NULL && errno == EINVAL, "");
++    // ctx = modbus_new_rtu("/dev/dummy", 0, 'A', 0, 0);
++    // ASSERT_TRUE(ctx == NULL && errno == EINVAL, "");
+ 
+     printf("\nALL TESTS PASS WITH SUCCESS.\n");
+     success = TRUE;
+diff -urN libmodbus/tests/unit-test-server.c modbus/tests/unit-test-server.c
+--- libmodbus/tests/unit-test-server.c	2022-12-08 03:00:14.000000000 +0800
++++ modbus/tests/unit-test-server.c	2024-04-25 15:00:00.657532024 +0800
+@@ -49,8 +49,6 @@
+             use_backend = TCP;
+         } else if (strcmp(argv[1], "tcppi") == 0) {
+             use_backend = TCP_PI;
+-        } else if (strcmp(argv[1], "rtu") == 0) {
+-            use_backend = RTU;
+         } else {
+             printf("Modbus server for unit testing.\n");
+             printf("Usage:\n  %s [tcp|tcppi|rtu] [<ip or device>]\n", argv[0]);
+@@ -83,13 +81,9 @@
+     if (use_backend == TCP) {
+         ctx = modbus_new_tcp(ip_or_device, 1502);
+         query = malloc(MODBUS_TCP_MAX_ADU_LENGTH);
+-    } else if (use_backend == TCP_PI) {
++    } else {
+         ctx = modbus_new_tcp_pi(ip_or_device, "1502");
+         query = malloc(MODBUS_TCP_MAX_ADU_LENGTH);
+-    } else {
+-        ctx = modbus_new_rtu(ip_or_device, 115200, 'N', 8, 1);
+-        modbus_set_slave(ctx, SERVER_ID);
+-        query = malloc(MODBUS_RTU_MAX_ADU_LENGTH);
+     }
+ 
+     header_length = modbus_get_header_length(ctx);
