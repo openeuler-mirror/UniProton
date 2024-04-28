@@ -208,6 +208,11 @@ struct rpmsg_device *rpmsg_backend_init(void)
     struct metal_device *device;
 
     rpmsg_ipi_init();
+    err = PRT_SemCreate(0, &msg_sem);
+    if (err) {
+        PRT_Printf("[openamp] SemCreate failed %d\n", err);
+        goto cleanup_ipi;
+    }
 
     /* Libmetal setup */
     err = metal_init(&metal_params);

@@ -17,6 +17,9 @@
 #include "prt_proxy_ext.h"
 #include "pthread.h"
 #include "stdio.h"
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shmsg.h"
+#endif
 
 struct rpmsg_rcv_msg {
     void *data;
@@ -39,6 +42,8 @@ static SemHandle tty_sem;
 static struct rpmsg_endpoint tty_ept;
 static struct rpmsg_rcv_msg tty_msg;
 
+char *g_s1 = "Hello, UniProton! \r\n";
+
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
     rpmsg_destroy_ept(ep);
@@ -46,7 +51,7 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 
 int send_message(unsigned char *message, int len)
 {
-    return PRT_ProxyWriteStdOut(message, len);
+    return rpmsg_send(&tty_ept, message, len);
 }
 
 static void *rpmsg_rpc_task(void *arg)
@@ -107,9 +112,22 @@ static void *rpmsg_tty_task(void *arg)
         if (tty_msg.len) {
             tty_data = (char *)tty_msg.data;
             tty_data[tty_msg.len] = '\0';
-            ret = snprintf(tx_buff, 512, "Hello, UniProton! Recv: %s\r\n", tty_data);
-            rpmsg_send(&tty_ept, tx_buff, ret);
-            rpmsg_release_rx_buffer(&tty_ept, tty_msg.data);
+            #ifdef LOSCFG_SHELL_MICA_INPUT
+                ShellCB *shellCb = OsGetShellCB();
+                if (shellCb == NULL) {
+                    send_message((void *)g_s1, strlen(g_s1) * sizeof(char));
+                } else {
+                    for(int i = 0; i < tty_msg.len; i++){
+                        char c = tty_data[i];
+                        ShellCmdLineParse(c, (pf_OUTPUT)printf, shellCb);
+                    }
+                }
+            #else
+                ret = snprintf(tx_buff, 512, "Hello, UniProton! Recv: %s\r\n", tty_data);
+                rpmsg_send(&tty_ept, tx_buff, ret);
+            #endif
+                rpmsg_release_rx_buffer(&tty_ept, tty_msg.data);
+
         }
         tty_msg.len = 0;
         tty_msg.data = NULL;
@@ -121,11 +139,20 @@ err:
     pthread_exit(NULL);
 }
 
+static void *rpmsg_listen_task(void *arg)
+{
+    /* Waiting for messages from host */
+    while (1) {
+        receive_message();
+        /* TODO: add lifecycle */
+    }
+}
+
 int rpmsg_service_init(void)
 {
-    int ret0, ret1;
+    int ret0, ret1, ret2;
     pthread_attr_t attr;
-    pthread_t rpc_thread, tty_thread;
+    pthread_t rpc_thread, tty_thread, listen_thread;
 
     /* init rpmsg device */
     rpdev = rpmsg_backend_init();
@@ -148,18 +175,19 @@ int rpmsg_service_init(void)
     /* create rpmsg task */
     ret0 = pthread_create(&rpc_thread, &attr, rpmsg_rpc_task, NULL);
     ret1 = pthread_create(&tty_thread, &attr, rpmsg_tty_task, NULL);
+    ret2 = pthread_create(&listen_thread, &attr, rpmsg_listen_task, NULL);
     pthread_attr_destroy(&attr);
-    if (ret0 != 0 && ret1 != 0) {
+    if (ret0 != 0 && ret1 != 0 && ret2 != 0) {
         /* If no rpmsg tasks, release the backend. */
-        PRT_Printf("[openamp] failed to create rpmsg task, ret: %d/%d\n", ret0, ret1);
+        PRT_Printf("[openamp] failed to create rpmsg task, ret: %d/%d %d\n", ret0, ret1, ret2);
         goto err;
     }
 
-    /* Waiting for messages from host */
-    while (1) {
-        receive_message();
-        /* TODO: add lifecycle */
+    while (!is_rpmsg_ept_ready(&tty_ept)) {
+        PRT_TaskDelay(100);
     }
+
+    return OS_OK;
 
 err:
     rpmsg_backend_remove();
