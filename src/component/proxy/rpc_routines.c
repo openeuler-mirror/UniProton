@@ -591,17 +591,7 @@ int rpmsg_client_cb(struct rpmsg_endpoint *ept,
     dprintf("==(%x,%d)", src, msg->id);
 
     if (msg->id == 0) {
-#ifdef LOSCFG_SHELL_MICA_INPUT
-        ShellCB *shellCb = OsGetShellCB();
-        if (shellCb == NULL) {
-            PRT_ProxyWriteStdOut((void *)g_s1, strlen(g_s1) * sizeof(char));
-        } else {
-            char c = msg->params[0];
-            ShellCmdLineParse(c, (pf_OUTPUT)printf, shellCb);
-        }
-#else
         PRT_ProxyWriteStdOut((void *)g_s1, strlen(g_s1) * sizeof(char));
-#endif
     }
 
 #ifdef OS_SUPPORT_IGH_ETHERCAT
