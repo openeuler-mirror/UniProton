@@ -17,6 +17,9 @@
 
 #include "prt_typedef.h"
 #include "prt_sys.h"
+#if defined(OS_OPTION_HAVE_FPU)
+#include "os_cpu_armv8.h"
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -60,6 +63,11 @@ struct ExcRegInfo {
     uintptr_t currentEl;
     uintptr_t sp;
     // 以下字段的内存布局与TskContext保持一致
+#if defined(OS_OPTION_HAVE_FPU)
+    __uint128_t q[OS_FPU_CONTEXT_REG_NUM];
+    uintptr_t fpcr;
+    uintptr_t fpsr;
+#endif
     uintptr_t elr;                  // 返回地址
     uintptr_t spsr;
     uintptr_t far;

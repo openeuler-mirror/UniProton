@@ -1,7 +1,11 @@
 #include <linux/sched.h>
 #include <linux/printk.h>
 #include "prt_task_external.h"
-#include "../../../../core/kernel/task/prt_task_internal.h"
+#if defined(OS_OPTION_SMP)
+#include "../../../core/kernel/task/smp/prt_task_internal.h"
+#else
+#include "../../../core/kernel/task/amp/prt_task_internal.h"
+#endif
 
 /**
  * schedule_timeout - sleep until timeout

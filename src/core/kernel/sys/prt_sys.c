@@ -16,6 +16,16 @@
 #include "prt_sys_external.h"
 #include "prt_kexc_external.h"
 #include "prt_hook_external.h"
+#include "prt_sys.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_sched_external.h"
+#include "prt_buildef.h"
+#endif
+
+/* 初值非0的原因：初值为0在段属性为空场景下放到bss段初始化 */
+OS_SEC_L4_DATA U8 g_maxNumOfCores = OS_MAX_CORE_NUM;
+OS_SEC_L4_DATA U32 g_validAllCoreMask = (1U << (OS_MAX_CORE_NUM)) - 1;
+OS_SEC_L4_BSS U8 g_numOfCores;
 
 /* 系统主频 */
 OS_SEC_BSS U32 g_systemClock;
@@ -32,10 +42,16 @@ OS_SEC_L4_BSS U32 g_threadNum;
 /* Tick计数 */
 OS_SEC_BSS U64 g_uniTicks;
 
+OS_SEC_L4_BSS U8 g_primaryCoreId;
+
+#if !defined(OS_OPTION_SMP)
 /* 系统状态标志位 */
 OS_SEC_DATA U32 g_uniFlag = 0;
 OS_SEC_BSS U32 g_tickNoRespondCnt;
 OS_SEC_DATA struct TagTskCb *g_runningTask = NULL;
+#else
+OS_SEC_BSS CoreWakeUpHook g_coreWakeupHook;
+#endif
 
 OS_SEC_ALW_INLINE INLINE enum SysThreadType OsCurThreadTypeNoIntLock(void)
 {
@@ -78,3 +94,10 @@ OS_SEC_L4_TEXT U32 PRT_IdleDelHook(IdleHook hook)
 {
     return OsHookDel(OS_HOOK_IDLE_PERIOD, (OsVoidFunc)hook);
 }
+
+#if defined(OS_OPTION_SMP)
+OS_SEC_L0_TEXT enum SysThreadType PRT_CurThreadTypeNoIntLock(void)
+{
+    return OsCurThreadTypeNoIntLock();
+}
+#endif

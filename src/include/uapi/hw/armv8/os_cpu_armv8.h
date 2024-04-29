@@ -41,12 +41,19 @@ extern "C" {
 #else
 /* 22:21 2bit socket(32core/socket) ||  18:16 3bit clusterid (4core/cluster) || 9:8 2bit coreid */
 #define OS_CORE_MPID_CPUID(mpid) ((((mpid) >> 21) & 0x3) << 5) + ((((mpid) >> 16) & 0x7) << 2) + (((mpid) >> 8) & 0x3)
+// #define OS_CORE_MPID_CPUID(mpid) (((((mpid) >> 16) & 0xf) -8) * 4) +((mpid >> 8) & 0xf)
 #endif
 
+#define OS_FPU_CONTEXT_REG_NUM 32
 /*
  * 任务上下文的结构体定义。
  */
 struct TskContext {
+#if defined(OS_OPTION_HAVE_FPU)
+    __uint128_t q[OS_FPU_CONTEXT_REG_NUM];
+    uintptr_t fpcr;
+    uintptr_t fpsr;
+#endif
     /* *< 当前物理寄存器R0-R12 */
     uintptr_t elr;               // 返回地址
     uintptr_t spsr;
@@ -96,7 +103,6 @@ OS_SEC_ALW_INLINE INLINE U32 OsGetCoreID(void)
 {
     U64 mpid;
     OS_EMBED_ASM("MRS  %0, MPIDR_EL1" : "=r"(mpid)::"memory", "cc");
-    OS_EMBED_ASM("dmb sy" ::: "memory");
     /* single-thread 模式下，核号取AFF0 AF1为0 */
     /* muti-thread 模式下，核号取AFF1 AF0为0 */
     /* 综上核号计算采用AFF0 + AFF1 */
@@ -111,9 +117,54 @@ OS_SEC_ALW_INLINE INLINE U32 PRT_GetCoreID(void)
     return OsGetCoreID();
 }
 
+/* 开中断 */
+OS_SEC_ALW_INLINE INLINE uintptr_t PRT_IntUnlock(void)
+{
+    uintptr_t state = 0;
+    OS_EMBED_ASM(
+        "mrs %0, DAIF           \n"
+        "msr DAIFClr, %1        \n"
+        : "=r"(state)
+        : "i"(DAIF_IRQ_BIT | DAIF_FIQ_BIT)
+        : "memory", "cc");
+    return state & INT_MASK;
+}
+/* 关中断 */
+OS_SEC_ALW_INLINE INLINE uintptr_t PRT_IntLock(void)
+{
+    uintptr_t state = 0;
+    OS_EMBED_ASM(
+        "mrs %0, DAIF           \n"
+        "msr DAIFSet, %1        \n"
+        : "=r"(state)
+        : "i"(DAIF_IRQ_BIT | DAIF_FIQ_BIT)
+        : "memory", "cc");
+    return state & INT_MASK;
+}
+/* 恢复中断 */
+OS_SEC_ALW_INLINE INLINE void PRT_IntRestore(uintptr_t intSave)
+{
+    if((intSave & INT_MASK) == 0) {
+        OS_EMBED_ASM(
+            "msr DAIFClr, %0        \n"
+            :
+            : "i"(DAIF_IRQ_BIT | DAIF_FIQ_BIT)
+            : "memory", "cc");
+    } else {
+        OS_EMBED_ASM(
+            "msr DAIFSet, %0        \n"
+            :
+            : "i"(DAIF_IRQ_BIT | DAIF_FIQ_BIT)
+            : "memory", "cc");
+    }
+    return;
+}
+
 #define PRT_DSB() OS_EMBED_ASM("DSB sy" : : : "memory")
 #define PRT_DMB() OS_EMBED_ASM("DMB sy" : : : "memory")
 #define PRT_ISB() OS_EMBED_ASM("ISB" : : : "memory")
+
+#define PRT_MemWait PRT_DSB
 
 #ifdef __cplusplus
 #if __cplusplus

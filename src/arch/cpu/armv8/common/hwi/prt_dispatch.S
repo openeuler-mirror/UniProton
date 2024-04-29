@@ -17,6 +17,7 @@
 
     .global g_sysStackHigh
     .global OsHwiDispatch, OsMainSchedule
+    .global OsRunningReadyAdd
 
     .type   OsMainSchedule, function
 
@@ -41,17 +42,59 @@
 
     .section .os.text, "ax"
 
+#if !defined(OS_OPTION_TASK_AFFINITY_STATIC)
 /*
- * 描述: Task调度处理函数。 X0 is g_runningTask
+ * 描述: OsContextSave(TSK_CB_S *taskCB, bool isCrg); 忽略isCrg
  */
+    .globl OsContextSave
+    .type OsContextSave, @function
+    .align 4
+OsContextSave:
+    stp x1, x0, [sp,#-16]!
+    GENERAL_REGS_SAVE
+    mrs x3, spsr_el1
+    mov x2, x30 // 用返回地址x30作为现场恢复点
+    sub sp, sp, #16 // 跳过esr_el1, far_el1, 异常时才有用
+    stp x2, x3, [sp,#-16]!
+
+    // 存入SP指针到g_pRunningTask->sp
+    mov x1, sp
+    str x1, [x0]  // x0 is the &g_pRunningTask->sp
+#if defined(OS_OPTION_SMP)
+    OsAsmGetCoreId x1  // 读取核号
+    ldr x2, =g_sysStackHigh
+    ldr x2, [x2, x1, lsl #3]
+#else
+    ldr x2, =g_sysStackHigh
+#endif
+    mov sp, x2
+#if defined(OS_OPTION_SMP)
+    BL OsRunningReadyAdd
+#endif
+    BL OsMainSchedule
+
+saveloop:           // never return here
+    B saveloop
+#endif
+
+/*
+ * 描述: Task调度处理函数。 AMP调度走这个接口
+ */
+    .global OsTskTrapSmp
     .globl OsTaskTrap
+    .type OsTskTrapSmp, @function
     .type OsTaskTrap, @function
     .align 4
 
+#if !defined(OS_OPTION_SMP)
 OsTaskTrap:
     LDR    x1, =g_runningTask /* OsTaskTrap是函数调用过来，x0 x1寄存器是caller save，此处能直接使用 */
     LDR    x0, [x1] /* x0 is the &g_pRunningTask->sp */
-
+#endif
+/*
+ * 描述: Task调度处理函数。 SMP调度走这个接口，X0 is SP
+ */
+OsTskTrapSmp:
     stp    x1, x0, [sp,#-16]!
     GENERAL_REGS_SAVE
 
@@ -70,8 +113,15 @@ OsTaskTrap:
     mov    x1, sp
     str    x1, [x0]   // x0 is the &g_pRunningTask->sp
 
+#if defined(OS_OPTION_SMP)
+    // 获取cpuid号 算出系统偏移
+    OsAsmGetCoreId x1   // 读取核号
+    ldr    x0, =g_sysStackHigh
+    ldr    x0, [x0, x1, lsl #3]
+#else
     ldr    x0, =g_sysStackHigh
     ldr    x0, [x0]
+#endif
     mov    sp, x0
     B      OsMainSchedule
 loop1:

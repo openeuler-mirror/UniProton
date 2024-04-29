@@ -17,6 +17,7 @@
 
 #include "prt_module.h"
 #include "prt_errno.h"
+#include "prt_hook.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -79,6 +80,17 @@ extern "C" {
  * 解决方案: 检查配置的中断个数是否为0或者超过了硬件范围
  */
 #define OS_ERRNO_SYS_HWI_MAX_NUM_CONFIG_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_HWI, 0x06)
+
+
+/*
+ * 系统基本功能错误码：配置的运行核数非法
+ *
+ * 值: 0x02000007
+ *
+ * 解决方案:配置的运行核数必须小于配置的芯片最大核数，且不为0
+ *
+ */
+#define OS_ERRNO_SYS_CORE_RUNNUM_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_SYS, 0x07)
 
 /*
  * 系统初始化阶段状态
@@ -184,7 +196,22 @@ enum SysThreadType {
  * @see 无。
  */
 typedef U64 (*SysTimeFunc)(void);
-
+/*
+ * @brief 任务调度时对端核处于低功耗时唤醒对端核的回调函数。
+ *
+ * @par 描述
+ * 用户根据唤醒回调函数原型定义回调函数，当指定核在低功耗时，调用该钩子进行唤醒
+ *
+ * @attention 无。
+ *
+ * @param coreId[IN]    类型#U32，需要唤醒的对端核号
+ *
+ * @retval 无
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see 无。
+ */
+typedef U32 (*CoreWakeUpHook)(U32 coreId);
 /*
  * 系统模块配置信息的结构体定义。
  *
@@ -197,6 +224,14 @@ struct SysModInfo {
     SysTimeFunc sysTimeHook;
     /* CPU type */
     U32 cpuType;
+#if defined(OS_OPTION_SMP)
+    /* 实际运行的核数 */
+    U8 coreRunNum;
+    /* 最大支持的核数*/
+    U8 coreMaxNum;
+    /* 主核ID */
+    U8 corePrimary;
+#endif
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
     U32 hwiMaxNum;
 #endif
@@ -308,6 +343,83 @@ OS_SEC_ALW_INLINE INLINE U32 PRT_SysGetCoreId(void)
  * @see 无
  */
 extern void PRT_CppSystemInit(void);
+
+extern U8 PRT_GetPrimaryCore(void);
+
+typedef void (*PrtIdleHook)(void);
+/*
+ * @brief 注册idle循环中调用的钩子
+ *
+ * @par 描述
+ * 注册在idle任务或idle软中断循环中调用的钩子函数
+ *
+ * @attention
+ * <ul>
+ * <li> 钩子中不能调用引起任务阻塞或切换的函数 </li>
+ * </ul>
+ *
+ * @param hook [OUT] 类型#OS_IDLE_HOOK, IDLE钩子函数，该参数不能为空
+ *
+ * @retval #OS_ERRNO_HOOK_TYPE_INVALID      0x02001600, HOOK类型错误
+ * @retval #OS_ERRNO_HOOK_PRT_NULL          0x02001602, HOOK指针空
+ * @retval #OS_OK                           0x00000000, 操作成功
+ * 
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_IdleHookDel
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_IdleHookAdd(PrtIdleHook hook)
+{
+    return OsHookAdd(OS_HOOK_IDLE_PERIOD, (OsVoidFunc)hook);
+}
+
+/*
+ * @brief 删除idle循环中调用的钩子
+ *
+ * @par 描述
+ * 删除在idle任务或idle软中断循环中调用的钩子函数
+ *
+ * @attention
+ * <ul>
+ * 无
+ * </ul>
+ *
+ * @param hook [OUT] 类型#OS_IDLE_HOOK, IDLE钩子函数，该参数不能为空
+ *
+ * @retval #OS_ERRNO_HOOK_TYPE_INVALID      0x02001600, HOOK类型错误
+ * @retval #OS_ERRNO_HOOK_PRT_NULL          0x02001602, HOOK指针空
+ * @retval #OS_OK                           0x00000000, 操作成功
+ * 
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_IdleHookAdd
+ */
+OS_SEC_ALW_INLINE INLINE U32 PRT_IdleHookDel(PrtIdleHook hook)
+{
+    return OsHookDel(OS_HOOK_IDLE_PERIOD, (OsVoidFunc)hook);
+}
+
+#if defined(OS_OPTION_SMP)
+/*
+ * @brief 系统获取当前线程类型
+ *
+ * @par 描述
+ * 系统获取当前线程类型++。
+ *
+ * @attention
+ * <ul>
+ * <li> 调用该接口时，请确保外部已关中断，该接口为提升获取线程类型的性能，内部实现无关中断</li>
+ * </ul>
+ *
+ * @param 无。
+ *
+ * @retval 无
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_CurThreadType
+ */
+extern enum SysThreadType PRT_CurThreadTypeNoIntLock(void);
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus

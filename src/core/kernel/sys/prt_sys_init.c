@@ -18,6 +18,9 @@
 #include "prt_attr_external.h"
 #include "prt_sys_external.h"
 #include "prt_lib_external.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_sched_external.h"
+#endif
 
 OS_SEC_BSS U8 g_cpuType;
 
@@ -44,6 +47,12 @@ OS_SEC_L4_TEXT U32 OsSysRegister(struct SysModInfo *modInfo)
         return OS_ERRNO_SYS_CLOCK_INVALID;
     }
 
+#if defined(OS_OPTION_SMP)
+    if ((modInfo->coreRunNum > modInfo->coreMaxNum) || (modInfo->coreRunNum == 0)) {
+        return OS_ERRNO_SYS_CORE_RUNNUM_INVALID;
+    }
+#endif
+
     ret = OsSysTimeHookReg(modInfo->sysTimeHook);
     if (ret != OS_OK) {
         return ret;
@@ -52,6 +61,10 @@ OS_SEC_L4_TEXT U32 OsSysRegister(struct SysModInfo *modInfo)
     UNI_FLAG = 0;
     g_systemClock = modInfo->systemClock;
     g_cpuType = (U8)modInfo->cpuType;
+#if defined(OS_OPTION_SMP)
+    g_numOfCores = modInfo->coreRunNum;
+    g_primaryCoreId = modInfo->corePrimary;
+#endif
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
     if (OsHwiCheckMaxNum(modInfo->hwiMaxNum) == FALSE) {
         return OS_ERRNO_SYS_HWI_MAX_NUM_CONFIG_INVALID;
@@ -62,6 +75,20 @@ OS_SEC_L4_TEXT U32 OsSysRegister(struct SysModInfo *modInfo)
     return ret;
 }
 
+#if defined(OS_OPTION_SMP)
+INIT_SEC_L4_TEXT void OsGetCoreStr(struct CoreNumStr *str)
+{
+    S32 i;
+    U32 coreId = OsGetHwThreadId();
+
+    for (i = OS_CORE_STR_NUM_INDEX; i >= 0; i--) {
+        str->coreNo[i] = '0' + coreId % OS_DECIMAL;
+        coreId = coreId / OS_DECIMAL;
+    }
+    str->coreNo[OS_CORE_STR_END_INDEX] = 0;
+    return;
+}
+#endif
 OS_SEC_L4_TEXT U64 PRT_ClkCycle2Ms(U64 cycle)
 {
     return DIV64(cycle, g_systemClock / OS_SYS_MS_PER_SECOND);
@@ -70,4 +97,9 @@ OS_SEC_L4_TEXT U64 PRT_ClkCycle2Ms(U64 cycle)
 OS_SEC_L4_TEXT U64 PRT_ClkCycle2Us(U64 cycle)
 {
     return DIV64(cycle, g_systemClock / OS_SYS_US_PER_SECOND);
+}
+
+OS_SEC_L4_TEXT U8 PRT_GetPrimaryCore(void)
+{
+    return g_primaryCoreId;
 }

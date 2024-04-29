@@ -1,2 +1,5 @@
 add_library_ex(prt_tick.c)
 add_library_ex(prt_tick_init.c)
+if(${CONFIG_OS_OPTION_SMP})
+    add_library_ex(prt_tick_minor.c)
+endif()

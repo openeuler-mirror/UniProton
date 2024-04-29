@@ -25,17 +25,17 @@ int __pthread_mutex_lock(pthread_mutex_t *mutex)
         return EINVAL;
     }
 
-    intSave = PRT_HwiLock();
+    SEM_INIT_IRQ_LOCK(intSave);
     if (mutex->magic != MUTEX_MAGIC) {
-        PRT_HwiRestore(intSave);
+        SEM_INIT_IRQ_UNLOCK(intSave);
         return EINVAL;
     }
 
     if (mutex->type == PTHREAD_MUTEX_ERRORCHECK && OsSemBusy(mutex->mutex_sem)) {
-        PRT_HwiRestore(intSave);
+        SEM_INIT_IRQ_UNLOCK(intSave);
         return EINVAL;
     }
-    PRT_HwiRestore(intSave);
+    SEM_INIT_IRQ_UNLOCK(intSave);
 
     ret = PRT_SemPend(mutex->mutex_sem, OS_WAIT_FOREVER);
     if (ret != OS_OK) {

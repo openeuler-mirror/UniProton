@@ -23,8 +23,14 @@
  */
 .macro OsAsmGetCoreId, xArg
     mrs \xArg, mpidr_el1
+#if (OS_MAX_CORE_NUM > 4)
+    orr \xArg, \xArg, \xArg, lsr #0xe
+    orr \xArg, \xArg, \xArg, lsr #0x8
+    and \xArg, \xArg, #0xf /* 截取核号部分 */
+#else
     orr \xArg, \xArg, \xArg, lsr #0x8
     and \xArg, \xArg, #0xff /* 截取核号部分 */
+#endif
 .endm
 
 #endif /* OS_ASM_CPU_ARMV8_EXTERNAL_H */

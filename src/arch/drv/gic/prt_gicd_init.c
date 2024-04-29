@@ -124,7 +124,11 @@ OS_SEC_TEXT void OsGicdCfgTargetId(U32 intId, U32 targetId)
 
     /* 当前仅支持1-1模式 */
     gicdRouter.bits.mode = 0x0;
+#if defined(OS_OPTION_SMP)
+    if (g_gicCoreMap[PRT_GetPrimaryCore()].bits.mt == 0) {
+#else
     if (g_gicCoreMap.bits.mt == 0) {
+#endif
         /* single-thread 模式下，核号取AFF0 */
         gicdRouter.bits.af1 = 0;
         gicdRouter.bits.af0 = targetId;

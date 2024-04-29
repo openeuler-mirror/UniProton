@@ -14,6 +14,7 @@
  */
 #include "prt_sem_external.h"
 #include "prt_asm_cpu_external.h"
+#include "prt_task_sched_external.h"
 
 /* 核内信号量最大个数 */
 OS_SEC_BSS U16 g_maxSem;
@@ -78,12 +79,15 @@ OS_SEC_L0_TEXT void OsSemPendListPut(struct TagSemCb *semPended, U32 timeOut)
     struct TagTskCb *curTskCb = NULL;
     struct TagTskCb *runTsk = RUNNING_TASK;
     struct TagListObject *pendObj = &runTsk->pendList;
+    OsSemIfPrioLock(semPended);
 
     OsTskReadyDel((struct TagTskCb *)runTsk);
 
     runTsk->taskSem = (void *)semPended;
 
     TSK_STATUS_SET(runTsk, OS_TSK_PEND);
+
+#if defined(OS_OPTION_SEM_PRIOR)
     /* 根据唤醒方式挂接此链表，同优先级再按FIFO子顺序插入 */
     if (semPended->semMode == SEM_MODE_PRIOR) {
         LIST_FOR_EACH(curTskCb, &semPended->semList, struct TagTskCb, pendList) {
@@ -93,16 +97,19 @@ OS_SEC_L0_TEXT void OsSemPendListPut(struct TagSemCb *semPended, U32 timeOut)
             }
         }
     }
+#endif
     /* 如果到这里，说明是FIFO方式；或者是优先级方式且挂接首个节点或者挂接尾节点 */
     ListTailAdd(pendObj, &semPended->semList);
 TIMER_ADD:
     // timer超时链表添加
     if (timeOut != OS_WAIT_FOREVER) {
         /* 如果不是永久等待则将任务挂到计时器链表中，设置OS_TSK_TIMEOUT是为了判断是否等待超时 */
-        OsTskTimerAdd((struct TagTskCb *)runTsk, timeOut);
-
         TSK_STATUS_SET(runTsk, OS_TSK_TIMEOUT);
+
+        OsTskTimerAdd((struct TagTskCb *)runTsk, timeOut);
     }
+
+    OsSemIfPrioUnLock(semPended);
 }
 
 /*
@@ -110,21 +117,25 @@ TIMER_ADD:
  */
 OS_SEC_L0_TEXT struct TagTskCb *OsSemPendListGet(struct TagSemCb *semPended)
 {
-    struct TagTskCb *taskCb = GET_TCB_PEND(LIST_FIRST(&(semPended->semList)));
+    struct TagTskCb *taskCb = GET_TCB_PEND(OS_LIST_FIRST(&(semPended->semList)));
 
-    ListDelete(LIST_FIRST(&(semPended->semList)));
+    ListDelete(OS_LIST_FIRST(&(semPended->semList)));
+
+    OsSpinLockTaskRq(taskCb);
     /* 如果阻塞的任务属于定时等待的任务时候，去掉其定时等待标志位，并将其从去除 */
     if (TSK_STATUS_TST(taskCb, OS_TSK_TIMEOUT)) {
         OS_TSK_DELAY_LOCKED_DETACH(taskCb);
+        TSK_STATUS_CLEAR(taskCb, OS_TSK_TIMEOUT);
     }
 
     /* 必须先去除 OS_TSK_TIMEOUT 态，再入队[睡眠时是先出ready队，再置OS_TSK_TIMEOUT态] */
-    TSK_STATUS_CLEAR(taskCb, OS_TSK_TIMEOUT | OS_TSK_PEND);
+    TSK_STATUS_CLEAR(taskCb, OS_TSK_PEND);
     taskCb->taskSem = NULL;
     /* 如果去除信号量阻塞位后，该任务不处于阻塞态则将该任务挂入就绪队列并触发任务调度 */
     if (!TSK_STATUS_TST(taskCb, OS_TSK_SUSPEND)) {
         OsTskReadyAddBgd(taskCb);
     }
+    OsSpinUnlockTaskRq(taskCb);
 
 #if defined(OS_OPTION_BIN_SEM)
     OsSemPostBinMutex(semPended, taskCb);
@@ -184,46 +195,52 @@ OS_SEC_L0_TEXT U32 PRT_SemPend(SemHandle semHandle, U32 timeout)
 
     semPended = GET_SEM(semHandle);
 
-    intSave = OsIntLock();
+    SEM_CB_IRQ_LOCK(semPended, intSave);
+
     if (semPended->semStat == OS_SEM_UNUSED) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return OS_ERRNO_SEM_INVALID;
     }
 
     if (OS_INT_ACTIVE) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return OS_ERRNO_SEM_PEND_INTERR;
     }
 
     runTsk = (struct TagTskCb *)RUNNING_TASK;
 
     if (OsSemPendNotNeedSche(semPended, runTsk) == TRUE) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return OS_OK;
     }
 
     ret = OsSemPendParaCheck(timeout);
     if (ret != OS_OK) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return ret;
     }
     /* 把当前任务挂接在信号量链表上 */
     OsSemPendListPut(semPended, timeout);
+
+    SEM_CB_UNLOCK(semPended);
     if (timeout != OS_WAIT_FOREVER) {
         /* 触发任务调度 */
         OsTskSchedule();
 
         /* 判断是否是等待信号量超时 */
         if (TSK_STATUS_TST(runTsk, OS_TSK_TIMEOUT)) {
+
+            struct TagOsRunQue *thisQue = OsSpinLockRunTaskRq();
+
             TSK_STATUS_CLEAR(runTsk, OS_TSK_TIMEOUT);
+
+            OsSpinUnLockRunTaskRq(thisQue);
             OsIntRestore(intSave);
             return OS_ERRNO_SEM_TIMEOUT;
         }
-    } else {
-        /* 恢复ps的快速切换 */
-        OsTskScheduleFastPs(intSave);
-    }
-
+    } 
+    /* 恢复ps的快速切换 */
+    OsTskScheduleFastPs(intSave);
     OsIntRestore(intSave);
     return OS_OK;
 }
@@ -281,34 +298,40 @@ OS_SEC_L0_TEXT U32 PRT_SemPost(SemHandle semHandle)
     }
 
     semPosted = GET_SEM(semHandle);
-    intSave = OsIntLock();
+    SEM_CB_IRQ_LOCK(semPosted, intSave);
 
     ret = OsSemPostErrorCheck(semPosted, semHandle);
     if (ret != OS_OK) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPosted, intSave);
         return ret;
     }
 
     /* 信号量post无效，不需要调度 */
     if (OsSemPostIsInvalid(semPosted) == TRUE) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semPosted, intSave);
         return OS_OK;
     }
+    OsSemIfPrioLock(semPosted);
 
     /* 如果有任务阻塞在信号量上，就激活信号量阻塞队列上的首个任务 */
     if (!ListEmpty(&semPosted->semList)) {
         OsSemPostSchePre(semPosted);
+        OsSemIfPrioUnLock(semPosted);
+        SEM_CB_UNLOCK(semPosted);
         /* 相当于快速切换+中断恢复 */
         OsTskScheduleFastPs(intSave);
     } else {
         semPosted->semCount++;
-        semPosted->semOwner = OS_INVALID_OWNER_ID;
+        
 #if defined(OS_OPTION_BIN_SEM)
+        semPosted->semOwner = OS_INVALID_OWNER_ID;
         /* 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它 */
         if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
             ListDelete(&semPosted->semBList);
         }
 #endif
+        OsSemIfPrioUnLock(semPosted);
+        SEM_CB_UNLOCK(semPosted);
     }
 
     OsIntRestore(intSave);

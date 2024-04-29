@@ -21,6 +21,27 @@ OS_SEC_BSS U32 g_cyclePerTick;
 /*
  * 描述：注册Tick中断模块信息
  */
+#if defined(OS_OPTION_SMP)
+OS_SEC_L4_TEXT U32 OsHwTickInitSmp(void)
+{
+    U32 ret;
+
+    /* GIC寄存器私有问题 */
+    ret = PRT_HwiSetAttr(OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI,
+                        OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI_PRI, OS_HWI_MODE_ENGROSS);
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+    ret = PRT_HwiCreate(OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI, (HwiProcFunc)OsTickForwardISR, 0);
+    if (ret != OS_OK) {
+        return ret;
+    }
+
+    (void)PRT_HwiEnable(OS_SMP_TICK_TRIGGER_OTHER_CORE_SGI);
+    return ret;
+}
+#endif
 OS_SEC_L4_TEXT U32 OsTickRegister(struct TickModInfo *modInfo)
 {
     g_tickModInfo.tickPerSecond = modInfo->tickPerSecond;

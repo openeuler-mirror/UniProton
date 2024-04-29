@@ -31,7 +31,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueDelete(U32 queueId)
 
     /* 获取指定队列控制块 */
     queueCb = (struct TagQueCb *)GET_QUEUE_HANDLE(innerId);
-    intSave = OsIntLock();
+    QUEUE_CB_IRQ_LOCK(queueCb, intSave);
     if (queueCb->queueState == OS_QUEUE_UNUSED) {
         ret = OS_ERRNO_QUEUE_NOT_CREATE;
         goto QUEUE_END;
@@ -55,6 +55,6 @@ OS_SEC_L4_TEXT U32 PRT_QueueDelete(U32 queueId)
     queueCb->queueState = OS_QUEUE_UNUSED;
 
 QUEUE_END:
-    OsIntRestore(intSave);
+    QUEUE_CB_IRQ_UNLOCK(queueCb, intSave);
     return ret;
 }

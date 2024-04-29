@@ -5,6 +5,16 @@
 #include "pl011.h"
 #include "ymodem.h"
 
+#define WRITE_UINT32(value, addr) {          \
+    OS_EMBED_ASM("DSB SY");                  \
+    *(volatile U32 *)(addr) = (U32)(value);  \
+}
+
+#define GET_UINT32(addr) ({                  \
+    U32 r = *(volatile U32 *)(addr);         \
+    OS_EMBED_ASM("DSB SY"); r;               \
+})
+
 typedef U32 (*PrintFunc)(const char *format, va_list vaList);
 #define OS_MAX_SHOW_LEN 0x200
 

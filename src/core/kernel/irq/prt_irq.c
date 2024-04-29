@@ -37,8 +37,9 @@ OS_SEC_BSS struct TagHwiCombineNode g_hwiCombineNode[OS_HWI_MAX_COMBINE_NODE];
 OS_SEC_BSS struct TagHwiCombineNode *g_freeHwiComHead;
 #endif
 
+#if !defined(OS_OPTION_SMP)
 OS_SEC_DATA U32 g_intCount = 0;
-
+#endif
 /*
  * 描述：硬中断默认注册钩子，会触发致命错误
  */

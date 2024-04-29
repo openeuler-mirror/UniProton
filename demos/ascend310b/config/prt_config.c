@@ -14,6 +14,11 @@
  */
 #include "prt_config_internal.h"
 #include "cpu_config.h"
+#include "prt_cpu_external.h"
+
+#if (defined(OS_OPTION_SMP) || defined(OS_ARMV8))
+RESET_SEC_DATA U32 g_cfgPrimaryCore = OS_SYS_CORE_PRIMARY;
+#endif
 
 OS_SEC_ALW_INLINE INLINE void OsConfigAddrSizeGet(uintptr_t addr, uintptr_t size,
                                                   uintptr_t *destAddr, uintptr_t *destSize)
@@ -52,6 +57,11 @@ U32 OsSystemReg(void)
     sysModInfo.systemClock = OS_SYS_CLOCK;
     sysModInfo.cpuType = OS_CPU_TYPE;
     sysModInfo.sysTimeHook = OS_SYS_TIME_HOOK;
+#if defined(OS_OPTION_SMP)
+    sysModInfo.coreRunNum = OS_SYS_CORE_RUN_NUM;
+    sysModInfo.coreMaxNum = OS_SYS_CORE_MAX_NUM;
+    sysModInfo.corePrimary = OS_SYS_CORE_PRIMARY;
+#endif
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
     sysModInfo.hwiMaxNum = OS_HWI_MAX_NUM_CONFIG;
 #endif
@@ -88,6 +98,8 @@ U32 OsHookConfigReg(void)
 
     hookModInfo.maxNum[OS_HOOK_HWI_ENTRY] = OS_HOOK_HWI_ENTRY_NUM;
     hookModInfo.maxNum[OS_HOOK_HWI_EXIT] = OS_HOOK_HWI_EXIT_NUM;
+    hookModInfo.maxNum[OS_HOOK_TSK_CREATE] = OS_HOOK_TSK_CREATE_NUM;
+    hookModInfo.maxNum[OS_HOOK_TSK_DELETE] = OS_HOOK_TSK_DELETE_NUM;
     hookModInfo.maxNum[OS_HOOK_TSK_SWITCH] = OS_HOOK_TSK_SWITCH_NUM;
     hookModInfo.maxNum[OS_HOOK_IDLE_PERIOD] = OS_HOOK_IDLE_NUM;
 
@@ -192,6 +204,14 @@ U32 OsTskConfigInit(void)
 }
 #endif
 
+#if defined(OS_OPTION_SMP)
+INIT_SEC_L4_TEXT U32 OsSchedRunQueConfigInit(void)
+{
+    OsSchedRunQueInit();
+    return OS_OK;
+}
+#endif
+
 static U32 OsHwiConfigReg(void)
 {
 #if (OS_INCLUDE_GIC_BASE_ADDR_CONFIG == YES)
@@ -213,6 +233,9 @@ struct OsModuleConfigInfo g_moduleConfigTab[] = {
     {OS_MID_HARDDRV, {NULL, PRT_HardDrvInit}},
     {OS_MID_HOOK, {OsHookConfigReg, OsHookConfigInit}},
     {OS_MID_EXC, {NULL, OsExcConfigInit}},
+#if defined(OS_OPTION_SMP)
+    {OS_MID_SCHED, {NULL, OsSchedRunQueConfigInit}},
+#endif
 #if (OS_INCLUDE_TASK == YES)
     {OS_MID_TSK, {OsTskConfigReg, OsTskConfigInit}},
 #endif
@@ -277,7 +300,6 @@ U32 OsInitialize(void)
 U32 OsStart(void)
 {
     U32 ret;
-
 #if (OS_INCLUDE_TICK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入TICK模块的启动 */
     ret = OsTickStart();
@@ -285,7 +307,6 @@ U32 OsStart(void)
         return ret;
     }
 #endif
-
 #if (OS_INCLUDE_TASK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入任务模块的启动 */
     ret = OsActivate();
@@ -296,9 +317,59 @@ U32 OsStart(void)
     return ret;
 }
 
+#if defined(OS_OPTION_SMP)
+INIT_SEC_L4_TEXT U32 OsSlaveTskRecycleIPCInit(void)
+{
+    U32 ret;
+    ret = PRT_HwiEnable(OS_SMP_MC_CORE_IPC_SGI);
+    if (ret != OS_OK) {
+        return ret;
+    }
+    return ret;
+}
+
+INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
+{
+    U32 ret;
+    if(OsGetCoreID() != OS_SYS_CORE_PRIMARY) {
+        ret = OsModuleInit();
+        if(ret != OS_OK) {
+            return ret;
+        }
+
+        ret = OsCoreTimerSecondaryInit();
+        if (ret != OS_OK) {
+            return ret;
+        }
+
+        ret = OsSlaveTskRecycleIPCInit();
+        if (ret != OS_OK) {
+            return ret;
+        }
+
+        ret = OsStart();
+        if(ret != OS_OK) {
+            return ret;
+        }
+
+        /* 正常情况执行不应该到达这 */
+        return OS_FAIL;
+    }
+    return OS_OK;
+
+}
+#endif
+
 S32 OsConfigStart(void)
 {
     U32 ret;
+
+#if defined(OS_OPTION_SMP)
+    ret = OsSmpPreInit();
+    if(ret != OS_OK) {
+        return (S32)ret;
+    }
+#endif
 
     OsHwInit();
 
@@ -307,7 +378,7 @@ S32 OsConfigStart(void)
     if (ret != OS_OK) {
         return (S32)ret;
     }
-
+    
     /* OS模块初始化 */
     ret = OsInitialize();
     if (ret != OS_OK) {

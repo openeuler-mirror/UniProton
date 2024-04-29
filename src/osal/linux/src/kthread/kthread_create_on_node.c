@@ -3,7 +3,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "../../../../core/kernel/task/prt_task_internal.h"
+#if defined(OS_OPTION_SMP)
+#include "../../../core/kernel/task/smp/prt_task_internal.h"
+#else
+#include "../../../core/kernel/task/amp/prt_task_internal.h"
+#endif
 #include "prt_mem.h"
 #include "prt_posix_internal.h"
 #include "prt_sem.h"
@@ -91,7 +95,11 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
     }
 
     intSave = OsIntLock();
-    ret = OsTaskCreateChkAndGetTcb(&taskCb);
+#if defined(OS_OPTION_SMP)
+    ret = OsTaskCreateChkAndGetTcb(&taskCb, FALSE);
+#else
+    ret = OsTaskCreateChkAndGetTcb(&taskCb);  
+#endif
     if (ret != OS_OK) {
         OsIntRestore(intSave);
         OS_ERR_RECORD(PRT_MemFree((U32)OS_MID_APP, (void *)kthread_name));

@@ -96,6 +96,8 @@ enum HookType {
     OS_HOOK_TSK_SWITCH,     // 任务切换钩子
     OS_HOOK_IDLE_PERIOD,    // IDLE钩子
     OS_HOOK_LAST_WORDS,     // 临终遗言钩子
+    OS_HOOK_TSK_CREATE,     //任务创建钩子
+    OS_HOOK_TSK_DELETE,     //任务切换钩子
     OS_HOOK_TYPE_NUM,       // 钩子总数
 };
 
@@ -105,6 +107,16 @@ enum HookType {
 struct HookModInfo {
     U8 maxNum[(U32)OS_HOOK_TYPE_NUM];
 };
+
+/*
+ * 钩子添加内部接口
+ */
+extern U32 OsHookAdd(enum HookType hookType, OsVoidFunc hook);
+
+/*
+ * 钩子删除内部接口
+ */
+extern U32 OsHookDel(enum HookType hookType, OsVoidFunc hook);
 
 #ifdef __cplusplus
 #if __cplusplus

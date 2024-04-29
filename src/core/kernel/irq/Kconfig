@@ -4,6 +4,10 @@ config OS_OPTION_HWI_COMBINE
 	bool "Whether support hw interrupt combination feature or not"
 	default y if OS_OPTION_HWI_ATTRIBUTE
 	default n if !OS_OPTION_HWI_ATTRIBUTE
+
+config OS_OPTION_HWI_AFFINITY
+	bool "Whether support hwi affinity or not"
+	default n
 	
 config OS_OPTION_HWI_PRIORITY
 	bool "Whether support hwi priority set or not"

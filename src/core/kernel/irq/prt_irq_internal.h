@@ -20,11 +20,13 @@
 #include "prt_mem_external.h"
 #include "prt_sys_external.h"
 #include "prt_task_external.h"
-
+#include "prt_buildef.h"
 /*
  * 模块内宏定义
  */
-
+#if defined(OS_OPTION_SMP)
+extern volatile uintptr_t g_hwiLock;
+#endif
 #define OS_HWI_MODE_ATTR(irqNum) (&g_hwiModeForm[(irqNum)])
 #define OS_HWI_MODE_GET(irqNum) (g_hwiModeForm[(irqNum)].mode)
 #if defined(OS_OPTION_HWI_COMBINE)
@@ -37,6 +39,43 @@
 #define OS_HWI_MODE_UNSET 0
 #define OS_HWI_MAX_COMBINE_NODE 8
 
+#if defined(OS_OPTION_SMP)
+#define OS_HWI_SPL_LOCK()          \
+    do {                           \
+        OsSplLock(&g_hwiLock);     \
+    } while (0)
+
+#define OS_HWI_SPL_UNLOCK()        \
+    do {                           \
+        OsSplUnlock(&g_hwiLock);   \
+    } while (0)
+
+#define OS_HWI_IRQ_LOCK(intSave)   \
+    do {                           \
+        (intSave) = PRT_HwiLock(); \
+        OsSplLock(&g_hwiLock);     \
+    } while (0)
+
+#define OS_HWI_IRQ_UNLOCK(intSave) \
+    do {                           \
+        OsSplUnlock(&g_hwiLock);   \
+        PRT_HwiRestore(intSave);   \
+    } while (0)
+
+extern void OsHwiSplLock(void);
+extern void OsHwiSplUnLock(void);
+
+#define OS_HWI_SPINLOCK_INIT()                               \
+    do {                                                     \
+        OsSpinLockInitInner(&g_hwiLock);                     \
+        OsHwiSetSplLockHook((OsVoidFunc)OsHwiSplLock);    \
+        OsHwiSetSplUnlockHook((OsVoidFunc)OsHwiSplUnLock);\
+    } while (0)
+    
+#else
+#define OS_HWI_SPL_LOCK()
+#define OS_HWI_SPL_UNLOCK()
+
 #define OS_HWI_IRQ_LOCK(intSave)   \
     do {                           \
         (intSave) = PRT_HwiLock(); \
@@ -47,11 +86,10 @@
         PRT_HwiRestore(intSave);   \
     } while (0)
 
-#define OS_HWI_SPINLOCK_INIT()
+#define OS_HWI_SPINLOCK_INIT() 
+#endif
 
-/*
- * 模块内数据结构定义
- */
+#if !defined(OS_OPTION_SMP)
 struct TagHwiHandleForm {
     union {
         HwiProcFunc hook;               // 非私有中断时为正常hook
@@ -66,7 +104,11 @@ struct TagHwiHandleForm {
 struct TagHwiModeForm {
     HwiMode mode;
     HwiPrior prior;
+#if defined(OS_OPTION_HWI_AFFINITY)
+    U32 affinityMask;
+#endif
 };
+#endif
 
 #if defined(OS_OPTION_HWI_COMBINE)
 struct TagHwiCombineNode {
@@ -243,4 +285,11 @@ OS_SEC_ALW_INLINE INLINE bool OsHwiIsCanCreated(U32 irqNum)
     return TRUE;
 }
 
+#if defined(OS_OPTION_HWI_AFFINITY)
+OS_SEC_ALW_INLINE INLINE void OsHwiAffinityMaskSet(U32 irqNum, U32 mask)
+{
+    struct TagHwiModeForm *from = OS_HWI_MODE_ATTR(irqNum);
+    from->affinityMask = mask;
+}
+#endif
 #endif /* PRT_IRQ_INTERNAL_H */

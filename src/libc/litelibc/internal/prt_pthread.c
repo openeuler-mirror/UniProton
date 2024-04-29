@@ -14,7 +14,11 @@
  */
 #include "pthread.h"
 #include "prt_posix_internal.h"
-#include "../../core/kernel/task/prt_task_internal.h"
+#if defined(OS_OPTION_SMP)
+#include "smp/prt_task_internal.h"
+#else
+#include "amp/prt_task_internal.h"
+#endif
 #include "prt_err_external.h"
 
 void OsPthreadNotifyParents(struct TagTskCb *tskCb)

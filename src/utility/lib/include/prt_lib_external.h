@@ -51,6 +51,12 @@
 #define OS_64BIT_SET(high, low)         (((U64)(high) << 32) + (U64)(low))
 #define OS_LMB32                        31
 
+#if defined(OS_OPTION_SMP)
+#define CPUMASK_HAS_BIT(mask ,bit) ((mask) & (1U << (bit)))
+#define CPUMASK_BCLR(mask ,bit) ((mask) &= ~(1U << (bit)))
+#define CPUMASK_BSET(mask ,bit) ((mask) |= (1U << (bit)))
+#define CPUMASK_AND(m1, m2) ((m1) & (m2))
+#endif
 #define OS_MAX_U32 0xFFFFFFFFU
 #define OS_MAX_U16 0xFFFFU
 #define OS_MAX_U12 0xFFFU
@@ -160,5 +166,12 @@
 extern void OsAdd64(U32 *low, U32 *high, U32 oldLow, U32 oldHigh);
 extern void OsSub64(U32 *low, U32 *high, U32 oldLow, U32 oldHigh);
 extern U32 OsGetLmb1(U32 value);
+
+/* 检查地址偏移后反转情况 */
+OS_SEC_ALW_INLINE INLINE bool OsCheckAddrOffsetOverflow(uintptr_t base, size_t size)
+{
+    return (base + size) < base;
+}
+
 
 #endif /* PRT_LIB_EXTERNAL_H */

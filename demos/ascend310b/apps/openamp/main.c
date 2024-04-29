@@ -171,6 +171,14 @@ U32 QueueTest()
 
 void Test1TaskEntry()
 {
+#if defined(OS_OPTION_SMP)
+    PRT_Printf("task 1 run.\n");
+    while (1)
+    {
+        PRT_TaskDelay(150);
+        PRT_Printf("task 1 run.\n");
+    }
+#else
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
@@ -186,6 +194,17 @@ void Test1TaskEntry()
 #if defined(OS_OPTION_QUEUE)
     QueueTest();
 #endif
+#endif
+}
+
+void Test4TaskEntry()
+{
+    PRT_Printf("task 2 run.\n");
+    while (1)
+    {
+        PRT_TaskDelay(100);
+        PRT_Printf("task 2 run.\n");
+    }
 }
 
 U32 OsTestInit(void)
@@ -210,6 +229,24 @@ U32 OsTestInit(void)
     if (ret) {
         return ret;
     }
+
+#if defined(OS_OPTION_SMP)
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)Test4TaskEntry;
+    param.taskPrio = 30;
+    param.name = "Test2Task";
+    param.stackSize = 0x2000;
+    
+    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_testTskHandle[1]);
+    if (ret) {
+        return ret;
+    }
+#endif
 
     return OS_OK;
 }
@@ -301,6 +338,7 @@ void PRT_HardBootInit(void)
 
 S32 main(void)
 {
+    PRT_Printf("[uniproton] start \n");
     return OsConfigStart();
 }
 

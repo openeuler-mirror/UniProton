@@ -135,7 +135,7 @@ OS_SEC_L4_TEXT U32 PRT_QueueCreate(U16 nodeNum, U16 maxNodeSize, U32 *queueId)
         return ret;
     }
 
-    intSave = OsIntLock();
+    QUEUE_INIT_IRQ_LOCK(intSave);
     ret = OsQueueCreate(nodeNum, maxNodeSize, &qId);
     if (ret != OS_OK) {
         OsIntRestore(intSave);
@@ -143,6 +143,6 @@ OS_SEC_L4_TEXT U32 PRT_QueueCreate(U16 nodeNum, U16 maxNodeSize, U32 *queueId)
     }
 
     *queueId = qId;
-    OsIntRestore(intSave);
+    QUEUE_INIT_IRQ_UNLOCK(intSave);
     return OS_OK;
 }

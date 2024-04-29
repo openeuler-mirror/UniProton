@@ -16,6 +16,9 @@
 
 OS_SEC_BSS struct TagListObject g_unusedSemList;
 OS_SEC_BSS struct TagSemCb *g_allSem;
+#if defined(OS_OPTION_SMP)
+OS_SEC_BSS volatile uintptr_t g_semPrioLock;
+#endif
 
 OS_SEC_L4_TEXT bool OsSemBusy(SemHandle semHandle)
 {
@@ -43,19 +46,13 @@ OS_SEC_L4_TEXT U32 OsSemRegister(const struct SemModInfo *modInfo)
 
     return OS_OK;
 }
-
-/*
- * 描述：信号量初始化
- */
-OS_SEC_L4_TEXT U32 OsSemInit(void)
+OS_SEC_ALW_INLINE INLINE U32 OsSemInitCb(void)
 {
     struct TagSemCb *semNode = NULL;
     U32 idx;
-    U32 ret = OS_OK;
 
     /* g_maxSem在注册时已判断是否大于0，这里不需判断 */
-    g_allSem = (struct TagSemCb *)OsMemAllocAlign((U32)OS_MID_SEM,
-                                                  OS_MEM_DEFAULT_FSC_PT,
+    g_allSem = (struct TagSemCb *)OsMemAllocAlign((U32)OS_MID_SEM, OS_MEM_DEFAULT_FSC_PT,
                                                   g_maxSem * sizeof(struct TagSemCb),
                                                   MEM_ADDR_ALIGN_004);
     if (g_allSem == NULL) {
@@ -66,35 +63,59 @@ OS_SEC_L4_TEXT U32 OsSemInit(void)
         OS_GOTO_SYS_ERROR1();
     }
 
-    INIT_LIST_OBJECT(&g_unusedSemList);
+    OS_LIST_INIT(&g_unusedSemList);
     for (idx = 0; idx < g_maxSem; idx++) {
         semNode = ((struct TagSemCb *)g_allSem) + idx;
         semNode->semId = (U16)idx;
+#if defined(OS_OPTION_SMP)
+        OsSpinLockInitInner(&semNode->semLock);
+#endif
         ListTailAdd(&semNode->semList, &g_unusedSemList);
     }
 
+    return OS_OK;
+}
+/*
+ * 描述：信号量初始化
+ */
+OS_SEC_L4_TEXT U32 OsSemInit(void)
+{
+    U32 ret = OsSemInitCb();
+
+#if defined(OS_OPTION_SMP)
+    OsSpinLockInitInner(&g_semPrioLock);
+#endif
     return ret;
 }
 
-/*
- * 描述：创建一个信号量
- */
-OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode,
-                               SemHandle *semHandle, U32 cookie)
+OS_SEC_ALW_INLINE INLINE void OsSemCreateCbInit(U32 count, U32 semType, enum SemMode semMode,
+                                           struct TagSemCb *semCreated)
 {
-    uintptr_t intSave;
+        semCreated->semCount = count;
+        semCreated->semStat = OS_SEM_USED;
+        semCreated->semMode = semMode;
+        semCreated->semType = semType;
+        semCreated->semOwner = OS_INVALID_OWNER_ID;
+    if (semType == SEM_TYPE_BIN) {
+    } else {
+        if (GET_MUTEX_TYPE(semType) == PTHREAD_MUTEX_RECURSIVE) {
+            OS_LIST_INIT(&semCreated->semBList);
+#if defined(OS_OPTION_SEM_RECUR_PV)
+            semCreated->recurCount = 0;
+#endif
+        }
+    }
+
+    OS_LIST_INIT(&semCreated->semList);
+}
+OS_SEC_ALW_INLINE INLINE U32 OsSemCreateCb(U32 count, U32 semType, enum SemMode semMode,
+                                           SemHandle *semHandle, U32 cookie)
+{
     struct TagSemCb *semCreated = NULL;
     struct TagListObject *unusedSem = NULL;
     (void)cookie;
 
-    if (semHandle == NULL) {
-        return OS_ERRNO_SEM_PTR_NULL;
-    }
-
-    intSave = OsIntLock();
-
     if (ListEmpty(&g_unusedSemList)) {
-        OsIntRestore(intSave);
         return OS_ERRNO_SEM_ALL_BUSY;
     }
 
@@ -104,24 +125,36 @@ OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode,
 
     /* 获取到空闲节点对应的信号量控制块，并开始填充控制块 */
     semCreated = (GET_SEM_LIST(unusedSem));
-    semCreated->semCount = count;
-    semCreated->semStat = OS_SEM_USED;
-    semCreated->semMode = semMode;
-    semCreated->semType = semType;
-    semCreated->semOwner = OS_INVALID_OWNER_ID;
-    if (GET_SEM_TYPE(semType) == SEM_TYPE_BIN) {
-        INIT_LIST_OBJECT(&semCreated->semBList);
-#if defined(OS_OPTION_SEM_RECUR_PV)
-        if (GET_MUTEX_TYPE(semType) == PTHREAD_MUTEX_RECURSIVE) {
-            semCreated->recurCount = 0;
-        }
-#endif
-    }
 
-    INIT_LIST_OBJECT(&semCreated->semList);
+    OsSemCreateCbInit(count, semType, semMode, semCreated);
+
     *semHandle = (SemHandle)semCreated->semId;
 
-    OsIntRestore(intSave);
+    return OS_OK;
+}
+
+/*
+ * 描述：创建一个信号量
+ */
+OS_SEC_L4_TEXT U32 OsSemCreate(U32 count, U32 semType, enum SemMode semMode,
+                               SemHandle *semHandle, U32 cookie)
+{
+    uintptr_t intSave;
+    U32 ret;
+
+    if (semHandle == NULL) {
+        return OS_ERRNO_SEM_PTR_NULL;
+    }
+
+    SEM_INIT_IRQ_LOCK(intSave);
+
+    ret = OsSemCreateCb(count, semType, semMode, semHandle, cookie);
+    if (ret != OS_OK) {
+        SEM_INIT_IRQ_UNLOCK(intSave);
+        return ret;
+    }
+
+    SEM_INIT_IRQ_UNLOCK(intSave);
     return OS_OK;
 }
 
@@ -155,12 +188,14 @@ OS_SEC_L4_TEXT U32 PRT_SemDelete(SemHandle semHandle)
 
     intSave = OsIntLock();
 
+    SEM_CB_LOCK(semDeleted);
+
     if (semDeleted->semStat == OS_SEM_UNUSED) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semDeleted, intSave);
         return OS_ERRNO_SEM_INVALID;
     }
     if (!ListEmpty(&semDeleted->semList)) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semDeleted, intSave);
         return OS_ERRNO_SEM_PENDED;
     }
 #ifdef OS_OPTION_BIN_SEM
@@ -169,7 +204,10 @@ OS_SEC_L4_TEXT U32 PRT_SemDelete(SemHandle semHandle)
     }
 #endif
     semDeleted->semStat = OS_SEM_UNUSED;
+    SEM_CB_UNLOCK(semDeleted);
+    SEM_INIT_LOCK();
     ListAdd(&semDeleted->semList, &g_unusedSemList);
+    SEM_INIT_UNLOCK();
 
     OsIntRestore(intSave);
     return OS_OK;

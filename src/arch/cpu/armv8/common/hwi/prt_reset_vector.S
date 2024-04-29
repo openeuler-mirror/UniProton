@@ -74,6 +74,37 @@ OsGeneralRegsInit:  // The X30 general-purpose register is used as the procedure
     REG_INIT x28
     REG_INIT x29
 
+#if defined(OS_OPTION_SMP)
+OsStackBssInit:
+    OsAsmGetCoreId  x0 // 读取核号
+    LDR x4, =g_cfgPrimaryCore
+    LDR w4, [x4]
+    CMP w0, w4
+    BNE OsSecondaryStackInit
+
+    LDR x0, =__os_sys_sp_end
+    BIC sp, x0, #0xf                /* 16-byte alignment for ABI compliance */
+    BL  OsBssInit
+    BL  InitSystemSp
+
+    B   OsCoreMapInit
+
+OsSecondaryStackInit:
+    LDR x1, =g_sysStackHigh
+    LDR x4, [x1,w0,uxtw #3]
+
+    CMP x4, #0
+    BEQ OsSecondaryStackInit
+    MOV SP, x4
+
+OsCoreMapInit:
+    MRS x1, mpidr_el1 // 读取CoreMap
+    LDR x2, =g_gicCoreMap
+    OsAsmGetCoreId  x3 // 读取核号
+    /* g_gicCoreMap[coreid] 赋值对应coreid的mpidr_el1 */
+    STR x1, [x2, x3, lsl #3]
+
+#else
 OsStackBssInit:
     LDR x0, =__os_sys_sp_end
     BIC sp, x0, #0xf                /* 16-byte alignment for ABI compliance */
@@ -85,6 +116,26 @@ OsCoreMapInit:
     MRS x1, mpidr_el1 // 读取CoreMap
     LDR x2, =g_gicCoreMap
     STR x1, [x2]
+
+#endif
+
+#if defined(OS_OPTION_SMP)
+OsPreMain:
+    LDR x0, =g_cfgPrimaryCore
+    LDR w4, [x0]
+
+    CMP w3, w4
+    BEQ OsPrimaryMain
+    /* 从核能否进入main标志，只有主核完成了资源的注册核初始化，ResetFlag才会被置位 */
+    LDR x0, =g_secondaryResetFlag
+
+polling: /* 从核启动，循环等待入口 */
+    LDR w2, [x0]
+    CMP w2, #0 /* 判断g_secondaryResetFlag是否置位 */
+    BNE OsEnterMain /* 置位则从核跳转至主函数。do{} while(); try at least once */
+    WFE
+    B polling
+#endif
 
 OsPrimaryMain: /* OsPrimaryMain函数主核调用 */
     BL PRT_HardBootInit /* 用户调用的第一个函数钩子，用户在此处完成Seed随机数生成 */

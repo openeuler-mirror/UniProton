@@ -71,8 +71,11 @@ INIT_SEC_L4_TEXT void OsExcSaveInfo(struct ExcInfo *excInfo, struct ExcRegInfo *
     excInfo->osVer[OS_SYS_OS_VER_LEN - 1] = '\0';
 
     /* 记录CPU ID */
+#if defined(OS_OPTION_SMP)
+    excInfo->coreId = OsGetHwThreadId();
+#else
     excInfo->coreId = 0x0U;
-
+#endif
     /* 设置字节序 */
     /* 魔术字 */
     excInfo->byteOrder = OS_BYTE_ORDER;

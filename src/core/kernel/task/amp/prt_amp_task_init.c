@@ -44,7 +44,7 @@ OS_SEC_L4_TEXT U32 OsTskAMPInit(void)
 
     g_tskBaseId = OS_SYS_PID_BASE;
 
-    INIT_LIST_OBJECT(&g_tskCbFreeList);
+    OS_LIST_INIT(&g_tskCbFreeList);
     for (idx = 0; idx < OS_MAX_TCB_NUM - 1; idx++) {
         g_tskCbArray[idx].taskStatus = OS_TSK_UNUSED;
         g_tskCbArray[idx].taskPid = (idx + g_tskBaseId);

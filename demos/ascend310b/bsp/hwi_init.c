@@ -5,6 +5,9 @@
 #include "prt_task.h"
 #include "cpu_config.h"
 #include "prt_gic_external.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_module_external.h"
+#endif
 
 enum SicGroupType {
     SIC_GROUP_G0S  = 0,
@@ -282,6 +285,10 @@ void OsSicInitGlobal(void)
         OsSicSetGroup(intId, SIC_GROUP_G1NS);
     }
 }
+INIT_SEC_L4_TEXT U32 OsGicInitSecondary(void) {
+    OsSicInitLocal();
+    return OS_OK;
+}
 
 U32 OsHwiInit(void)
 {
@@ -291,6 +298,10 @@ U32 OsHwiInit(void)
     if (ret != OS_OK) {
         return ret;
     }
+
+#if defined(OS_OPTION_SMP)
+    OsHwiSetSecondaryInitHook(OsGicInitSecondary);
+#endif
 
     if (OsGetCoreID() == 0) {
         OsSicInitGlobal();

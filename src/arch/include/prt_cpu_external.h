@@ -22,6 +22,30 @@
     do {                    \
         OsAsmIll();         \
     } while (0)
+#define NOP1()                                           \
+    do {                                                  \
+        OS_EMBED_ASM("nop" : : : "memory", "cc");         \
+    } while (0)
+
+#define NOP4()              \
+    do {                    \
+        NOP1();             \
+        NOP1();             \
+        NOP1();             \
+        NOP1();             \
+    } while (0)
+
+#define NOP8()              \
+    do {                    \
+        NOP4();             \
+        NOP4();             \
+    } while (0)
+
+#define ASM_NOP()              \
+    do {                    \
+        NOP8();             \
+        NOP8();             \
+    } while (0)
 
 #define OS_GOTO_SYS_ERROR1() OS_GOTO_SYS_ERROR()
 

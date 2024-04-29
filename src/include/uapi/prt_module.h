@@ -40,6 +40,8 @@ enum MoudleId {
     OS_MID_APP = 0xf,
     OS_MID_SIGNAL = 0x10,
     OS_MID_SHELL = 0x11,
+    OS_MID_SCHED = 0X12,
+    OS_MID_SPL = 0X13,
     OS_MID_BUTT
 };
 

@@ -29,7 +29,10 @@
 #include "prt_queue_external.h"
 #include "prt_swtmr_external.h"
 #include "prt_timer_external.h"
-
+#include "prt_raw_spinlock_external.h"
+#if defined(OS_OPTION_SMP)
+#include "prt_sched_external.h"
+#endif
 /*
  * 模块内宏定义
  */

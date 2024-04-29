@@ -13,7 +13,22 @@
  * Description: 硬件相关的通用处理。
  */
 #include "prt_buildef.h"
+#include "prt_typedef.h"
 #include "prt_attr_external.h"
+
+#include "prt_sys_external.h"
+RESET_SEC_DATA volatile U32 g_secondaryResetFlag = 0;
+
+INIT_SEC_L4_TEXT void OsSetValidAllCoresMask(U32 cfgPrimaryCore)
+{
+    if(cfgPrimaryCore >= OS_MAX_CORE_NUM) {
+        return;
+    }
+
+    for (U32 coreId = 0; coreId < cfgPrimaryCore; coreId++) {
+        g_validAllCoreMask &= ~(1U << coreId);
+    }
+}
 
 INIT_SEC_L4_TEXT void OsHwInit(void)
 {

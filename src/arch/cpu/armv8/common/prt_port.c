@@ -51,38 +51,66 @@
 OS_SEC_DATA U32 g_tickTimerID = U32_INVALID;
 
 // 系统栈配置
-OS_SEC_DATA uintptr_t g_sysStackHigh = (uintptr_t)&__os_sys_sp_end;
-OS_SEC_DATA uintptr_t g_sysStackLow = (uintptr_t)&__os_sys_sp_start;
+OS_SEC_DATA uintptr_t g_sysStackHigh[OS_VAR_ARRAY_NUM] = {(uintptr_t)&__os_sys_sp_end};
+OS_SEC_DATA uintptr_t g_sysStackLow[OS_VAR_ARRAY_NUM] = {(uintptr_t)&__os_sys_sp_start};
+/*
+ * 描述: 分配各核的系统栈空间
+ */
+#if defined(OS_OPTION_SMP)
+INIT_SEC_L4_TEXT void InitSystemSp(void)
+{
+    U32 loop;
+    uintptr_t stackBottom = (uintptr_t)(&__os_sys_sp_end);
+    U32 stackSize = (U32)((uintptr_t)(&__os_sys_sp_end) - (uintptr_t)(&__os_sys_sp_start));
 
+    U32 stackStep = TRUNCATE((stackSize / OS_MAX_CORE_NUM), OS_TSK_STACK_SIZE_ALIGN);
+
+    for (loop = 0; loop < OS_MAX_CORE_NUM; loop++) {
+        g_sysStackHigh[loop] = stackBottom - stackStep * loop;
+        g_sysStackLow[loop] = g_sysStackHigh[loop] - stackStep;
+    }
+
+    return;
+}
+#else
 INIT_SEC_L4_TEXT void InitSystemSp(void)
 {
     return;
 }
+#endif
 
 /*
  * 描述: 获取系统栈的起始地址（低地址)
  */
-INIT_SEC_L4_TEXT uintptr_t OsGetSysStackStart(void)
+INIT_SEC_L4_TEXT uintptr_t OsGetSysStackStart(U32 core)
 {
-    return g_sysStackLow;
+#if defined(OS_OPTION_SMP)
+    return g_sysStackLow[core];
+#else
+    (void)core;
+    return g_sysStackLow[0];
+#endif
 }
 
 /*
  * 描述: 获取系统栈的结束地址（高地址)
  */
-INIT_SEC_L4_TEXT uintptr_t OsGetSysStackEnd(void)
+INIT_SEC_L4_TEXT uintptr_t OsGetSysStackEnd(U32 core)
 {
-    return g_sysStackHigh;
+#if defined(OS_OPTION_SMP)
+    return g_sysStackHigh[core];
+#else
+    (void)core;
+    return g_sysStackHigh[0];
+#endif
 }
-
 /*
  * 描述: 获取系统栈的栈底（高地址)
  */
-OS_SEC_L0_TEXT uintptr_t OsGetSysStackSP(void)
+OS_SEC_L0_TEXT uintptr_t OsGetSysStackSP(U32 core)
 {
-    return OsGetSysStackEnd();
+    return OsGetSysStackEnd(core);
 }
-
 /*
  * 描述: 初始化任务栈的上下文
  */

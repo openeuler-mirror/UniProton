@@ -19,6 +19,12 @@ config OS_OPTION_TASK_INFO
 	bool "Whether support get task information or not"
 	default n
 
+config OS_OPTION_TASK_AFFINITY_STATIC
+	bool "Whether support task affinity static feature or not"
+	help
+	if OS_OPTION_TASK_AFFINITY_STATIC=y, when os init, can set task affinity
+	if os is running, can not set affinity, this feature now is used belong L2 hac.
+
 config OS_OPTION_TASK_YIELD
 	bool "Whether support task yield feature or not"
 	default n

@@ -172,11 +172,6 @@ OS_SEC_L4_TEXT void OsTskEntry(TskHandle taskId)
     OsTaskExit(taskCb);
 }
 
-OS_SEC_ALW_INLINE INLINE bool OsCheckAddrOffsetOverflow(uintptr_t base, size_t size)
-{
-    return (base + size) < base;
-}
-
 /*
  * 描述：创建任务参数检查
  */
