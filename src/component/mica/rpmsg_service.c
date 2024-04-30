@@ -43,6 +43,7 @@ static struct rpmsg_endpoint tty_ept;
 static struct rpmsg_rcv_msg tty_msg;
 
 char *g_s1 = "Hello, UniProton! \r\n";
+extern char *g_printf_buffer;
 
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
@@ -66,7 +67,6 @@ static void *rpmsg_rpc_task(void *arg)
         goto err;
     }
 
-    rpmsg_set_default_ept(&rpc_ept);
 err:
     pthread_exit(NULL);
 }
@@ -183,9 +183,12 @@ int rpmsg_service_init(void)
         goto err;
     }
 
-    while (!is_rpmsg_ept_ready(&tty_ept)) {
+    while (!is_rpmsg_ept_ready(&rpc_ept)) {
         PRT_TaskDelay(100);
     }
+
+    rpmsg_set_default_ept(&rpc_ept);
+    g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
 
     return OS_OK;
 
