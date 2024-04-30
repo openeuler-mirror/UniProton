@@ -18,12 +18,16 @@
 #include "resource_table.h"
 #include "prt_hwi.h"
 #include "prt_sem.h"
+#if defined(OS_OPTION_POWEROFF)
+extern void OsPowerOffSetFlag(void);
+#endif
 
 /*
  * Use resource tables's  reserved[0] to carry some extra information.
  * The following IDs come from PSCI definition
  */
 #define CPU_ON_FUNCID    0xC4000003
+#define CPU_OFF_RUNCID   0x84000002
 #define SYSTEM_RESET     0x84000009
 
 static SemHandle msg_sem;
@@ -69,7 +73,11 @@ static inline struct fw_rsc_vdev_vring *rsc_table_get_vring1(void *rsc_table)
 static int virtio_notify(void *priv, uint32_t id)
 {
     uint16_t coreMask = 1;
+#if defined(OS_OPTION_SMP)
+    OsHwiMcTrigger(0, coreMask, OS_HWI_IPI_NO_07);
+#else
     OsHwiMcTrigger(coreMask, OS_HWI_IPI_NO_07);
+#endif
 
     return 0;
 }
@@ -133,6 +141,10 @@ static void rpmsg_ipi_handler(void)
         /* clear reserved[0] as the reset work is done */
         rsc_table->reserved[0] = 0;
         os_asm_invalidate_dcache_all();
+    } else if (status == CPU_OFF_RUNCID) {
+#if defined(OS_OPTION_POWEROFF)
+        OsPowerOffSetFlag();
+#endif
     }
 }
 

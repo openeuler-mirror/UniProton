@@ -7,6 +7,7 @@
 #define MMU_GIC_ADDR               0x24000000ULL
 #define MMU_UART_ADDR              0x08743000ULL
 #define MMU_OPENAMP_ADDR           0x90000000ULL
+#define OPENAMP_SHM_SIZE           0x100000
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 

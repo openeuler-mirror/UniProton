@@ -49,4 +49,8 @@ config OS_TSK_CORE_BYTES_IN_PID
 	int "The number of bytes used to indicate core ID in PID "
 	default 3
 
+config OS_OPTION_POWEROFF
+	bool "Whether support poweroff or not"
+	default n
+
 endmenu

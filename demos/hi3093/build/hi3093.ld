@@ -85,8 +85,7 @@ SECTIONS
     {
         . = ALIGN(8);
         __os_unwind_table_start = .;
-        KEEP (*(.eh_frame))
-        *(.eh_frame.*)
+        *(.eh_frame)
         __os_unwind_table_end = .;
     } > IMU_SRAM
     

@@ -16,7 +16,7 @@
 #include "show.h"
 #endif
 
-TskHandle g_testTskHandle[3];
+TskHandle g_testTskHandle[5];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U32 g_swtmrId;
 extern U32 PRT_Printf(const char *format, ...);
@@ -168,17 +168,66 @@ U32 QueueTest()
 
     return OS_OK;
 }
+void Test4TaskEntry()
+{
+    while (1) {
+        PRT_Printf("task 1 run.\n");
+        PRT_TaskDelay(150);
+    }
+}
 
+void Test5TaskEntry()
+{
+    while (1) {
+        PRT_Printf("task 2 run.\n");
+        PRT_TaskDelay(100);
+    }
+}
+
+U32 TaskTest()
+{
+    U32 ret;
+    U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
+    struct TskInitParam param = {0};
+
+    // task 2
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)Test4TaskEntry;
+    param.taskPrio = 20;
+    param.name = "Test2Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&g_testTskHandle[3], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_testTskHandle[3]);
+    if (ret) {
+        return ret;
+    }
+
+    // task 3
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)Test5TaskEntry;
+    param.taskPrio = 25;
+    param.name = "Test3Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&g_testTskHandle[4], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_testTskHandle[4]);
+    if (ret) {
+        return ret;
+    }
+
+    return OS_OK;
+}
 void Test1TaskEntry()
 {
-#if defined(OS_OPTION_SMP)
-    PRT_Printf("task 1 run.\n");
-    while (1)
-    {
-        PRT_TaskDelay(150);
-        PRT_Printf("task 1 run.\n");
-    }
-#else
 #if defined(OS_OPTION_OPENAMP)
     TestOpenamp();
 #endif
@@ -194,17 +243,6 @@ void Test1TaskEntry()
 #if defined(OS_OPTION_QUEUE)
     QueueTest();
 #endif
-#endif
-}
-
-void Test4TaskEntry()
-{
-    PRT_Printf("task 2 run.\n");
-    while (1)
-    {
-        PRT_TaskDelay(100);
-        PRT_Printf("task 2 run.\n");
-    }
 }
 
 U32 OsTestInit(void)
@@ -229,24 +267,6 @@ U32 OsTestInit(void)
     if (ret) {
         return ret;
     }
-
-#if defined(OS_OPTION_SMP)
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)Test4TaskEntry;
-    param.taskPrio = 30;
-    param.name = "Test2Task";
-    param.stackSize = 0x2000;
-    
-    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
-    if (ret) {
-        return ret;
-    }
-
-    ret = PRT_TaskResume(g_testTskHandle[1]);
-    if (ret) {
-        return ret;
-    }
-#endif
 
     return OS_OK;
 }
@@ -301,6 +321,11 @@ U32 PRT_AppInit(void)
         return ret;
     }
 #endif
+
+    ret =TaskTest();
+    if (ret) {
+        return ret;
+    }
 
     ret = OsTestInit();
     if (ret) {

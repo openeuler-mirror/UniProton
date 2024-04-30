@@ -47,6 +47,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
     ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
     ${HOME_PATH}/output/soem/include
+    ${HOME_PATH}/src/component/mica
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -78,6 +79,11 @@ add_subdirectory(component/boost_1_54_0)
 endif()
 if(${CONFIG_OS_SUPPORT_LIBXML2})
     add_subdirectory(component/libxml2)
+endif()
+
+if (${CONFIG_OS_OPTION_OPENAMP})
+    add_subdirectory(${HOME_PATH}/src/component/mica mica)
+    list(APPEND OBJS $<TARGET_OBJECTS:mica>)
 endif()
 
 if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")

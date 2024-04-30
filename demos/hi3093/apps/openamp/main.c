@@ -8,6 +8,7 @@
 #include "prt_hwi.h"
 #include "prt_task.h"
 #include "test.h"
+#include "rpmsg_backend.h"
 
 TskHandle g_testTskHandle[3];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -19,6 +20,7 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 #endif
 
 #if defined(OS_OPTION_OPENAMP)
+extern U32 RpmsgHwiInit(void);
 int TestOpenamp()
 {
     int ret;
@@ -157,11 +159,33 @@ U32 PRT_AppInit(void)
 #ifdef OS_SUPPORT_CXX
     PRT_CppSystemInit();
 #endif
+
+#if defined(OS_OPTION_OPENAMP)
+    /*
+     * Linux will send an interrupt to Uniproton after initialising vdev.
+     * However, if Uniproton has not registered the corresponding IPI handler,
+     * it will throw an exception (call OsHwiDefaultHandler()).
+     *
+     * Therefore, even though we may not need to handle the interrupts sent by Linux
+     * until the rpmsg backend is initialised, we also need to register the IPI handler
+     * before irq_enable.
+     * We will register the actual interrupt handler when rpmsg is initialised.
+     */
+    ret = RpmsgHwiInit();
+    if (ret) {
+        return ret;
+    }
+#if (defined(OS_OPTION_POWEROFF) && defined(OS_OPTION_SMP))
+    PRT_Printf("RpmsgHwiInit success\n");
+#endif
+#endif
     
+#if defined(OS_OPTION_SMP)
     ret =TaskTest();
     if (ret) {
         return ret;
     }
+#endif
 
     ret = OsTestInit();
     if (ret) {

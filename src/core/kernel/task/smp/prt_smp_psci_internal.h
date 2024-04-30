@@ -19,6 +19,9 @@
 extern U32 OsArmSmccSmc(U64 a0, U64 a1, U64 a2, U64 a3,
                         U64 a4, U64 a5, U64 a6, U64 a7);
 extern void OsElxState(void);
+#if defined(OS_OPTION_POWEROFF)
+extern void OsCpuPowerOff(void);
+#endif
 #define BITS_PER_CHAR 8
 
 #ifdef __cplusplus
