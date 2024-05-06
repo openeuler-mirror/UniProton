@@ -1,5 +1,6 @@
-export GCC_PATH=/home/uniproton/cxxmake
-export UNIPROTON_PATH=/home/uniproton/UniProton
+CURRENT_DIR=$(pwd)
+export GCC_PATH=$CURRENT_DIR/../component
+export UNIPROTON_PATH=$CURRENT_DIR/../../..
 export CXX_COMPILE_PATH=/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr
 
 pushd $GCC_PATH
