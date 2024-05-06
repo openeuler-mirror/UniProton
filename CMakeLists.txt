@@ -70,6 +70,7 @@ include_directories(
 	./src/arch/include
 	./src/core/ipc/include
 	./src/core/kernel/include
+	./src/core/extend/include
 	./src/include/uapi
 	./src/mem/include
 	./src/om/include
