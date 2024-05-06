@@ -36,6 +36,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/modbus/include/modbus
     ${HOME_PATH}/testsuites/modbusTest/
+    ${HOME_PATH}/testsuites/forteTest/
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
@@ -55,6 +56,7 @@ link_libraries(
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libforte-static.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
     "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
     "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
@@ -132,7 +134,19 @@ if (${APP} STREQUAL "UniProton_modbus_demo")
         list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:modbusTest>)
         add_executable(${APP} ${OBJS})
     else()
-        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_MODBUS")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_OPTION_MODBUS")
+        return()
+    endif()
+endif()
+
+if (${APP} STREQUAL "UniProton_forte_demo")
+    if ("${CONFIG_OS_OPTION_FORTE}" STREQUAL "y" AND "${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y")
+        add_subdirectory(${HOME_PATH}/testsuites/forteTest tmp)
+        target_compile_options(ethercat PUBLIC -DFORTE_DEMO)
+        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:forteInit>)
+        add_executable(${APP} ${OBJS})
+    else()
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_OPTION_FORTE AND CONFIG_OS_SUPPORT_CXX")
         return()
     endif()
 endif()

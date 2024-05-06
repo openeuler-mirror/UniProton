@@ -46,6 +46,10 @@ const TskPrior g_testTskPri = 25;
 int modbus_client();
 #endif
 
+#if defined(OS_OPTION_FORTE)
+void forte_init();
+#endif
+
 #if defined(OS_OPTION_OPENAMP)
 int TestOpenamp()
 {
@@ -103,6 +107,10 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+
+#if defined(FORTE_DEMO) && defined(OS_OPTION_FORTE)
+    forte_init();
+#endif
 
 #if defined(MODBUS_DEMO) && defined(OS_OPTION_MODBUS)
     modbus_client();
