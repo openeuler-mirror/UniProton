@@ -9,6 +9,7 @@
 # CONFIG_OS_ARCH_ARMV8 is not set
 # CONFIG_OS_ARCH_ARMV7_M is not set
 CONFIG_OS_ARCH_X86_64=y
+CONFIG_OS_ARCH_CPU64=y
 
 #
 # x86_64 Sepecfic Configuration
@@ -121,6 +122,11 @@ CONFIG_OS_OPTION_OPENAMP=y
 CONFIG_OS_OPTION_LINUX=y
 CONFIG_OS_OPTION_PROXY=y
 CONFIG_OS_OPTION_LOCALE=y
+
+#
+# dynamic module load Configuration
+#
+CONFIG_OS_OPTION_DYNAMIC_MODULE=y
 
 #
 # Filesystem Modules Configuration

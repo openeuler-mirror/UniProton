@@ -29,6 +29,9 @@ SECTIONS
         *(.text.*)
         *(*.text)
         . = ALIGN(8);
+        os_symtab_start = .;
+        KEEP(*(.OsSymTab))
+        os_symtab_end = .;
         __text_end = .;
     } > IMU_SRAM
     . = ALIGN(8);

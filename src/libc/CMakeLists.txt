@@ -14,6 +14,15 @@ list(REMOVE_ITEM LITELIBC_SOURCE
 )
 endif()
 
+if(NOT "${CONFIG_OS_OPTION_DYNAMIC_MODULE}")
+list(REMOVE_ITEM LITELIBC_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/ldso/dlclose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/ldso/dlopen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/ldso/dlerror.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/ldso/dlsym.c
+)
+endif()
+
 # 依赖VFS的接口
 if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
 list(REMOVE_ITEM LITELIBC_SOURCE

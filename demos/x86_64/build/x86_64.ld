@@ -18,6 +18,9 @@ SECTIONS
         __os_stub_text_start = .;
         *(.stub.text)
         __os_stub_text_end = .;
+        os_symtab_start = .;
+        KEEP(*(.OsSymTab))
+        os_symtab_end = .;
         *(.rodata)
         *(.rodata.*)
     }
