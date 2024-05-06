@@ -103,6 +103,10 @@ OS_SEC_L4_TEXT U32 OsTskInit(void)
     g_taskNameGet = OsTaskNameGet;
 #endif
 
+#if defined(OS_OPTION_POWEROFF)
+    OsPowerOffFuncHook(OsCpuPowerOff);
+#endif
+
     /* 设置任务切换钩子标志位 */
     UNI_FLAG |= OS_FLG_TSK_SWHK;
 

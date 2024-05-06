@@ -12,4 +12,8 @@ add_library_ex(prt_amp_task.c)
 add_library_ex(prt_amp_task_del.c)
 add_library_ex(prt_amp_task_init.c)
 add_library_ex(prt_amp_task_minor.c)
+if(${CONFIG_OS_OPTION_POWEROFF})
+add_library_ex(prt_amp_psci.c)
+endif()
+
 

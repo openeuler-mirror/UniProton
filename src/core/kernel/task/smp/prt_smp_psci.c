@@ -48,3 +48,53 @@ OS_SEC_L4_TEXT void OsSmpWakeUpSecondaryCore(void)
         OsWakeUpProcessors();
     }
 }
+
+#if defined(OS_OPTION_POWEROFF)
+OS_SEC_L4_TEXT void OsCpuPowerOff(void)
+{
+    U32 ret;
+    uintptr_t intSave;
+
+    U32 coreId;
+    U32 baseMpidr;
+    U32 offset;
+    volatile U32 cpuState;
+
+    coreId = PRT_GetCoreID();
+
+    if (coreId == g_cfgPrimaryCore) {
+        OsHwiMcTrigger(OS_TYPE_TRIGGER_TO_OTHER, 0, OS_HWI_IPI_NO_02);
+    }
+    
+    intSave = PRT_HwiLock();
+    /* 去使能所有中断，防止pending中断遗留，导致下次拉核导致程序跑飞 */
+    if (coreId == g_cfgPrimaryCore) {
+        OsHwiDisableAll();
+    }
+    offset = OS_MPIDR_OFFSET;
+    baseMpidr = OS_MPIDR_VALID_COREID;
+    
+    if (coreId <(U32)(g_maxNumOfCores - 1U)) {
+        do {
+            cpuState = OsInvokePsciSmc(PSCI_AFFINITY_INFO, baseMpidr + (1U << offset), 0, 0);
+        } while (cpuState != PSCI_CPU_STATE_OFF);
+    }
+
+    /* 刷L1 ICACHE和DCACHE */
+    os_asm_flush_dcache_all();
+    os_asm_invalidate_dcache_all();
+    os_asm_invalidate_icache_all();
+    os_asm_clean_dcache_all();
+
+    /* 清除中断Active状态 */
+    OsHwiClear(OS_HWI_IPI_NO_02); /* 基于中断的power off */
+    OsHwiClear(OS_HWI_IPI_NO_07); /* 基于消息的power off */
+
+    /* SMC陷入异常 */
+    (void)OsInvokePsciSmc(PSCI_FN_CPU_OFF, 0, 0, 0);
+
+    /* 正常offline的话不会来到这里 */
+    PRT_HwiRestore(intSave);
+    while (1);
+}
+#endif

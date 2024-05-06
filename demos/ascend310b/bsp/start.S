@@ -44,12 +44,11 @@ OsEl2Entry:
     ORR    x10, x10, #0x3
     MSR    CNTHCTL_EL2, x10
 
-#if !defined(OS_OPTION_SMP)
     MRS    x10, MIDR_EL1
     MRS    x1, MPIDR_EL1
     MSR    VPIDR_EL2, x10
     MSR    VMPIDR_EL2, x1
-#endif
+
     MOV    x10, #0x33ff
     MSR    CPTR_EL2, x10
     MSR    HSTR_EL2, xzr
@@ -99,7 +98,6 @@ Start:
     BL     mmu_init
 #endif
 
-#if !defined(OS_OPTION_SMP)
     MRS    x10, CNTKCTL_EL1
     ORR    x10, x10, #0x3
     MSR    CNTKCTL_EL1, x10
@@ -109,6 +107,8 @@ Start:
     mov x4, #(3 << 20)
     msr CPACR_EL1, x4
     isb
+
+#if !defined(OS_OPTION_SMP)
     B      OsResetVector
 #endif
     BL    OsSetValidAllCoresMask
