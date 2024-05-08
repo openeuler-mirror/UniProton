@@ -147,15 +147,21 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     directive_failed(status, "PRT_TaskCreate of TA03");
 
     /* find overhead of obtaining semaphore*/
-    for(int i=0;i<WARM_UP_TIMES;i++)
-    {
+#if defined(OS_ARCH_ARMV7_M)
+    benchmark_timer_initialize();
+    PRT_SemPend(semId, OS_WAIT_FOREVER);
+    obtainOverhead = benchmark_timer_read();
+    PRT_SemPost(semId);
+#else
+    for(int i=0; i < WARM_UP_TIMES; i++) {
         benchmark_timer_initialize();
         PRT_SemPend(semId, OS_WAIT_FOREVER);
         obtainOverhead += benchmark_timer_read();
         PRT_SemPost(semId);
     }
     obtainOverhead /= WARM_UP_TIMES;
-    
+#endif
+
     status = PRT_TaskSelf(&selfTaskPid);
     directive_failed(status, "PRT_TaskSelf");
     status = PRT_TaskSetPriority(selfTaskPid, OS_TSK_PRIORITY_25);
