@@ -184,6 +184,7 @@ SECTIONS
         __data_start = .;
         *(.data)
         *(.data.*)
+        KEEP(*( SORT (.uniproton.table.*)));
         . = ALIGN(8);
         __os_text_start = .;
         QUAD(__text_start)

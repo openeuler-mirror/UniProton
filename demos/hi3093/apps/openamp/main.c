@@ -9,6 +9,10 @@
 #include "prt_task.h"
 #include "test.h"
 #include "rpmsg_backend.h"
+#ifdef LOSCFG_SHELL_MICA_INPUT
+#include "shell.h"
+#include "show.h"
+#endif
 
 TskHandle g_testTskHandle[3];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
@@ -31,6 +35,36 @@ int TestOpenamp()
     }
     
     return OS_OK;
+}
+#endif
+
+#ifdef LOSCFG_SHELL_MICA_INPUT
+static int osShellCmdTstReg(int argc, const char **argv)
+{
+    printf("tstreg: get %d arguments\n", argc);
+    for(int i = 0; i < argc; i++) {
+        printf("    no %d arguments: %s\n", i + 1, argv[i]);
+    }
+
+    return 0;
+}
+
+void micaShellInit()
+{
+    int ret = OsShellInit(0);
+    ShellCB *shellCB = OsGetShellCB();
+    if (ret != 0 || shellCB == NULL) {
+        PRT_Printf("shell init fail\n");
+        return;
+    }
+    // PRT_Printf("shell init success\n");
+    (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
+    ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'tstreg' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'tstreg' failed!\n");
+    }
 }
 #endif
 
@@ -58,6 +92,10 @@ void TestTaskEntry()
 
 #if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE)
     Init(0, 0, 0, 0);
+#endif
+
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
 #endif
 
 #if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)

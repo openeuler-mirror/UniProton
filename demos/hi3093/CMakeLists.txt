@@ -48,6 +48,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
     ${HOME_PATH}/output/soem/include
     ${HOME_PATH}/src/component/mica
+
+    ${HOME_PATH}/output/libc/include
+    ${HOME_PATH}/src/shell/adapter/include
+    ${HOME_PATH}/src/shell/full/include
+    ${HOME_PATH}/src/component/mica
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -129,4 +134,21 @@ elseif (${APP} STREQUAL "UniProton_soem_demo")
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
     add_executable(${APP} ${OBJS})
+endif()
+
+if(${CONFIG_LOSCFG_SHELL})
+set(LD_OPTS)
+list(APPEND LD_OPTS
+    -uhelp_shellcmd
+    -umemInfo_shellcmd
+    -utaskInfo_shellcmd
+    -uuname_shellcmd
+    -uhwi_shellcmd
+    -ucpup_shellcmd
+    -usem_shellcmd
+    -uswtmr_shellcmd
+    -uqueue_shellcmd
+    -usysteminfo_shellcmd
+)
+target_link_options(${APP} PUBLIC ${LD_OPTS})
 endif()
