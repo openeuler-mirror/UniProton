@@ -50,7 +50,7 @@ OS_SEC_L4_TEXT void OsSmpWakeUpSecondaryCore(void)
 }
 
 #if defined(OS_OPTION_POWEROFF)
-OS_SEC_L4_TEXT void OsCpuPowerOff(void)
+OS_SEC_TEXT void OsCpuPowerOff(void)
 {
     U32 ret;
     uintptr_t intSave;
@@ -73,12 +73,18 @@ OS_SEC_L4_TEXT void OsCpuPowerOff(void)
     }
     offset = OS_MPIDR_OFFSET;
     baseMpidr = OS_MPIDR_VALID_COREID;
-    
+
     if (coreId <(U32)(g_maxNumOfCores - 1U)) {
         do {
             cpuState = OsInvokePsciSmc(PSCI_AFFINITY_INFO, baseMpidr + (1U << offset), 0, 0);
         } while (cpuState != PSCI_CPU_STATE_OFF);
     }
+
+#ifdef OS_OPTION_OPENAMP
+    if (g_setOfflineFlagHook != NULL && coreId == g_cfgPrimaryCore) {
+        g_setOfflineFlagHook();
+    }
+#endif
 
     /* 刷L1 ICACHE和DCACHE */
     os_asm_flush_dcache_all();

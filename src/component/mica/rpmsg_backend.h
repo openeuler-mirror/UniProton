@@ -46,6 +46,9 @@ extern void rpmsg_backend_remove(void);
  */
 extern void receive_message(void);
 
+/* 下线时，设置rsc_table的reserved[1]为CPU_OFF_FUNCID，告诉mica侧更新状态 */
+extern void rsc_table_set_offline_flag(void);
+
 #ifdef __cplusplus
 }
 #endif

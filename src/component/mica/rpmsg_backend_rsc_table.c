@@ -27,7 +27,7 @@ extern void OsPowerOffSetFlag(void);
  * The following IDs come from PSCI definition
  */
 #define CPU_ON_FUNCID    0xC4000003
-#define CPU_OFF_RUNCID   0x84000002
+#define CPU_OFF_FUNCID   0x84000002
 #define SYSTEM_RESET     0x84000009
 
 static SemHandle msg_sem;
@@ -141,11 +141,26 @@ static void rpmsg_ipi_handler(void)
         /* clear reserved[0] as the reset work is done */
         rsc_table->reserved[0] = 0;
         os_asm_invalidate_dcache_all();
-    } else if (status == CPU_OFF_RUNCID) {
+    } else if (status == CPU_OFF_FUNCID) {
 #if defined(OS_OPTION_POWEROFF)
         OsPowerOffSetFlag();
 #endif
     }
+}
+
+/* 下线时，设置rsc_table的reserved[1]为CPU_OFF_FUNCID，告诉mica侧更新状态 */
+void rsc_table_set_offline_flag(void)
+{
+    void *rsc;
+    int rsc_size;
+    uint32_t status;
+    struct fw_resource_table *rsc_table;
+
+    rsc_table_get(&rsc, &rsc_size);
+    rsc_table = (struct fw_resource_table *)rsc;
+
+    rsc_table->reserved[0] = CPU_OFF_FUNCID;
+    os_asm_invalidate_dcache_all();
 }
 
 void receive_message(void)

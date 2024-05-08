@@ -1,6 +1,7 @@
 #ifndef PRT_AMP_PSCI_INTERNAL_H
 #define PRT_AMP_PSCI_INTERNAL_H
 #include "prt_hwi_external.h"
+#include "prt_task_external.h"
 
 #define PSCI_FN_BASE    0x84000000
 #define PSCI_FN(val)    (PSCI_FN_BASE + (val))
