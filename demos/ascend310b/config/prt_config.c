@@ -328,6 +328,18 @@ INIT_SEC_L4_TEXT U32 OsSlaveTskRecycleIPCInit(void)
     return ret;
 }
 
+#if defined(OS_OPTION_POWEROFF)
+INIT_SEC_L4_TEXT U32 OsStopOtherCoreInit(void)
+{
+    U32 ret;
+    ret = PRT_HwiEnable(OS_SMP_EXC_STOP_OTHER_CORE_SGI);
+    if (ret != OS_OK) {
+        return ret;
+    }
+    return ret;
+}
+#endif
+
 INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
 {
     U32 ret;
@@ -347,6 +359,12 @@ INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
             return ret;
         }
 
+#if defined(OS_OPTION_POWEROFF)
+        ret = OsStopOtherCoreInit();
+        if (ret != OS_OK) {
+            return ret;
+        }
+#endif
         ret = OsStart();
         if(ret != OS_OK) {
             return ret;

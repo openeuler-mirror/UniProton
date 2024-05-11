@@ -6,13 +6,19 @@ OS_SEC_L4_TEXT U32 OsInvokePsciSmc(U64 functionId, U64 arg0, U64 arg1, U64 arg2)
 {
     return OsArmSmccSmc(functionId, arg0, arg1, arg2, 0, 0, 0, 0);
 }
-OS_SEC_L4_TEXT void OsCpuPowerOff(void)
+OS_SEC_TEXT void OsCpuPowerOff(void)
 {
     U32 ret;
     uintptr_t intSave;
 
     intSave = PRT_HwiLock();
     OsHwiDisableAll();
+
+#ifdef OS_OPTION_OPENAMP
+    if (g_setOfflineFlagHook != NULL) {
+        g_setOfflineFlagHook();
+    }
+#endif
 
     /* 刷L1 ICACHE和DCACHE */
     os_asm_flush_dcache_all();

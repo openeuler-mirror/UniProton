@@ -18,7 +18,6 @@
 
 #if defined(OS_OPTION_POWEROFF)
 bool g_sysPowerOffFlag = false;
-PowerOffFuncT g_sysPowerOffHook = NULL;
 
 OS_SEC_TEXT void OsPowerOffSetFlag(void)
 {
@@ -28,6 +27,17 @@ OS_SEC_TEXT void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc)
 {
     g_sysPowerOffHook = powerOffFunc;
 }
+
+OS_SEC_TEXT void SetOfflineFlagDefaultFunc(PowerOffFuncT powerOffFunc)
+{
+    return;
+}
+
+OS_SEC_TEXT void OsSetOfflineFlagHook(SetOfflineFlagFuncT setOfflineFlagFunc)
+{
+    g_setOfflineFlagHook = setOfflineFlagFunc;
+}
+
 #endif
 /*
  * 描述：Idle背景任务

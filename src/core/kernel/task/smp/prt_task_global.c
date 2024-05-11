@@ -27,6 +27,11 @@ OS_SEC_BSS U32 g_tskMaxNum;
 OS_SEC_BSS struct TagTskCb *g_tskCbArray;
 OS_SEC_BSS U32 g_tskBaseId;
 
+#if defined(OS_OPTION_POWEROFF)
+OS_SEC_BSS PowerOffFuncT g_sysPowerOffHook;
+OS_SEC_BSS SetOfflineFlagFuncT g_setOfflineFlagHook = SetOfflineFlagDefaultFunc;
+#endif
+
 OS_SEC_TEXT void OsTskSwitchHookCaller(U32 prevPid, U32 nextPid)
 {
     UNI_FLAG |= OS_FLG_SYS_ACTIVE;

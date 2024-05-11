@@ -278,9 +278,15 @@ extern volatile TskCoresleep g_taskCoreSleep;
 
 #if defined(OS_OPTION_POWEROFF)
 typedef void (*PowerOffFuncT)(void);
+extern PowerOffFuncT g_sysPowerOffHook;
 extern void OsPowerOffSetFlag(void);
 extern void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc);
 extern void OsCpuPowerOff(void); /* hook之前异常, 需实现该函数 */
+
+typedef void (*SetOfflineFlagFuncT)(void);
+extern void SetOfflineFlagDefaultFunc(PowerOffFuncT powerOffFunc);
+extern void OsSetOfflineFlagHook(SetOfflineFlagFuncT setOfflineFlagFunc);
+extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 #endif
 #define OS_TSK_STACK_CFG_BY_USER 1
 #define OS_TSK_STACK_CFG_BY_SYS  0

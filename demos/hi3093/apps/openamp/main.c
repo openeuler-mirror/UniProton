@@ -213,9 +213,11 @@ U32 PRT_AppInit(void)
     if (ret) {
         return ret;
     }
-#if (defined(OS_OPTION_POWEROFF) && defined(OS_OPTION_SMP))
-    PRT_Printf("RpmsgHwiInit success\n");
+
+#if defined(OS_OPTION_POWEROFF)
+    OsSetOfflineFlagHook(rsc_table_set_offline_flag);
 #endif
+
 #endif
     
 #if defined(OS_OPTION_SMP)
