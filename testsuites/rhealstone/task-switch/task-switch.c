@@ -96,14 +96,21 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
     }
     loopCycle = benchmark_timer_read();
 
+#if defined(OS_ARCH_ARMV7_M)
+    PRT_TaskDelay(0);
+    benchmark_timer_initialize();
+    PRT_TaskDelay(0);
+    dirOverhead = benchmark_timer_read();
+#else
     dirOverhead = 0;
-    for(int i=0;i<BENCHMARKS;i++)
-    {
+    for(int i = 0; i < BENCHMARKS; i++) {
     	benchmark_timer_initialize();
     	PRT_TaskDelay(0);
     	dirOverhead += benchmark_timer_read();
     }
     dirOverhead /= BENCHMARKS;
+#endif
+
     status = PRT_TaskResume(taskIds[0]);
     directive_failed(status, "PRT_TaskResume of TA01");
 

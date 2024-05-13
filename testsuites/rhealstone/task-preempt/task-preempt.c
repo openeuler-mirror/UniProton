@@ -21,12 +21,21 @@ U32 status;
 
 void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
+#if defined(OS_ARCH_ARMV7_M)
+    for (count = 0; count < WARMUP_TIMES; count++) {
+        status = PRT_TaskResume(taskIds[1]);
+        tswitch = benchmark_timer_read();
+        directive_failed(status, "PRT_TaskResume of TA02");
+    }
+#else
     for (count = 0; count < WARMUP_TIMES; count++) {
         status = PRT_TaskResume(taskIds[1]);
         tswitch += benchmark_timer_read();
         directive_failed(status, "PRT_TaskResume of TA02");
     }
     tswitch /= WARMUP_TIMES;
+#endif
+
     benchmark_timer_initialize();
 
     for (count = 0; count < BENCHMARKS; count++) {
