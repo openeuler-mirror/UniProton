@@ -58,7 +58,7 @@ void micaShellInit()
         PRT_Printf("shell init fail\n");
         return;
     }
-    // PRT_Printf("shell init success\n");
+
     (VOID)memset_s(shellCB->shellBuf, SHOW_MAX_LEN, 0, SHOW_MAX_LEN);
     ret = osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
     if (ret == 0) {

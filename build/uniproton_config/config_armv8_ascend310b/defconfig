@@ -120,6 +120,7 @@ CONFIG_INTERNAL_OS_SWTMR=y
 # OM Modules Configuration
 #
 CONFIG_OS_OPTION_CPUP=y
+CONFIG_OS_OPTION_STACKTRACE=y
 
 #
 # CPUP features configuration

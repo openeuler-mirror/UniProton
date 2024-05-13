@@ -107,6 +107,11 @@ OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
 /* Idle任务的消息队列数 */
 #define OS_IDLE_TASK_QUE_NUM 1
 
+/* Unwind 相关 寄存器在解析帧中的位置，前面30个通用寄存器忽略 */
+#define OS_UNWEIND_LR_OFFSET 0x1EU
+#define OS_UNWEIND_SP_OFFSET 0x24U
+#define OS_UNWEIND_PC_OFFSET 0x23U
+
 /* SPINLOCK 相关 */
 #define OS_SPINLOCK_RELOCK_NEGATIVE 0x80000000U
 
@@ -123,6 +128,11 @@ OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
 
 /* 硬件平台保存的任务上下文 */
 struct TagHwContext {
+#if defined(OS_OPTION_HAVE_FPU)
+    __uint128_t q[OS_FPU_CONTEXT_REG_NUM];
+    uintptr_t fcpr;
+    uintptr_t fpsr;
+#endif
     uintptr_t pc;
     uintptr_t spsr;
     uintptr_t far;
@@ -130,6 +140,15 @@ struct TagHwContext {
     uintptr_t xzr;
     uintptr_t lr;
     uintptr_t x[30];
+};
+
+/* StackTrace保存的任务上下文 */
+struct TagStackTraceContext {
+    uintptr_t sp;
+    uintptr_t pc;
+    uintptr_t resv[4];
+    uintptr_t lr;
+    uintptr_t x[30];  
 };
 
 /*
@@ -319,6 +338,30 @@ OS_SEC_ALW_INLINE INLINE uintptr_t OsGetSp(void)
     OS_EMBED_ASM("MOV  %0, SP" : "=r"(sp));
 
     return sp;
+}
+
+/*
+ * 描述: 获取LR
+ */
+OS_SEC_ALW_INLINE INLINE uintptr_t OsGetLR(void)
+{
+    uintptr_t lr;
+
+    OS_EMBED_ASM("MOV  %0, x30" : "=r"(lr));
+
+    return lr;
+}
+
+/*
+ * 描述: 获取PC
+ */
+OS_SEC_ALW_INLINE INLINE uintptr_t OsGetPC(void)
+{
+    uintptr_t pc;
+
+    OS_EMBED_ASM("1:adr  %0, 1b" : "=r"(pc));
+
+    return pc;
 }
 
 /*

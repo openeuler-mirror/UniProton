@@ -18,6 +18,8 @@
 #include "prt_task_external.h"
 #endif
 #include "prt_log.h"
+#include "prt_stacktrace.h"
+OS_SEC_BSS bool g_isOtherCoreExc[OS_VAR_ARRAY_NUM];
 
 #if defined(OS_OPTION_SMP)
 OS_SEC_BSS uintptr_t g_uniFlagAddr[OS_MAX_CORE_NUM];
@@ -65,6 +67,11 @@ static INIT_SEC_L4_TEXT void OsExcSaveCause(uintptr_t esr)
     U32 excCause;
     struct ExcInfo *excInfo = OS_EXC_INFO_ADDR;
 
+    if (g_isOtherCoreExc[OsGetCoreID()]) {
+        excInfo->excCause = OS_EXCEPT_OTHER_CORE;
+        return;
+    }
+
     /* 记录异常类型 */
     preFatalErr = OsFatalErrClr();
     if (preFatalErr == OS_EXC_DEFAULT_EXC_TYPE) {
@@ -77,7 +84,38 @@ static INIT_SEC_L4_TEXT void OsExcSaveCause(uintptr_t esr)
     excInfo->fatalErrNo = preFatalErr;
     return;
 }
+#if defined(OS_OPTION_STACKTRACE)
+INIT_SEC_L4_TEXT U32 OsExcCallstackPrintf(const struct ExcInfo *excInfo)
+{
+    uintptr_t list[STACKTRACE_MAX_DEPTH] = {0};
+    U32 maxDepth = STACKTRACE_MAX_DEPTH;
+    U32 ret;
+    U32 coreId = OsGetCoreID();
 
+    if (excInfo == NULL) {
+        PRT_Printf("excInfo is NULL\n");
+        return -1;
+    }
+
+    PRT_Printf("CoreId: %u trigger exception\n",coreId);
+
+    if (g_isOtherCoreExc[OsGetCoreID()] == TRUE) {
+        PRT_Printf("Other Core Trigger Exception\n");
+        return OS_OK;
+    }
+
+    ret = PRT_GetStackTrace(&maxDepth, list);
+
+    if ((ret == OS_OK) && (maxDepth > 0)) {
+        ret = PRT_PrintStackTraceResult(maxDepth, list);
+    } else {
+        PRT_Printf("Get callstack info failed.\n");
+        return -1;
+    }
+    
+    return OS_OK;
+}
+#endif
 /*
  * 描述: EXC钩子处理函数
  */
@@ -129,6 +167,11 @@ INIT_SEC_L4_TEXT void OsExcHandleEntry(U32 excType, struct ExcRegInfo *excRegs)
     OsExcSaveInfo(excInfo, excRegs);
 
     PRT_LogFormat(OS_LOG_EMERG, OS_LOG_F0, "[core%u] OsExcHandleEntry enter", excInfo->coreId);
+    
+#if defined(OS_OPTION_STACKTRACE)
+    /* 打印异常任务栈 */
+    OsErrRecord(OsExcCallstackPrintf(excInfo));
+#endif
 
     /* 回调异常钩子函数 */
     OsExcHookHandle();
@@ -156,6 +199,8 @@ static struct NotifierBlock g_excNotifier = {
 #else
 void OsExcIrqHandler(void)
 {
+    U32 coreID = OsGetCoreID();
+    g_isOtherCoreExc[coreID] = TRUE;
     OsAsmIll(); /* 主动进入异常，最终会调用 OsCpuPowerOff */
 }
 #endif
