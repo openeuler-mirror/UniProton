@@ -85,7 +85,8 @@ SECTIONS
     {
         . = ALIGN(8);
         __os_unwind_table_start = .;
-        *(.eh_frame)
+        KEEP (*(.eh_frame))
+        *(.eh_frame.*)
         __os_unwind_table_end = .;
     } > IMU_SRAM
     
@@ -100,10 +101,10 @@ SECTIONS
     
     .stack (NOLOAD) :
     {
-        . = ALIGN(8);
+        . = ALIGN(16);
         PROVIDE (__os_sys_sp_start = .);
         . = . + _stack_size;
-        . = ALIGN(8);
+        . = ALIGN(16);
         PROVIDE (__os_sys_sp_end = .);
     } > IMU_SRAM
     end = .;

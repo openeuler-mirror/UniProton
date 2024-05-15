@@ -84,9 +84,9 @@ OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendL
 
     /* 调用函数之前已经关中断，此处关中断进行调度 */
     /* 触发任务调度 */
-    QUEUE_CB_LOCK(queueCb);
-    OsTskSchedule();
     QUEUE_CB_UNLOCK(queueCb);
+    OsTskSchedule();
+    QUEUE_CB_LOCK(queueCb);
 
     OsSpinLockTaskRq(runTsk);
     TSK_STATUS_CLEAR(runTsk, OS_TSK_QUEUE_BUSY);
