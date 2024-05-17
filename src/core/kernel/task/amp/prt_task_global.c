@@ -32,7 +32,7 @@ OS_SEC_BSS struct TagTskCb *g_highestTask;
 
 #if defined(OS_OPTION_POWEROFF)
 OS_SEC_BSS PowerOffFuncT g_sysPowerOffHook;
-OS_SEC_BSS SetOfflineFlagFuncT g_setOfflineFlagHook = SetOfflineFlagDefaultFunc;
+OS_SEC_BSS SetOfflineFlagFuncT g_setOfflineFlagHook;
 #endif
 
 OS_SEC_TEXT void OsTskSwitchHookCaller(U32 prevPid, U32 nextPid)

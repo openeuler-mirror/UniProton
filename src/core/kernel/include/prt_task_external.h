@@ -284,7 +284,6 @@ extern void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc);
 extern void OsCpuPowerOff(void); /* hook之前异常, 需实现该函数 */
 
 typedef void (*SetOfflineFlagFuncT)(void);
-extern void SetOfflineFlagDefaultFunc(PowerOffFuncT powerOffFunc);
 extern void OsSetOfflineFlagHook(SetOfflineFlagFuncT setOfflineFlagFunc);
 extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 #endif

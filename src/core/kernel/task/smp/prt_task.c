@@ -29,11 +29,6 @@ OS_SEC_TEXT void OsPowerOffFuncHook(PowerOffFuncT powerOffFunc)
     g_sysPowerOffHook = powerOffFunc;
 }
 
-OS_SEC_TEXT void SetOfflineFlagDefaultFunc(PowerOffFuncT powerOffFunc)
-{
-    return;
-}
-
 OS_SEC_TEXT void OsSetOfflineFlagHook(SetOfflineFlagFuncT setOfflineFlagFunc)
 {
     g_setOfflineFlagHook = setOfflineFlagFunc;

@@ -342,6 +342,69 @@ INIT_SEC_L4_TEXT U32 OsStopOtherCoreInit(void)
 }
 #endif
 
+void SlaveTaskEntry()
+{
+    PRT_Printf("slave 1.\n");
+    static U32 temp1 = 0;
+    while (1) {
+        PRT_TaskDelay(500);
+        PRT_Printf("slave 1.\n");
+        temp1++;
+    }
+}
+
+void SlaveTaskEntry2()
+{
+    static U32 temp2 = 0;
+    while (1) {
+        PRT_Printf("slave 2.\n");
+        PRT_TaskDelay(300);
+        temp2++;
+    }
+}
+
+U32 SlaveTestInit(void)
+{
+    U32 ret;
+    U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
+    struct TskInitParam param = {0};
+    TskHandle testTskHandle[2];
+    // task 1
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)SlaveTaskEntry;
+    param.taskPrio = 25;
+    param.name = "SlaveTask";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&testTskHandle[0], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(testTskHandle[0]);
+    if (ret) {
+        return ret;
+    }
+    
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)SlaveTaskEntry2;
+    param.taskPrio = 30;
+    param.name = "Test2Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&testTskHandle[1], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(testTskHandle[1]);
+    if (ret) {
+        return ret;
+    }
+
+    return OS_OK;
+}
+
 INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
 {
     U32 ret;
@@ -367,6 +430,11 @@ INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
             return ret;
         }
 #endif
+
+        ret = SlaveTestInit();
+        if (ret) {
+            return ret;
+        }
 
         ret = OsStart();
         if(ret != OS_OK) {

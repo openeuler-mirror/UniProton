@@ -104,7 +104,7 @@ OS_SEC_L4_TEXT U32 OsTskInit(void)
 #endif
 
 #if defined(OS_OPTION_POWEROFF)
-    OsPowerOffFuncHook(OsCpuPowerOff);
+    g_sysPowerOffHook = OsCpuPowerOff;
 #endif
 
     /* 设置任务切换钩子标志位 */
