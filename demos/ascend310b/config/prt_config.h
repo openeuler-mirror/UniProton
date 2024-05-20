@@ -56,7 +56,7 @@ extern "C" {
 /* 任务模块裁剪开关 */
 #define OS_INCLUDE_TASK                                 YES
 /* 最大支持的任务数,最大共支持254个 */
-#define OS_TSK_MAX_SUPPORT_NUM                          8
+#define OS_TSK_MAX_SUPPORT_NUM                          32
 /* 缺省的任务栈大小 */
 #define OS_TSK_DEFAULT_STACK_SIZE                       0x1000
 /* IDLE任务栈的大小 */

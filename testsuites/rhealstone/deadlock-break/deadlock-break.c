@@ -125,7 +125,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task01;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA01";
-    taskParam.taskPrio = OS_TSK_PRIORITY_16;
+    taskParam.taskPrio = OS_TSK_PRIORITY_14;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[0], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA01");
@@ -133,7 +133,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task02;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA02";
-    taskParam.taskPrio = OS_TSK_PRIORITY_18;
+    taskParam.taskPrio = OS_TSK_PRIORITY_16;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[1], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA02");
@@ -141,7 +141,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task03;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA03";
-    taskParam.taskPrio = OS_TSK_PRIORITY_20;
+    taskParam.taskPrio = OS_TSK_PRIORITY_18;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[2], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA03");
@@ -175,7 +175,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task01;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA01";
-    taskParam.taskPrio = OS_TSK_PRIORITY_16;
+    taskParam.taskPrio = OS_TSK_PRIORITY_14;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[0], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA01");
@@ -183,7 +183,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task02;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA02";
-    taskParam.taskPrio = OS_TSK_PRIORITY_18;
+    taskParam.taskPrio = OS_TSK_PRIORITY_16;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[1], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA02");
@@ -191,7 +191,7 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     taskParam.taskEntry = Task03;
     taskParam.stackSize = 0x800;
     taskParam.name = "TA03";
-    taskParam.taskPrio = OS_TSK_PRIORITY_20;
+    taskParam.taskPrio = OS_TSK_PRIORITY_18;
     taskParam.stackAddr = 0;
     status = PRT_TaskCreate(&taskIds[2], &taskParam);
     directive_failed(status, "PRT_TaskCreate of TA03");

@@ -21,7 +21,7 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U32 g_swtmrId;
 extern U32 PRT_Printf(const char *format, ...);
 
-#if defined(POSIX_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -236,7 +236,7 @@ void Test1TaskEntry()
     micaShellInit();
 #endif
 
-#if defined(POSIX_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
     Init(0, 0, 0, 0);
 #endif
 

@@ -19,7 +19,7 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
 
-#if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE) || defined(RHEALSTONE_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -90,7 +90,7 @@ void TestTaskEntry()
     soem_test("eth3");
 #endif
 
-#if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE) || defined(RHEALSTONE_TESTCASE)
     Init(0, 0, 0, 0);
 #endif
 
@@ -132,7 +132,7 @@ U32 TaskTest()
     // task 2
     param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test2TaskEntry;
-    param.taskPrio = 15;
+    param.taskPrio = 20;
     param.name = "Test2Task";
     param.stackSize = 0x2000;
 
@@ -149,7 +149,7 @@ U32 TaskTest()
     // task 3
     param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test3TaskEntry;
-    param.taskPrio = 20;
+    param.taskPrio = 25;
     param.name = "Test3Task";
     param.stackSize = 0x2000;
 
