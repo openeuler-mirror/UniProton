@@ -18,7 +18,7 @@ sh ./build_fetch.sh
 sh ./build_static.sh hi3093
 sh ./build_openamp.sh $TOOLCHAIN_PATH
 
-if [[ "${APP}" == "cxxTest" && ! -d "./../component/libcxx" ]]
+if [[ "${APP}" == "cxxTest" || "${APP}" == "eigenTest" ]] && [ ! -d "./../component/libcxx" ]
 then
     sh ./libcxx_build.sh
 fi

@@ -8,20 +8,7 @@
 
 ## 1 编译前准备
 
-### 1.1 编译工具链安装
-在armv8平台上编译libc++时，需要将编译工具链从aarch64-none-elf切换为aarch64-openeuler-linux工具链。该工具链可参照[SDK构建手册](https://openeuler.gitee.io/yocto-meta-openeuler/master/getting_started/index.html#sdk)进行安装：
-```bash
-sh openeuler-glibc-x86_64-openeuler-image-aarch64-qemu-aarch64-toolchain-*.sh
-```
-安装后的编译工具链默认存放在/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr目录下。
-
-### 1.2 补充工具链缺少文件
-在编译过程中可能会提示编译工具链缺少noes.spec，该文件可通过从aarch64-none-elf工具链下拷贝得到：
-```bash
-cp /opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/aarch64-none-elf/lib/nosys.specs /opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1
-```
-
-### 1.3 yaml安装
+### 1.1 yaml安装
 编译环境需提前安装yaml，如果编译环境中未安装pip，需先安装pip后再安装yaml：
 ```bash
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -29,7 +16,7 @@ python3 get-pip.py
 pip3 install pyyaml
 ```
 
-### 1.4 环境变量设置
+### 1.2 环境变量设置
 libc++编译环境变量的设置在UniProton/demos/hi3093/build/libcxx_build.sh中，该脚本实现了libc++的编译过程。首先下载开源gcc源码，并根据libstdc++-uniproton.patch对源码进行修改。随后设置编译相关环境变量并进行编译。其中几个关键变量设置如下：
 ```bash
 GCC_PATH：gcc源码下载目录，指定该变量后gcc源码将下载到该目录下

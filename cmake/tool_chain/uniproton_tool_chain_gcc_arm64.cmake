@@ -30,7 +30,7 @@ set(CC_MD_DEPENDENT_FLAGS "-Wl,--build-id=none")
 set(CC_OPT_FLAGS "")
 set(CC_SEC_FLAGS "${CC_SEC_FLAGS} -fno-PIE")
 # 待确认的编译选项，暂时没进行分类，待处理
-set(CC_OTHER_FLAGS "--specs=nosys.specs -fno-builtin -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables")
+set(CC_OTHER_FLAGS "-fno-builtin -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables")
 set(CC_DEFINE_FLAGS "")
 
 ##compiler specified in /etc/profile

@@ -12,6 +12,16 @@
 /demos/*/component/libmetal*
 /demos/*/component/open-amp*
 /demos/*/component/openamp*
+/demos/*/component/boost_1_54_0*
+/demos/*/component/eigen-3.4.0*
+/demos/*/component/libxml2*
+/demos/*/component/libmodbus*
+/demos/*/component/gcc-10.3.0*
+/demos/hi3093/component/libcxx
+/src/component/ccl
+/src/component/libxml2
+/testsuites/cxx-test/tools/.compiles_list
+/testsuites/cxx-test/tools/.run_test.cc
 /testsuites/build/*.bin
 /testsuites/build/*.elf
 /src/drivers/include/arch/board/
@@ -28,5 +38,6 @@
 /src/net/lwip
 /src/fs/fat/ff15
 /src/net/soem
-/testsuites/eigen-test
+/testsuites/eigen-test/*.cpp
+/testsuites/eigen-test/*.cpp.*
 /testsuites/soemTest/test

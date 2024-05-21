@@ -31,7 +31,7 @@ mkdir -p /opt/buildtools && chmod -R 755 /opt/buildtools
 
 - x86_64版本编译器，需使用docker容器，下载命令：
   ```bash
-  docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v003
+  docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
   ```
   或者使用oebuild环境，参考文档 [x86_64混合部署示例](./doc/demoUsageGuide/x86_64_demo_usage_guide.md)
 
@@ -162,13 +162,13 @@ sudo python setup.py install
 1. 在虚拟机操作命令：
 
    ```bash
-   docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v003
+   docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
    ```
 
    执行完成之后，创建容器并进入（默认挂载当前执行命令的目录为容器内的/home/uniproton目录）
 
    ```bash
-   docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v003
+   docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
    ```
 
 2. 下载UniProton代码
