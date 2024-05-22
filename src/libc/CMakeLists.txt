@@ -35,6 +35,10 @@ list(REMOVE_ITEM LITELIBC_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/unlink.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/readlink.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/rmdir.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/access.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/getcwd.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/chdir.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/pipe.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fopen.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fclose.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/freopen.c

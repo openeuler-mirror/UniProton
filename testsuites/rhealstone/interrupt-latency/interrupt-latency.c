@@ -83,7 +83,12 @@ void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
 
 #if defined(OS_ARCH_ARMV8)
     intSave = PRT_HwiLock();
+
+#if defined(OS_OPTION_SMP)
+    OsHwiMcTrigger(2, 0xf, INTERRUPT_LATENCY_TEST_INT);
+#else
     OsHwiMcTrigger(0xf, INTERRUPT_LATENCY_TEST_INT);
+#endif
     /* Benchmark code */
     benchmark_timer_initialize();
     /* goes to Isr_handler */

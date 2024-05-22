@@ -116,6 +116,16 @@ elseif (${APP} STREQUAL "UniPorton_test_libxml2_interface")
     target_compile_options(rpmsg PUBLIC -DLIBXML2_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:libxml2> $<TARGET_OBJECTS:libxml2Test>)
     add_executable(${APP} ${OBJS})
+elseif (${APP} STREQUAL "task-switch" OR
+    ${APP} STREQUAL "task-preempt" OR
+    ${APP} STREQUAL "semaphore-shuffle" OR
+    ${APP} STREQUAL "interrupt-latency" OR
+    ${APP} STREQUAL "deadlock-break" OR
+    ${APP} STREQUAL "message-latency")
+    add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
+    target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:rhealstoneTest>)
+    add_executable(${APP} ${OBJS})
 elseif (${APP} STREQUAL "libcclTest")
     add_subdirectory(${HOME_PATH}/src/component/ccl ccl)
     target_compile_options(rpmsg PUBLIC -DLIBCCL_TESTCASE)

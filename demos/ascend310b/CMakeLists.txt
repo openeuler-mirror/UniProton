@@ -95,6 +95,15 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
         target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
         list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:posixTest>)
+    elseif (${APP} STREQUAL "task-switch" OR
+        ${APP} STREQUAL "task-preempt" OR
+        ${APP} STREQUAL "semaphore-shuffle" OR
+        ${APP} STREQUAL "interrupt-latency" OR
+        ${APP} STREQUAL "deadlock-break" OR
+        ${APP} STREQUAL "message-latency")
+        add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
+        target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
     else()
         list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
     endif()
