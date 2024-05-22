@@ -28,6 +28,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${HOME_PATH}/output/libc/include
+    ${HOME_PATH}/src/component/mica
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -45,5 +46,6 @@ add_subdirectory(config)
 add_subdirectory(apps)
 
 add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
-list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+add_subdirectory(${HOME_PATH}/src/component/mica mica)
+list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:mica>)
 add_executable(${APP} ${OBJS})
