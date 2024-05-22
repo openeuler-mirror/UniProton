@@ -145,7 +145,7 @@ CONFIG_OS_OPTION_PROXY=y
 #
 # enable CXX
 #
-CONFIG_OS_SUPPORT_CXX=y
+# CONFIG_OS_SUPPORT_CXX is not set
 
 #
 # enable Eigen
