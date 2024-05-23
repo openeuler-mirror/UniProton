@@ -122,6 +122,7 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_exc.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_hook.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_hwi.h
+		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_log.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_mem.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_module.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_queue.h

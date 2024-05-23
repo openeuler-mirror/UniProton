@@ -15,9 +15,15 @@
 #include "prt_config_internal.h"
 #include "cpu_config.h"
 #include "prt_cpu_external.h"
+#include "prt_log.h"
+#include "test.h"
 
 #if (defined(OS_OPTION_SMP) || defined(OS_ARMV8))
 RESET_SEC_DATA U32 g_cfgPrimaryCore = OS_SYS_CORE_PRIMARY;
+#endif
+
+#if defined(LOG_TESTCASE)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
 OS_SEC_ALW_INLINE INLINE void OsConfigAddrSizeGet(uintptr_t addr, uintptr_t size,
@@ -224,9 +230,21 @@ static U32 OsHwiConfigReg(void)
     return OS_OK;
 }
 
+#if defined(OS_OPTION_LOG)
+static U32 PRT_LogMemInit(void)
+{
+    PRT_LogInit(MMU_LOG_MEM_ADDR);
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "PRT_Log init success1", 21);
+    return OS_OK;
+}
+#endif
+
 /* 系统初始化注册表 */
 struct OsModuleConfigInfo g_moduleConfigTab[] = {
     /* {模块号， 模块注册函数， 模块初始化函数} */
+#if defined(OS_OPTION_LOG)
+    {OS_MID_LOG, {NULL, PRT_LogMemInit}},
+#endif
     {OS_MID_SYS, {OsSysConfigReg, NULL}},
     {OS_MID_MEM, {OsMemConfigReg, OsMemConfigInit}},
     {OS_MID_HWI, {OsHwiConfigReg, OsHwiConfigInit}},
@@ -257,7 +275,6 @@ struct OsModuleConfigInfo g_moduleConfigTab[] = {
     {OS_MID_QUEUE, {OsQueueConfigReg, OsQueueConfigInit}},
 #endif
     {OS_MID_APP, {NULL, PRT_AppInit}},
-
     {OS_MID_BUTT, {NULL, NULL}},
 };
 
@@ -294,6 +311,50 @@ U32 OsInitialize(void)
     return OsModuleConfigRun(OS_INIT_ID, OS_INITIALIZE_PHASE);
 }
 
+#if defined(OS_OPTION_SMP) && (LOG_TESTCASE)
+static void slvLogTask(void)
+{
+    PRT_Printf("slv enter\n");
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "slv enter", 9);
+    while (!PRT_IsLogInit()) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+    }
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "slv log init", 12);
+    while (1) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND * 10);
+        (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "slv log", 7);
+    }
+}
+
+static U32 logTestInit(void)
+{
+    U32 ret;
+    TskHandle testTskHandle;
+    struct TskInitParam param = {0};
+
+    if (OsGetCoreID() == OS_SYS_CORE_PRIMARY) {
+        return 0;
+    }
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, 0x3000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)slvLogTask;
+    // 支持的优先级(0~31)
+    param.taskPrio = 24;
+    param.name = "slvlog";
+    param.stackSize = 0x3000;
+
+    ret = PRT_TaskCreate(&testTskHandle, &param);
+    if (ret) {
+        return OS_FAIL;
+    }
+
+    ret = PRT_TaskResume(testTskHandle);
+    if (ret) {
+        return OS_FAIL;
+    }
+    return ret;
+}
+#endif
+
 /*
  * 描述：OsStart阶段
  */
@@ -311,6 +372,16 @@ U32 OsStart(void)
 
 #if (OS_INCLUDE_TASK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入任务模块的启动 */
+#if defined(OS_OPTION_SMP) && (LOG_TESTCASE)
+    if(OsGetCoreID() != g_cfgPrimaryCore) {
+        ret = logTestInit();
+        if (ret != OS_OK) {
+            return ret;
+        }
+        (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "slv init enter", 14);
+        Init(0, 0, 0, 0);
+    }
+#endif
     ret = OsActivate();
 #else
     ret = OS_OK;
@@ -430,12 +501,12 @@ INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
             return ret;
         }
 #endif
-
+#if (SMP_TESTCASE)
         ret = SlaveTestInit();
         if (ret) {
             return ret;
         }
-
+#endif
         ret = OsStart();
         if(ret != OS_OK) {
             return ret;

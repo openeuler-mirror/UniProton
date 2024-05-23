@@ -17,6 +17,7 @@
 #if defined(OS_OPTION_POWEROFF)
 #include "prt_task_external.h"
 #endif
+#include "prt_log.h"
 
 #if defined(OS_OPTION_SMP)
 OS_SEC_BSS uintptr_t g_uniFlagAddr[OS_MAX_CORE_NUM];
@@ -126,6 +127,8 @@ INIT_SEC_L4_TEXT void OsExcHandleEntry(U32 excType, struct ExcRegInfo *excRegs)
 
     /* 记录异常信息 */
     OsExcSaveInfo(excInfo, excRegs);
+
+    PRT_LogFormat(OS_LOG_EMERG, OS_LOG_F0, "[core%u] OsExcHandleEntry enter", excInfo->coreId);
 
     /* 回调异常钩子函数 */
     OsExcHookHandle();

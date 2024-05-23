@@ -1224,6 +1224,120 @@ prt_typedef.h
     用户调用PRT_ErrRegHook注册回调钩子函数时，钩子函数里面不能有调用PRT_ErrHandle
     用户调用PRT_ErrRegHook注册回调钩子函数时，钩子函数里面如有单次上报的错误信息（只有第一次调用会执行）
 
+#### 3.1.15 日志模块
+##### 3.1.15.1 日志初始化函数
+    【接口原型】
+    U32 PRT_LogInit(uintptr_t memBase)
+    【功能描述】
+    将日志内容写入日志环形缓存
+    【返回值】
+    #OS_OK  0x00000000，日志初始化成功。
+    #其它值，日志初始化失败。
+    【参数说明】
+    memBase [IN]  类型#uintptr_t，日志环形缓存基地址。
+    【注意事项】
+    该接口只应该调用一次。
+    日志模块会使用从基地址开始的17MB内存，注意预留内存。
+
+##### 3.1.15.2 日志初始化函数
+    【接口原型】
+    bool PRT_IsLogInit(void)
+    【功能描述】
+    日志是否完成初始化，从核可以使用该函数确认主核是否已完成日志初始化。
+    【返回值】
+    #true，日志已初始化。
+    #false，日志尚未初始化。
+    【参数说明】
+    无
+    【注意事项】
+    无
+
+##### 3.1.15.3 日志输出函数
+    【接口原型】
+    U32 PRT_Log(enum OsLogLevel level, enum OsLogFacility facility, const char *str, size_t strLen)
+    【功能描述】
+    将日志内容写入日志环形缓存
+    【返回值】
+    #OS_OK  0x00000000，日志输出成功。
+    #其它值，日志输出失败。
+    【参数说明】
+    level    [IN]  类型#enum OsLogLevel，日志级别，定义同linux syslog level，取值范围[0,7]。
+    facility [IN]  类型#enum OsLogFacility，日志来源模块，定义同linux syslog facility，取值范围[16,23]。
+    str      [IN]  类型#const char *，日志字符串，取值范围为非空。
+    strLen   [IN]  类型#size_t，不包括结束符的字符串长度。
+    【注意事项】
+    调用该接口前，需要先调用PRT_LogInit，初始化日志环形缓存的基地址。
+
+##### 3.1.15.4 日志格式化输出函数
+    【接口原型】
+    U32 PRT_LogFormat(enum OsLogLevel level, enum OsLogFacility facility, const char *fmt, ...)
+    【功能描述】
+    将日志字符串格式化输出，与其他日志内容一起写入日志环形缓存
+    【返回值】
+    #OS_OK  0x00000000，日志输出成功。
+    #其它值，日志输出失败。
+    【参数说明】
+    level    [IN]  类型#enum OsLogLevel，日志级别，定义同linux syslog level，取值范围[0,7]。
+    facility [IN]  类型#enum OsLogFacility，日志来源模块，定义同linux syslog facility，取值范围[16,23]。
+    fmt      [IN]  类型#const char *，格式化的控制字符串，取值范围为非空。
+    ...      [IN]  可选参数。
+    【注意事项】
+    调用该接口前，需要先调用PRT_LogInit，初始化日志环形缓存的基地址
+    支持vsnprintf所支持的字符串格式化类型。
+
+##### 3.1.15.5 日志功能关闭函数
+    【接口原型】
+    void PRT_LogOff(void)
+    【功能描述】
+    关闭日志功能，调用该接口后，PRT_Log与PRT_LogFormat将会失效。
+    【返回值】
+    无
+    【参数说明】
+    无
+    【注意事项】
+    日志功能默认开启
+
+##### 3.1.15.6 日志功能开启函数
+    【接口原型】
+    void PRT_LogOn(void)
+    【功能描述】
+    开启日志功能，调用该接口后，PRT_Log与PRT_LogFormat将正常工作。
+    【返回值】
+    无
+    【参数说明】
+    无
+    【注意事项】
+    日志功能默认开启
+
+##### 3.1.15.7 日志过滤函数
+    【接口原型】
+    U32 PRT_LogSetFilter(enum OsLogLevel level)
+    【功能描述】
+    设置日志过滤级别，调用该接口后，PRT_Log与PRT_LogFormat输出日志时级别等于或低于过滤级别的日志将被过滤。
+    例如, 设定过滤级别为OS_LOG_NONE, 没有日志会被过滤。
+    设定过滤级别为OS_LOG_NOTICE, 则OS_LOG_NOTICE, OS_LOG_INFO, OS_LOG_DEBUG级别的日志会被过滤。
+    【返回值】
+    #OS_OK  0x00000000，设置成功。
+    #其它值，设置失败。
+    【参数说明】
+    level    [IN]  类型#enum OsLogLevel，日志过滤级别，取值范围[0,8]。
+    【注意事项】
+    无
+
+##### 3.1.15.8 日志根据来源过滤函数
+    【接口原型】
+    extern U32 PRT_LogSetFilterByFacility(enum OsLogFacility facility, enum OsLogLevel level)
+    【功能描述】
+    对指定的日志来源模块设置日志过滤级别，调用该接口后，PRT_Log与PRT_LogFormat输出指定模块的日志时级别等于或低于过滤级别的日志将被过滤。
+    【返回值】
+    #OS_OK  0x00000000，设置成功。
+    #其它值，设置失败。
+    【参数说明】
+    facility [IN]  类型#enum OsLogFacility，日志来源模块，取值范围[16,23]。
+    level    [IN]  类型#enum OsLogLevel，日志过滤级别，取值范围[0,8]。
+    【注意事项】
+    PRT_LogSetFilter相当于对所有日志来源模块设定相同的日志过滤级别，PRT_LogSetFilter与PRT_LogSetFilterByFacility对日志来源模块的过滤设置会互相覆盖。
+
 ### 3.2 config接口
     【接口原型】
     OS_SYS_CLOCK

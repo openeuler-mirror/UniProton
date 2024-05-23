@@ -122,6 +122,16 @@ OsSlaveCoreProcess:
     SUB x1, x1, x0
     BIC sp, x1, #0xf
 
+    MRS    x10, CNTKCTL_EL1
+    ORR    x10, x10, #0x3
+    MSR    CNTKCTL_EL1, x10
+
+    /* Enable the FPU */
+    MRS x4, CPACR_EL1
+    mov x4, #(3 << 20)
+    msr CPACR_EL1, x4
+    isb
+
 OsSlaveStart:
 #ifdef OS_OPTION_OPENAMP
     BL     mmu_init

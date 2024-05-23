@@ -4,7 +4,7 @@
 #include "uart_regs.h"
 #include "prt_typedef.h"
 
-#define SERIAL_SEL_UART_PORT       4
+#define SERIAL_SEL_UART_PORT       2
 
 #define SERIAL_TIMEOUT_MS          10
 #define SERIAL_NAME_SIZE           32

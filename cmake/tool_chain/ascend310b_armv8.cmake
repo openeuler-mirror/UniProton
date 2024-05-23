@@ -136,6 +136,7 @@ if (NOT "${LIBCK_INSTALL_FILE_OPTION}" STREQUAL "SUPER_BUILD")
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_sys.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_task.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_tick.h
+		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_log.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_timer.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_typedef.h
 		${PROJECT_SOURCE_DIR}/src/include/uapi/prt_cpup.h

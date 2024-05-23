@@ -366,7 +366,7 @@ OS_SEC_L4_TEXT U32 OsTaskCreateOnly(TskHandle *taskPid, struct TskInitParam *ini
     uintptr_t *topStack = NULL;
     void *stackPtr = NULL;
     struct TagTskCb *taskCb = NULL;
-    U32 curStackSize = 0;
+    uintptr_t curStackSize = 0;
 
     ret = OsTaskCreateParaCheck(taskPid, initParam);
     if (ret != OS_OK) {

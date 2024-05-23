@@ -16,6 +16,7 @@
 #define PRT_TASK_INTERNAL_H
 
 #include "prt_task_external.h"
+#include "prt_task_sched_external.h"
 #include "prt_signal_external.h"
 #include "prt_asm_cpu_external.h"
 #include "prt_lib_external.h"

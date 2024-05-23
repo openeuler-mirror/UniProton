@@ -6,6 +6,7 @@
 #include "cache_asm.h"
 #include "prt_sys.h"
 #include "prt_task.h"
+#include "prt_log.h"
 #include "cpu_config.h"
 
 extern U64 g_mmu_page_begin;
@@ -34,6 +35,12 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .virt      = MMU_UART_ADDR,
         .phys      = MMU_UART_ADDR,
         .size      = 0x2000,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_LOG_MEM_ADDR,
+        .phys      = MMU_LOG_MEM_ADDR,
+        .size      = SHM_MAP_SIZE,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }

@@ -218,4 +218,9 @@ SECTIONS
         PROVIDE (g_mmu_page_begin = .);
         PROVIDE (g_mmu_page_end = g_mmu_page_begin + 0x8000);
     } > MMU_MEM
+
+    .resource_table : ALIGN(8)
+    {
+	KEEP(*(.resource_table*))
+    } > IMU_SRAM
 }

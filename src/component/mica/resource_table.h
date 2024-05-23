@@ -42,20 +42,19 @@ enum rsc_table_entries {
 
 METAL_PACKED_BEGIN
 struct ept_info {
-	char name[RPMSG_NAME_SIZE];
-	uint32_t addr;
-	uint32_t dest_addr;
+    char name[RPMSG_NAME_SIZE];
+    uint32_t addr;
+    uint32_t dest_addr;
 } METAL_PACKED_END;
 
 #define MAX_NUM_OF_EPTS 64
 
 METAL_PACKED_BEGIN
 struct fw_rsc_ept {
-	uint32_t type;
-	uint32_t num_of_epts;
-	struct ept_info endpoints[MAX_NUM_OF_EPTS];
+    uint32_t type;
+    uint32_t num_of_epts;
+    struct ept_info endpoints[MAX_NUM_OF_EPTS];
 } METAL_PACKED_END;
-
 
 METAL_PACKED_BEGIN
 struct fw_resource_table {

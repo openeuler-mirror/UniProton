@@ -247,7 +247,7 @@ INIT_SEC_L4_TEXT U32 OsIdleTskSMPCreate(void)
     taskInitParam.stackSize = g_tskModInfo.idleStackSize;
     taskInitParam.name = tskName;
     taskInitParam.taskPrio = OS_TSK_PRIORITY_LOWEST;
-    taskInitParam.stackAddr = PRT_MemAllocAlign((U32)OS_MID_TSK, OS_MEM_DEFAULT_FSC_PT,
+    taskInitParam.stackAddr = (uintptr_t)PRT_MemAllocAlign((U32)OS_MID_TSK, OS_MEM_DEFAULT_FSC_PT,
         g_tskModInfo.idleStackSize, OS_TSK_STACK_SIZE_ALLOC_ALIGN);
 
     ret = OsTaskCreateOnly(&IDLE_TASK_ID, &taskInitParam, TRUE);

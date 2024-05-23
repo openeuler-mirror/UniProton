@@ -13,6 +13,7 @@
  * Description: shell uart 适配实现。
  */
 #include <unistd.h>
+#include <stdio.h>
 #include "uart.h"
 
 ssize_t UartRead(int fd, void *str, ssize_t n)

@@ -17,9 +17,11 @@
 #include "prt_proxy_ext.h"
 #include "pthread.h"
 #include "stdio.h"
+#include "prt_atomic.h"
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shmsg.h"
 #endif
+#include "prt_config.h"
 
 struct rpmsg_rcv_msg {
     void *data;
@@ -45,14 +47,34 @@ static struct rpmsg_rcv_msg tty_msg;
 char *g_s1 = "Hello, UniProton! \r\n";
 extern char *g_printf_buffer;
 
+static struct PrtSpinLock g_ttyLock;
+
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ep)
 {
     rpmsg_destroy_ept(ep);
 }
 
+unsigned int is_tty_ready(void)
+{
+    return is_rpmsg_ept_ready(&tty_ept);
+}
+
 int send_message(unsigned char *message, int len)
 {
-    return rpmsg_send(&tty_ept, message, len);
+    int ret;
+    uintptr_t intSave;
+
+    if (!is_rpmsg_ept_ready(&tty_ept)) {
+        return 0;
+    }
+#if defined(OS_OPTION_SMP)
+    intSave = PRT_SplIrqLock(&g_ttyLock);
+#endif
+    ret = rpmsg_send(&tty_ept, message, len);
+#if defined(OS_OPTION_SMP)
+    PRT_SplIrqUnlock(&g_ttyLock, intSave);
+#endif
+    return ret;
 }
 
 static void *rpmsg_rpc_task(void *arg)
@@ -87,7 +109,9 @@ static int rpmsg_rx_tty_callback(struct rpmsg_endpoint *ept, void *data,
 static void *rpmsg_tty_task(void *arg)
 {
     int ret;
+#ifndef LOSCFG_SHELL_MICA_INPUT
     char tx_buff[512];
+#endif
     char *tty_data;
 
     ret = PRT_SemCreate(0, &tty_sem);
@@ -146,6 +170,7 @@ static void *rpmsg_listen_task(void *arg)
         receive_message();
         /* TODO: add lifecycle */
     }
+    return NULL;
 }
 
 int rpmsg_service_init(void)
@@ -177,15 +202,23 @@ int rpmsg_service_init(void)
     ret1 = pthread_create(&tty_thread, &attr, rpmsg_tty_task, NULL);
     ret2 = pthread_create(&listen_thread, &attr, rpmsg_listen_task, NULL);
     pthread_attr_destroy(&attr);
-    if (ret0 != 0 && ret1 != 0 && ret2 != 0) {
+    if (ret0 != 0 || ret1 != 0 || ret2 != 0) {
         /* If no rpmsg tasks, release the backend. */
-        PRT_Printf("[openamp] failed to create rpmsg task, ret: %d/%d %d\n", ret0, ret1, ret2);
+        PRT_Printf("[openamp] create task fail, %d/%d/%d\n", ret0, ret1, ret2);
         goto err;
     }
+#if defined(OS_OPTION_SMP)
+    ret0 = PRT_SplLockInit(&g_ttyLock);
+    if (ret0) {
+        PRT_Printf("[openamp] spin lock init fail\n");
+        return OS_ERROR;
+    }
+#endif
 
     while (!is_rpmsg_ept_ready(&rpc_ept)) {
         PRT_TaskDelay(100);
     }
+    PRT_Printf("[openamp] ept ready\n");
 
     rpmsg_set_default_ept(&rpc_ept);
     g_printf_buffer = (char *)malloc(PRINTF_BUFFER_LEN);
