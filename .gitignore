@@ -4,6 +4,7 @@
 /demos/*/build/*.bin
 /demos/*/build/*.elf
 /demos/*/build/*.asm
+/demos/*/build/build_forte/
 /demos/*/libs/*.a
 /demos/*/libs/*.lib
 /demos/*/build/libmetal/
@@ -17,6 +18,7 @@
 /demos/*/component/libxml2*
 /demos/*/component/libmodbus*
 /demos/*/component/gcc-10.3.0*
+/demos/*/component/forte/
 /demos/hi3093/component/libcxx
 /src/component/ccl
 /src/component/libxml2

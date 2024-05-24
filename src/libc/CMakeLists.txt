@@ -286,6 +286,7 @@ list(APPEND  MUSL_STDLIB_SOURCE
     musl/src/stdio/__toread.c
     musl/src/stdio/__stdio_exit.c
     musl/src/stdio/__lockfile.c
+    musl/src/stdio/__fwritex.c
     musl/src/stdio/ofl.c
     musl/src/internal/shgetc.c
     musl/src/internal/intscan.c

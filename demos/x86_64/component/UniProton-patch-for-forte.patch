@@ -1,0 +1,421 @@
+diff -urN forte_2.0.1/CMakeLists.txt forte/CMakeLists.txt
+--- forte_2.0.1/CMakeLists.txt	2021-10-15 03:37:20.000000000 +0800
++++ forte/CMakeLists.txt	2024-01-03 11:29:22.000000000 +0800
+@@ -14,7 +14,19 @@
+ #    Martin Melik Merkumians - adds compiler feature check for nullptr
+ # *******************************************************************************/
+ 
+-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
++CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
++
++if (POLICY CMP0048)
++  cmake_policy(SET CMP0048 NEW)
++endif()
++
++if (POLICY CMP0077)
++  cmake_policy(SET CMP0077 NEW)
++endif()
++include_directories(
++  ../../include
++  ../../component/libcxx/include
++  ../../include/libc/include)
+ 
+ PROJECT(FORTE)
+ 
+@@ -140,11 +152,11 @@
+     mark_as_advanced(FORTE_ADDITIONAL_CXX_FLAGS)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FORTE_ADDITIONAL_CXX_FLAGS}")
+   endif(MSVC)
+-
+-  option(FORTE_WINDOWS_XP_COMPAT OFF "Enable some workarounds for Windows XP compatibility")
+-  if (FORTE_WINDOWS_XP_COMPAT)
+-    add_definitions(-DWINDOWS_XP_COMPAT=1)
+-  endif()
++
++  option(FORTE_WINDOWS_XP_COMPAT OFF "Enable some workarounds for Windows XP compatibility")
++  if (FORTE_WINDOWS_XP_COMPAT)
++    add_definitions(-DWINDOWS_XP_COMPAT=1)
++  endif()
+ endif(WIN32)
+ 
+ #######################################################################################
+@@ -167,12 +179,12 @@
+   unset(LUAJIT_MATH_LIBRARY CACHE)
+ endif(NOT ("${FORTE_USE_LUATYPES}" STREQUAL "None"))
+ 
+-#######################################################################################
+-# Early definition of option how to generate stringlist for every source file
+-#######################################################################################
+-SET(FORTE_LINKED_STRINGDICT ON CACHE BOOL "FORTE will resolve references to the stringdict at link-stage and not compile-stage. This will reduce compiletime if the stringdict changes.")
+-mark_as_advanced(FORTE_LINKED_STRINGDICT)
+-
++#######################################################################################
++# Early definition of option how to generate stringlist for every source file
++#######################################################################################
++SET(FORTE_LINKED_STRINGDICT ON CACHE BOOL "FORTE will resolve references to the stringdict at link-stage and not compile-stage. This will reduce compiletime if the stringdict changes.")
++mark_as_advanced(FORTE_LINKED_STRINGDICT)
++
+ #######################################################################################
+ # Add subdirectories
+ #######################################################################################
+@@ -294,9 +306,9 @@
+ ENDFOREACH(FBLIB_FILE)
+ LIST(REMOVE_DUPLICATES SOURCE_FILES)
+ 
+-#######################################################################################
+-# Generate stringlist for every source file
+-#######################################################################################
++#######################################################################################
++# Generate stringlist for every source file
++#######################################################################################
+ SET(FORTE_MODIFY_SOURCES_ON_MISSING_GENERATED_INCLUDES ON CACHE BOOL "FORTE change the source-files if includes for the generated includes are missing.")
+ mark_as_advanced(FORTE_MODIFY_SOURCES_ON_MISSING_GENERATED_INCLUDES)
+ 
+diff -urN forte_2.0.1/src/arch/posix/CMakeLists.txt forte/src/arch/posix/CMakeLists.txt
+--- forte_2.0.1/src/arch/posix/CMakeLists.txt	2020-10-13 03:46:02.000000000 +0800
++++ forte/src/arch/posix/CMakeLists.txt	2024-01-03 11:23:42.000000000 +0800
+@@ -22,6 +22,8 @@
+   forte_set_timer(pctimeha)
+   
+   forte_add_sourcefile_hcpp(forte_thread forte_sync forte_sem)
++  forte_add_sourcefile_hcpp(forte_Init)
++  forte_add_sourcefile_cpp(forte_architecture.cpp)
+   forte_add_sourcefile_cpp(../genforte_printer.cpp)
+   forte_add_sourcefile_h(../forte_architecture_time.h)
+   forte_add_sourcefile_hcpp(../utils/timespec_utils)
+@@ -38,7 +40,7 @@
+ 
+   #forte_add_link_library(pthread)
+ 
+-  forte_add_definition("-W -Wall -Wextra -Woverloaded-virtual -Wconversion -Wshadow -DFORTE_LITTLE_ENDIAN")
++  forte_add_definition("-W -Wall -Wextra -Woverloaded-virtual -Wconversion -Wshadow -DFORTE_LITTLE_ENDIAN -fno-use-cxa-atexit")
+   
+   set(FORTE_POSIX_GENERATE_MAP_FILE FALSE CACHE BOOL "Enable the generation of map files")
+   mark_as_advanced(FORTE_POSIX_GENERATE_MAP_FILE)
+@@ -68,4 +70,4 @@
+ 
+ 
+     
+-endif()
+\ No newline at end of file
++endif()
+diff -urN forte_2.0.1/src/arch/posix/forte_Init.cpp forte/src/arch/posix/forte_Init.cpp
+--- forte_2.0.1/src/arch/posix/forte_Init.cpp	1970-01-01 08:00:00.000000000 +0800
++++ forte/src/arch/posix/forte_Init.cpp	2024-01-03 11:23:42.000000000 +0800
+@@ -0,0 +1,141 @@
++/************************************************************************************
++ * Copyright (c) 2017-2018 fortiss GmbH
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++ *
++ * SPDX-License-Identifier: EPL-2.0
++ *
++ * Contributors:
++ * Milan Vathoopan - initial API and implementation and/or initial documentation
++ * Tarik Terzimehic - make OPC UA server port setable from the command line
++ ************************************************************************************/
++
++#include "forte_Init.h"
++
++#include "fortenew.h"
++#include "forte_architecture.h"
++#include <stdio.h>
++#include <string>
++#include "../../stdfblib/ita/RMT_DEV.h"
++
++#include "../utils/mainparam_utils.h"
++
++unsigned int forte_default_port = 61499;
++
++/*!\brief Check if the correct endianess has been configured.
++ *
++ * If the right endianess is not set this function will end FORTE.
++ */
++
++bool checkEndianess();
++void createDev(const char *paMGRID, TForteInstance* paResultInstance);
++
++void forteGlobalInitialize(void) {
++  CForteArchitecture::initialize();
++}
++
++void forteGlobalDeinitialize(void) {
++  CForteArchitecture::deinitialize();
++}
++
++int forteStartInstance(unsigned int paPort, TForteInstance* paResultInstance) {
++
++  if(65535 < paPort) {
++    return FORTE_WRONG_PARAMETERS;
++  }
++
++  if(0 == paPort) {
++    paPort = forte_default_port;
++  }
++
++  char flag[] = "-c";
++  char address[16] = "localhost:";
++  char port[6];
++  sprintf(port, "%u", paPort);
++  strcat(address, port);
++
++  char* arguments[] = { flag, address };
++  return forteStartInstanceGeneric(2, arguments, paResultInstance);
++}
++
++int forteStartInstanceGeneric(int paArgc, char *paArgv[], TForteInstance* paResultInstance) {
++
++  if(!CForteArchitecture::isInitialized()) {
++    return FORTE_ARCHITECTURE_NOT_READY;
++  }
++
++  if(0 == paResultInstance) {
++    return FORTE_WRONG_PARAMETERS;
++  }
++
++  if(0 != *paResultInstance) {
++    return FORTE_DEVICE_ALREADY_STARTED;
++  }
++
++  if(!checkEndianess()) {
++    return FORTE_WRONG_ENDIANESS;
++  }
++
++  const char *pIpPort = parseCommandLineArguments(paArgc, paArgv);
++  if((0 != strlen(pIpPort)) && (NULL != strchr(pIpPort, ':'))) {
++    createDev(pIpPort, paResultInstance);
++  } else { //! If needed call listHelp() to list the help for FORTE
++    return FORTE_WRONG_PARAMETERS;
++  }
++
++  return FORTE_OK;
++}
++
++void forteJoinInstance(TForteInstance paInstance) {
++  RMT_DEV *poDev = static_cast<RMT_DEV*>(paInstance);
++  if(0 != poDev) {
++    poDev->MGR.joinResourceThread();
++  }
++}
++
++void forteStopInstance(int paSig, TForteInstance paInstance) {
++  if(!CForteArchitecture::isInitialized()) {
++    return;
++  }
++  (void) paSig;
++  RMT_DEV *poDev = static_cast<RMT_DEV*>(paInstance);
++  if(0 != poDev) {
++    poDev->changeFBExecutionState(cg_nMGM_CMD_Kill);
++    poDev->MGR.joinResourceThread();
++    DEVLOG_INFO("FORTE finished\n");
++    delete poDev;
++  }
++}
++
++/*!\brief Creates the Device-Object
++ * \param pa_acMGRID A string containing IP and Port like [IP]:[Port]
++ * \param The result
++ */
++void createDev(const char *paMGRID, TForteInstance* paInstance) {
++  RMT_DEV *device = new RMT_DEV;
++  device->setMGR_ID(paMGRID);
++  device->startDevice();
++  *paInstance = device;
++  DEVLOG_INFO("FORTE is up and running\n");
++}
++
++bool checkEndianess() {
++  int i = 1;
++  char *p = (char *) &i;
++  if(p[0] == 1) {
++    //we are on a little endian platform
++#ifdef FORTE_BIG_ENDIAN
++    DEVLOG_ERROR("Wrong endianess configured! You are on a little endian platform and have configured big endian!\n");
++    return false;
++#endif
++  } else {
++    //we are on a big endian platform
++#ifdef FORTE_LITTLE_ENDIAN
++    DEVLOG_ERROR("Wrong endianess configured! You are on a big endian platform and have configured little endian!\n");
++    return false;
++#endif
++  }
++
++  return true;
++}
+diff -urN forte_2.0.1/src/arch/posix/forte_Init.h forte/src/arch/posix/forte_Init.h
+--- forte_2.0.1/src/arch/posix/forte_Init.h	1970-01-01 08:00:00.000000000 +0800
++++ forte/src/arch/posix/forte_Init.h	2024-01-03 11:23:42.000000000 +0800
+@@ -0,0 +1,87 @@
++/************************************************************************************
++ * Copyright (c) 2017 fortiss GmbH
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++ *
++ * SPDX-License-Identifier: EPL-2.0
++ *
++ * Contributors:
++ * Milan Vathoopan - initial API and implementation and/or initial documentation
++ ************************************************************************************/
++
++#ifndef SRC_ARCH_FREERTOS_FORTE_INIT_H_
++#define SRC_ARCH_FREERTOS_FORTE_INIT_H_
++
++/* When moving this file to the outside of the architecture,
++ * the corresponding defines for exporting in windows or other platform
++ * must be added here
++ *
++ */
++#ifndef FORTE_SHARED_PREFIX
++# define FORTE_SHARED_PREFIX
++#endif
++
++#ifndef FORTE_SHARED_CALL
++# define FORTE_SHARED_CALL
++#endif
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++  enum FORTE_STATUS {
++    FORTE_OK,
++    FORTE_DEVICE_ALREADY_STARTED,
++    FORTE_WRONG_ENDIANESS,
++    FORTE_WRONG_PARAMETERS,
++    FORTE_ARCHITECTURE_NOT_READY,
++  };
++
++  typedef void* TForteInstance;
++
++  /**
++   * \brief Start forte instance
++   * @param paPort The port on which to forte will listen. Use 0 for default (normally 61499)
++   * @param paResultInstance Address of an instance of forte where the new instance is stored
++   * @return FORTE_OK if no error occurred, other values otherwise
++   */
++  FORTE_SHARED_PREFIX int FORTE_SHARED_CALL forteStartInstance(unsigned int paPort, TForteInstance* paResultInstance);
++
++  /**
++   * \brief Start forte instance with possibilities of more arguments
++   * @param paArgc Number of arguments in arg
++   * @param paArgv Arguments
++   * @param paResultInstance Address of an instance of forte where the new instance is stored
++   * @return FORTE_OK if no error occurred, other values otherwise
++   */
++  FORTE_SHARED_PREFIX int FORTE_SHARED_CALL forteStartInstanceGeneric(int paArgc, char *paArgv[], TForteInstance* paResultInstance);
++
++  /**
++   * \brief Terminates a Forte instance
++   * @param paSignal  Signal value to terminate instance
++   * @param paInstance Instance to terminate
++   */
++  FORTE_SHARED_PREFIX void FORTE_SHARED_CALL forteStopInstance(int paSignal, TForteInstance paInstance);
++
++  /**
++   * \brief Terminates a Forte instance
++   * @param paInstance Instance to terminate
++   */
++  FORTE_SHARED_PREFIX void FORTE_SHARED_CALL forteJoinInstance(TForteInstance paInstance);
++
++  /**
++   * \brief Initializes the architecture. Prepare all resources needed by the Forte's instances. Must be called once before the first Forte instance is started
++   */
++  FORTE_SHARED_PREFIX void FORTE_SHARED_CALL forteGlobalInitialize(void);
++
++  /**
++   * \brief Deinitializes the architecture. Frees all resources used by Forte's instances. Must be called after the last instance is ended
++   */
++  FORTE_SHARED_PREFIX void FORTE_SHARED_CALL forteGlobalDeinitialize(void);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* SRC_ARCH_FREERTOS_FORTE_INIT_H_ */
+diff -urN forte_2.0.1/src/arch/posix/forte_architecture.cpp forte/src/arch/posix/forte_architecture.cpp
+--- forte_2.0.1/src/arch/posix/forte_architecture.cpp	1970-01-01 08:00:00.000000000 +0800
++++ forte/src/arch/posix/forte_architecture.cpp	2024-01-03 11:23:42.000000000 +0800
+@@ -0,0 +1,30 @@
++/************************************************************************************
++ * Copyright (c) 2017 fortiss GmbH
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++ *
++ * SPDX-License-Identifier: EPL-2.0
++ *
++ * Contributors:
++ * Milan Vathoopan - initial API and implementation and/or initial documentation
++ ************************************************************************************/
++
++#include "../forte_architecture.h"
++#include "forteinit.h"
++bool CForteArchitecture::mInitialized = false;
++
++bool CForteArchitecture::initialize() {
++  if(!mInitialized) {
++    initForte();
++    mInitialized = true;
++  }
++  return true;
++}
++
++void CForteArchitecture::deinitialize() {
++  if(mInitialized) {
++    mInitialized = false;
++  }
++}
++
+diff -urN forte_2.0.1/src/arch/posix/forte_sem.cpp forte/src/arch/posix/forte_sem.cpp
+--- forte_2.0.1/src/arch/posix/forte_sem.cpp	2021-05-04 03:18:05.000000000 +0800
++++ forte/src/arch/posix/forte_sem.cpp	2024-01-04 10:26:32.000000000 +0800
+@@ -34,7 +34,7 @@
+       if (pthread_condattr_init(&condAttr) != 0) {
+         DEVLOG_ERROR("Could not initialize cv attributes\n");
+       }
+-      if (pthread_condattr_setclock(&condAttr, CLOCK_MONOTONIC) != 0) {
++      if (pthread_condattr_setclock(&condAttr, CLOCK_REALTIME) != 0) {
+         DEVLOG_ERROR("Could not set cv clock\n");
+       }
+       if (pthread_cond_init(&mCond, &condAttr) != 0) {
+diff -urN forte_2.0.1/src/stdfblib/ita/ForteBootFileLoader.cpp forte/src/stdfblib/ita/ForteBootFileLoader.cpp
+--- forte_2.0.1/src/stdfblib/ita/ForteBootFileLoader.cpp	2021-05-04 03:18:05.000000000 +0800
++++ forte/src/stdfblib/ita/ForteBootFileLoader.cpp	2024-01-03 14:37:12.000000000 +0800
+@@ -1,9 +1,9 @@
+ /*******************************************************************************
+  * Copyright (c) 2017 fortiss GmbH
+- * This program and the accompanying materials are made available under the
+- * terms of the Eclipse Public License 2.0 which is available at
+- * http://www.eclipse.org/legal/epl-2.0.
+- *
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++ *
+  * SPDX-License-Identifier: EPL-2.0
+  *
+  * Contributors:
+diff -urN forte_2.0.1/uniproton_x86_64_forte.cmake forte/uniproton_x86_64_forte.cmake
+--- forte_2.0.1/uniproton_x86_64_forte.cmake	1970-01-01 08:00:00.000000000 +0800
++++ forte/uniproton_x86_64_forte.cmake	2024-05-15 09:29:14.736879769 +0800
+@@ -0,0 +1,17 @@
++#cross-compilation config
++
++set(CMAKE_SYSTEM_PROCESSOR x86_64)
++set(PROJECT_SYSTEM uniproton)
++
++set(CMAKE_C_COMPILER_WORKS 1)
++set(CMAKE_CXX_COMPILER_WORKS 1)
++
++set(CROSS_PREFIX "${TOOLCHAIN_PATH}/bin/x86_64-openeuler-linux-gnu-" CACHE STRING "")
++set(CMAKE_C_COMPILER  "${CROSS_PREFIX}gcc" CACHE STRING "")
++set(CMAKE_CXX_COMPILER  "${CROSS_PREFIX}g++" CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER CACHE STRING "")
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER CACHE STRING "")
++set(CMAKE_C_FLAGS "-nostdlib -nostdinc -fno-builtin -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++set(CMAKE_CXX_FLAGS "-nostdlib -nostdinc -fno-builtin -nostdinc++ -D_GNU_SOURCE -D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS" CACHE STRING "")
++# vim: expandtab:ts=2:sw=2:smartindent

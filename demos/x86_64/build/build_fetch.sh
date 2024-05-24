@@ -105,3 +105,23 @@ cp UniProton-patch-for-libmodbus.patch ./libmodbus
 cd libmodbus
 patch -p1 -d . < UniProton-patch-for-libmodbus.patch
 popd
+
+echo "################# git clone forte #################"
+pushd ../component
+rm -rf ./forte_2.0.1
+git clone --depth=1 --filter=blob:none --sparse https://gitee.com/openeuler/oee_archive.git
+cd oee_archive
+git sparse-checkout init --cone
+git sparse-checkout set "forte"
+cp forte/forte_2.0.1.tar.gz ../
+cd ../
+rm -rf oee_archive
+tar -zxf forte_2.0.1.tar.gz
+rm forte_2.0.1.tar.gz
+cp UniProton-patch-for-forte.patch ./forte_2.0.1
+cd forte_2.0.1
+patch -p1 -d . < UniProton-patch-for-forte.patch
+cd ../
+rm -rf forte
+mv forte_2.0.1 forte
+popd
