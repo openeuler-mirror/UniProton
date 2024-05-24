@@ -24,23 +24,21 @@ OS_SEC_L4_TEXT U32 OsInvokePsciSmc(U64 functionId, U64 arg0, U64 arg1, U64 arg2)
 
 OS_SEC_L4_TEXT void OsSmpWakeUpSecondaryCore(void)
 {
-    U32 core, idx;
     U32 baseMpidr;
     U32 offset;
+    g_secondaryResetFlag = 0;
     volatile U32 cpuState;
     uintptr_t funAddr = PSCI_CPU_ON_ENTRY;
 
-    offset = OS_MPIDR_OFFSET;
+    offset = 1U << OS_MPIDR_OFFSET;
     baseMpidr = OS_MPIDR_VALID_COREID;
 
-    for (idx = 1, core = g_cfgPrimaryCore + 1; idx < g_numOfCores; core++, idx++) {
-        (void)OsInvokePsciSmc(PSCI_CPU_ON, baseMpidr + (idx << offset), funAddr, 0);
-        cpuState = PSCI_CPU_STATE_OFF;
-        while (cpuState != PSCI_CPU_STATE_ON)
-        {
-            cpuState = OsInvokePsciSmc(PSCI_AFFINITY_INFO, baseMpidr + (idx << offset), 0, 0);
-        }
+    (void)OsInvokePsciSmc(PSCI_CPU_ON, baseMpidr + offset, funAddr, 0);
+    cpuState = PSCI_CPU_STATE_OFF;
+    while (cpuState != PSCI_CPU_STATE_ON) {
+        cpuState = OsInvokePsciSmc(PSCI_AFFINITY_INFO, baseMpidr + offset, 0, 0);
     }
+
     /* 解复位，从核开始运行 */
     g_secondaryResetFlag = 1;
     PRT_MemWait();

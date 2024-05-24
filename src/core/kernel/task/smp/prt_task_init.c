@@ -141,7 +141,7 @@ OS_SEC_L4_TEXT U32 OsActivate(void)
     /* Indicate that background task is running. */
     UNI_FLAG |= OS_FLG_BGD_ACTIVE;
 
-    if(OsGetHwThreadId() == g_primaryCoreId) {
+    if (OsGetHwThreadId() < (g_primaryCoreId + g_numOfCores - 1)) {
 
         OS_MHOOK_ACTIVATE_PARA0(OS_HOOK_FIRST_TIME_SWH);
 
