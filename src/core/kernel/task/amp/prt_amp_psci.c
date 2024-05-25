@@ -12,7 +12,9 @@ OS_SEC_TEXT void OsCpuPowerOff(void)
     uintptr_t intSave;
 
     intSave = PRT_HwiLock();
+#if (OS_GIC_VER == 3)
     OsHwiDisableAll();
+#endif
 
 #ifdef OS_OPTION_OPENAMP
     if (g_setOfflineFlagHook != NULL) {

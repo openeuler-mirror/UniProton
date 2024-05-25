@@ -133,7 +133,7 @@ CONFIG_OS_POSIX_SET_TZDST=y
 # Openamp Modules Configuration
 #
 CONFIG_OS_OPTION_OPENAMP=y
-CONFIG_OS_OPTION_RSC_TABLE=y
+CONFIG_OS_OPTION_POWEROFF=y
 #
 # Debug Modules Configuration
 #

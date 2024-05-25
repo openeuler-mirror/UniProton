@@ -14,6 +14,8 @@ TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 #if defined(OS_OPTION_OPENAMP)
+extern U32 RpmsgHwiInit(void);
+
 int TestOpenamp()
 {
     int ret;
@@ -22,38 +24,6 @@ int TestOpenamp()
     if (ret) {
         return ret;
     }
-
-    return OS_OK;
-}
-
-void (*g_rpmsg_ipi_handler)(void);
-
-static void IrqHandler(void)
-{
-    if (g_rpmsg_ipi_handler)
-        g_rpmsg_ipi_handler();
-}
-
-static U32 RpmsgHwiInit(void)
-{
-    U32 ret;
-
-    ret = PRT_HwiSetAttr(OS_OPENAMP_NOTIFY_HWI_NUM, OS_OPENAMP_NOTIFY_HWI_PRIO, OS_HWI_MODE_ENGROSS);
-    if (ret != OS_OK) {
-        return ret;
-    }
-
-    ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)IrqHandler, 0);
-    if (ret != OS_OK) {
-        return ret;
-    }
-
-#if (OS_GIC_VER == 3)
-    ret = PRT_HwiEnable(OS_OPENAMP_NOTIFY_HWI_NUM);
-    if (ret != OS_OK) {
-        return ret;
-    }
-#endif
 
     return OS_OK;
 }

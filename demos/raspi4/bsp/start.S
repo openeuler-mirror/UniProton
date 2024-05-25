@@ -1,6 +1,7 @@
 #include "prt_buildef.h"
 
     .global   OsResetVector
+    .global   OsArmSmccSmc
     .global   mmu_init
     
     .type     mmu_init, function
@@ -105,3 +106,7 @@ OsEnterReset:
     
     .section .text, "ax"
     .balign 4
+
+OsArmSmccSmc:
+    smc     #0x0
+    ret
