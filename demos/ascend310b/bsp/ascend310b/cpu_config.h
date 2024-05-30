@@ -26,6 +26,7 @@
 #define MMU_OPENAMP_ADDR            0x50000000ULL
 #define GITS_BASE_ADDR              0xD2000000ULL       // GITS基地址
 #define OPENAMP_SHM_SIZE            0x2000000
+#define MMU_LOG_MEM_ADDR            0x53000000ULL
 #endif
 
 #define SICR_ADDR_OFFSET_PER_CORE   0x200U

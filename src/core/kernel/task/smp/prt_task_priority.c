@@ -13,6 +13,7 @@
  * Description: Task schedule implementation
  */
 #include "prt_task_external.h"
+#include "prt_task_sched_external.h"
 
 /*
  * 描述：获取指定任务的优先级

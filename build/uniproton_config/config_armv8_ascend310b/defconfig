@@ -160,3 +160,7 @@ CONFIG_LOSCFG_SHELL_MICA_INPUT=y
 # dynamic module load Configuration
 #
 CONFIG_OS_OPTION_DYNAMIC_MODULE=y
+#
+# log module
+#
+CONFIG_OS_OPTION_LOG=y

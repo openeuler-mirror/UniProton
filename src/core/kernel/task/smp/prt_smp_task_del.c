@@ -15,6 +15,7 @@
 #include "prt_task_internal.h"
 #include "prt_sem_external.h"
 #include "prt_queue_external.h"
+#include "prt_smp_task_internal.h"
 
 #if defined(OS_OPTION_TASK_DELETE)
 /*

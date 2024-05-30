@@ -77,7 +77,7 @@ OS_SEC_TEXT void OsHwiMcTrigger(enum OsHwiIpiType type, U32 coreMask, U32 hwiNum
 {
     /* 判断输入参数的合法性 */
     if (type >= OS_TYPE_TRIGGER_BUTT) {
-        return OS_ERRNO_HWI_TRIGGER_TYPE_INVALID;
+        return;
     }
     
     U32 coreList = coreMask;

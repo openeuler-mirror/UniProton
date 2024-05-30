@@ -14,6 +14,7 @@
  */
 #include "prt_task_external.h"
 #include "prt_sem_external.h"
+#include "prt_task_sched_external.h"
 
 #if defined(OS_OPTION_TASK_INFO)
 /*

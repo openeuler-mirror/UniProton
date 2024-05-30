@@ -15,15 +15,12 @@
 #ifndef PRT_SYS_EXTERNAL_H
 #define PRT_SYS_EXTERNAL_H
 
+#include "prt_buildef.h"
 #include "prt_sys.h"
-#include "prt_task.h"
-#include "prt_sem.h"
 #include "prt_tick.h"
 #include "prt_list_external.h"
 #include "prt_asm_cpu_external.h"
 #include "prt_cpu_external.h"
-#include "prt_sched_external.h"
-#include "prt_task_external.h"
 
 #if !defined(OS_OPTION_SMP)
 #define OS_VAR_ARRAY_NUM 1

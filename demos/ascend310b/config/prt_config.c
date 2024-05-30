@@ -15,9 +15,14 @@
 #include "prt_config_internal.h"
 #include "cpu_config.h"
 #include "prt_cpu_external.h"
+#include "prt_log.h"
 
 #if (defined(OS_OPTION_SMP) || defined(OS_ARMV8))
 RESET_SEC_DATA U32 g_cfgPrimaryCore = OS_SYS_CORE_PRIMARY;
+#endif
+
+#if defined(LOG_TESTCASE)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
 OS_SEC_ALW_INLINE INLINE void OsConfigAddrSizeGet(uintptr_t addr, uintptr_t size,
@@ -224,9 +229,21 @@ static U32 OsHwiConfigReg(void)
     return OS_OK;
 }
 
+#if defined(OS_OPTION_LOG)
+static U32 PRT_LogMemInit(void)
+{
+    PRT_LogInit(MMU_LOG_MEM_ADDR);
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "PRT_Log init success1", 21);
+    return OS_OK;
+}
+#endif
+
 /* 系统初始化注册表 */
 struct OsModuleConfigInfo g_moduleConfigTab[] = {
     /* {模块号， 模块注册函数， 模块初始化函数} */
+#if defined(OS_OPTION_LOG)
+    {OS_MID_LOG, {NULL, PRT_LogMemInit}},
+#endif
     {OS_MID_SYS, {OsSysConfigReg, NULL}},
     {OS_MID_MEM, {OsMemConfigReg, OsMemConfigInit}},
     {OS_MID_HWI, {OsHwiConfigReg, OsHwiConfigInit}},
@@ -309,6 +326,12 @@ U32 OsStart(void)
 #endif
 #if (OS_INCLUDE_TASK == YES)
     /* 表示系统在进行启动阶段，匹配MOUDLE_ID之后，标记进入任务模块的启动 */
+#if defined(LOG_TESTCASE)
+    if(OsGetCoreID() != g_cfgPrimaryCore) {
+        (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "slv init enter", 14);
+        Init(0, 0, 0, 0);
+    }
+#endif
     ret = OsActivate();
 #else
     ret = OS_OK;
@@ -367,7 +390,7 @@ U32 SlaveTestInit(void)
     struct TskInitParam param = {0};
     TskHandle testTskHandle[2];
     // task 1
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)SlaveTaskEntry;
     param.taskPrio = 25;
     param.name = "SlaveTask";
@@ -383,7 +406,7 @@ U32 SlaveTestInit(void)
         return ret;
     }
     
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)SlaveTaskEntry2;
     param.taskPrio = 30;
     param.name = "Test2Task";
@@ -427,10 +450,12 @@ INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
             return ret;
         }
 #endif
+#if (SMP_TESTCASE)
         ret = SlaveTestInit();
         if (ret) {
             return ret;
         }
+#endif
 
         ret = OsStart();
         if(ret != OS_OK) {

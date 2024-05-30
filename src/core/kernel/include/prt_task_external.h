@@ -16,6 +16,7 @@
 #define PRT_TASK_EXTERNAL_H
 
 #include "prt_task.h"
+#include "prt_sem.h"
 #include "prt_lib_external.h"
 #include "prt_list_external.h"
 #include "prt_sys_external.h"
@@ -369,12 +370,12 @@ extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 
 #define OS_TSK_DELAY_LOCKED_DETACH(task)            ListDelete(&(task)->timerList)
 #define CHECK_TSK_PID_OVERFLOW(taskId)              (TSK_GET_INDEX(taskId) >= (g_tskMaxNum + 1))
+#define OS_TSK_SUSPEND_READY_BLOCK (OS_TSK_SUSPEND)
 #endif
 #define GET_TCB_HANDLE_BY_TCBID(index)  (((struct TagTskCb *)g_tskCbArray) + (uintptr_t)(index))
 #define GET_TCB_HANDLE(taskPid)        (GET_TCB_HANDLE_BY_TCBID(TSK_GET_INDEX((uintptr_t)(taskPid))))
 #define OS_PST_ZOMBIE_TASK             (GET_TCB_HANDLE_BY_TCBID(OS_MAX_TCB_NUM - 1 ))
 
-#define OS_TSK_SUSPEND_READY_BLOCK (OS_TSK_SUSPEND)
 // 设置任务优先级就绪链表主BitMap中Bit位，每32个优先级对应一个BIT位，即Bit0(优先级0~31),Bit1(优先级32~63),依次类推。
 #define OS_SET_RDY_TSK_BIT_MAP(priority) \
         (OS_TSK_PRIO_RDY_BIT >> ((priority) >> OS_TSK_PRIO_BIT_MAP_POW))
@@ -404,6 +405,7 @@ extern U32 OsTskMaxNumGet(void);
 extern U32 OsTaskDelete(TskHandle taskPid);
 #if defined(OS_OPTION_SMP)
 extern U32 OsTaskCreateOnly(TskHandle *taskPid, struct TskInitParam *initParam, bool isSmpIdle);
+extern void OsTskReadyDelSync(struct TagTskCb *taskCB, uintptr_t *intSave);
 #else
 extern U32 OsTaskCreateOnly(TskHandle *taskPid, struct TskInitParam *initParam);
 #endif

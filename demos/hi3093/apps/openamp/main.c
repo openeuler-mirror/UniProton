@@ -7,6 +7,7 @@
 #include "prt_config_internal.h"
 #include "prt_hwi.h"
 #include "prt_task.h"
+#include "prt_log.h"
 #include "test.h"
 #include "rpmsg_backend.h"
 #ifdef LOSCFG_SHELL_MICA_INPUT
@@ -91,6 +92,7 @@ void TestTaskEntry()
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+    PRT_Printf("ENTER INIT\n");
     Init(0, 0, 0, 0);
 #endif
 
@@ -130,7 +132,7 @@ U32 TaskTest()
     struct TskInitParam param = {0};
 
     // task 2
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test2TaskEntry;
     param.taskPrio = 20;
     param.name = "Test2Task";
@@ -147,7 +149,7 @@ U32 TaskTest()
     }
 
     // task 3
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test3TaskEntry;
     param.taskPrio = 25;
     param.name = "Test3Task";
@@ -172,11 +174,11 @@ U32 OsTestInit(void)
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
     
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x3000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)TestTaskEntry;
     param.taskPrio = 25;
     param.name = "TestTask";
-    param.stackSize = 0x2000;
+    param.stackSize = 0x3000;
 
     ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
     if (ret) {
@@ -190,6 +192,50 @@ U32 OsTestInit(void)
 
     return OS_OK;
 }
+
+#if defined(OS_OPTION_SMP) && (LOG_TESTCASE)
+static void masterLogTask(void)
+{
+    PRT_Printf("mst enter\n");
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "mst enter", 9);
+    while (!PRT_IsLogInit()) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+    }
+    (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "mst log init", 12);
+    while (1) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND * 10);
+        (void)PRT_Log(OS_LOG_INFO, OS_LOG_F1, "mst log", 7);
+    }
+}
+
+static U32 logTestInit(void)
+{
+    U32 ret;
+    TskHandle testTskHandle;
+    struct TskInitParam param = {0};
+
+    if (OsGetCoreID() != OS_SYS_CORE_PRIMARY) {
+        return 0;
+    }
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, 0x3000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)masterLogTask;
+    // 支持的优先级(0~31)
+    param.taskPrio = 24;
+    param.name = "masterlog";
+    param.stackSize = 0x3000;
+
+    ret = PRT_TaskCreate(&testTskHandle, &param);
+    if (ret) {
+        return OS_FAIL;
+    }
+
+    ret = PRT_TaskResume(testTskHandle);
+    if (ret) {
+        return OS_FAIL;
+    }
+    return ret;
+}
+#endif
 
 U32 PRT_AppInit(void)
 {
@@ -221,10 +267,18 @@ U32 PRT_AppInit(void)
 #endif
     
 #if defined(OS_OPTION_SMP)
+#if (SMP_TESTCASE)
     ret =TaskTest();
     if (ret) {
         return ret;
     }
+#endif
+#if (LOG_TESTCASE)
+    ret = logTestInit();
+    if (ret) {
+        return OS_FAIL;
+    }
+#endif
 #endif
 
     ret = OsTestInit();
@@ -253,7 +307,7 @@ U32 PRT_HardDrvInit(void)
     if (ret) {
         return ret;
     }
-    
+
     return OS_OK;
 }
 

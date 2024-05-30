@@ -133,7 +133,7 @@ U32 QueueTest()
     struct TskInitParam param = {0};
 
     // task 2
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test2TaskEntry;
     param.taskPrio = 30;
     param.name = "Test2Task";
@@ -150,7 +150,7 @@ U32 QueueTest()
     }
 
     // task 3
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test3TaskEntry;
     param.taskPrio = 25;
     param.name = "Test3Task";
@@ -191,7 +191,7 @@ U32 TaskTest()
     struct TskInitParam param = {0};
 
     // task 2
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test4TaskEntry;
     param.taskPrio = 20;
     param.name = "Test2Task";
@@ -208,7 +208,7 @@ U32 TaskTest()
     }
 
     // task 3
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test5TaskEntry;
     param.taskPrio = 25;
     param.name = "Test3Task";
@@ -226,6 +226,7 @@ U32 TaskTest()
 
     return OS_OK;
 }
+
 void Test1TaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -237,10 +238,11 @@ void Test1TaskEntry()
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+    PRT_Printf("init testcase\n");
     Init(0, 0, 0, 0);
 #endif
 
-#if defined(OS_OPTION_QUEUE)
+#if defined(OS_OPTION_QUEUE) && defined(QUEUE_TESTCASE)
     QueueTest();
 #endif
 }
@@ -252,7 +254,7 @@ U32 OsTestInit(void)
     struct TskInitParam param = {0};
 
     // task 1
-    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test1TaskEntry;
     param.taskPrio = 25;
     param.name = "Test1Task";
@@ -321,12 +323,12 @@ U32 PRT_AppInit(void)
         return ret;
     }
 #endif
-
+#if (SMP_TESTCASE)
     ret =TaskTest();
     if (ret) {
         return ret;
     }
-
+#endif
     ret = OsTestInit();
     if (ret) {
         return ret;

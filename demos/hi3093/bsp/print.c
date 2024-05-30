@@ -33,19 +33,19 @@ U32 PRT_UartInit(void)
 {
 
     U32 ret;
-    (void)PRT_HwiDelete(CCORE_SYS_UART4_INTID);
+    (void)PRT_HwiDelete(CCORE_SYS_UART2_INTID);
 
-    ret = PRT_HwiSetAttr(CCORE_SYS_UART4_INTID, 12, OS_HWI_MODE_ENGROSS);
+    ret = PRT_HwiSetAttr(CCORE_SYS_UART2_INTID, 12, OS_HWI_MODE_ENGROSS);
     if (ret != OS_OK) {
         return ret;
     }
 
-    ret = PRT_HwiCreate(CCORE_SYS_UART4_INTID, (HwiProcFunc)uart_recv_hwi, CCORE_SYS_UART4_INTID);
+    ret = PRT_HwiCreate(CCORE_SYS_UART2_INTID, (HwiProcFunc)uart_recv_hwi, CCORE_SYS_UART2_INTID);
     if (ret != OS_OK) {
         return ret;
     }
 
-    ret = PRT_HwiEnable(CCORE_SYS_UART4_INTID);
+    ret = PRT_HwiEnable(CCORE_SYS_UART2_INTID);
     if (ret != OS_OK) {
         return ret;
     }
