@@ -7,6 +7,7 @@ SECTIONS
     . = 0xf02400000;
     __openamp_phys_addr = .;
     __os_print_start = .;
+    __os_section_start = .;
     . = . + 0x100000;
     __os_print_end = .;
 
@@ -90,4 +91,5 @@ SECTIONS
     __os_sys_sp_start = .;
     . = . + 0x200000;
     __os_sys_sp_end = .;
+    __os_section_end = .;
 }

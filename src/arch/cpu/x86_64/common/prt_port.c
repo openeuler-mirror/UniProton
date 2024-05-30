@@ -26,6 +26,7 @@ OS_SEC_L4_TEXT void *OsTskContextInit(U32 taskID, U32 stackSize, uintptr_t *topS
     stack = (uintptr_t *)((uintptr_t)topStack + stackSize - 1);
     stack = (uintptr_t *)((uintptr_t)stack & 0xfffffffffffffff0);
 
+    stack[0] = 0;
     stackFram = (struct TagOsStack *)((uintptr_t)stack - sizeof(struct TagOsStack));
     memset_s(stackFram, sizeof(struct TagOsStack), 0, sizeof(struct TagOsStack));
     stackFram->rip = (U64)funcTskEntry;

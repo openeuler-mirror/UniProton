@@ -18,46 +18,11 @@
 #include "cpu_config.h"
 #include "prt_gdbstub_ext.h"
 
-extern const char __os_section_start[];
-extern const char __os_section_end[];
-extern const char __os_stub_data_start[];
-extern const char __os_stub_data_end[];
-extern const char __os_stub_text_start[];
-extern const char __os_stub_text_end[];
-
-static STUB_DATA struct GdbMemRegion g_regions[] = {
-    {
-        .start = (uintptr_t)__os_section_start,
-        .end = (uintptr_t)__os_section_end,
-        .attributes = GDB_MEM_REGION_RW
-    },
-    {
-        .start = (uintptr_t)__os_stub_text_start,
-        .end = (uintptr_t)__os_stub_text_end,
-        .attributes = GDB_MEM_REGION_NO_SWBKPT
-    },
-    {
-        .start = (uintptr_t)__os_stub_data_start,
-        .end = (uintptr_t)__os_stub_data_end,
-        .attributes = GDB_MEM_REGION_NO_SWBKPT
-    }
-};
-
 static STUB_DATA struct GdbRingBufferCfg g_rbufCfg = {
     .txaddr = MMU_GDB_STUB_ADDR,
     .rxaddr = MMU_GDB_STUB_ADDR + 0x1000,
     .size = 0x1000
 };
-
-
-STUB_TEXT int OsGdbConfigGetMemRegions(struct GdbMemRegion **regions)
-{
-    if (!regions) {
-        return 0;
-    }
-    *regions = g_regions;
-    return sizeof(g_regions) / sizeof(struct GdbMemRegion);
-}
 
 STUB_TEXT struct GdbRingBufferCfg *OsGetGdbRingBufferCfg()
 {

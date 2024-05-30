@@ -112,7 +112,7 @@ OsExcDispatch:
     dsb    sy
     isb
 
-    ldp    xzr, x30, [sp,#16]
+    ldp    xzr, x30, [sp],#16
     ldp    x29, x28, [sp],#16
     ldp    x27, x26, [sp],#16
     ldp    x25, x24, [sp],#16

@@ -47,7 +47,11 @@
 #define GDB_COMPILED_DBG_BRK_IMM   0x401
 
 #define ESR_ELx_BRK64_ISS_COMMENT_MASK 0xFFFF
-
+#define ESR_ELx_EC_SHIFT    (26)
+#define ESR_ELx_EC_WIDTH    (6)
+#define ESR_ELx_EC_MASK     (0x3FUL << ESR_ELx_EC_SHIFT)
+#define ESR_ELx_EC(esr)     (((esr) & ESR_ELx_EC_MASK) >> ESR_ELx_EC_SHIFT)
+#define ESR_ELx_EC_WATCHPT_CUR  (0x35)
 /*
  * BRK instruction encoding
  * The #imm16 value should be placed at bits[20:5] within BRK ins
@@ -69,13 +73,14 @@
 #define BREAK_INSTR_SIZE        4
 
 /* Low-level stepping controls. */
-#define DBG_MDSCR_SS        (1 << 0)
-#define DBG_SPSR_SS     (1 << 21)
+#define DBG_MDSCR_SS   (1 << 0)
+#define DBG_SPSR_SS    (1 << 21)
 #define DBG_SPSR_D     (1 << 9)
 
 /* MDSCR_EL1 enabling bits */
 #define DBG_MDSCR_KDE (1 << 13)
 #define DBG_MDSCR_MDE (1 << 15)
+#define DBG_MDSCR_MASK      ~(DBG_MDSCR_KDE | DBG_MDSCR_MDE)
 
 /* need 2 buffer to store one byte after convert to string*/
 #define BYTE_TO_STR_LEN 2
@@ -106,6 +111,116 @@
              : : "rZ" (__val));                \
 } while (0)
 
+/* Breakpoint */
+#define ARM_BREAKPOINT_EXECUTE    0
+
+/* Watchpoints */
+#define ARM_BREAKPOINT_LOAD      1
+#define ARM_BREAKPOINT_STORE     2
+#define AARCH64_ESR_ACCESS_MASK  (1 << 6)
+
+/* Lengths */
+#define ARM_BREAKPOINT_LEN_1    0x1
+#define ARM_BREAKPOINT_LEN_2    0x3
+#define ARM_BREAKPOINT_LEN_3    0x7
+#define ARM_BREAKPOINT_LEN_4    0xf
+#define ARM_BREAKPOINT_LEN_5    0x1f
+#define ARM_BREAKPOINT_LEN_6    0x3f
+#define ARM_BREAKPOINT_LEN_7    0x7f
+#define ARM_BREAKPOINT_LEN_8    0xff
+
+/* Kernel stepping */
+#define ARM_KERNEL_STEP_NONE        0
+#define ARM_KERNEL_STEP_ACTIVE      1
+#define ARM_KERNEL_STEP_SUSPEND     2
+
+/*
+ * Limits.
+ * Changing these will require modifications to the register accessors.
+ */
+#define ARM_MAX_BRP        16
+#define ARM_MAX_WRP        16
+
+/* Virtual debug register bases. */
+#define AARCH64_DBG_REG_BVR    0
+#define AARCH64_DBG_REG_BCR    (AARCH64_DBG_REG_BVR + ARM_MAX_BRP)
+#define AARCH64_DBG_REG_WVR    (AARCH64_DBG_REG_BCR + ARM_MAX_BRP)
+#define AARCH64_DBG_REG_WCR    (AARCH64_DBG_REG_WVR + ARM_MAX_WRP)
+
+/* Debug register names. */
+#define AARCH64_DBG_REG_NAME_BVR    bvr
+#define AARCH64_DBG_REG_NAME_BCR    bcr
+#define AARCH64_DBG_REG_NAME_WVR    wvr
+#define AARCH64_DBG_REG_NAME_WCR    wcr
+
+/* Accessor macros for the debug registers. */
+#define AARCH64_DBG_READ(N, REG, VAL) do {  \
+    VAL = read_sysreg(dbg##REG##N##_el1);   \
+} while (0)
+
+#define AARCH64_DBG_WRITE(N, REG, VAL) do { \
+    write_sysreg(VAL, dbg##REG##N##_el1);   \
+} while (0)
+
+#define READ_WB_REG_CASE(OFF, N, REG, VAL)  \
+    case (OFF + N):                         \
+        AARCH64_DBG_READ(N, REG, VAL);      \
+        break
+
+#define WRITE_WB_REG_CASE(OFF, N, REG, VAL) \
+    case (OFF + N):                         \
+        AARCH64_DBG_WRITE(N, REG, VAL);     \
+        break
+
+#define GEN_READ_WB_REG_CASES(OFF, REG, VAL)\
+    READ_WB_REG_CASE(OFF,  0, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  1, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  2, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  3, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  4, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  5, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  6, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  7, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  8, REG, VAL);    \
+    READ_WB_REG_CASE(OFF,  9, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 10, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 11, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 12, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 13, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 14, REG, VAL);    \
+    READ_WB_REG_CASE(OFF, 15, REG, VAL)
+
+#define GEN_WRITE_WB_REG_CASES(OFF, REG, VAL)\
+    WRITE_WB_REG_CASE(OFF,  0, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  1, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  2, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  3, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  4, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  5, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  6, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  7, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  8, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF,  9, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 10, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 11, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 12, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 13, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 14, REG, VAL);    \
+    WRITE_WB_REG_CASE(OFF, 15, REG, VAL)
+
+
+#define ID_AA64DFR0_WRPS_SHIFT      20
+#define ID_AA64DFR0_BRPS_SHIFT      12
+#define AA64DFR0_WRPS_VAL(x) ((((x) >> ID_AA64DFR0_WRPS_SHIFT) & 0xf ) + 1)
+#define AA64DFR0_BRPS_VAL(x) ((((x) >> ID_AA64DFR0_BRPS_SHIFT) & 0xf ) + 1)
+
+/* Privilege Levels */
+#define AARCH64_BREAKPOINT_EL1    1
+#define AARCH64_BREAKPOINT_EL0    2
+
+#define DBG_HMC_HYP        (1 << 13)
+
+#define LAZY_STOP          1
 /*
  * This struct defines the way the registers are stored on the stack during an
  * exception. Note that sizeof(struct prt_regs) has to be a multiple of 16 (for
@@ -125,6 +240,32 @@ struct GdbCtx
         struct PrtRegs regs;
         U8 rbuf[sizeof(struct PrtRegs)];
     } regs;
+    uint64_t far;
+    uint8_t ec;
+};
+
+typedef struct HwBreakpoint {
+    uintptr_t addr;
+    uint64_t ctrl;
+    uint32_t len;
+    uint32_t state;
+} HwBreakpoint_t;
+
+typedef struct Watchpoint {
+    uintptr_t addr;
+    uint64_t ctrl;
+    uint32_t len;
+    uint32_t state;
+    uintptr_t origAddr;
+    uint32_t origLen;
+} Watchpoint_t;
+
+struct HwBreakpointCtrl {
+    uint32_t reserved   : 19,
+    len                 : 8,
+    type                : 2,
+    privilege           : 2,
+    enabled             : 1;
 };
 
 #endif /* _GDBSTUB_H_ */

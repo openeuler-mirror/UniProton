@@ -29,6 +29,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${HOME_PATH}/output/libc/include
     ${HOME_PATH}/src/component/mica
+    ${HOME_PATH}/src/utility/lib/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)

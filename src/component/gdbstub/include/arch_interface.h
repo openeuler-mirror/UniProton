@@ -63,4 +63,35 @@ extern void OsGdbArchFinish(void *stk);
 
 extern void OsGdbArchInit(void);
 
+/**
+ * Allow an architecture to specify how to correct the hardware debug registers.
+ */
+extern void OsGdbArchCorrectHwBkpts(void);
+
+/**
+ * Allow an architecture to specify how to remove a hardware breakpoint.
+ */
+extern int OsGdbArchRemoveHwBkpt(uintptr_t addr, int len, enum GdbBkptType bptype);
+
+/**
+ * Allow an architecture to specify how to set a hardware breakpoint.
+ */
+extern int OsGdbArchSetHwBkpt(uintptr_t addr, int len, enum GdbBkptType bptype);
+
+/**
+ * Allow an architecture to specify how to disable hardware breakpoints for a single cpu.
+ */
+extern void OsGdbArchDisableHwBkpts();
+
+/**
+ * Allow an architecture to specify how to remove all hardware breakpoints.
+ */
+extern void OsGdbArchRemoveAllHwBkpts(void);
+
+extern int OsGdbArchHitHwBkpt(uintptr_t *addr, unsigned *type);
+
+extern int OsGdbArchNotifyDie(int action, void *data);
+
+extern int OsGdbGetStopReason();
+
 #endif /* _ARCH_INTERFACE_H_ */
