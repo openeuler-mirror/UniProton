@@ -16,7 +16,6 @@
 #define COMMON_H__
 
 #include "cpu_config.h"
-#include "test.h"
 
 #define VDEV_START_ADDR		MMU_OPENAMP_ADDR
 #define VDEV_SIZE		0x30000

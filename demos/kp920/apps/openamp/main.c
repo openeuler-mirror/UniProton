@@ -6,11 +6,7 @@
 #include "prt_config.h"
 #include "prt_config_internal.h"
 #include "prt_task.h"
-#include "test.h"
 #include "cpu_config.h"
-#if defined(OS_OPTION_POWEROFF)
-#include "psci.h"
-#endif
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shell.h"
 #include "show.h"
@@ -20,6 +16,7 @@ TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
+extern U32 PRT_Printf(const char *format, ...);
 
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
 extern U64 g_timerFrequency;
@@ -34,6 +31,10 @@ void waitTest(void);
 
 #if defined(OS_OPTION_PCIE)
 extern void test_pcie_demo(void);
+#endif
+
+#if defined(OS_OPTION_RSC_TABLE)
+extern U32 RpmsgHwiInit(void);
 #endif
 
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
@@ -84,6 +85,7 @@ void TestTaskEntry()
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
 #endif
+
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
     printf("TESTCASE TestTaskEntry(Freq:%llu)\r\n", g_timerFrequency);
     Init(0, 0, 0, 0);
@@ -118,8 +120,6 @@ U32 OsTestInit(void)
     param.taskPrio = 25;
     param.name = "TestTask";
     param.stackSize = 0x2000;
-    
-    OsPowerOffFuncHook(OsCpuPowerOff);
 
     ret = PRT_TaskCreate(&g_testTskHandle, &param);
     if (ret) {
@@ -137,6 +137,13 @@ U32 OsTestInit(void)
 U32 PRT_AppInit(void)
 {
     U32 ret;
+
+#if defined(OS_OPTION_OPENAMP) && defined(OS_OPTION_RSC_TABLE)
+    ret = RpmsgHwiInit();
+    if (ret) {
+        return ret;
+    }
+#endif
 
     ret = OsTestInit();
     if (ret) {

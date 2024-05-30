@@ -15,11 +15,17 @@ set(AS_OPTION "-g -march=armv8.2-a+nofp+nosimd -Wl,--build-id=none -fno-builtin 
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy -Wl,--gc-sections -Wl,--undefined=taskInfo_shellcmd -Wl,--undefined=help_shellcmd -Wl,--undefined=memInfo_shellcmd")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920.ld")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920.ld")
 
 include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_kp920/defconfig)
+
+if (${CONFIG_OS_OPTION_RSC_TABLE})
+    set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920_rsc.ld")
+    set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920_rsc.ld")
+else()
+    set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920.ld")
+    set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/kp920.ld")
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -27,7 +33,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/kp920
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
-    ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${HOME_PATH}/src/arch/include
@@ -40,6 +45,12 @@ include_directories(
     ${OUTPUT_PATH}/libc/include
     ${OUTPUT_PATH}/libc/include/bits
 )
+
+if (${CONFIG_OS_OPTION_RSC_TABLE})
+    include_directories(${HOME_PATH}/src/component/mica)
+else()
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp)
+endif()
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
@@ -57,6 +68,11 @@ add_subdirectory(apps)
 if (${CONFIG_OS_OPTION_PROXY})
     add_subdirectory(${HOME_PATH}/src/component/proxy proxy)
     list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
+endif()
+
+if (${CONFIG_OS_OPTION_RSC_TABLE})
+    add_subdirectory(${HOME_PATH}/src/component/mica mica)
+    list(APPEND OBJS $<TARGET_OBJECTS:mica>)
 endif()
 
 if (${APP} MATCHES "kp920")

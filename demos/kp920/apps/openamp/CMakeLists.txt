@@ -1,2 +1,6 @@
-set(SRC rpmsg_backend.c rpmsg_service.c main.c pcie_demo.c)
+if(${CONFIG_OS_OPTION_RSC_TABLE})
+    set(SRC main.c)
+else()
+    set(SRC rpmsg_backend.c rpmsg_service.c main.c pcie_demo.c)
+endif()
 add_library(rpmsg OBJECT ${SRC})
