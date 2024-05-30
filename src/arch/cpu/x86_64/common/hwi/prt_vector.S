@@ -6,7 +6,8 @@
 .extern OsHwiDisapatchTail
 .extern OsTskContextLoad
 #ifdef OS_GDB_STUB
-.extern OsHwiGdbExcProc
+.extern OsHwiDbgExcProc
+.extern OsGdbReenterChk
 .global g_debugContext
 #endif
 .global g_runningTask
@@ -128,23 +129,32 @@ OsVector\intNum:
     SAVE_REGISTER
     movq    $(\intNum), HWI_INTNUM_OFFSET(%rax)
     sub     $0x200, %rax
+#if defined(OS_OPTION_FPU)
     fxsave64 (%rax)
-    movabs  $g_debugContext, %rcx
-    movq    (%rcx), %r8
-    movq    %rax, (%r8)
+#endif
     jmp OsDbgExcDispatcher
 .popsection
 .endm
 
 .pushsection .stub.text,"ax"
 OsDbgExcDispatcher:
-    movq %rax, %rdi
-    movabs $__os_sys_sp_end, %rsp
-    sub $0x4000, %rsp
+    pushq   %rax
+    leaq    0x200(%rax), %rdi
+    call    OsGdbReenterChk
+    test    %rax,%rax
+    jne     L1
+    movabs  $g_debugContext, %rcx
+    popq    %rax
+    movq    %rax, (%rcx)
+    leaq    0x200(%rax), %rdi
+    movabs  $__os_sys_sp_end, %rsp
+    sub     $0x4000, %rsp
     cld
-    call OsHwiDbgExcProc
-    movabs  $g_debugContext, %rax
-    movq    (%rax), %rdi
+    call    OsHwiDbgExcProc
+    movabs  $g_debugContext, %rdi
+    jmp     OsDbgContextRestore
+L1:
+    popq    %rdi
     jmp     OsDbgContextRestore
 
 OsDbgContextRestore:
@@ -180,13 +190,11 @@ OsDbgContextRestore:
 NOERROR_VECTOR 0
 #ifdef OS_GDB_STUB
 NOERROR_VECTOR_DBG 1
-#else
-NOERROR_VECTOR 1
-#endif
-NOERROR_VECTOR 2
-#ifdef OS_GDB_STUB
+NOERROR_VECTOR_DBG 2
 NOERROR_VECTOR_DBG 3
 #else
+NOERROR_VECTOR 1
+NOERROR_VECTOR 2
 NOERROR_VECTOR 3
 #endif
 NOERROR_VECTOR 4

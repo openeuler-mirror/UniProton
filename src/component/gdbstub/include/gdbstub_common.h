@@ -53,4 +53,19 @@ struct DbgRegDef {
     int offset;
 };
 
+static inline const char *GetWatchTypeStr(unsigned type)
+{
+    if (type < BP_WRITE_WATCHPOINT || type > BP_ACCESS_WATCHPOINT) {
+        return NULL;
+    }
+    if (type == BP_WRITE_WATCHPOINT) {
+        return "watch";
+    } else if (type == BP_ACCESS_WATCHPOINT) {
+        return "awatch";
+    } else {
+        return "rwatch";
+    }
+}
+
+extern STUB_TEXT void OsGdbHandleException(void *stk);
 #endif /* _GDBSTUB_COMMON_H_ */

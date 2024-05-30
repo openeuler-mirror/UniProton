@@ -159,6 +159,9 @@ OsTskContextLoad:
     mov    SP, X0            // X0 is stackPointer
 
 OsContextLoad:
+#ifdef OS_GDB_STUB
+    bl      OsGdbMarkStep
+#endif
     ldp    x2, x3, [sp],#16
     add    sp, sp, #16        // 跳过far, esr, HCR_EL2.TRVM==1的时候，EL1不能写far, esr
     msr    spsr_el1, x3

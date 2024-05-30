@@ -134,13 +134,31 @@ INIT_SEC_L4_TEXT void OsExcHandleEntry(U32 excType, struct ExcRegInfo *excRegs)
     OsExcHookHandle();
 }
 
-#if defined(OS_OPTION_POWEROFF)
+#if defined(OS_OPTION_POWEROFF) || defined(OS_GDB_STUB)
 #define OS_EXC_STOP_CORE_HWI_NUM OS_HWI_IPI_NO_02
 
+#if defined(OS_GDB_STUB)
+#include "prt_notifier.h"
+void OsExcIrqHandler(void)
+{
+    OsNotifyDie(OS_EXC_STOP_CORE_HWI_NUM, NULL);
+}
+static int ExcNotifyDie(struct NotifierBlock *nb,
+            int action, void *data)
+{
+    OsAsmIll(); /* 主动进入异常，最终会调用 OsCpuPowerOff */
+    return NOTIFY_DONE;
+}
+static struct NotifierBlock g_excNotifier = {
+    .call = ExcNotifyDie,
+};
+
+#else
 void OsExcIrqHandler(void)
 {
     OsAsmIll(); /* 主动进入异常，最终会调用 OsCpuPowerOff */
 }
+#endif
 #endif
 
 /*
@@ -159,7 +177,7 @@ OS_SEC_L4_TEXT U32 OsExcConfigInit(void)
     }
 #endif
 
-#if defined(OS_OPTION_POWEROFF)
+#if defined(OS_OPTION_POWEROFF) || defined(OS_GDB_STUB)
     U32 ret;
     ret = PRT_HwiSetAttr(OS_EXC_STOP_CORE_HWI_NUM, 0, OS_HWI_MODE_ENGROSS);
     if (ret != OS_OK) {
@@ -176,6 +194,10 @@ OS_SEC_L4_TEXT U32 OsExcConfigInit(void)
     if (ret != OS_OK) {
         return ret;
     }
+#endif
+
+#if defined(OS_GDB_STUB)
+    OsRegisterDieNotifier(&g_excNotifier);
 #endif
 #endif
 

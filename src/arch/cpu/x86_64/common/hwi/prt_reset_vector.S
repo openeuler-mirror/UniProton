@@ -8,7 +8,7 @@
 
 OsResetVector:
     movabs  $__os_sys_sp_end, %rsp
-
+    pushq $0
     call InitBssOs
     call OsIdtInit
 

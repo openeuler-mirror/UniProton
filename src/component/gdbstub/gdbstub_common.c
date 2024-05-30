@@ -14,8 +14,11 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <securec.h>
 #include "prt_typedef.h"
 #include "prt_gdbstub_ext.h"
+#include "prt_notifier.h"
+#include "ringbuffer.h"
 #include "rsp_utils.h"
 #include "arch_interface.h"
 #include "gdbstub_common.h"
@@ -52,6 +55,8 @@ enum LoopState {
 } state;
 
 static STUB_DATA char g_notFirstStart;
+static STUB_DATA char g_gdbActive;
+static STUB_DATA char g_exitDbg;
 
 /*
  * Holds information about breakpoints.
@@ -120,23 +125,37 @@ static STUB_TEXT int OsGdbHex2U64(char **ptr, U64 *val, int maxlen)
     arg =( __typeof__(arg)) v;                                  \
 } while(0)
 
-int __weak STUB_TEXT OsGdbConfigGetMemRegions(struct GdbMemRegion **regions)
+extern const char __os_section_start[];
+extern const char __os_section_end[];
+extern const char __os_stub_data_start[];
+extern const char __os_stub_data_end[];
+extern const char __os_stub_text_start[];
+extern const char __os_stub_text_end[];
+
+#define MAX_REGIONS 3
+static STUB_DATA struct GdbMemRegion g_regions[MAX_REGIONS];
+
+STUB_TEXT int OsGdbConfigInitMemRegions(void)
 {
-    (void)(regions);
-    return 0;
+    g_regions[0].start = (uintptr_t)__os_section_start;
+    g_regions[0].end = (uintptr_t)__os_section_end;
+    g_regions[0].attributes = GDB_MEM_REGION_RW;
+
+    g_regions[1].start = (uintptr_t)__os_stub_text_start;
+    g_regions[1].end = (uintptr_t)__os_stub_text_end;
+    g_regions[1].attributes = GDB_MEM_REGION_NO_BKPT;
+
+    g_regions[2].start = (uintptr_t)__os_stub_data_start;
+    g_regions[2].end = (uintptr_t)__os_stub_data_start;
+    g_regions[2].attributes = GDB_MEM_REGION_NO_BKPT;
 }
 
 static STUB_TEXT int GdbAddrCheck(uintptr_t addr, int attr)
 {
-    struct GdbMemRegion *regions = NULL;
-    int cnt = OsGdbConfigGetMemRegions(&regions);
-    if (!cnt) {
-        return -EINVAL;
-    }
-    for (int i = 0; i < cnt; i++) {
-        if (addr >= regions[i].start && 
-            addr < regions[i].end && 
-            (regions[i].attributes & attr) == attr) {
+    for (int i = 0; i < MAX_REGIONS; i++) {
+        if (addr >= g_regions[i].start &&
+            addr < g_regions[i].end &&
+            (g_regions[i].attributes & attr) == attr) {
             return 0;
         }
     }
@@ -155,7 +174,7 @@ static STUB_TEXT int GdbInvalidWriteAddr(uintptr_t addr)
 
 static STUB_TEXT int GdbInvalidBkptAddr(uintptr_t addr)
 {
-    return !GdbAddrCheck(addr, GDB_MEM_REGION_NO_SWBKPT);
+    return !GdbAddrCheck(addr, GDB_MEM_REGION_NO_BKPT);
 }
 
 /*
@@ -272,27 +291,38 @@ static STUB_TEXT int GdbResetBkpts(void)
     return 0;
 }
 
+INLINE int GdbNotSupportBkptType(U8 type) {
+    return type != BP_BREAKPOINT &&
+           type != BP_WRITE_WATCHPOINT &&
+           type != BP_ACCESS_WATCHPOINT;
+}
+
 static STUB_TEXT int GdbAddBkpt(U8 type, uintptr_t addr, U32 kind)
 {
-    if (type != BP_BREAKPOINT) {
+    if (GdbNotSupportBkptType(type)) {
         return -GDB_ENO_NOT_SUPPORT;
     }
     if (GdbInvalidBkptAddr(addr)) {
         return -EINVAL;
     }
-    return GdbSetSwBkpt(addr);
+    if (type == BP_BREAKPOINT) {
+        return GdbSetSwBkpt(addr);
+    }
+    return OsGdbArchSetHwBkpt(addr, kind, type);
 }
 
 static STUB_TEXT int GdbRemoveBkpt(U8 type, uintptr_t addr, U32 kind)
 {
-    if (type != BP_BREAKPOINT) {
+    if (GdbNotSupportBkptType(type)) {
         return -GDB_ENO_NOT_SUPPORT;
     }
     if (GdbInvalidBkptAddr(addr)) {
         return -EINVAL;
     }
-
-    return GdbRemoveSwBkpt(addr);
+    if (type == BP_BREAKPOINT) {
+        return GdbRemoveSwBkpt(addr);
+    }
+    return OsGdbArchRemoveHwBkpt(addr, kind, type);
 }
 
 /* Read memory byte-by-byte */
@@ -438,19 +468,43 @@ static STUB_TEXT int GdbCmdWriteReg(U8 *ptr, int len)
     return 0;
 }
 
+static STUB_TEXT void GdbSendStopReply()
+{
+    // GDB_EXCEPTION_BREAKPOINT: DEBUG & BREAKPOINT:
+    uintptr_t addr;
+    unsigned type;
+
+    if (OsGdbArchHitHwBkpt(&addr, &type)) {
+        const char *typeStr = GetWatchTypeStr(type);
+        int len = 0;
+
+        if (typeStr == NULL) {
+            OsGdbSendException(g_serialBuf, sizeof(g_serialBuf), OsGdbGetStopReason());
+            return;
+        }
+
+        len = sprintf_s(g_serialBuf, sizeof(g_serialBuf) - 4, "T05%s:%x;", typeStr, addr);
+        if (len < 0) {
+            OsGdbSendException(g_serialBuf, sizeof(g_serialBuf), OsGdbGetStopReason());
+            return;
+        }
+        OsGdbSendPacket(g_serialBuf, len);
+    } else {
+        OsGdbSendException(g_serialBuf, sizeof(g_serialBuf), OsGdbGetStopReason());
+    }
+}
+
 /**
  * Synchronously communicate with gdb on the host
  */
 static STUB_TEXT int GdbSerialStub()
 {
     state = RECEIVING;
-
     /* Only send exception if this is not the first
      * GDB break.
      */
     if (g_notFirstStart) {
-        // GDB_EXCEPTION_BREAKPOINT: DEBUG & BREAKPOINT:
-        OsGdbSendException(g_serialBuf, sizeof(g_serialBuf), GDB_EXCEPTION_BREAKPOINT);
+        GdbSendStopReply();
     } else {
         g_notFirstStart = 1;
     }
@@ -572,12 +626,16 @@ static STUB_TEXT int GdbSerialStub()
             }
             break;
 
+        case 'R':
+            break;
+
         /* Exit debug  */
         case 'k':
             GdbResetBkpts();
+            OsGdbArchRemoveAllHwBkpts();
             OsGdbArchContinue();
-            OsGdbSendPacketNoAck("OK", 2);
             state = EXIT;
+            g_exitDbg = 1;
             break;
 
         /*
@@ -596,28 +654,55 @@ static STUB_TEXT int GdbSerialStub()
             OsGdbSendPacket(GDB_ERROR_GENERAL, 3);
             state = RECEIVING;
         }
-
+        OsGdbFlush();
     } /* while */
     return 0;
 }
 
 STUB_TEXT void OsGdbHandleException(void *stk)
 {
+    g_gdbActive = 1;
     OsGdbArchPrepare(stk);
+    OsGdbArchDisableHwBkpts();
     GdbDeactivateSwBkpts();
     GdbSerialStub();
     GdbActivateSwBkpts();
+    OsGdbArchCorrectHwBkpts();
     OsGdbArchFinish(stk);
+    g_gdbActive = 0;
 }
 
-extern int OsGdbIOInit();
+STUB_TEXT int OsGdbReenterChk(void *stk)
+{
+    (void)stk;
+
+    return g_gdbActive;
+}
+
+static STUB_TEXT int GdbNotifyDie(struct NotifierBlock *nb,
+            int action, void *data)
+{
+    if (g_exitDbg) {
+        return NOTIFY_DONE;
+    }
+    return OsGdbArchNotifyDie(action, data);
+}
+
+static STUB_DATA struct NotifierBlock g_gdbNotifier = {
+    .call = GdbNotifyDie,
+    .priority = 999,
+};
 
 STUB_TEXT int OsGdbStubInit(void)
 {
-    if (OsGdbIOInit()) {
+    OsGdbConfigInitMemRegions();
+    if (OsGdbRingBufferInit()) {
         return -1;
     }
+
+    OsRegisterDieNotifier(&g_gdbNotifier);
     OsGdbArchInit();
+
     return 0;
 }
 
