@@ -106,15 +106,11 @@ U64 ReadCr2(void)
 }
 
 #ifdef OS_GDB_STUB
-extern void OsGdbHandleException(void *stk);
-
+#include "prt_notifier.h"
 STUB_TEXT void OsHwiDbgExcProc(U64 stackFrame)
 {
-    struct StackFrame *frame;
-    frame = (struct StackFrame *)(stackFrame + 0x200);
-    if (frame->intNumber == 1 || frame->intNumber == 3) {
-        OsGdbHandleException(frame);
-    }
+    struct StackFrame *frame = (struct StackFrame *)stackFrame;
+    OsNotifyDie(frame->intNumber, frame);
 }
 #endif
 

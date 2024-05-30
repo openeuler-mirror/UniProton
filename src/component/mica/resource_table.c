@@ -23,6 +23,9 @@ OS_SEC_RSC_TABLE static struct fw_resource_table resource_table = {
     .num = RSC_TABLE_NUM_ENTRY,
     .offset = {
         offsetof(struct fw_resource_table, ept_table),
+#ifdef OS_GDB_STUB
+        offsetof(struct fw_resource_table, rbufs),
+#endif
         offsetof(struct fw_resource_table, vdev),
     },
 
@@ -30,7 +33,9 @@ OS_SEC_RSC_TABLE static struct fw_resource_table resource_table = {
         .type = RSC_VENDOR_EPT_TABLE,
 	.num_of_epts = 0,
     },
-
+#ifdef OS_GDB_STUB
+    .rbufs = {RSC_VENDOR_RINGBUFFER, 0, 0, 0, RINGBUFFER_TOTAL_SIZE, 0, {0}},
+#endif
     /* Virtio device entry */
     .vdev = {
         RSC_VDEV, VIRTIO_ID_RPMSG, 2, RPMSG_IPU_C0_FEATURES, 0, 0, 0,
@@ -49,3 +54,28 @@ void rsc_table_get(void **table_ptr, int *length)
     *table_ptr = (void *)&resource_table;
     *length = sizeof(resource_table);
 }
+
+#ifdef OS_GDB_STUB
+#include "prt_gdbstub_ext.h"
+#define PA2VA(pa) (pa)
+
+extern int RBufferPairInit(uintptr_t rxaddr, uintptr_t txaddr, int len);
+
+static STUB_DATA struct GdbRingBufferCfg g_rbufCfg;
+STUB_TEXT struct GdbRingBufferCfg *OsGetGdbRingBufferCfg()
+{
+    uintptr_t tx_va, rx_va;
+
+    while (resource_table.rbufs.state == RBUF_STATE_UNINIT) {
+        os_asm_invalidate_dcache_all();
+    }
+
+    os_asm_invalidate_dcache_all();
+    tx_va = PA2VA(resource_table.rbufs.pa);
+    rx_va = tx_va + RINGBUFFER_TOTAL_SIZE / 2;
+    g_rbufCfg.rxaddr = rx_va;
+    g_rbufCfg.txaddr = tx_va;
+    g_rbufCfg.size = RINGBUFFER_TOTAL_SIZE / 2;
+    return &g_rbufCfg;
+}
+#endif

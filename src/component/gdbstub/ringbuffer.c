@@ -12,19 +12,18 @@
  * Description: ringbuffer实现
  */
 
-
+#include <string.h>
 #include "prt_typedef.h"
 #include "gdbstub_common.h"
 
 #define LINE_BUF_SIZE 128
-#define REDZONE_SIZE  8
 
 typedef struct RingBuffer {
-    int len;
-    volatile int busy;
-    volatile int tail;
-    volatile int head;
-    char redzone[REDZONE_SIZE];
+    unsigned int  in;
+    unsigned int  out;
+    unsigned int  len;
+    unsigned int  reserved;
+    char          data[0];
 } RBuffer;
 
 typedef struct LineBuffer {
@@ -39,88 +38,119 @@ static STUB_DATA RBuffer *g_txRBuffer;
 static STUB_DATA LBuffer g_txLBuffer;
 static STUB_DATA LBuffer g_rxLBuffer;
 
-static STUB_TEXT void RBufferLock(RBuffer *rbuffer)
+#ifdef __x86_64__
+#define WMB()   __asm__ volatile("sfence" ::: "memory")
+#elif __aarch64__
+#define DSB(opt) __asm__ volatile("dsb " #opt : : : "memory")
+#define WMB()       DSB(st)
+#else
+#error  "unsupported arch"
+#endif
+
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+/*
+ * internal helper to calculate the unused elements in a fifo
+ */
+static inline unsigned int FifoUnused(struct RingBuffer *fifo)
 {
-    while (rbuffer->busy) {
-        ;
-    }
-    rbuffer->busy = 1;
+    return fifo->len - (fifo->in - fifo->out);
 }
 
-static STUB_TEXT void RBufferUnlock(RBuffer *rbuffer)
+static STUB_TEXT void FifoCopyIn(struct RingBuffer *fifo, const void *src, unsigned int len, unsigned int off)
 {
-    rbuffer->busy = 0;
+    unsigned int size = fifo->len;
+    unsigned int l;
+
+    off = off % size;
+    l = MIN(len, size - off);
+
+    memcpy(fifo->data + off, src, l);
+    memcpy(fifo->data, src + l, len - l);
+    /*
+     * make sure that the data in the fifo is up to date before
+     * incrementing the fifo->in index counter
+     */
+    WMB();
 }
 
-static STUB_TEXT RBuffer * RBufferInit(uintptr_t addr, int len)
+STUB_TEXT unsigned int FifoIn(struct RingBuffer *fifo, const void *buf, unsigned int len)
 {
-    RBuffer *buffer = (RBuffer *)addr;
-    buffer->busy = 0;
-    buffer->len = len;
-    buffer->tail = buffer->head = 0;
-    for (int i = 0; i < sizeof(buffer->redzone); i++) {
-        buffer->redzone[i] = 0x7a;
-    }
-    return buffer;
+    unsigned int l;
+
+    l = FifoUnused(fifo);
+    if (len > l)
+        len = l;
+
+    FifoCopyIn(fifo, buf, len, fifo->in);
+    fifo->in += len;
+    return len;
 }
 
-int STUB_TEXT RBufferPairInit(uintptr_t rxaddr, uintptr_t txaddr, int len)
+static STUB_TEXT void FifoCopyOut(struct RingBuffer *fifo, void *dst, unsigned int len, unsigned int off)
+{
+    unsigned int size = fifo->len;
+    unsigned int l;
+
+    off %= size;
+    l = MIN(len, size - off);
+
+    memcpy(dst, fifo->data + off, l);
+    memcpy(dst + l, fifo->data, len - l);
+    /*
+     * make sure that the data is copied before
+     * incrementing the fifo->out index counter
+     */
+    WMB();
+}
+
+static STUB_TEXT unsigned int FifoOutPeek(struct RingBuffer *fifo, void *buf, unsigned int len)
+{
+    unsigned int l;
+
+    l = fifo->in - fifo->out;
+    if (len > l)
+        len = l;
+
+    FifoCopyOut(fifo, buf, len, fifo->out);
+    return len;
+}
+
+static STUB_TEXT unsigned int FifoOut(struct RingBuffer *fifo, void *buf, unsigned int len)
+{
+    len = FifoOutPeek(fifo, buf, len);
+    fifo->out += len;
+    return len;
+}
+
+STUB_TEXT int RBufferPairInit(uintptr_t rxaddr, uintptr_t txaddr, int len)
 {
     if (!rxaddr || !txaddr || len <= sizeof(RBuffer)) {
         return -1;
     }
 
-    g_rxRBuffer = RBufferInit(rxaddr, len - sizeof(RBuffer));
-    g_txRBuffer = RBufferInit(txaddr, len - sizeof(RBuffer));
+    g_rxRBuffer = (RBuffer *)rxaddr;
+    g_txRBuffer = (RBuffer *)txaddr;
     return 0;
-}
-
-INLINE int IsEmpty(RBuffer *buffer)
-{
-    return buffer->head == buffer->tail;
-}
-
-INLINE int IsFull(RBuffer *buffer)
-{
-    return (buffer->tail + 1) % buffer->len == buffer->head;
 }
 
 static STUB_TEXT int OsRbufferWrite(RBuffer *buffer, char *buf, int len)
 {
-    int dlen = buffer->len;
     int cnt = 0;
-    char *data = (char *)buffer + sizeof(RBuffer);
 
     if (len <= 0) {
         return 0;
     }
-    RBufferLock(buffer);
     while (cnt < len) {
-        if (IsFull(buffer)) {
-            break;
-        }
-        data[(buffer->tail++) % dlen] = buf[cnt++];
+        int o = FifoIn(buffer, &buf[cnt], len - cnt);
+        cnt += o;
     }
-    RBufferUnlock(buffer);
  
     return cnt;
 }
 
 static STUB_TEXT int RBufferRead(RBuffer *buffer, char *buf, int len)
 {
-    int dlen = buffer->len;
-    char *data = (char *)buffer + sizeof(RBuffer);
-    int cnt = 0;
-    RBufferLock(buffer);
-    while (cnt < len) {
-        if (IsEmpty(buffer)) {
-            break;
-        }
-        buf[cnt++] = data[(buffer->head++) % dlen];
-    }
-    RBufferUnlock(buffer);
-
-    return cnt;
+    return FifoOut(buffer, buf, len);
 }
 
 /* Non-thread-safe */
@@ -162,10 +192,9 @@ STUB_TEXT char OsGdbGetchar()
     ch = g_rxLBuffer.data[g_rxLBuffer.idx++];
     return ch;
 }
+extern struct GdbRingBufferCfg *OsGetGdbRingBufferCfg(void);
 
-extern struct GdbRingBufferCfg *OsGetGdbRingBufferCfg();
-
-STUB_TEXT int OsGdbIOInit()
+STUB_TEXT int OsGdbRingBufferInit()
 {
     struct GdbRingBufferCfg *cfg = OsGetGdbRingBufferCfg();
     if (!cfg) {

@@ -87,7 +87,6 @@ el1_dbg:
     dsb    sy
     isb
 
-    mov x10, #123
     eret
 
 .macro el1_sync_handler vecId

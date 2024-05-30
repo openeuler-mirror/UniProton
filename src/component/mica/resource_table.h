@@ -36,6 +36,9 @@ extern "C" {
 
 enum rsc_table_entries {
     RSC_TABLE_EPT_TABLE_ENTRY,
+#ifdef OS_GDB_STUB
+    RSC_TABLE_RBUF_ENTRY,
+#endif
     RSC_TABLE_VDEV_ENTRY,
     RSC_TABLE_NUM_ENTRY
 };
@@ -56,6 +59,32 @@ struct fw_rsc_ept {
 	struct ept_info endpoints[MAX_NUM_OF_EPTS];
 } METAL_PACKED_END;
 
+#ifdef OS_GDB_STUB
+#define RSC_VENDOR_RINGBUFFER   129
+#define RINGBUFFER_TOTAL_SIZE   0x2000
+
+METAL_PACKED_BEGIN
+struct fw_rsc_rbuf_pair {
+	uint32_t type;
+	uint32_t flags;
+	uint64_t da;
+	uint64_t pa;
+	uint64_t len;
+	uint8_t state;
+	uint8_t reserved[7];
+} METAL_PACKED_END;
+
+enum rbuf_state {
+	RBUF_STATE_UNINIT = 0,
+	RBUF_STATE_INIT = 1,
+	RBUF_STATE_ORDINARY_DATA = 2,
+	RBUF_STATE_CTRL_C = 3,
+	RBUF_STATE_RESTART = 4,
+};
+
+extern uint8_t get_rbuf_state(void);
+
+#endif
 
 METAL_PACKED_BEGIN
 struct fw_resource_table {
@@ -65,10 +94,16 @@ struct fw_resource_table {
     unsigned int offset[RSC_TABLE_NUM_ENTRY];
 
     struct fw_rsc_ept ept_table;
+#ifdef OS_GDB_STUB
+    struct fw_rsc_rbuf_pair rbufs;
+#endif
     struct fw_rsc_vdev vdev;
     struct fw_rsc_vdev_vring vring0;
     struct fw_rsc_vdev_vring vring1;
+
 } METAL_PACKED_END;
+
+
 
 void rsc_table_get(void **table_ptr, int *length);
 

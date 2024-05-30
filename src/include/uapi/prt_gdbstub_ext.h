@@ -36,7 +36,7 @@ struct GdbRingBufferCfg {
 #define GDB_MEM_REGION_NO_ACCESS            0UL
 #define GDB_MEM_REGION_READ                 BIT(0)
 #define GDB_MEM_REGION_WRITE                BIT(1)
-#define GDB_MEM_REGION_NO_SWBKPT            BIT(2)
+#define GDB_MEM_REGION_NO_BKPT              BIT(2)
 
 #define GDB_MEM_REGION_RO \
     (GDB_MEM_REGION_READ)

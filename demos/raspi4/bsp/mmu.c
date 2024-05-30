@@ -25,14 +25,6 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
     }, {
-#ifdef OS_GDB_STUB
-        .virt      = MMU_GDB_STUB_ADDR,
-        .phys      = MMU_GDB_STUB_ADDR,
-        .size      = 0x10000,
-        .max_level = 0x2,
-        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
-    }, {
-#endif
         .virt      = MMU_GIC_ADDR,
         .phys      = MMU_GIC_ADDR,
         .size      = 0x1000000,

@@ -15,6 +15,7 @@
  */
 
 #include "prt_typedef.h"
+#include "prt_notifier.h"
 #include "gdbstub.h"
 #include "arch_interface.h"
 #include "rsp_utils.h"
@@ -97,7 +98,28 @@ STUB_DATA static struct DbgRegDef g_dbgRegDef[DBG_MAX_REG_NUM] = {
 };
 
 STUB_DATA static struct GdbCtx g_debugContext;
+
 STUB_DATA static bool g_compiled_brk = false;
+
+STUB_DATA static bool g_stopByCtrlc;
+
+STUB_DATA static bool g_needStepFlg;
+
+STUB_DATA static uint8_t g_alignedLenArray[] = {1,2,4,4,8,8,8,8};
+
+STUB_DATA static int g_maxWrpCnt;
+
+STUB_DATA static int g_maxBrpCnt;
+
+STUB_DATA static Watchpoint_t g_wrpArray[ARM_MAX_WRP];
+
+STUB_DATA static HwBreakpoint_t g_brpArray[ARM_MAX_BRP];
+
+STUB_DATA static uint8_t g_basArray[] = {
+    ARM_BREAKPOINT_LEN_1, ARM_BREAKPOINT_LEN_2, ARM_BREAKPOINT_LEN_3,
+    ARM_BREAKPOINT_LEN_4, ARM_BREAKPOINT_LEN_5, ARM_BREAKPOINT_LEN_6,
+    ARM_BREAKPOINT_LEN_7, ARM_BREAKPOINT_LEN_8,
+};
 
 #define REGS (g_debugContext.regs.regs)
 #define RBUF (g_debugContext.regs.rbuf)
@@ -141,6 +163,7 @@ static inline unsigned long local_daif_save(void)
     return flags;
 }
 
+
 static inline void local_daif_restore(unsigned long flags)
 {
     write_sysreg(flags, daif);
@@ -170,7 +193,6 @@ STUB_TEXT void OsGdbArchContinue(void)
     REGS.pstate &= ~DBG_SPSR_D;
 
     mdscr_write(mdscr_read() & ~DBG_MDSCR_SS);
-    mdscr_write(mdscr_read() & ~(DBG_MDSCR_KDE));
 }
 
 STUB_TEXT void OsGdbArchStep(void)
@@ -182,8 +204,18 @@ STUB_TEXT void OsGdbArchStep(void)
 
     REGS.pstate |= DBG_SPSR_SS;
     REGS.pstate &= ~DBG_SPSR_D;
-    mdscr_write(mdscr_read() | DBG_MDSCR_SS);
-    mdscr_write(mdscr_read() | DBG_MDSCR_KDE);
+    mdscr_write(mdscr_read() | DBG_MDSCR_SS | DBG_MDSCR_KDE);
+}
+
+STUB_TEXT void OsGdbMarkStep(uint64_t *sp)
+{
+    if (LIKELY(!g_needStepFlg)) {
+        return;
+    }
+    g_needStepFlg = false;
+    sp[1] |= DBG_SPSR_SS;
+    sp[1] &= ~DBG_SPSR_D;
+    mdscr_write(mdscr_read() | DBG_MDSCR_SS | DBG_MDSCR_KDE);
 }
 
 STUB_TEXT void OsGdbArchPrepare(void *stk)
@@ -197,10 +229,14 @@ STUB_TEXT void OsGdbArchPrepare(void *stk)
     REGS.sp = orig->sp;
     REGS.pc = orig->pc;
     REGS.pstate = orig->pstate;
+    g_debugContext.far = 0;
 
     uint32_t esr = read_sysreg(esr_el1);
+    g_debugContext.ec = ESR_ELx_EC(esr);
     if ((esr & ESR_ELx_BRK64_ISS_COMMENT_MASK) == GDB_COMPILED_DBG_BRK_IMM) {
         g_compiled_brk = true;
+    } else if (ESR_ELx_EC(esr) == ESR_ELx_EC_WATCHPT_CUR) {
+        g_debugContext.far = read_sysreg(far_el1);
     }
 }
 
@@ -319,17 +355,15 @@ STUB_TEXT int OsGdbArchRemoveSwBkpt(struct GdbBkpt *bkpt)
     return 0;
 }
 
-STUB_TEXT void OsGdbArchInit(void)
+static inline void InsertCompiledBrk()
 {
-    write_sysreg(0, osdlr_el1);
-    write_sysreg(0, oslar_el1);
-
     __asm__ volatile(
         "dsb st\n"
         "brk %0\n"
         "dsb st\n"
         : : "I" (GDB_COMPILED_DBG_BRK_IMM));
 }
+
 
 STUB_TEXT static void OsCacheFlush(unsigned long addr_start, unsigned long addr_end)
 {
@@ -364,4 +398,302 @@ STUB_TEXT void GdbFlushSwBkptAddr(unsigned long addr)
 {
     /* Force flush instruction cache if it was outside the mm */
     OsCacheFlush(addr, addr + BREAK_INSTR_SIZE);
+}
+
+static STUB_TEXT uint64_t ReadWbReg(int reg, int n)
+{
+    uint64_t val = 0;
+
+    switch (reg + n) {
+    GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_BVR, AARCH64_DBG_REG_NAME_BVR, val);
+    GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_BCR, AARCH64_DBG_REG_NAME_BCR, val);
+    GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_WVR, AARCH64_DBG_REG_NAME_WVR, val);
+    GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_WCR, AARCH64_DBG_REG_NAME_WCR, val);
+    default:
+        break;
+    }
+
+    return val;
+}
+
+static STUB_TEXT void WriteWbReg(int reg, int n, uint64_t val)
+{
+    switch (reg + n) {
+    GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_BVR, AARCH64_DBG_REG_NAME_BVR, val);
+    GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_BCR, AARCH64_DBG_REG_NAME_BCR, val);
+    GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_WVR, AARCH64_DBG_REG_NAME_WVR, val);
+    GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_WCR, AARCH64_DBG_REG_NAME_WCR, val);
+    default:
+        break;
+    }
+    __asm__ volatile("isb" : : : "memory");
+}
+
+#define FIND_FREE_SLOT(array, size) ({ \
+    int i = 0, idx = -1;               \
+    for (i; i < size; i++) {           \
+        if (array[i].state == 0) {     \
+            idx = i;                   \
+            break;                     \
+        }                              \
+    }                                  \
+    idx;                               \
+});
+
+STUB_TEXT void OsGdbArchInit(void)
+{
+    /* Determine number of BRP/WRP registers available. */
+    uint64_t aa64dfr0 = read_sysreg(id_aa64dfr0_el1);
+
+    g_maxBrpCnt = AA64DFR0_BRPS_VAL(aa64dfr0);
+    g_maxWrpCnt = AA64DFR0_WRPS_VAL(aa64dfr0);
+
+    for (int i = 0; i < g_maxBrpCnt; i++) {
+        WriteWbReg(AARCH64_DBG_REG_BVR, i, 0);
+        WriteWbReg(AARCH64_DBG_REG_BCR, i, 0);
+    }
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        WriteWbReg(AARCH64_DBG_REG_WVR, i, 0);
+        WriteWbReg(AARCH64_DBG_REG_WCR, i, 0);
+    }
+    write_sysreg(0, osdlr_el1);
+    write_sysreg(0, oslar_el1);
+
+    InsertCompiledBrk();
+}
+
+static inline uint32_t EncodeCtrl(struct HwBreakpointCtrl ctrl)
+{
+    return (ctrl.len << 5) | (ctrl.type << 3) | (ctrl.privilege << 1) | ctrl.enabled;
+}
+
+static inline void DecodeCtrl(uint32_t reg, struct HwBreakpointCtrl *ctrl)
+{
+    ctrl->enabled = reg & 0x1;
+    reg >>= 1;
+    ctrl->privilege = reg & 0x3;
+    reg >>= 2;
+    ctrl->type = reg & 0x3;
+    reg >>= 2;
+    ctrl->len = reg & 0xff;
+}
+
+static STUB_TEXT int AddBrp(uintptr_t addr, int len)
+{
+    struct HwBreakpointCtrl ctrl = {0};
+    int idx = FIND_FREE_SLOT(g_brpArray, g_maxBrpCnt);
+    if (idx == -1) {
+        return -1;
+    }
+    ctrl.enabled = 1;
+    ctrl.len = ARM_BREAKPOINT_LEN_4;
+    ctrl.privilege = AARCH64_BREAKPOINT_EL1;
+    g_brpArray[idx].addr = addr;
+    g_brpArray[idx].state = 1;
+    g_brpArray[idx].ctrl = EncodeCtrl(ctrl);
+    g_brpArray[idx].len = 4;
+    return 0;
+}
+
+static STUB_TEXT int RemoveBrp(uintptr_t addr, int len)
+{
+    int idx = -1;
+    for (int i = 0; i < g_maxBrpCnt; i++) {
+        if (g_brpArray[i].state == 0) {
+            continue;
+        }
+        if (g_brpArray[i].addr == addr) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx == -1) {
+        return -1;
+    }
+    g_brpArray[idx].state = 0;
+    return 0;
+}
+
+static STUB_TEXT int AlignWatchpoint(uintptr_t addr, uint32_t len, enum GdbBkptType bptype, Watchpoint_t *wp)
+{
+    uint32_t offset, alignedLen;
+    uintptr_t alignedAddr;
+    struct HwBreakpointCtrl ctrl = {0};
+
+    if (len == 0 || wp == NULL) {
+        return -1;
+    }
+    offset = addr & 7;
+    alignedAddr = addr - offset;
+    if (offset + len > 8) {
+        return -1;
+    }
+
+    alignedLen = g_alignedLenArray[offset + len - 1];
+    wp->origAddr = addr;
+    wp->origLen = len;
+    wp->addr = alignedAddr;
+    wp->len = alignedLen;
+    wp->state = 1;
+    ctrl.enabled = 1;
+    ctrl.len = g_basArray[offset + len];
+    ctrl.privilege = AARCH64_BREAKPOINT_EL1;
+    if (bptype == BP_WRITE_WATCHPOINT) {
+        ctrl.type = ARM_BREAKPOINT_STORE;
+    } else if (bptype == BP_READ_WATCHPOINT) {
+        ctrl.type = ARM_BREAKPOINT_LOAD;
+    } else {
+        ctrl.type = ARM_BREAKPOINT_STORE | ARM_BREAKPOINT_LOAD;
+    }
+    wp->ctrl = EncodeCtrl(ctrl);
+    return 0;
+}
+
+static STUB_TEXT int AddWrp(uintptr_t addr, int len, enum GdbBkptType bptype)
+{
+    struct Watchpoint *wp = NULL;
+    int idx = FIND_FREE_SLOT(g_wrpArray, g_maxWrpCnt);
+    if (idx == -1) {
+        return -1;
+    }
+    wp = &g_wrpArray[idx];
+    if (AlignWatchpoint(addr, len, bptype, wp)) {
+        return -1;
+    }
+    return 0;
+}
+
+static STUB_TEXT int RemoveWrp(uintptr_t addr, int len, enum GdbBkptType bptype)
+{
+    struct Watchpoint wp = {0};
+    int idx = -1;
+    AlignWatchpoint(addr, len, bptype, &wp);
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        if (g_wrpArray[i].state == 0) {
+            continue;
+        }
+        if (g_wrpArray[i].addr == wp.addr && g_wrpArray[i].len == wp.len) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx == -1) {
+        return -1;
+    }
+    g_wrpArray[idx].state = 0;
+    return 0;
+}
+
+STUB_TEXT int OsGdbArchSetHwBkpt(uintptr_t addr, int len, enum GdbBkptType bptype)
+{
+    if (bptype == BP_HARDWARE_BREAKPOINT) {
+        return AddBrp(addr, len);
+    } else if (bptype >= BP_WRITE_WATCHPOINT && bptype <= BP_ACCESS_WATCHPOINT) {
+        return AddWrp(addr, len, bptype);
+    } else {
+        return -1;
+    }
+}
+
+STUB_TEXT int OsGdbArchRemoveHwBkpt(uintptr_t addr, int len, enum GdbBkptType bptype)
+{
+    if (bptype == BP_HARDWARE_BREAKPOINT) {
+        return RemoveBrp(addr, len);
+    } else if (bptype >= BP_WRITE_WATCHPOINT && bptype <= BP_ACCESS_WATCHPOINT) {
+        return RemoveWrp(addr, len, bptype);
+    } else {
+        return -1;
+    }
+}
+
+STUB_TEXT void OsGdbArchRemoveAllHwBkpts(void)
+{
+    for (int i = 0; i < g_maxBrpCnt; i++) {
+        g_brpArray[i].state = 0;
+    }
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        g_wrpArray[i].state = 0;
+    }
+    OsGdbArchDisableHwBkpts();
+}
+
+STUB_TEXT void OsGdbArchCorrectHwBkpts(void)
+{
+    for (int i = 0; i < g_maxBrpCnt; i++) {
+        if (g_brpArray[i].state == 0) {
+            continue;
+        }
+        WriteWbReg(AARCH64_DBG_REG_BVR, i, g_brpArray[i].addr);
+        WriteWbReg(AARCH64_DBG_REG_BCR, i, g_brpArray[i].ctrl);
+    }
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        if (g_wrpArray[i].state == 0) {
+            continue;
+        }
+        WriteWbReg(AARCH64_DBG_REG_WVR, i, g_wrpArray[i].addr);
+        WriteWbReg(AARCH64_DBG_REG_WCR, i, g_wrpArray[i].ctrl);
+    }
+    mdscr_write(mdscr_read() | DBG_MDSCR_KDE | DBG_MDSCR_MDE);
+}
+
+STUB_TEXT int OsGdbArchHitHwBkpt(uintptr_t *addr, unsigned *type)
+{
+    uint64_t far;
+    struct HwBreakpointCtrl ctrl = {0};
+    if (addr == NULL || type == NULL || g_debugContext.far == 0) {
+        return 0;
+    }
+    if (g_debugContext.ec != ESR_ELx_EC_WATCHPT_CUR) {
+        return 0;
+    }
+    far = g_debugContext.far;
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        if (g_wrpArray[i].state == 0) {
+            continue;
+        }
+        if (g_wrpArray[i].addr <= far && g_wrpArray[i].addr + g_wrpArray[i].len > far) {
+            *addr = g_wrpArray[i].origAddr;
+            DecodeCtrl(g_wrpArray[i].ctrl, &ctrl);
+            if (ctrl.type == ARM_BREAKPOINT_STORE) {
+                *type = BP_WRITE_WATCHPOINT;
+            } else if (ctrl.type == ARM_BREAKPOINT_LOAD) {
+                *type = BP_READ_WATCHPOINT;
+            } else if (ctrl.type == ARM_BREAKPOINT_LOAD | ARM_BREAKPOINT_STORE) {
+                *type = BP_ACCESS_WATCHPOINT;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+STUB_TEXT void OsGdbArchDisableHwBkpts()
+{
+    for (int i = 0; i < g_maxBrpCnt; i++) {
+        WriteWbReg(AARCH64_DBG_REG_BCR, i, 0);
+    }
+    for (int i = 0; i < g_maxWrpCnt; i++) {
+        WriteWbReg(AARCH64_DBG_REG_WCR, i, 0);
+    }
+    mdscr_write(mdscr_read() & DBG_MDSCR_MASK);
+}
+
+STUB_TEXT int OsGdbArchNotifyDie(int action, void *data)
+{
+    g_stopByCtrlc = true;
+#ifdef LAZY_STOP
+    g_needStepFlg = true;
+#else
+    InsertCompiledBrk();
+#endif
+    return NOTIFY_STOP;
+}
+
+STUB_TEXT int OsGdbGetStopReason()
+{
+    if (g_stopByCtrlc) {
+        g_stopByCtrlc = false;
+        return 2;
+    }
+    return 5;
 }

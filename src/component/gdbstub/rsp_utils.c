@@ -1,10 +1,7 @@
+#include "prt_typedef.h"
+#include "ringbuffer.h"
 #include "rsp_utils.h"
 #include "gdbstub_common.h"
-#include "prt_typedef.h"
-
-extern void OsGdbPutchar(char ch);
-extern char OsGdbGetchar();
-extern void OsGdbFlush();
 
 STUB_TEXT int OsGdbChar2Hex(char c, U8 *x)
 {

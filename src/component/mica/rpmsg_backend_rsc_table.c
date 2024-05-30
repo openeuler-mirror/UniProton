@@ -21,7 +21,9 @@
 #if defined(OS_OPTION_POWEROFF)
 extern void OsPowerOffSetFlag(void);
 #endif
-
+#if defined(OS_GDB_STUB)
+#include "prt_notifier.h"
+#endif
 /*
  * Use resource tables's  reserved[0] to carry some extra information.
  * The following IDs come from PSCI definition
@@ -132,6 +134,14 @@ static void rpmsg_ipi_handler(void)
     os_asm_invalidate_dcache_all();
     status = rsc_table->reserved[0];
 
+#ifdef OS_GDB_STUB
+#define NOTIFY_VAL 2
+    if (rsc_table->rbufs.state == RBUF_STATE_CTRL_C) {
+        rsc_table->rbufs.state = RBUF_STATE_ORDINARY_DATA;
+        os_asm_invalidate_dcache_all();
+        OsNotifyDie(NOTIFY_VAL, NULL);
+    }
+#endif
     if (status == CPU_ON_FUNCID || status == 0) {
         /* normal work */
         PRT_SemPost(msg_sem);
@@ -143,6 +153,10 @@ static void rpmsg_ipi_handler(void)
         os_asm_invalidate_dcache_all();
     } else if (status == CPU_OFF_FUNCID) {
 #if defined(OS_OPTION_POWEROFF)
+#if defined(OS_GDB_STUB)
+        rsc_table->rbufs.state = RBUF_STATE_RESTART;
+        os_asm_invalidate_dcache_all();
+#endif
         OsPowerOffSetFlag();
 #endif
     }
