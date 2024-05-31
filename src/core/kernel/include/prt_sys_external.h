@@ -92,9 +92,13 @@ typedef void (*TaskScanFunc)(void);
  * 模块间全局变量声明
  */
 extern U32 g_threadNum;
+/* Tick偏移量 */
+extern S64 g_ticksOffset;
 
 #if defined(OS_OPTION_SMP)
 #define TICK_NO_RESPOND_CNT (THIS_RUNQ()->tickNoRespondCnt)
+/* 从核响应tick中断使能标记位 */
+extern U32 g_slaveTickEnable;
 #else
 extern U32 g_tickNoRespondCnt;
 #define TICK_NO_RESPOND_CNT g_tickNoRespondCnt

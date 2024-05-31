@@ -250,6 +250,8 @@ extern struct TagScheduleClass g_osRtSingleSchedClass;
 extern struct TagOsTskSortedDelayList g_tskSortedDelay[OS_MAX_CORE_NUM];
 extern struct TagListObject g_tskPercpuRecycleList[OS_MAX_CORE_NUM];
 #define CPU_TSK_DELAY_BASE(cpu)         (&g_tskSortedDelay[(cpu)])
+#define CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase)     OS_MCMUTEX_LOCK(0, &(tskDlyBase)->spinLock)
+#define CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase)     OS_MCMUTEX_UNLOCK(0, &(tskDlyBase)->spinLock)
 #define OS_TSK_DELAY_LOCKED_DETACH(task)                                                    \
     do {                                                                                    \
         struct TagOsTskSortedDelayList *tmpDlyBase = &g_tskSortedDelay[(task)->timeCoreID];\
@@ -348,10 +350,6 @@ extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 
 #define CHECK_TSK_PID_OVERFLOW(taskID)  (TSK_GET_INDEX(taskID) >= (OS_MAX_TCB_NUM - 1))
 #define CHECK_TSK_PID(taskID)           (TSK_GET_INDEX(taskID) >= g_tskMaxNum)
-
-#define CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase) \
-    OS_MCMUTEX_LOCK(0, &(tskDlyBase)->spinLock) // 提高性能专用锁，避免多次cpu偏移计算地址
-#define CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase) OS_MCMUTEX_UNLOCK(0, &(tskDlyBase)->spinLock) // 提高性能专用锁
 
 #if(OS_MAX_CORE_NUM > 1)
 #define OS_TSK_OP_SET(taskCB, operate)      ((taskCB)->taskOperating |= (operate))

@@ -14,6 +14,47 @@
  */
 #include "prt_swtmr_internal.h"
 
+#if defined(OS_OPTION_SMP)
+OS_SEC_L4_TEXT U32 OsSwTmrGetRemain(struct TagSwTmrCtrl *swtmr)
+{
+    if (swtmr->expectedTick <= g_uniTicks) {
+        return 0;
+    } else {
+        return((U32)(swtmr->expectedTick - g_uniTicks));
+    }
+}
+
+OS_SEC_L4_TEXT uintptr_t OsSwtmrIqrSplLock(struct TagSwTmrCtrl *swtmr)
+{
+    uintptr_t intSave = OsIntLock();
+    struct TagSwTmrSortLinkAttr *tmrSort = NULL;
+    U32 preCoreID;
+
+    while (1)
+    {
+        preCoreID = swtmr->coreID;
+        tmrSort = CPU_SWTMR_SORT_LINK(swtmr->coreID);
+
+        OsSplLock(&tmrSort->spinLock);
+
+        if(preCoreID == swtmr->coreID) {
+            break;
+        } else {
+            OsSplUnlock(&tmrSort->spinLock);
+        }
+    }
+    return intSave;
+    
+}
+
+OS_SEC_L4_TEXT uintptr_t OsSwtmrIqrSplUnlock(struct TagSwTmrCtrl *swtmr, uintptr_t intSave)
+{
+    struct TagSwTmrSortLinkAttr *tmrSort = NULL;
+    tmrSort = CPU_SWTMR_SORT_LINK(swtmr->coreID);
+    OsSplUnlock(&tmrSort->spinLock);
+    OsIntRestore(intSave);
+}
+#else
 OS_SEC_L4_TEXT U32 OsSwTmrGetRemain(struct TagSwTmrCtrl *swtmr)
 {
     U32 retValue = 0;
@@ -40,7 +81,7 @@ OS_SEC_L4_TEXT U32 OsSwTmrGetRemain(struct TagSwTmrCtrl *swtmr)
 
     return retValue;
 }
-
+#endif
 /*
  * 描述：获取软件定时器剩余Tick数
  */
@@ -72,6 +113,7 @@ OS_SEC_L4_TEXT U32 OsSwTmrGetRemainTick(struct TagSwTmrCtrl *swtmr)
  */
 OS_SEC_L2_TEXT void OsSwTmrStop(struct TagSwTmrCtrl *swtmr, bool reckonOff)
 {
+#if !defined(OS_OPTION_SMP)
     U32 idx;
     struct TagListObject *listObject = NULL;
     uintptr_t intSave;
@@ -83,6 +125,7 @@ OS_SEC_L2_TEXT void OsSwTmrStop(struct TagSwTmrCtrl *swtmr, bool reckonOff)
     if (swtmr->next != (struct TagSwTmrCtrl *)listObject) {
         UWROLLNUMADD(swtmr->next->idxRollNum, swtmr->idxRollNum);
     }
+#endif
 
     if (!reckonOff) {
         /* 调用获取定时器剩余Tick数内部接口 */
@@ -96,12 +139,28 @@ OS_SEC_L2_TEXT void OsSwTmrStop(struct TagSwTmrCtrl *swtmr, bool reckonOff)
     swtmr->next = NULL;
     swtmr->prev = NULL;
 
+#if !defined(OS_OPTION_SMP)
     OsIntRestore(intSave);
+#endif
 }
 
 /*
  * 描述：软件定时器的删除内部接口
  */
+#if defined(OS_OPTION_SMP)
+OS_SEC_L2_TEXT void OsSwTmrDelete(struct TagSwTmrCtrl *swtmr)
+{
+    uintptr_t intSave;
+    intSave = OsIntLock();
+    /* 定时器删除，修改定时器状态 */
+    swtmr->state = (U8)OS_TIMER_FREE;
+    SWTMR_CREATE_DEL_LOCK();
+    swtmr->next = g_tmrFreeList.freeList;
+    g_tmrFreeList.freeList = swtmr;
+    SWTMR_CREATE_DEL_UNLOCK();
+    OsIntRestore(intSave);
+}
+#else
 OS_SEC_L2_TEXT void OsSwTmrDelete(struct TagSwTmrCtrl *swtmr)
 {
     /*
@@ -111,6 +170,7 @@ OS_SEC_L2_TEXT void OsSwTmrDelete(struct TagSwTmrCtrl *swtmr)
     g_tmrFreeList = swtmr;
     swtmr->state = (U8)OS_TIMER_FREE;
 }
+#endif
 
 /*
  * 描述：软件定时器的启动接口
@@ -149,6 +209,9 @@ OS_SEC_L2_TEXT U32 OsSwTmrStartTimer(TimerHandle tmrHandle)
     }
 
     OsSwTmrStart(swtmr, swtmr->idxRollNum);
+#if defined(OS_OPTION_TICKLESS)
+    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+#endif
 
     OsSwtmrIqrSplUnlock(swtmr, intSave);
 
@@ -189,6 +252,10 @@ OS_SEC_L2_TEXT U32 OsSwTmrStopTimer(TimerHandle tmrHandle)
      */
     OsSwTmrStop(swtmr, FALSE);
 
+#if defined(OS_OPTION_TICKLESS)
+    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+#endif
+
     OsSwtmrIqrSplUnlock(swtmr, intSave);
     return OS_OK;
 }
@@ -222,6 +289,10 @@ OS_SEC_L2_TEXT U32 OsSwTmrRestartTimer(TimerHandle tmrHandle)
     }
 
     OsSwTmrStart(swtmr, swtmr->interval);
+
+#if defined(OS_OPTION_TICKLESS)
+    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+#endif
 
     OsSwtmrIqrSplUnlock(swtmr, intSave);
 

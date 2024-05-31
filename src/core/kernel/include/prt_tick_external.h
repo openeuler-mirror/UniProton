@@ -39,6 +39,21 @@ extern void OsTickForwardISR(void);
 #endif
 
 extern U32 g_cyclePerTick;
+
+#if defined(OS_OPTION_TICKLESS)
+typedef U64 (*GetNearestTickFunc)(U32 coreID);
+typedef bool (*CheckTickProcessFunc)(U32 coreID);
+
+extern GetNearestTickFunc g_getTskDlyNearestTick;
+extern GetNearestTickFunc g_getSwtmrNearestTick;
+extern GetNearestTickFunc g_getCpupNearestTick;
+
+extern CheckTickProcessFunc g_checkTskDlyTickProcess;
+extern CheckTickProcessFunc g_checkSwtmrTickProcess;
+extern CheckTickProcessFunc g_checkCpupTickProcess;
+
+#endif
+
 OS_SEC_ALW_INLINE INLINE U32 OsGetCyclePerTick(void)
 {
     return g_cyclePerTick;

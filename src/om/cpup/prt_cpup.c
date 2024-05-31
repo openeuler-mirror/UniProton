@@ -34,6 +34,10 @@ OS_SEC_BSS U32 g_tickCount;
 /* CPU占用率采样周期值 */
 OS_SEC_BSS U64 g_baseValue;
 
+#if defined(OS_OPTION_TICKLESS)
+/* 周期采样时，下次计算CPU占用率的Tick刻度 */
+OS_SEC_BSS U64 g_cpupNextTick;
+#endif
 OS_SEC_L4_TEXT U32 OsCpupRegister(struct CpupModInfo *modInfo)
 {
     U32 ret;

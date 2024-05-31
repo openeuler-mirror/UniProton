@@ -160,10 +160,18 @@
 /*
  * 模块内全局变量声明
  */
+#if defined(OS_OPTION_SMP)
+#define CPU_SWTMR_SORT_LINK(cpu)    (&g_tmrSortLink[(cpu)])
+/* 软件定时器Sortlink */
+extern struct TagSwTmrSortLinkAttr g_tmrSortLink[OS_MAX_CORE_NUM];
+/* 软件定时器空闲链表 */
+extern struct TagSwTmrFreeList g_tmrFreeList;
+#else
 /* 软件定时器Sortlink */
 extern struct TagSwTmrSortLinkAttr g_tmrSortLink;
 /* 软件定时器空闲链表 */
 extern struct TagSwTmrCtrl *g_tmrFreeList;
+#endif
 
 /*
  * 模块内函数声明
@@ -291,7 +299,16 @@ extern void OsSwTmrDelete(struct TagSwTmrCtrl *swtmr);
  */
 extern U32 OsSwTmrGetOverrun(TimerHandle tmrHandle, U32 *overrun);
 
+#if defined(OS_OPTION_TICKLESS)
+extern void OsSwtmrNearestTicksRefresh(struct TagSwTmrSortLinkAttr *tmrSort);
+#endif
+
+#if defined (OS_OPTION_SMP)
+extern uintptr_t OsSwtmrIqrSplLock(struct TagSwTmrCtrl *swtmr);
+extern uintptr_t OsSwtmrIqrSplUnlock(struct TagSwTmrCtrl *swtmr, uintptr_t intSave);
+#else
 #define OsSwtmrIqrSplLock(a) OsIntLock()
 #define OsSwtmrIqrSplUnlock(a, b) OsIntRestore(b)
+#endif
 
 #endif /* PRT_SWTMR_INTERNAL_H */

@@ -14,6 +14,38 @@
  */
 #include "prt_cpup_thread_internal.h"
 
+#if defined(OS_OPTION_TICKLESS)
+/*
+ * 描述: 获取Cpup下次计算的Tick刻度
+ */
+OS_SEC_TEXT U64 OsCpupNextTickGet(U32 coreId)
+{
+    (void)coreId;
+    if (g_ticksPerSample > 0) {
+        return g_cpupNextTick;
+    }
+
+    return OS_TICKLESS_FOREVER;
+}
+
+/*
+ * 描述: 查看当前tick是否要统计一次Cpup，返回TRUE或者FALSE
+ */
+OS_SEC_TEXT bool OsCpupTargetCheck(void)
+{
+    if (g_ticksPerSample > 0) {
+        if (g_cpupNextTick != OS_TICKLESS_FOREVER) {
+            if (g_cpupNextTick <= g_uniTicks) {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+#endif
+
 OS_SEC_L4_TEXT U32 OsCpupReg(struct CpupModInfo *modInfo)
 {
     if (modInfo->cpupWarnFlag == TRUE) {
@@ -38,6 +70,12 @@ OS_SEC_L4_TEXT U32 OsCpupReg(struct CpupModInfo *modInfo)
 OS_SEC_L4_TEXT void OsCpupGlobalInit(void)
 {
     if (g_ticksPerSample != 0) {
+#if defined(OS_OPTION_TICKLESS)
+        /* 这里首次计算CPUP的时刻为一个采样周期的tick刻度 */
+        g_cpupNextTick = g_ticksPerSample;
+        g_getCpupNearestTick = OsCpupNextTickGet;
+        g_checkCpupTickProcess = (CheckTickProcessFunc)OsCpupTargetCheck;
+#endif
         g_tickTaskEntry = (TickEntryFunc)OsCpupThreadTickTask;
     }
 

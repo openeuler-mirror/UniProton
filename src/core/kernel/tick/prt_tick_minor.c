@@ -27,6 +27,7 @@ OS_SEC_L2_TEXT U32 PRT_TickPerSecondGet(void)
  */
 OS_SEC_TEXT void OsTickTailProcActivate(void)
 {
+    
 #if !defined(OS_OPTION_TICK_USE_HWTMR)
     if (g_tickModInfo.tickPerSecond != 0) {
         TICK_NO_RESPOND_CNT++;

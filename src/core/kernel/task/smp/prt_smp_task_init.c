@@ -30,6 +30,36 @@ static OS_SEC_L4_TEXT void OsOnlineCoreAdd(U32 coreId)
     GET_RUNQ(coreId)->online = TRUE;
 }
 
+#if defined(OS_OPTION_TICKLESS)
+OS_SEC_TEXT U64 OsTskDlyNearestTickGet(U32 coreID)
+{
+    U64 ticks;
+    struct TagOsTskSortedDelayList *tskDlyBase = CPU_TSK_DELAY_BASE(coreID);
+
+    CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase);
+    ticks = tskDlyBase->nearestTicks;
+    CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase);
+
+    return ticks;
+}
+
+OS_SEC_TEXT bool OsTskDlyTargetCheck(U32 coreID)
+{
+    bool target = FALSE;
+    struct TagOsTskSortedDelayList *tskDlyBase = CPU_TSK_DELAY_BASE(coreID);
+
+    CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase);
+    if (tskDlyBase->nearestTicks != OS_TICKLESS_FOREVER) {
+        if (tskDlyBase->nearestTicks <= g_uniTicks) {
+            target = TRUE;
+        }
+    }
+    CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase);
+
+    return target;
+}
+
+#endif
 /*
  * 描述：task first time switch
  * 输入：none
@@ -177,6 +207,10 @@ OS_SEC_ALW_INLINE INLINE void OsTskSmpDelaySysInit(void)
         tskDlyBase->nearestTicks = OS_TICKLESS_FOREVER;
         OsSpinLockInitInner(&tskDlyBase->spinLock);
     }
+#if defined(OS_OPTION_TICKLESS)
+    g_getTskDlyNearestTick = OsTskDlyNearestTickGet;
+    g_checkTskDlyTickProcess = OsTskDlyTargetCheck;
+#endif
     return;
 }
 OS_SEC_ALW_INLINE INLINE U32 OsTskInitZombieTask(void)
