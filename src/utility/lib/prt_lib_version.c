@@ -16,7 +16,7 @@
 #include "prt_sys.h"
 #include "prt_cpu_external.h"
 
-#define OS_VER "UniProton 22.03"
+#define OS_VER "UniProton 24.03-LTS"
 
 /* 宏展开优先展开参数，但是#会阻止参数展开，故需要定义另外一个宏 */
 OS_SEC_DATA char g_osOuterVer[OS_SYS_OS_VER_LEN] = { OS_VER };
