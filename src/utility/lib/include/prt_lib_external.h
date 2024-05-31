@@ -173,5 +173,56 @@ OS_SEC_ALW_INLINE INLINE bool OsCheckAddrOffsetOverflow(uintptr_t base, size_t s
     return (base + size) < base;
 }
 
+/* LEB编码的数据操作 */
+#define LEB128_STEP_SIZE 0x7U
+#define LEB128_MAX_VALUE 0x7FU
 
+OS_SEC_ALW_INLINE INLINE U64 OsGetUleb(U8 **current, U8 *end)
+{
+    U8 *cur = *current;
+    U64 value;
+    U32 shift;
+
+    for (shift = 0, value = 0; cur < end; shift += LEB128_STEP_SIZE) {
+        if (((shift + LEB128_STEP_SIZE) > OS_BITS_PER_BYTE * sizeof(value)) &&
+            ((*cur & LEB128_MAX_VALUE) >= (1U << (OS_BITS_PER_BYTE * sizeof(value) - shift)))) {
+            cur = end + 1;
+            break;
+        }
+        value |= (((U64)(*cur) & LEB128_MAX_VALUE) << shift);
+        if ((*cur++ & OS_BIT7_MASK) == 0) {
+            break;
+        }
+    }
+    *current = cur;
+
+    return value;
+}
+
+/*
+ * 描述：解析sleb128（Signed Little Endian Base 128）编码
+ */
+OS_SEC_ALW_INLINE INLINE S64 OsGetSleb(U8 **current, U8 *end)
+{
+    U8 *cur = *current;
+    U64 value;
+    U32 shift;
+
+    for (shift = 0, value = 0; cur < end; shift += LEB128_STEP_SIZE) {
+        if (((shift + LEB128_STEP_SIZE) > OS_BITS_PER_BYTE * sizeof(value)) &&
+            ((*cur & LEB128_MAX_VALUE) >= (1U << (OS_BITS_PER_BYTE * sizeof(value) - shift)))) {
+            cur = end + 1;
+            break;
+        }
+        value |= (((U64)(*cur) & LEB128_MAX_VALUE) << shift);
+        if ((*cur & OS_BIT7_MASK) == 0) {
+            /* 存放的是由符号整形数值，需要相应的进行符号位扩展 */
+            value |= (((U64)(-((S64)(((U64)(*cur++)) & OS_BIT6_MASK)))) << shift);
+            break;
+        }
+    }
+    *current = cur;
+
+    return (S64)value;
+}
 #endif /* PRT_LIB_EXTERNAL_H */

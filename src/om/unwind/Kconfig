@@ -1,0 +1,3 @@
+config OS_OPTION_STACKTRACE
+    bool "Whether The stacktreace function is supported."
+    default n

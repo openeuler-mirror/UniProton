@@ -61,6 +61,8 @@ extern U8 g_maxNumOfCores;
 #define OS_CORE_MASK U32
 #endif
 
+#define OS_SYS_CONTEXT_PID          0xFFFFFFFFU
+
 extern U32 g_tskBaseId;
 #if !defined(OS_OPTION_SMP) // AMP
 struct TagOsRunQue {
