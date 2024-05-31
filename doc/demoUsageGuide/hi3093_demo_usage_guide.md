@@ -1,7 +1,7 @@
 # 开发环境说明
 - 开发平台：armv8
 - 芯片型号：hi3093
-- OS版本信息：UniProton 22.03
+- OS版本信息：UniProton 24.03-LTS
 - 集成开发环境：UniProton-docker
 
 ## 实现过程

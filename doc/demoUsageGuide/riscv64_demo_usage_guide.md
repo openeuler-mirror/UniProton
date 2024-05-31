@@ -2,7 +2,7 @@
 
 - 开发平台：qemu-system-riscv64
 - 芯片型号： virt
-- OS版本信息：UniProton 22.03
+- OS版本信息：UniProton 24.03-LTS
 
 ## 实现过程
 

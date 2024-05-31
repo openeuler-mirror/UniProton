@@ -4,7 +4,7 @@
 ## 开发环境说明
 - 开发平台：cortex_m4
 - 芯片型号：stm32f407
-- OS版本信息：UniProton 22.03
+- OS版本信息：UniProton 24.03-LTS
 - 集成开发环境：UniProton-docker
 
 ## 实现过程
