@@ -12,24 +12,39 @@
 #include "prt_tick.h"
 #include "cpu_config.h"
 #include "print.h"
+#include "demo.h"
+
+#define DEMO_HAL_TIMER
 
 TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
-void TestTaskEntry()
+static void Test_Demo()
 {
-    PRT_Printf("Hello, UniProton!\n");
-
+    PRT_Printf("Test Demo\n");
     for(int cnt = 0; cnt < 5; cnt++)
     {
         PRT_Printf("count = %d\n", cnt);
-        PRT_ClkDelayMs(1000);
+        PRT_TaskDelay(1000);
     }
+    PRT_Printf("Test finish!\n");
+}
 
-    PRT_Printf("Finish!\n");
+void TestTaskEntry()
+{
+    PRT_Printf("Hello, UniProton!\n");
+    PRT_Printf("TL3588-EVM @ %s %s\n", __DATE__, __TIME__);
 
 #if defined(TESTSUITE_CASE)
     Init(0, 0, 0, 0);
+#elif defined(DEMO_HAL_GPIO)
+    GPIO_Demo();
+#elif defined(DEMO_HAL_UART)
+    UART_Demo();
+#elif defined(DEMO_HAL_TIMER)
+    TIMER_Demo();
+#else
+    Test_Demo();
 #endif
 }
 
