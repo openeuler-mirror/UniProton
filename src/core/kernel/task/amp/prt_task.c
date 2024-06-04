@@ -45,11 +45,6 @@ OS_SEC_TEXT void OsTskIdleBgd(void)
     while (TRUE) {
         OS_MHOOK_ACTIVATE_PARA0(OS_HOOK_IDLE_PERIOD);
 
-#if defined(OS_OPTION_POWEROFF)
-        if (g_sysPowerOffHook != NULL && g_sysPowerOffFlag) {
-            g_sysPowerOffHook();
-        }
-#endif
         /* 防止g_taskCoreSleep中间被修改后，判空无效 */
         coreSleep = g_taskCoreSleep;
         if (coreSleep != NULL) {

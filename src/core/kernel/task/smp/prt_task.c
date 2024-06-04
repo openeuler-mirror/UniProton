@@ -43,15 +43,6 @@ OS_SEC_L2_TEXT void OsIdleTaskExe(void) {
 
     OS_MHOOK_ACTIVATE_PARA0(OS_HOOK_IDLE_PERIOD);
 
-#if defined(OS_OPTION_POWEROFF)
-        if (g_sysPowerOffHook != NULL && g_sysPowerOffFlag) {
-            U32 coreId = OsGetCoreID();
-            if (coreId == g_cfgPrimaryCore) {
-                g_sysPowerOffHook();
-            }
-        }
-#endif
-
     coreSleep = g_taskCoreSleep;
     if (coreSleep != NULL) {
         coreSleep();

@@ -51,7 +51,6 @@ OS_SEC_L4_TEXT void OsSmpWakeUpSecondaryCore(void)
 OS_SEC_TEXT void OsCpuPowerOff(void)
 {
     U32 ret;
-    uintptr_t intSave;
 
     U32 coreId;
     U32 baseMpidr;
@@ -64,7 +63,6 @@ OS_SEC_TEXT void OsCpuPowerOff(void)
         OsHwiMcTrigger(OS_TYPE_TRIGGER_TO_OTHER, 0, OS_HWI_IPI_NO_02);
     }
     
-    intSave = PRT_HwiLock();
     /* 去使能所有中断，防止pending中断遗留，导致下次拉核导致程序跑飞 */
     if (coreId == g_cfgPrimaryCore) {
         OsHwiDisableAll();
@@ -90,15 +88,11 @@ OS_SEC_TEXT void OsCpuPowerOff(void)
     os_asm_invalidate_icache_all();
     os_asm_clean_dcache_all();
 
-    /* 清除中断Active状态 */
-    OsHwiClear(OS_HWI_IPI_NO_02); /* 基于中断的power off */
-    OsHwiClear(OS_HWI_IPI_NO_07); /* 基于消息的power off */
-
     /* SMC陷入异常 */
     (void)OsInvokePsciSmc(PSCI_FN_CPU_OFF, 0, 0, 0);
 
-    /* 正常offline的话不会来到这里 */
-    PRT_HwiRestore(intSave);
-    while (1);
+    while (1) {
+        OS_EMBED_ASM("wfe":::"memory");
+    }
 }
 #endif

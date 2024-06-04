@@ -421,6 +421,24 @@ OS_SEC_ALW_INLINE INLINE U32 PRT_IdleHookDel(PrtIdleHook hook)
 extern enum SysThreadType PRT_CurThreadTypeNoIntLock(void);
 #endif
 
+#if defined(OS_OPTION_POWEROFF)
+/*
+ * @brief 系统下线
+ *
+ * @par 描述
+ *
+ * @attention
+ *
+ * @param 无。
+ *
+ * @retval 无
+ * @par 依赖
+ * <ul><li>prt_sys.h：该接口声明所在的头文件。</li></ul>
+ * @see
+ */
+extern void PRT_SysPowerOff(void);
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 }
