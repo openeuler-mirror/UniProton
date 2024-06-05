@@ -21,6 +21,10 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U32 g_swtmrId;
 extern U32 PRT_Printf(const char *format, ...);
 
+#if defined(OS_OPTION_OPENAMP)
+unsigned int is_tty_ready(void);
+#endif
+
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
@@ -235,6 +239,12 @@ void Test1TaskEntry()
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
     micaShellInit();
+#endif
+
+#if defined(OS_OPTION_OPENAMP)
+    while (!is_tty_ready()) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+    }
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)

@@ -296,9 +296,7 @@ list(APPEND  MUSL_STDLIB_SOURCE
 )
 
 # 适配stdio
-if (NOT (${CPU_TYPE} STREQUAL "hi3093"))
-    file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
-endif()
+file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
 
 list(APPEND MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/lseek.c
@@ -337,7 +335,7 @@ list(REMOVE_ITEM MUSL_STDIO_SOURCE
 )
 endif()
 
-if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp")
+if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp" OR ${CPU_TYPE} STREQUAL "hi3093")
 list(REMOVE_ITEM MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/perror.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/printf.c

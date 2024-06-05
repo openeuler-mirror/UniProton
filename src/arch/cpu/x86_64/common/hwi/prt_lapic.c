@@ -4,6 +4,8 @@
 
 #define LAPIC_LVT_TIMER_PERIODIC      (1 << 17)
 
+void OsCycleInit(void);
+
 void OsReadCpuInfo(U32 id, CpuInfo *info)
 {
     __asm__ volatile("cpuid" : "=a"(info->eax), "=b"(info->ebx), "=c"(info->ecx), "=d"(info->edx) : "a"(id));
@@ -55,6 +57,8 @@ bool OsSupportX2Apic(void)
 U32 OsLapicInit(void)
 {
     U64 msrValue;
+
+    OsCycleInit();
 
     if (OsSupportApic() == FALSE) {
         printf(" CPU not support apic ");

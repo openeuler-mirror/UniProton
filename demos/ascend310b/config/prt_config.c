@@ -55,11 +55,19 @@ U32 OsMemConfigInit(void)
     return OsMemDefPtInit();
 }
 
+#if defined(OS_ARCH_ARMV8)
+U64 GetGenericTimerFreq(void);
+#endif
+
 U32 OsSystemReg(void)
 {
     struct SysModInfo sysModInfo;
 
+#if defined(OS_ARCH_ARMV8)
+    sysModInfo.systemClock = (U32)GetGenericTimerFreq();
+#else
     sysModInfo.systemClock = OS_SYS_CLOCK;
+#endif
     sysModInfo.cpuType = OS_CPU_TYPE;
     sysModInfo.sysTimeHook = OS_SYS_TIME_HOOK;
 #if defined(OS_OPTION_SMP)
