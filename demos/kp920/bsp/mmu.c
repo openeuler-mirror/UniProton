@@ -37,7 +37,7 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
     {
         .virt      = MMU_OPENAMP_ADDR,
         .phys      = MMU_OPENAMP_ADDR,
-        .size      = MMU_OPENAMP_ADDR_LEN,
+        .size      = OPENAMP_SHM_SIZE,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {

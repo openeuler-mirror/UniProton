@@ -5,14 +5,22 @@
 #include "prt_gic_external.h"
 
 /* 系统内存空间1 */
-#define MMU_IMAGE_ADDR             0x202783000000ULL
-#define MMU_IMAGE_ADDR_LEN         0x7D000000           /* 2000MB */
+#if defined(OS_OPTION_RSC_TABLE)
+    #define MMU_IMAGE_ADDR             0x30100000ULL
+    #define MMU_IMAGE_ADDR_LEN         0x1000000
+    #define MMU_OPENAMP_ADDR           0x30000000ULL
+    #define OPENAMP_SHM_SIZE           0x100000
+#else
+    #define MMU_IMAGE_ADDR             0x202783000000ULL
+    #define MMU_IMAGE_ADDR_LEN         0x7D000000           /* 2000MB */
+    #define MMU_OPENAMP_ADDR           0x202780000000ULL
+    #define OPENAMP_SHM_SIZE           0x30000
+#endif
+
 #define MMU_GIC_ADDR               0xAA000000ULL        /* gicd */
 #define MMU_GICR0_ADDR             0xAA000000ULL        /* gicr die1 */
 #define MMU_GICR1_ADDR             0xAE000000ULL        /* gicr die0 */
 #define MMU_GIC_ADDR_LEN           0x1000000
-#define MMU_OPENAMP_ADDR           0x202780000000ULL
-#define MMU_OPENAMP_ADDR_LEN       0x30000
 #ifdef OS_GDB_STUB
 #define MMU_GDB_STUB_ADDR          0x202780030000ULL
 #endif

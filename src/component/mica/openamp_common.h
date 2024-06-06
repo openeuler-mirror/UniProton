@@ -16,7 +16,6 @@
 #define COMMON_H__
 
 #include "cpu_config.h"
-#include "test.h"
 #include "prt_buildef.h"
 
 #define VDEV_START_ADDR		MMU_OPENAMP_ADDR
