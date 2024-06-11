@@ -1,0 +1,726 @@
+diff -urN lwip-2.1.3/CMakeLists.txt lwip/CMakeLists.txt
+--- lwip-2.1.3/CMakeLists.txt	2021-11-10 19:25:04.000000000 +0800
++++ lwip/CMakeLists.txt	2024-07-04 14:51:45.110960695 +0800
+@@ -1,20 +1,92 @@
+-cmake_minimum_required(VERSION 3.7)
+-
+-project(lwIP)
+-
+-set(LWIP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+-include(src/Filelists.cmake)
+-
+-# Package generation
+-set(CPACK_SOURCE_GENERATOR "ZIP")
+-set(CPACK_SOURCE_PACKAGE_DESCRIPTION_SUMMARY "lwIP lightweight IP stack")
+-set(CPACK_PACKAGE_VERSION_MAJOR "${LWIP_VERSION_MAJOR}")
+-set(CPACK_PACKAGE_VERSION_MINOR "${LWIP_VERSION_MINOR}")
+-set(CPACK_PACKAGE_VERSION_PATCH "${LWIP_VERSION_REVISION}")
+-set(CPACK_SOURCE_IGNORE_FILES "/build/;${CPACK_SOURCE_IGNORE_FILES};.git")
+-set(CPACK_SOURCE_PACKAGE_FILE_NAME "lwip-${LWIP_VERSION_MAJOR}.${LWIP_VERSION_MINOR}.${LWIP_VERSION_REVISION}")
+-include(CPack)
+-
+-# Target for package generation
+-add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+-add_dependencies(dist lwipdocs)
++cmake_minimum_required(VERSION 3.14.1) # cmake最低版本要求
++
++project(lwip LANGUAGES C ASM) # 项目名字为lwip
++
++############################## 外部传入变量 ##############################
++set(HOME_PATH "$ENV{HOME_PATH}" )
++set(CPU_TYPE "$ENV{CPU_TYPE}" )
++set(LWIP_SRC_PATH ${HOME_PATH}/src/net/lwip)
++
++##############################include 头文件##############################
++# 添加头文件
++include_directories(
++	# 安全函数头文件
++	${HOME_PATH}/platform/libboundscheck/include
++
++	# os头文件
++	${HOME_PATH}/src/arch/include
++	${HOME_PATH}/src/core/ipc/include
++	${HOME_PATH}/src/core/kernel/include
++	${HOME_PATH}/src/include/uapi
++	${HOME_PATH}/src/mem/include
++	${HOME_PATH}/src/om/include
++	${HOME_PATH}/src/utility/lib/include
++	${HOME_PATH}/src/osal/linux/include_self_def
++
++	# lwip头文件
++	${LWIP_SRC_PATH}/src/include
++	${HOME_PATH}/src/net/lwip_port
++	${HOME_PATH}/src/net/adapter/include
++
++	${HOME_PATH}/src/libc/musl/include
++	${HOME_PATH}/src/libc/litelibc/include
++)
++
++##############################添加要编译的.c文件##############################
++file(GLOB_RECURSE LWIP_SRC  ${LWIP_SRC_PATH}/src/api/*.c 
++							${LWIP_SRC_PATH}/src/core/*.c
++							${LWIP_SRC_PATH}/src/core/ipv4/*.c
++							${LWIP_SRC_PATH}/src/core/ipv6/*.c
++							${LWIP_SRC_PATH}/src/netif/*.c
++							${LWIP_SRC_PATH}/src/netif/ppp/*.c
++							${LWIP_SRC_PATH}/src/netif/ppp/polarssl/*.c)
++
++# 添加要编译的.c文件
++set(LWIP_SRCS
++	# lwip port
++	${HOME_PATH}/src/net/adapter/src/sys_arch.c
++
++	# lwip-2.1.3
++	${LWIP_SRC}
++
++	# lwip register
++	${HOME_PATH}/src/net/adapter/src/net_register.c
++)
++
++##############################设置各个平台lwip库的名字############
++set(LIB_LWIP_NAME "lwip")
++
++#编译生成lwip.a库
++add_library(${LIB_LWIP_NAME} STATIC ${LWIP_SRCS})
++
++target_compile_options(lwip PUBLIC
++		-Wno-bad-function-cast
++		-Wno-unused-value
++		-Wno-switch-default
++		-Wno-float-equal
++		-Wno-unused-but-set-variable
++		-Wno-discarded-qualifiers
++		-Wno-implicit-fallthrough
++		-Wno-cast-function-type
++		-Werror=incompatible-pointer-types
++        # -Werror=missing-prototypes
++        -Werror=missing-parameter-type
++        # -Werror=missing-declarations
++        -Wno-error=implicit-function-declaration
++        -Werror=return-type
++		-Wno-error=attributes
++		-Wno-error=packed
++		-Wno-error=unused-variable
++		-Wno-error=int-conversion
++		-Wno-error=comment
++		-Wno-error=nested-externs
++        )
++
++list(APPEND ALL_OBJECT_LIBRARYS lwip)
++set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
++
++#拷贝头文件到output目录
++install(DIRECTORY
++    ${CMAKE_CURRENT_SOURCE_DIR}/src/include
++    DESTINATION lwip/src/
++)
+diff -urN lwip-2.1.3/src/api/netdb.c lwip/src/api/netdb.c
+--- lwip-2.1.3/src/api/netdb.c	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/api/netdb.c	2024-07-04 14:51:45.050960716 +0800
+@@ -377,7 +377,6 @@
+     /* set up sockaddr */
+     inet6_addr_from_ip6addr(&sa6->sin6_addr, ip_2_ip6(&addr));
+     sa6->sin6_family = AF_INET6;
+-    sa6->sin6_len = sizeof(struct sockaddr_in6);
+     sa6->sin6_port = lwip_htons((u16_t)port_nr);
+     sa6->sin6_scope_id = ip6_addr_zone(ip_2_ip6(&addr));
+     ai->ai_family = AF_INET6;
+@@ -388,7 +387,6 @@
+     /* set up sockaddr */
+     inet_addr_from_ip4addr(&sa4->sin_addr, ip_2_ip4(&addr));
+     sa4->sin_family = AF_INET;
+-    sa4->sin_len = sizeof(struct sockaddr_in);
+     sa4->sin_port = lwip_htons((u16_t)port_nr);
+     ai->ai_family = AF_INET;
+ #endif /* LWIP_IPV4 */
+diff -urN lwip-2.1.3/src/api/sockets.c lwip/src/api/sockets.c
+--- lwip-2.1.3/src/api/sockets.c	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/api/sockets.c	2024-07-04 14:51:45.050960716 +0800
+@@ -87,7 +87,6 @@
+ 
+ #if LWIP_IPV4
+ #define IP4ADDR_PORT_TO_SOCKADDR(sin, ipaddr, port) do { \
+-      (sin)->sin_len = sizeof(struct sockaddr_in); \
+       (sin)->sin_family = AF_INET; \
+       (sin)->sin_port = lwip_htons((port)); \
+       inet_addr_from_ip4addr(&(sin)->sin_addr, ipaddr); \
+@@ -99,7 +98,6 @@
+ 
+ #if LWIP_IPV6
+ #define IP6ADDR_PORT_TO_SOCKADDR(sin6, ipaddr, port) do { \
+-      (sin6)->sin6_len = sizeof(struct sockaddr_in6); \
+       (sin6)->sin6_family = AF_INET6; \
+       (sin6)->sin6_port = lwip_htons((port)); \
+       (sin6)->sin6_flowinfo = 0; \
+@@ -695,9 +693,9 @@
+     }
+ 
+     IPADDR_PORT_TO_SOCKADDR(&tempaddr, &naddr, port);
+-    if (*addrlen > tempaddr.sa.sa_len) {
+-      *addrlen = tempaddr.sa.sa_len;
+-    }
++    // if (*addrlen > tempaddr.sa.sa_len) {
++    //   *addrlen = tempaddr.sa.sa_len;
++    // }
+     MEMCPY(addr, &tempaddr, *addrlen);
+ 
+     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_accept(%d) returning new sock=%d addr=", s, newsock));
+@@ -1040,11 +1038,11 @@
+ #endif /* LWIP_IPV4 && LWIP_IPV6 */
+ 
+   IPADDR_PORT_TO_SOCKADDR(&saddr, fromaddr, port);
+-  if (*fromlen < saddr.sa.sa_len) {
+-    truncated = 1;
+-  } else if (*fromlen > saddr.sa.sa_len) {
+-    *fromlen = saddr.sa.sa_len;
+-  }
++  // if (*fromlen < saddr.sa.sa_len) {
++  //   truncated = 1;
++  // } else if (*fromlen > saddr.sa.sa_len) {
++  //   *fromlen = saddr.sa.sa_len;
++  // }
+   MEMCPY(from, &saddr, *fromlen);
+   return truncated;
+ }
+@@ -2739,9 +2737,9 @@
+   ip_addr_debug_print_val(SOCKETS_DEBUG, naddr);
+   LWIP_DEBUGF(SOCKETS_DEBUG, (" port=%"U16_F")\n", port));
+ 
+-  if (*namelen > saddr.sa.sa_len) {
+-    *namelen = saddr.sa.sa_len;
+-  }
++  // if (*namelen > saddr.sa.sa_len) {
++  //   *namelen = saddr.sa.sa_len;
++  // }
+   MEMCPY(name, &saddr, *namelen);
+ 
+   sock_set_errno(sock, 0);
+diff -urN lwip-2.1.3/src/include/lwip/arch.h lwip/src/include/lwip/arch.h
+--- lwip-2.1.3/src/include/lwip/arch.h	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/include/lwip/arch.h	2024-07-04 14:51:45.070960708 +0800
+@@ -37,14 +37,7 @@
+ #ifndef LWIP_HDR_ARCH_H
+ #define LWIP_HDR_ARCH_H
+ 
+-#ifndef LITTLE_ENDIAN
+-#define LITTLE_ENDIAN 1234
+-#endif
+-
+-#ifndef BIG_ENDIAN
+-#define BIG_ENDIAN 4321
+-#endif
+-
++#include <endian.h>
+ #include "arch/cc.h"
+ 
+ /**
+diff -urN lwip-2.1.3/src/include/lwip/if_api.h lwip/src/include/lwip/if_api.h
+--- lwip-2.1.3/src/include/lwip/if_api.h	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/include/lwip/if_api.h	2024-07-04 14:51:45.070960708 +0800
+@@ -44,6 +44,7 @@
+ #if LWIP_SOCKET /* don't build if not configured for use in lwipopts.h */
+ 
+ #include "lwip/netif.h"
++#include <net/if.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -urN lwip-2.1.3/src/include/lwip/inet.h lwip/src/include/lwip/inet.h
+--- lwip-2.1.3/src/include/lwip/inet.h	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/include/lwip/inet.h	2024-07-04 14:51:45.080960704 +0800
+@@ -45,6 +45,9 @@
+ #include "lwip/ip_addr.h"
+ #include "lwip/ip6_addr.h"
+ 
++#include <netinet/in.h>
++#include <sys/socket.h>
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -55,70 +58,70 @@
+ typedef u32_t in_addr_t;
+ #endif
+ 
+-struct in_addr {
+-  in_addr_t s_addr;
+-};
+-
+-struct in6_addr {
+-  union {
+-    u32_t u32_addr[4];
+-    u8_t  u8_addr[16];
+-  } un;
+-#define s6_addr  un.u8_addr
+-};
++// struct in_addr {
++//   in_addr_t s_addr;
++// };
++
++// struct in6_addr {
++//   union {
++//     u32_t u32_addr[4];
++//     u8_t  u8_addr[16];
++//   } un;
++// #define s6_addr  un.u8_addr
++// };
+ 
+ /** 255.255.255.255 */
+-#define INADDR_NONE         IPADDR_NONE
++// #define INADDR_NONE         IPADDR_NONE
+ /** 127.0.0.1 */
+-#define INADDR_LOOPBACK     IPADDR_LOOPBACK
++// #define INADDR_LOOPBACK     IPADDR_LOOPBACK
+ /** 0.0.0.0 */
+-#define INADDR_ANY          IPADDR_ANY
++// #define INADDR_ANY          IPADDR_ANY
+ /** 255.255.255.255 */
+-#define INADDR_BROADCAST    IPADDR_BROADCAST
++// #define INADDR_BROADCAST    IPADDR_BROADCAST
+ 
+ /** This macro can be used to initialize a variable of type struct in6_addr
+     to the IPv6 wildcard address. */
+-#define IN6ADDR_ANY_INIT {{{0,0,0,0}}}
++// #define IN6ADDR_ANY_INIT {{{0,0,0,0}}}
+ /** This macro can be used to initialize a variable of type struct in6_addr
+     to the IPv6 loopback address. */
+-#define IN6ADDR_LOOPBACK_INIT {{{0,0,0,PP_HTONL(1)}}}
++// #define IN6ADDR_LOOPBACK_INIT {{{0,0,0,PP_HTONL(1)}}}
+ /** This variable is initialized by the system to contain the wildcard IPv6 address. */
+-extern const struct in6_addr in6addr_any;
++// extern const struct in6_addr in6addr_any;
+ 
+ /* Definitions of the bits in an (IPv4) Internet address integer.
+ 
+    On subnets, host and network parts are found according to
+    the subnet mask, not these masks.  */
+-#define IN_CLASSA(a)        IP_CLASSA(a)
+-#define IN_CLASSA_NET       IP_CLASSA_NET
+-#define IN_CLASSA_NSHIFT    IP_CLASSA_NSHIFT
+-#define IN_CLASSA_HOST      IP_CLASSA_HOST
+-#define IN_CLASSA_MAX       IP_CLASSA_MAX
+-
+-#define IN_CLASSB(b)        IP_CLASSB(b)
+-#define IN_CLASSB_NET       IP_CLASSB_NET
+-#define IN_CLASSB_NSHIFT    IP_CLASSB_NSHIFT
+-#define IN_CLASSB_HOST      IP_CLASSB_HOST
+-#define IN_CLASSB_MAX       IP_CLASSB_MAX
+-
+-#define IN_CLASSC(c)        IP_CLASSC(c)
+-#define IN_CLASSC_NET       IP_CLASSC_NET
+-#define IN_CLASSC_NSHIFT    IP_CLASSC_NSHIFT
+-#define IN_CLASSC_HOST      IP_CLASSC_HOST
++// #define IN_CLASSA(a)        IP_CLASSA(a)
++// #define IN_CLASSA_NET       IP_CLASSA_NET
++// #define IN_CLASSA_NSHIFT    IP_CLASSA_NSHIFT
++// #define IN_CLASSA_HOST      IP_CLASSA_HOST
++// #define IN_CLASSA_MAX       IP_CLASSA_MAX
++
++// #define IN_CLASSB(b)        IP_CLASSB(b)
++// #define IN_CLASSB_NET       IP_CLASSB_NET
++// #define IN_CLASSB_NSHIFT    IP_CLASSB_NSHIFT
++// #define IN_CLASSB_HOST      IP_CLASSB_HOST
++// #define IN_CLASSB_MAX       IP_CLASSB_MAX
++
++// #define IN_CLASSC(c)        IP_CLASSC(c)
++// #define IN_CLASSC_NET       IP_CLASSC_NET
++// #define IN_CLASSC_NSHIFT    IP_CLASSC_NSHIFT
++// #define IN_CLASSC_HOST      IP_CLASSC_HOST
+ #define IN_CLASSC_MAX       IP_CLASSC_MAX
+ 
+-#define IN_CLASSD(d)        IP_CLASSD(d)
++// #define IN_CLASSD(d)        IP_CLASSD(d)
+ #define IN_CLASSD_NET       IP_CLASSD_NET     /* These ones aren't really */
+ #define IN_CLASSD_NSHIFT    IP_CLASSD_NSHIFT  /*   net and host fields, but */
+ #define IN_CLASSD_HOST      IP_CLASSD_HOST    /*   routing needn't know. */
+ #define IN_CLASSD_MAX       IP_CLASSD_MAX
+ 
+-#define IN_MULTICAST(a)     IP_MULTICAST(a)
++// #define IN_MULTICAST(a)     IP_MULTICAST(a)
+ 
+-#define IN_EXPERIMENTAL(a)  IP_EXPERIMENTAL(a)
+-#define IN_BADCLASS(a)      IP_BADCLASS(a)
++// #define IN_EXPERIMENTAL(a)  IP_EXPERIMENTAL(a)
++// #define IN_BADCLASS(a)      IP_BADCLASS(a)
+ 
+-#define IN_LOOPBACKNET      IP_LOOPBACKNET
++// #define IN_LOOPBACKNET      IP_LOOPBACKNET
+ 
+ 
+ #ifndef INET_ADDRSTRLEN
+diff -urN lwip-2.1.3/src/include/lwip/sockets.h lwip/src/include/lwip/sockets.h
+--- lwip-2.1.3/src/include/lwip/sockets.h	2021-11-10 19:25:04.000000000 +0800
++++ lwip/src/include/lwip/sockets.h	2024-07-04 14:51:45.080960704 +0800
+@@ -50,6 +50,11 @@
+ #include "lwip/errno.h"
+ 
+ #include <string.h>
++#include <sys/socket.h>
++#include <sys/select.h>
++#include <net/if.h>
++#include <bits/alltypes.h>
++#include <netinet/in.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -58,7 +63,7 @@
+ /* If your port already typedef's sa_family_t, define SA_FAMILY_T_DEFINED
+    to prevent this code from redefining it. */
+ #if !defined(sa_family_t) && !defined(SA_FAMILY_T_DEFINED)
+-typedef u8_t sa_family_t;
++// typedef u8_t sa_family_t;
+ #endif
+ /* If your port already typedef's in_port_t, define IN_PORT_T_DEFINED
+    to prevent this code from redefining it. */
+@@ -67,43 +72,42 @@
+ #endif
+ 
+ #if LWIP_IPV4
+-/* members are in network byte order */
+-struct sockaddr_in {
+-  u8_t            sin_len;
+-  sa_family_t     sin_family;
+-  in_port_t       sin_port;
+-  struct in_addr  sin_addr;
+ #define SIN_ZERO_LEN 8
+-  char            sin_zero[SIN_ZERO_LEN];
+-};
++/* members are in network byte order */
++// struct sockaddr_in {
++//   sa_family_t     sin_family;
++//   in_port_t       sin_port;
++//   struct in_addr  sin_addr;
++
++//   char            sin_zero[SIN_ZERO_LEN];
++// };
+ #endif /* LWIP_IPV4 */
+ 
+ #if LWIP_IPV6
+-struct sockaddr_in6 {
+-  u8_t            sin6_len;      /* length of this structure    */
+-  sa_family_t     sin6_family;   /* AF_INET6                    */
+-  in_port_t       sin6_port;     /* Transport layer port #      */
+-  u32_t           sin6_flowinfo; /* IPv6 flow information       */
+-  struct in6_addr sin6_addr;     /* IPv6 address                */
+-  u32_t           sin6_scope_id; /* Set of interfaces for scope */
+-};
++// struct sockaddr_in6 {
++//   sa_family_t     sin6_family;   /* AF_INET6                    */
++//   in_port_t       sin6_port;     /* Transport layer port #      */
++//   u32_t           sin6_flowinfo; /* IPv6 flow information       */
++//   struct in6_addr sin6_addr;     /* IPv6 address                */
++//   u32_t           sin6_scope_id; /* Set of interfaces for scope */
++// };
+ #endif /* LWIP_IPV6 */
+ 
+-struct sockaddr {
+-  u8_t        sa_len;
+-  sa_family_t sa_family;
+-  char        sa_data[14];
+-};
+-
+-struct sockaddr_storage {
+-  u8_t        s2_len;
+-  sa_family_t ss_family;
+-  char        s2_data1[2];
+-  u32_t       s2_data2[3];
+-#if LWIP_IPV6
+-  u32_t       s2_data3[3];
+-#endif /* LWIP_IPV6 */
+-};
++// struct sockaddr {
++//   u8_t        sa_len;
++//   sa_family_t sa_family;
++//   char        sa_data[14];
++// };
++
++// struct sockaddr_storage {
++//   u8_t        s2_len;
++//   sa_family_t ss_family;
++//   char        s2_data1[2];
++//   u32_t       s2_data2[3];
++// #if LWIP_IPV6
++//   u32_t       s2_data3[3];
++// #endif /* LWIP_IPV6 */
++// };
+ 
+ /* If your port already typedef's socklen_t, define SOCKLEN_T_DEFINED
+    to prevent this code from redefining it. */
+@@ -117,33 +121,33 @@
+ #error "IOV_MAX larger than supported by LwIP"
+ #endif /* IOV_MAX */
+ 
+-#if !defined(iovec)
+-struct iovec {
+-  void  *iov_base;
+-  size_t iov_len;
+-};
+-#endif
+-
+-struct msghdr {
+-  void         *msg_name;
+-  socklen_t     msg_namelen;
+-  struct iovec *msg_iov;
+-  int           msg_iovlen;
+-  void         *msg_control;
+-  socklen_t     msg_controllen;
+-  int           msg_flags;
+-};
++// #if !defined(iovec)
++// struct iovec {
++//   void  *iov_base;
++//   size_t iov_len;
++// };
++// #endif
++
++// struct msghdr {
++//   void         *msg_name;
++//   socklen_t     msg_namelen;
++//   struct iovec *msg_iov;
++//   int           msg_iovlen;
++//   void         *msg_control;
++//   socklen_t     msg_controllen;
++//   int           msg_flags;
++// };
+ 
+ /* struct msghdr->msg_flags bit field values */
+-#define MSG_TRUNC   0x04
+-#define MSG_CTRUNC  0x08
++// #define MSG_TRUNC   0x04
++// #define MSG_CTRUNC  0x08
+ 
+ /* RFC 3542, Section 20: Ancillary Data */
+-struct cmsghdr {
+-  socklen_t  cmsg_len;   /* number of bytes, including header */
+-  int        cmsg_level; /* originating protocol */
+-  int        cmsg_type;  /* protocol-specific type */
+-};
++// struct cmsghdr {
++//   socklen_t  cmsg_len;   /* number of bytes, including header */
++//   int        cmsg_level; /* originating protocol */
++//   int        cmsg_type;  /* protocol-specific type */
++// };
+ /* Data section follows header and possible padding, typically referred to as
+       unsigned char cmsg_data[]; */
+ 
+@@ -155,35 +159,6 @@
+ #define ALIGN_H(size) (((size) + sizeof(long) - 1U) & ~(sizeof(long)-1U))
+ #define ALIGN_D(size) ALIGN_H(size)
+ 
+-#define CMSG_FIRSTHDR(mhdr) \
+-          ((mhdr)->msg_controllen >= sizeof(struct cmsghdr) ? \
+-           (struct cmsghdr *)(mhdr)->msg_control : \
+-           (struct cmsghdr *)NULL)
+-
+-#define CMSG_NXTHDR(mhdr, cmsg) \
+-        (((cmsg) == NULL) ? CMSG_FIRSTHDR(mhdr) : \
+-         (((u8_t *)(cmsg) + ALIGN_H((cmsg)->cmsg_len) \
+-                            + ALIGN_D(sizeof(struct cmsghdr)) > \
+-           (u8_t *)((mhdr)->msg_control) + (mhdr)->msg_controllen) ? \
+-          (struct cmsghdr *)NULL : \
+-          (struct cmsghdr *)((void*)((u8_t *)(cmsg) + \
+-                                      ALIGN_H((cmsg)->cmsg_len)))))
+-
+-#define CMSG_DATA(cmsg) ((void*)((u8_t *)(cmsg) + \
+-                         ALIGN_D(sizeof(struct cmsghdr))))
+-
+-#define CMSG_SPACE(length) (ALIGN_D(sizeof(struct cmsghdr)) + \
+-                            ALIGN_H(length))
+-
+-#define CMSG_LEN(length) (ALIGN_D(sizeof(struct cmsghdr)) + \
+-                           length)
+-
+-/* Set socket options argument */
+-#define IFNAMSIZ NETIF_NAMESIZE
+-struct ifreq {
+-  char ifr_name[IFNAMSIZ]; /* Interface name */
+-};
+-
+ /* Socket protocol types (TCP/UDP/RAW) */
+ #define SOCK_STREAM     1
+ #define SOCK_DGRAM      2
+@@ -192,58 +167,58 @@
+ /*
+  * Option flags per-socket. These must match the SOF_ flags in ip.h (checked in init.c)
+  */
+-#define SO_REUSEADDR   0x0004 /* Allow local address reuse */
+-#define SO_KEEPALIVE   0x0008 /* keep connections alive */
+-#define SO_BROADCAST   0x0020 /* permit to send and to receive broadcast messages (see IP_SOF_BROADCAST option) */
++// #define SO_REUSEADDR   0x0004 /* Allow local address reuse */
++// #define SO_KEEPALIVE   0x0008 /* keep connections alive */
++// #define SO_BROADCAST   0x0020 /* permit to send and to receive broadcast messages (see IP_SOF_BROADCAST option) */
+ 
+ 
+ /*
+  * Additional options, not kept in so_options.
+  */
+-#define SO_DEBUG        0x0001 /* Unimplemented: turn on debugging info recording */
+-#define SO_ACCEPTCONN   0x0002 /* socket has had listen() */
+-#define SO_DONTROUTE    0x0010 /* Unimplemented: just use interface addresses */
++// #define SO_DEBUG        0x0001 /* Unimplemented: turn on debugging info recording */
++// #define SO_ACCEPTCONN   0x0002 /* socket has had listen() */
++// #define SO_DONTROUTE    0x0010 /* Unimplemented: just use interface addresses */
+ #define SO_USELOOPBACK  0x0040 /* Unimplemented: bypass hardware when possible */
+-#define SO_LINGER       0x0080 /* linger on close if data present */
++// #define SO_LINGER       0x0080 /* linger on close if data present */
+ #define SO_DONTLINGER   ((int)(~SO_LINGER))
+-#define SO_OOBINLINE    0x0100 /* Unimplemented: leave received OOB data in line */
+-#define SO_REUSEPORT    0x0200 /* Unimplemented: allow local address & port reuse */
+-#define SO_SNDBUF       0x1001 /* Unimplemented: send buffer size */
+-#define SO_RCVBUF       0x1002 /* receive buffer size */
+-#define SO_SNDLOWAT     0x1003 /* Unimplemented: send low-water mark */
+-#define SO_RCVLOWAT     0x1004 /* Unimplemented: receive low-water mark */
+-#define SO_SNDTIMEO     0x1005 /* send timeout */
+-#define SO_RCVTIMEO     0x1006 /* receive timeout */
+-#define SO_ERROR        0x1007 /* get error status and clear */
+-#define SO_TYPE         0x1008 /* get socket type */
++// #define SO_OOBINLINE    0x0100 /* Unimplemented: leave received OOB data in line */
++// #define SO_REUSEPORT    0x0200 /* Unimplemented: allow local address & port reuse */
++// #define SO_SNDBUF       0x1001 /* Unimplemented: send buffer size */
++// #define SO_RCVBUF       0x1002 /* receive buffer size */
++// #define SO_SNDLOWAT     0x1003 /* Unimplemented: send low-water mark */
++// #define SO_RCVLOWAT     0x1004 /* Unimplemented: receive low-water mark */
++// #define SO_SNDTIMEO     0x1005 /* send timeout */
++// #define SO_RCVTIMEO     0x1006 /* receive timeout */
++// #define SO_ERROR        0x1007 /* get error status and clear */
++// #define SO_TYPE         0x1008 /* get socket type */
+ #define SO_CONTIMEO     0x1009 /* Unimplemented: connect timeout */
+-#define SO_NO_CHECK     0x100a /* don't create UDP checksum */
+-#define SO_BINDTODEVICE 0x100b /* bind to device */
++// #define SO_NO_CHECK     0x100a /* don't create UDP checksum */
++// #define SO_BINDTODEVICE 0x100b /* bind to device */
+ 
+ /*
+  * Structure used for manipulating linger option.
+  */
+-struct linger {
+-  int l_onoff;                /* option on/off */
+-  int l_linger;               /* linger time in seconds */
+-};
++// struct linger {
++//   int l_onoff;                /* option on/off */
++//   int l_linger;               /* linger time in seconds */
++// };
+ 
+ /*
+  * Level number for (get/set)sockopt() to apply to socket itself.
+  */
+-#define  SOL_SOCKET  0xfff    /* options for socket level */
++// #define  SOL_SOCKET  0xfff    /* options for socket level */
+ 
+ 
+-#define AF_UNSPEC       0
+-#define AF_INET         2
++// #define AF_UNSPEC       0
++// #define AF_INET         2
+ #if LWIP_IPV6
+-#define AF_INET6        10
++// #define AF_INET6        10
+ #else /* LWIP_IPV6 */
+-#define AF_INET6        AF_UNSPEC
++// #define AF_INET6        AF_UNSPEC
+ #endif /* LWIP_IPV6 */
+-#define PF_INET         AF_INET
+-#define PF_INET6        AF_INET6
+-#define PF_UNSPEC       AF_UNSPEC
++// #define PF_INET         AF_INET
++// #define PF_INET6        AF_INET6
++// #define PF_UNSPEC       AF_UNSPEC
+ 
+ #define IPPROTO_IP      0
+ #define IPPROTO_ICMP    1
+@@ -257,12 +232,12 @@
+ #define IPPROTO_RAW     255
+ 
+ /* Flags we can use with send and recv. */
+-#define MSG_PEEK       0x01    /* Peeks at an incoming message */
+-#define MSG_WAITALL    0x02    /* Unimplemented: Requests that the function block until the full amount of data requested can be returned */
+-#define MSG_OOB        0x04    /* Unimplemented: Requests out-of-band data. The significance and semantics of out-of-band data are protocol-specific */
+-#define MSG_DONTWAIT   0x08    /* Nonblocking i/o for this operation only */
+-#define MSG_MORE       0x10    /* Sender will send more */
+-#define MSG_NOSIGNAL   0x20    /* Uninmplemented: Requests not to send the SIGPIPE signal if an attempt to send is made on a stream-oriented socket that is no longer connected. */
++// #define MSG_PEEK       0x01    /* Peeks at an incoming message */
++// #define MSG_WAITALL    0x02    /* Unimplemented: Requests that the function block until the full amount of data requested can be returned */
++// #define MSG_OOB        0x04    /* Unimplemented: Requests out-of-band data. The significance and semantics of out-of-band data are protocol-specific */
++// #define MSG_DONTWAIT   0x08    /* Nonblocking i/o for this operation only */
++// #define MSG_MORE       0x10    /* Sender will send more */
++// #define MSG_NOSIGNAL   0x20    /* Uninmplemented: Requests not to send the SIGPIPE signal if an attempt to send is made on a stream-oriented socket that is no longer connected. */
+ 
+ 
+ /*
+@@ -304,29 +279,29 @@
+ /*
+  * Options and types for UDP multicast traffic handling
+  */
+-#define IP_MULTICAST_TTL   5
+-#define IP_MULTICAST_IF    6
+-#define IP_MULTICAST_LOOP  7
++// #define IP_MULTICAST_TTL   5
++// #define IP_MULTICAST_IF    6
++// #define IP_MULTICAST_LOOP  7
+ #endif /* LWIP_MULTICAST_TX_OPTIONS */
+ 
+ #if LWIP_IGMP
+ /*
+  * Options and types related to multicast membership
+  */
+-#define IP_ADD_MEMBERSHIP  3
+-#define IP_DROP_MEMBERSHIP 4
++// #define IP_ADD_MEMBERSHIP  3
++// #define IP_DROP_MEMBERSHIP 4
+ 
+-typedef struct ip_mreq {
+-    struct in_addr imr_multiaddr; /* IP multicast address of group */
+-    struct in_addr imr_interface; /* local IP address of interface */
+-} ip_mreq;
++// typedef struct ip_mreq {
++//     struct in_addr imr_multiaddr; /* IP multicast address of group */
++//     struct in_addr imr_interface; /* local IP address of interface */
++// } ip_mreq;
+ #endif /* LWIP_IGMP */
+ 
+ #if LWIP_IPV4
+-struct in_pktinfo {
+-  unsigned int   ipi_ifindex;  /* Interface index */
+-  struct in_addr ipi_addr;     /* Destination (from header) address */
+-};
++// struct in_pktinfo {
++//   unsigned int   ipi_ifindex;  /* Interface index */
++//   struct in_addr ipi_addr;     /* Destination (from header) address */
++// };
+ #endif /* LWIP_IPV4 */
+ 
+ #if LWIP_IPV6_MLD
+@@ -427,7 +402,7 @@
+ #define SIOCGHIWAT  _IOR('s',  1, unsigned long)  /* get high watermark */
+ #define SIOCSLOWAT  _IOW('s',  2, unsigned long)  /* set low watermark */
+ #define SIOCGLOWAT  _IOR('s',  3, unsigned long)  /* get low watermark */
+-#define SIOCATMARK  _IOR('s',  7, unsigned long)  /* at oob mark? */
++// #define SIOCATMARK  _IOR('s',  7, unsigned long)  /* at oob mark? */
+ #endif
+ 
+ /* commands for fnctl */
+@@ -519,10 +494,10 @@
+ #endif
+ 
+ #if LWIP_TIMEVAL_PRIVATE
+-struct timeval {
+-  long    tv_sec;         /* seconds */
+-  long    tv_usec;        /* and microseconds */
+-};
++// struct timeval {
++//   long    tv_sec;         /* seconds */
++//   long    tv_usec;        /* and microseconds */
++// };
+ #endif /* LWIP_TIMEVAL_PRIVATE */
+ 
+ #define lwip_socket_init() /* Compatibility define, no init needed. */
+@@ -609,7 +584,7 @@
+ int lwip_inet_pton(int af, const char *src, void *dst);
+ 
+ #if LWIP_COMPAT_SOCKETS
+-#if LWIP_COMPAT_SOCKETS != 2
++#if LWIP_COMPAT_SOCKETS == 3
+ /** @ingroup socket */
+ #define accept(s,addr,addrlen)                    lwip_accept(s,addr,addrlen)
+ /** @ingroup socket */

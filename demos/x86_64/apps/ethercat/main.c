@@ -15,6 +15,10 @@
 #include "show.h"
 #endif
 
+#if defined(LWIP_DEMO) && defined(OS_SUPPORT_NET)
+#include "i210.h"
+#endif
+
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(CXX_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
@@ -49,6 +53,10 @@ int modbus_client();
 
 #if defined(OS_OPTION_FORTE)
 void forte_init();
+#endif
+
+#if defined(LWIP_DEMO) && defined(OS_SUPPORT_NET)
+void lwip_test_start(void);
 #endif
 
 #if defined(OS_OPTION_OPENAMP)
@@ -108,6 +116,10 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
     printf("test entry\n");
+
+#if defined(LWIP_DEMO) && defined(OS_SUPPORT_NET)
+    lwip_test_start();
+#endif
 
 #if defined(FORTE_DEMO) && defined(OS_OPTION_FORTE)
     forte_init();
