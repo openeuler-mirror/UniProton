@@ -18,9 +18,7 @@
 #include "resource_table.h"
 #include "prt_hwi.h"
 #include "prt_sem.h"
-#if defined(OS_OPTION_POWEROFF)
-extern void OsPowerOffSetFlag(void);
-#endif
+#include "prt_sys.h"
 #if defined(OS_GDB_STUB)
 #include "prt_notifier.h"
 #endif
@@ -157,7 +155,7 @@ static void rpmsg_ipi_handler(void)
         rsc_table->rbufs.state = RBUF_STATE_RESTART;
         os_asm_invalidate_dcache_all();
 #endif
-        OsPowerOffSetFlag();
+        PRT_SysPowerOff();
 #endif
     }
 }

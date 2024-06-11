@@ -90,6 +90,28 @@ OS_SEC_TEXT void OsGicdDisableInt(U32 intId)
 }
 
 /*
+ * 描述: 清除SPI中断pending位, 调用者保证入参的有效性
+ */
+OS_SEC_TEXT void OsGicdClearPendingBit(U32 intId)
+{
+    // 每个寄存器对应32个中断，写1去使能中断，写0无效
+    OsGicSetReg(GICD_ICPENDR0_ADDR, GIC_IENABLE_INT_NUM, intId, 1);
+
+    OsGicdWaitCfgWork();
+}
+
+/*
+ * 描述: 清除SPI中断Active位, 调用者保证入参的有效性
+ */
+OS_SEC_TEXT void OsGicdClearActiveBit(U32 intId)
+{
+    // 每个寄存器对应32个中断，写1去使能中断，写0无效
+    OsGicSetReg(GICD_ICACTIVER0_ADDR, GIC_IENABLE_INT_NUM, intId, 1);
+
+    OsGicdWaitCfgWork();
+}
+
+/*
  * 描述: 设置SPI中断的优先级, 调用者保证入参的有效性
  */
 OS_SEC_L4_TEXT void OsGicdSetPriority(U32 intId, U32 priority)

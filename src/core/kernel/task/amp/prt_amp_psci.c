@@ -28,10 +28,6 @@ OS_SEC_TEXT void OsCpuPowerOff(void)
     os_asm_invalidate_icache_all();
     os_asm_clean_dcache_all();
 
-    /* 清除中断Active状态 */
-    OsHwiClear(OS_HWI_IPI_NO_02); /* 基于中断的power off */
-    OsHwiClear(OS_HWI_IPI_NO_07); /* 基于消息的power off */
-
     /* SMC陷入异常 */
     (void)OsInvokePsciSmc(PSCI_FN_CPU_OFF, 0, 0, 0);
 

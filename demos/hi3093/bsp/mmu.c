@@ -310,7 +310,8 @@ static S32 mmu_setup(void)
     
     page_addr = (U64)&g_mmu_page_begin;
     page_len = (U64)&g_mmu_page_end - (U64)&g_mmu_page_begin;
-    
+
+#if defined(OS_OPTION_SMP)
     if (OsGetCoreID() == g_cfgPrimaryCore) {
         ret = mmu_setup_pgtables(g_mem_map_info, (sizeof(g_mem_map_info) / sizeof(mmu_mmap_region_s)),
                                 page_addr, page_len, MMU_GRANULE_4K);
@@ -318,6 +319,13 @@ static S32 mmu_setup(void)
             return ret;
         }
     }
+#else
+    ret = mmu_setup_pgtables(g_mem_map_info, (sizeof(g_mem_map_info) / sizeof(mmu_mmap_region_s)),
+                            page_addr, page_len, MMU_GRANULE_4K);
+    if (ret) {
+        return ret;
+    }
+#endif
     
     mmu_set_ttbr_tcr_mair(page_addr, g_mmu_tcr, MEMORY_ATTRIBUTES);
     return 0;

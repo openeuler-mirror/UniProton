@@ -109,6 +109,44 @@ OS_SEC_L4_TEXT void OsGicEnableInt(U32 intId)
     }
 }
 
+/*
+ * 描述: 清除指定中断号的pending位
+ */
+OS_SEC_L4_TEXT void OsGicClearPendingBit(U32 intId)
+{
+    U32 coreId = OsGetCoreID();
+    if (intId <= MAX_NNSPI_ID) {
+#if defined(OS_OPTION_SMP)
+        for (coreId = g_cfgPrimaryCore; coreId < g_cfgPrimaryCore + g_numOfCores; coreId++) {
+            OsGicrClearPendingBit(coreId, intId);
+        }
+#else
+        OsGicrClearPendingBit(coreId, intId);
+#endif
+    } else if (intId <= MAX_SPI_ID) {
+        OsGicdClearPendingBit(intId);
+    }
+}
+
+/*
+ * 描述: 清除指定中断号的Active位
+ */
+OS_SEC_L4_TEXT void OsGicClearActiveBit(U32 intId)
+{
+    U32 coreId = OsGetCoreID();
+    if (intId <= MAX_NNSPI_ID) {
+#if defined(OS_OPTION_SMP)
+        for (coreId = g_cfgPrimaryCore; coreId < g_cfgPrimaryCore + g_numOfCores; coreId++) {
+            OsGicrClearActiveBit(coreId, intId);
+        }
+#else
+        OsGicrClearActiveBit(coreId, intId);
+#endif
+    } else if (intId <= MAX_SPI_ID) {
+        OsGicdClearActiveBit(intId);
+    }
+}
+
 #if (OS_GIC_VER == 2)
 /*
  * 描述: 触发中断到目标核，仅支持SGI

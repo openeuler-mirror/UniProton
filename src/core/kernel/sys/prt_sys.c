@@ -21,6 +21,10 @@
 #include "prt_sched_external.h"
 #include "prt_buildef.h"
 #endif
+#if defined(OS_OPTION_POWEROFF)
+typedef void (*PowerOffFuncT)(void);
+extern PowerOffFuncT g_sysPowerOffHook;
+#endif
 
 /* 初值非0的原因：初值为0在段属性为空场景下放到bss段初始化 */
 OS_SEC_L4_DATA U8 g_maxNumOfCores = OS_MAX_CORE_NUM;
@@ -99,5 +103,14 @@ OS_SEC_L4_TEXT U32 PRT_IdleDelHook(IdleHook hook)
 OS_SEC_L0_TEXT enum SysThreadType PRT_CurThreadTypeNoIntLock(void)
 {
     return OsCurThreadTypeNoIntLock();
+}
+#endif
+
+#if defined(OS_OPTION_POWEROFF)
+OS_SEC_L0_TEXT void PRT_SysPowerOff(void)
+{
+    if (g_sysPowerOffHook != NULL) {
+        g_sysPowerOffHook();
+    }
 }
 #endif
