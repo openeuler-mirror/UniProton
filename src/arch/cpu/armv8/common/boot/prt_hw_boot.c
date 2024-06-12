@@ -33,3 +33,10 @@ INIT_SEC_L4_TEXT void OsSetValidAllCoresMask(U32 cfgPrimaryCore)
 INIT_SEC_L4_TEXT void OsHwInit(void)
 {
 }
+
+OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)
+{
+	U64 cycle;
+	OS_EMBED_ASM("MRS %0, CNTPCT_EL0" : "=r"(cycle)::"memory", "cc");
+	return cycle;
+}

@@ -16,40 +16,123 @@
 #include "prt_buildef.h"
 #include "prt_attr_external.h"
 #include "prt_tick_external.h"
+#include "prt_hwi.h"
 #include "../hwi/prt_lapic.h"
 
-/* 系统当前运行的时间，单位cycle */
-OS_SEC_BSS U64 g_cycleNow;
-/* 系统当前运行的时间，时间是g_cyclePerTick的整数倍 */
-// OS_SEC_BSS U64 g_cycleByTickNow;
+OS_SEC_BSS U32 g_tscEAX = 1;
+OS_SEC_BSS U32 g_tscEBX = 1;
 
+OS_SEC_BSS U64 g_cycleNow;
+OS_SEC_BSS U8 g_useTsc = 0;
 extern volatile U64 g_uniTicks;
 
-OS_SEC_L2_TEXT void OsCycleUpdate(void)
+#define BIT(nr) (1UL << (nr))
+
+bool OsGetTscRatio(void)
 {
-    U64 hwCycleFirst;
-    U64 hwCycleSecond;
-
-    // 假设 A 和 B 之间如果发生tick中断, 则 hwCycleFirst < hwCycleSecond
-    U64 tick1 = g_uniTicks;
-    OsReadMsr(X2APIC_TCCR, &hwCycleFirst); // A
-    U64 tick2 = g_uniTicks;
-    OsReadMsr(X2APIC_TCCR, &hwCycleSecond); // B
-
-    /* 发生tick反转，需要手动补偿一个周期 */
-    if (hwCycleFirst < hwCycleSecond) {
-        tick2 = tick1 + 1;
+    U32 a, b, c, d;
+    a = 0x15;
+    __asm__ volatile("cpuid"
+        : "=a" (a), "=b" (b), "=c" (c), "=d" (d)
+        : "a" (a), "b" (b),"c" (c), "d" (d)
+        );
+    if (b != 0) {
+        g_tscEAX = a;
+        g_tscEBX = b;
+        return true;
+        
     }
-    g_cycleNow = (tick2 * OsGetCyclePerTick() + (OsGetCyclePerTick() - hwCycleSecond));
+    return false;
 }
 
-OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)
+/* support rdtsc instruction */
+bool OsIsTscSupport(void)
+{
+    U32 a, b, c, d;
+    a = 0x1;
+    __asm__ volatile("cpuid"
+        : "=a" (a), "=b" (b), "=c" (c), "=d" (d)
+        : "a" (a), "b" (b),"c" (c), "d" (d)
+        );
+    if (d & BIT(4)) {
+        return true;
+    }
+    return false;
+}
+
+/* invariant tsc */
+bool OsIsTscInvariant(void)
+{
+    U32 a, b, c, d;
+    a = 0x80000007;
+    __asm__ volatile("cpuid"
+        : "=a" (a), "=b" (b), "=c" (c), "=d" (d)
+        : "a" (a), "b" (b),"c" (c), "d" (d)
+        );
+    if (d & BIT(8)) {
+        return true;
+    }
+    return false;
+}
+
+OS_SEC_L2_TEXT U64 OsLapicCycleUpdate(void) {
+    U64 hwCycle;
+    U64 hwCycleSecond;
+    U64 lvtTimerReg;
+    U64 tick = g_uniTicks;
+
+    OsReadMsr(X2APIC_TCCR, &hwCycle);
+    OsReadMsr(LAPIC_LVT_TIMER, &lvtTimerReg);
+    OsReadMsr(X2APIC_TCCR, &hwCycleSecond);
+
+    // 如果发生中断pending，使用确定发生在pending后的cycle值
+    if (lvtTimerReg & BIT(12)) {
+        hwCycle = hwCycleSecond;
+        tick++;
+    }
+
+    return (tick * OsGetCyclePerTick() + (OsGetCyclePerTick() - hwCycle));
+}
+
+void OsCycleInit(void)
+{
+    if (OsIsTscSupport() && OsGetTscRatio() && OsIsTscInvariant()) {
+        g_useTsc = 1;
+    } else {
+        g_useTsc = 0;
+    }
+}
+
+OS_SEC_ALW_INLINE INLINE U64 OsReadTsc(void)
+{
+    U32 eax;
+    U32 edx;
+    __asm__ volatile("rdtsc" : "=a"(eax), "=d"(edx));
+    return ((U64)edx << 32) | eax;
+}
+
+/* tsc freq = core crystal freq * CPUID.15H.EBX / CPUID.15H.EAX */
+/* LAPIC freq is same as core crystal freq */
+OS_SEC_L2_TEXT U64 OsClkGetTscCycleCount64(void)
+{
+    // change tsc cycle to core crystal cycle
+    return OsReadTsc() * g_tscEAX / g_tscEBX;
+}
+
+OS_SEC_L2_TEXT U64 OsClkGetLapicCycleCount64(void)
 {
     U64 cycle;
     uintptr_t intSave;
     intSave = PRT_HwiLock();
-    OsCycleUpdate();
-    cycle = g_cycleNow;
+    cycle = OsLapicCycleUpdate();
     PRT_HwiRestore(intSave);
     return cycle;
+}
+
+OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)
+{
+    if (g_useTsc) {
+        return OsClkGetTscCycleCount64();
+    }
+    return OsClkGetLapicCycleCount64();
 }

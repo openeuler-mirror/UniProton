@@ -46,11 +46,19 @@ U32 OsMemConfigInit(void)
     return OsMemDefPtInit();
 }
 
+#if defined(OS_ARCH_ARMV8)
+U64 GetGenericTimerFreq(void);
+#endif
+
 U32 OsSystemReg(void)
 {
     struct SysModInfo sysModInfo;
 
+#if defined(OS_ARCH_ARMV8)
+    sysModInfo.systemClock = GetGenericTimerFreq();
+#else
     sysModInfo.systemClock = OS_SYS_CLOCK;
+#endif
     sysModInfo.cpuType = OS_CPU_TYPE;
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
     sysModInfo.hwiMaxNum = OS_HWI_MAX_NUM_CONFIG;

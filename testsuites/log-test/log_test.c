@@ -425,10 +425,11 @@ static void log_test_entry()
     printf("\r\n===test start=== \r\n");
     for (i = 0, cnt = 0; i < len; i++) {
         test_case_t *tc = &g_cases[i];
-        printf("\r\n===%s start === \r\n", tc->name);
         if (tc->skip) {
+            printf("\r\n===%s skip === \r\n", tc->name);
             continue;
         }
+        printf("\r\n===%s start === \r\n", tc->name);
         cnt++;
         int ret = tc->fn(0, NULL);
         if (ret) {

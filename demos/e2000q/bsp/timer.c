@@ -9,13 +9,6 @@
 U64 g_timerFrequency;
 #define PMU_TIMER_FREQUENCY g_timerFrequency
 
-U64 PRT_ClkGetCycleCount64()
-{
-	U64 cycle;
-	OS_EMBED_ASM("MRS %0, CNTPCT_EL0" : "=r"(cycle)::"memory", "cc");
-	return cycle;
-}
-
 U64 GetGenericTimerFreq(void)
 {
     U64 freq;

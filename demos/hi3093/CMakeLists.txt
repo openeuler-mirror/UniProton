@@ -91,7 +91,19 @@ if (${CONFIG_OS_OPTION_OPENAMP})
     list(APPEND OBJS $<TARGET_OBJECTS:mica>)
 endif()
 
-if (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
+if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
+    ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_signal_interface" OR
+    ${APP} STREQUAL "UniPorton_test_posix_exit_interface")
+        add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
+        target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
+        # 如果从核需要跑测试用例，config加上测试用例选项
+        # target_compile_options(config PUBLIC -DPOSIX_TESTCASE)
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
+        add_executable(${APP} ${OBJS})
+elseif (${APP} STREQUAL "UniPorton_test_proxy_posix_interface")
     add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
     target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:posixTest>)
