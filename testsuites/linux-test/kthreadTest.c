@@ -4,12 +4,11 @@
 #include <linux/err.h>
 #include <linux/current.h>
 
-#include "prt_sys_external.h"
 #include "prt_buildef.h"
 #include "prt_task.h"
 
 // 创建n个task，唤醒后再停止，检查task返回值是否正确
-
+extern volatile U64 g_uniTicks;
 static int magical_return = 123321;
 void kthreadTest(void);
 

@@ -27,6 +27,7 @@ void waitTest(void);
 
 #if defined(OS_SUPPORT_IGH_ETHERCAT)
 int ethercat_init(void);
+void ecrt_i210_nic_reg(void);
 #endif
 
 #if defined(OS_SUPPORT_IGH_ETHERCAT) && defined(ETHERCAT_TESTCASE)
@@ -121,6 +122,7 @@ void TestTaskEntry()
 #endif
 
 #if defined(OS_SUPPORT_IGH_ETHERCAT)
+    ecrt_i210_nic_reg();
     ethercat_init();
 #endif
 

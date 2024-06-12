@@ -176,13 +176,19 @@ static void do_rt_task()
 
 void simple_cyclic_task()
 {
+    struct timespec start;
+    struct timespec now;
     printf("cyclic job start\n");
     struct period_info pinfo;
     periodic_task_init(&pinfo);
 
-    while (1) {
+    clock_gettime(CLOCK_REALTIME, &start);
+    clock_gettime(CLOCK_REALTIME, &now);
+    // 运行30秒
+    while (now.tv_sec < start.tv_sec + 30) {
         do_rt_task();
         wait_rest_of_period(&pinfo);
+        clock_gettime(CLOCK_REALTIME, &now);
     }
 }
 

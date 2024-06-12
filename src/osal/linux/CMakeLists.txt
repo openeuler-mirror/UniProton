@@ -2,7 +2,6 @@ message(${CMAKE_SYSTEM_PROCESSOR})
 
 file(GLOB_RECURSE LINUX_SOURCE
     src/*.c
-    testcase/*.c
 )
 
 add_library(linuxlib OBJECT ${LINUX_SOURCE})

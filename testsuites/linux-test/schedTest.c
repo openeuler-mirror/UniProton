@@ -7,12 +7,11 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include "prt_sys_external.h"
 #include "prt_buildef.h"
 #include "prt_task.h"
 
 // 创建一个task, 测试schedule_timeout之后能不能被提前唤醒
-
+extern volatile U64 g_uniTicks;
 static int magical_return = 123321;
 void schedTest(void);
 
