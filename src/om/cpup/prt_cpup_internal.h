@@ -37,6 +37,9 @@ extern CpupNowFunc g_cpupNow;
 /* CPUP告警检测函数钩子 */
 extern CpupWarnFunc g_cpupWarnCheck;
 
+#if defined(OS_OPTION_TICKLESS)
+extern U64 g_cpupNextTick;
+#endif
 /*
  * 模块内函数声明
  */

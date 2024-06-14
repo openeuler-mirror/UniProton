@@ -14,6 +14,30 @@
  */
 #include "prt_swtmr_internal.h"
 
+#if defined(OS_OPTION_TICKLESS)
+#if defined(OS_OPTION_SMP)
+/*
+ * 描述：刷新最近超时tick数
+ */
+OS_SEC_TEXT void OsSwtmrNearestTicksRefresh(struct TagSwTmrSortLinkAttr *tmrSort)
+{
+    U64 ticks = OS_TICKLESS_FOREVER;
+    struct TagListObject *listObject = &tmrSort->sortLink;
+
+    if (!ListEmpty(listObject)) {
+        struct TagSwTmrCtrl *swtmr = (struct TagSwTmrCtrl *)(uintptr_t)listObject->next;
+        ticks = swtmr->expectedTick;
+    }
+    tmrSort->nearestTicks = ticks;
+}
+#else
+OS_SEC_TEXT void OsSwtmrNearestTicksRefresh(struct TagSwTmrSortLinkAttr *tmrSort)
+{
+    (void)tmrSort;
+}
+#endif
+#endif
+
 OS_SEC_ALW_INLINE INLINE void OsSwtmrProc(struct TagSwTmrCtrl *swtmr)
 {
     switch (swtmr->state & OS_SWTMR_PRE_STATUS_MASK) {
@@ -63,12 +87,21 @@ OS_SEC_ALW_INLINE INLINE void OsSwTmrScanProcess(struct TagListObject *object, s
      */
     struct TagSwTmrCtrl *temp = NULL;
     struct TagSwTmrCtrl *swtmr = (struct TagSwTmrCtrl *)object->next;
+
+#if !defined(OS_OPTION_SMP)
     (void)tmrSort;
+#endif
     object->next = NULL;
     /* 更新SortLink成员next指针 */
     listObject->next = (struct TagListObject *)swtmr;
     /* 第一个rollNum非0节点的prev指针指向SortLink成员 */
     swtmr->prev = (struct TagSwTmrCtrl *)listObject;
+#if defined(OS_OPTION_TICKLESS)
+    OsSwtmrNearestTicksRefresh(tmrSort);
+#endif
+#if defined(OS_OPTION_SMP)
+    OsSplUnlock(&tmrSort->spinLock);
+#endif
     (void)OsIntUnLock();
 
     /* 处理超时链表中的定时器 */
@@ -78,17 +111,77 @@ OS_SEC_ALW_INLINE INLINE void OsSwTmrScanProcess(struct TagListObject *object, s
         swtmr->handler(OS_SWTMR_INDEX_2_ID(swtmr->swtmrIndex), swtmr->arg1, swtmr->arg2, swtmr->arg3, swtmr->arg4);
 
         (void)OsIntLock();
-
+#if defined(OS_OPTION_SMP)
+        OsSplLock(&tmrSort->spinLock);
+#endif
         swtmr->prev = NULL;
         swtmr->next = NULL;
         OsSwtmrProc(swtmr);
-
+#if defined(OS_OPTION_TICKLESS)
+        OsSwtmrNearestTicksRefresh(tmrSort);
+#endif
+#if defined(OS_OPTION_SMP)
+        OsSplUnlock(&tmrSort->spinLock);
+#endif
         (void)OsIntUnLock();
 
         swtmr = temp;
     }
 }
+#if defined(OS_OPTION_SMP)
+OS_SEC_TEXT void OsSwTmrAttrScan(struct TagSwTmrSortLinkAttr *tmrSort)
+{
+    struct TagSwTmrCtrl *swtmr = NULL;
+    struct TagSwTmrCtrl *outLink = NULL;
+    struct TagListObject *listObject = NULL;
+    struct TagListObject *object = NULL;
+    uintptr_t intSave;
+    /* 对本核的超时链进行扫描 */
+    intSave = OsIntLock();
+    OsSplLock(&tmrSort->spinLock);
 
+    /* 从计时链表中获取超时链表 */
+    listObject = &tmrSort->sortLink;
+    if (listObject->next == listObject) {  /* 没有计时定时器 */
+        OsSplUnlock(&tmrSort->spinLock);
+        OsIntRestore(intSave);
+        return;
+    }
+
+    outLink = (struct TagSwTmrCtrl*)(uintptr_t)listObject->next;
+    object = listObject;
+    while (object->next !=listObject) {
+        swtmr = (struct TagSwTmrCtrl*)(uintptr_t)object->next;
+        if(swtmr->expectedTick > g_uniTicks) {
+            if(swtmr->prev == (struct TagSwTmrCtrl*)(uintptr_t)listObject){
+                /* 如果第一个定时器rollNum > 0, 则表示没有超时链表为空*/
+                outLink = NULL;
+            }
+            break;
+        }
+        swtmr->state = (U8)OS_TIMER_EXPIRED;
+        object = object->next;
+    }
+
+    OsSwTmrScanProcess(object, listObject, tmrSort, outLink);
+    
+}
+/*
+ * 描述：软件定时器模块的Tick中断运行接口
+ */
+OS_SEC_TEXT void OsSwTmrScan(void)
+{
+    U32 thisCoreID = THIS_CORE();
+    struct TagSwTmrSortLinkAttr *tmrSort = NULL;
+
+    tmrSort = CPU_SWTMR_SORT_LINK(thisCoreID);
+
+    // 处理本核的软定时链
+    OsSwTmrAttrScan(tmrSort);
+
+    return;
+}
+#else
 /*
  * 描述：软件定时器模块的Tick中断运行接口
  */
@@ -142,7 +235,19 @@ OS_SEC_TEXT void OsSwTmrScan(void)
 
     return;
 }
+#endif
+#if defined(OS_OPTION_SMP)
+OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmrCtrl *swtmr, U32 interval)
+{
+    struct TagSwTmrSortLinkAttr *tmrSort = NULL;
+    (void)interval;
 
+    tmrSort = CPU_SWTMR_SORT_LINK(swtmr->coreID);
+    swtmr->state = (U8)OS_TIMER_RUNNING;
+
+    return &tmrSort->sortLink;
+}
+#else
 OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmrCtrl *swtmr, U32 interval)
 {
     U32 sortIndex;
@@ -162,6 +267,7 @@ OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmr
 
     return g_tmrSortLink.sortLink + sortIndex;
 }
+#endif
 /*
  * 描述：软件定时器的启动接口
  */
@@ -169,6 +275,11 @@ OS_SEC_TEXT void OsSwTmrStart(struct TagSwTmrCtrl *swtmr, U32 interval)
 {
     struct TagSwTmrCtrl *temp = NULL;
     struct TagListObject *listObject = NULL;
+
+#if (defined(OS_OPTION_TICKLESS) || defined(OS_OPTION_SMP))
+    /* 确认是否能直接进行64位操作 */
+    swtmr->expectedTick = (U64) interval + g_uniTicks;
+#endif
 
     listObject = OsSwTmrStartInner(swtmr, interval);
     if (listObject->next == listObject) { // 该SortLink成员上是空链
@@ -186,11 +297,17 @@ OS_SEC_TEXT void OsSwTmrStart(struct TagSwTmrCtrl *swtmr, U32 interval)
         /* The First Node */
         temp = (struct TagSwTmrCtrl *)listObject->next;
         while (temp != (struct TagSwTmrCtrl *)listObject) {
+#if defined(OS_OPTION_SMP)
+            if(temp->expectedTick > swtmr->expectedTick) {
+                break;
+            }
+#else
             if (UWROLLNUM(temp->idxRollNum) > UWROLLNUM(swtmr->idxRollNum)) {
                 UWROLLNUMSUB(temp->idxRollNum, swtmr->idxRollNum);
                 break;
             }
             UWROLLNUMSUB(swtmr->idxRollNum, temp->idxRollNum);
+#endif
             temp = temp->next;
         }
         swtmr->next = temp;

@@ -247,7 +247,7 @@ OS_SEC_L2_TEXT U32 OsTaskSetAffinity(TskHandle taskPID, OS_CORE_MASK coreMask)
         return ret;
     }
 
-    if ((((1UL << g_numOfCores) - 1) & coreMask) == 0) {
+    if ((((1UL << (g_cfgPrimaryCore + g_numOfCores)) - 1) & coreMask) == 0) {
         return OS_OK;
     }
     OsTskSetCoreAllowed(coreMask, taskCB);

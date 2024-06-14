@@ -17,11 +17,16 @@
 OS_SEC_BSS U32 g_swTmrMaxNum;
 /* 定时器内存空间首地址 */
 OS_SEC_BSS struct TagSwTmrCtrl *g_swtmrCbArray;
+
+#if defined(OS_OPTION_SMP)
+OS_SEC_BSS struct TagSwTmrFreeList g_tmrFreeList;
+OS_SEC_BSS struct TagSwTmrSortLinkAttr g_tmrSortLink[OS_MAX_CORE_NUM];
+#else
 /* 软件定时器空闲链表 */
 OS_SEC_BSS struct TagSwTmrCtrl *g_tmrFreeList;
 /* 软件定时器Sortlink */
 OS_SEC_BSS struct TagSwTmrSortLinkAttr g_tmrSortLink;
-
+#endif
 /* 基于tick的软件定时器组ID，为支持独立升级，该变量需要在2022年之后版本才能删除 */
 OS_SEC_BSS TimerGroupId g_tickSwTmrGroupId;
 /*
@@ -113,6 +118,9 @@ OS_SEC_ALW_INLINE INLINE void OsSwTmrCreateTimerCbInit(struct TimerCreatePara *c
     swtmr->arg3 = createPara->arg3;
     swtmr->arg4 = createPara->arg4;
     swtmr->state = (U8)OS_TIMER_CREATED;
+#if defined(OS_OPTION_SMP)
+    swtmr->coreID = OsGetCoreID();
+#endif
     return;
 }
 OS_SEC_L4_TEXT U32 OsSwTmrInit(U32 maxTimerNum)
@@ -143,6 +151,22 @@ OS_SEC_L4_TEXT U32 OsSwTmrCreateTimer(struct TimerCreatePara *createPara, TimerH
 
     intSave = OsIntLock();
 
+#if defined(OS_OPTION_SMP)
+    SWTMR_CREATE_DEL_LOCK();
+    if (g_tmrFreeList.freeList == NULL) {
+        SWTMR_CREATE_DEL_UNLOCK();
+        OsIntRestore(intSave);
+        return OS_ERRNO_SWTMR_MAXSIZE;
+    }
+
+    /*
+     * 从空闲链表中取出一个控制块
+     * 保证空闲链表的完整性，首节点没有前驱，尾节点没有后继节点
+     */
+    swtmr = g_tmrFreeList.freeList;
+    g_tmrFreeList.freeList = swtmr->next;
+#else
+
     if (g_tmrFreeList == NULL) {
         OsIntRestore(intSave);
         return OS_ERRNO_SWTMR_MAXSIZE;
@@ -154,6 +178,8 @@ OS_SEC_L4_TEXT U32 OsSwTmrCreateTimer(struct TimerCreatePara *createPara, TimerH
      */
     swtmr = g_tmrFreeList;
     g_tmrFreeList = swtmr->next;
+#endif
+
     OsSwTmrCreateTimerCbInit(createPara, swtmr, interval);
 
     SWTMR_CREATE_DEL_UNLOCK();
@@ -170,6 +196,9 @@ OS_SEC_L4_TEXT U32 OsSwTmrCreateTimer(struct TimerCreatePara *createPara, TimerH
 OS_SEC_L4_TEXT U32 OsSwTmrDeleteTimer(TimerHandle tmrHandle)
 {
     struct TagSwTmrCtrl *swtmr = NULL;
+#if defined(OS_OPTION_SMP)
+    struct TagSwTmrCtrl swtmrTmp = {0};
+#endif
     uintptr_t intSave;
 
     if (OS_TIMER_GET_INDEX(tmrHandle) >= g_swTmrMaxNum) {
@@ -194,13 +223,107 @@ OS_SEC_L4_TEXT U32 OsSwTmrDeleteTimer(TimerHandle tmrHandle)
         default:
             break;
     }
+#if defined(OS_OPTION_SMP)
+    swtmrTmp.coreID = swtmr->coreID;
+#endif
 
     OsSwTmrDelete(swtmr);
 
+#if defined(OS_OPTION_TICKLESS)
+    OsSwtmrNearestTicksRefresh(&g_tmrSortLink);
+#endif
     OsSwtmrIqrSplUnlock(&swtmrTmp, intSave);
 
     return OS_OK;
 }
+
+#if defined(OS_OPTION_TICKLESS)
+#if defined(OS_OPTION_SMP)
+/*
+ * 描述: 获取核最近的超时Tick刻度
+ */
+OS_SEC_TEXT U64 OsSwtmrNearestTickGet(U32 coreId)
+{
+    U64 ticks;
+    struct TagSwTmrSortLinkAttr *tmrSort = CPU_SWTMR_SORT_LINK(coreId);
+
+    OsSplLock(&tmrSort->spinLock);
+    ticks = tmrSort->nearestTicks;
+    OsSplUnlock(&tmrSort->spinLock);
+
+    return ticks;
+}
+
+OS_SEC_L2_TEXT bool OsSwtmrTargetCheck(U32 coreId)
+{
+    bool target = FALSE;
+    struct TagSwTmrSortLinkAttr *tmrSort = CPU_SWTMR_SORT_LINK(coreId);
+
+    OsSplLock(&tmrSort->spinLock);
+
+    if (tmrSort->nearestTicks != OS_TICKLESS_FOREVER) {
+        if (tmrSort->nearestTicks <= g_uniTicks) {
+            target = TRUE;
+        }
+    }
+    OsSplUnlock(&tmrSort->spinLock);
+
+    return target;
+}
+#else
+/*
+ * 描述: 获取核最近的超时Tick刻度
+ */
+OS_SEC_TEXT U64 OsSwtmrNearestTickGet(U32 coreId)
+{
+    (void)coreId;
+    U32 idx;
+    U64 ticks = OS_TICKLESS_FOREVER;
+    struct TagSwTmrCtrl *swtmr = NULL;
+
+    uintptr_t intSave = OsIntLock();
+    if (g_swtmrCbArray != NULL) {
+        for (idx = 0; idx < g_swTmrMaxNum; idx++) {
+            swtmr = (struct TagSwTmrCtrl *)((struct TagSwTmrCtrl *)(g_swtmrCbArray) + idx);
+
+            if ((swtmr->state == OS_TIMER_FREE) || (swtmr->state == OS_TIMER_CREATED)) {
+                continue;
+            }
+
+            if ((g_uniTicks <= swtmr->expectedTick) && (swtmr->expectedTick < ticks)) {
+                ticks = swtmr->expectedTick;
+            }
+        }
+    }
+    OsIntRestore(intSave);
+    return ticks;
+}
+
+OS_SEC_TEXT bool OsSwtmrTargetCheck(U32 coreId)
+{
+    (void)coreId;
+    U32 idx;
+    bool target = FALSE;
+    struct TagSwTmrCtrl *swtmr = NULL;
+
+    uintptr_t intSave = OsIntLock();
+    if (g_swtmrCbArray != NULL) {
+        for (idx = 0; idx < g_swTmrMaxNum; idx++) {
+            swtmr = (struct TagSwTmrCtrl *)((struct TagSwTmrCtrl *)(g_swtmrCbArray) + idx);
+
+            if ((swtmr->state == OS_TIMER_FREE) || (swtmr->state == OS_TIMER_CREATED)) {
+                continue;
+            } else {
+                target = TRUE;
+                break;
+            }
+        }
+    }
+    OsIntRestore(intSave);
+    return target;
+}
+#endif
+#endif
 
 OS_SEC_L4_TEXT void OsSwTmrCtrlInit(struct TagSwTmrCtrl *swtmrIn)
 {
@@ -230,7 +353,7 @@ OS_SEC_L4_TEXT U32 OsSwTmrResInit(void)
     U32 ret;
     U32 size;
     U32 idx;
-    struct TagListObject *listObject = NULL;
+    // struct TagListObject *listObject = NULL;
     struct TagSwTmrCtrl *swtmr = NULL;
 
     /*
@@ -242,6 +365,18 @@ OS_SEC_L4_TEXT U32 OsSwTmrResInit(void)
     }
 
     /* 为SortLink分配内存，初始化g_tmrSortLink */
+#if defined(OS_OPTION_SMP)
+    struct TagSwTmrSortLinkAttr *tmrSort = NULL;
+
+    for (idx = 0; idx < g_maxNumOfCores; idx++) {
+        tmrSort = CPU_SWTMR_SORT_LINK(idx);
+        OS_LIST_INIT(&tmrSort->sortLink);
+        tmrSort->nearestTicks = OS_TICKLESS_FOREVER;
+        OsSpinLockInitInner(&tmrSort->spinLock);
+    }
+#else
+    struct TagListObject *listObject = NULL;
+    
     size = sizeof(struct TagListObject) * OS_SWTMR_SORTLINK_LEN;
     listObject =
         (struct TagListObject *)OsMemAllocAlign((U32)OS_MID_SWTMR, OS_MEM_DEFAULT_FSC_PT, size, MEM_ADDR_ALIGN_016);
@@ -259,11 +394,14 @@ OS_SEC_L4_TEXT U32 OsSwTmrResInit(void)
         listObject->next = listObject;
         listObject->prev = listObject;
     }
+#endif  
 
     size = sizeof(struct TagSwTmrCtrl) * g_swTmrMaxNum;
     swtmr = (struct TagSwTmrCtrl *)OsMemAllocAlign((U32)OS_MID_SWTMR, OS_MEM_DEFAULT_FSC_PT, size, MEM_ADDR_ALIGN_016);
     if (swtmr == NULL) {
+#if !defined(OS_OPTION_SMP)
         ret = PRT_MemFree((U32)OS_MID_SWTMR, (void *)g_tmrSortLink.sortLink);
+#endif
         if (ret != OS_OK) {
             OS_REPORT_ERROR(ret);
         }
@@ -277,9 +415,18 @@ OS_SEC_L4_TEXT U32 OsSwTmrResInit(void)
     g_swtmrCbArray = swtmr;
 
     /* 把所有定时器控制块组织成一条单向链表，存放到空闲链中，空闲了首地址g_tmrFreeList */
+#if defined(OS_OPTION_SMP)
+    g_tmrFreeList.freeList = swtmr;
+    OsSpinLockInitInner(&g_tmrFreeList.spinLock);
+#else
     g_tmrFreeList = swtmr;
-
+#endif
     OsSwTmrCtrlInit(swtmr);
+
+#if defined(OS_OPTION_TICKLESS)
+    g_getSwtmrNearestTick = OsSwtmrNearestTickGet;
+    g_checkSwtmrTickProcess = OsSwtmrTargetCheck;
+#endif
 
     return OS_OK;
 }

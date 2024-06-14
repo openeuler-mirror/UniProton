@@ -29,12 +29,12 @@ extern "C" {
 #define OS_SYS_CLOCK                                    250000000
 /* 用户注册的获取系统时间的函数*/
 #define OS_SYS_TIME_HOOK                                NULL
-/* 实际运行的核数，单位：个 */
-#define OS_SYS_CORE_RUN_NUM                             2
+/* 实时系统实际运行的核数，单位：个 */
+#define OS_SYS_CORE_RUN_NUM                             1
 /* 最大可支持的核数，单位：个 */
 #define OS_SYS_CORE_MAX_NUM                             4
 /* 主核ID */
-#define OS_SYS_CORE_PRIMARY                             2
+#define OS_SYS_CORE_PRIMARY                             3
 
 /* ***************************** 中断模块配置 ************************** */
 /* 硬中断最大支持个数 */

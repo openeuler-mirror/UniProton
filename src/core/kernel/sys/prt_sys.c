@@ -33,7 +33,13 @@ OS_SEC_L4_BSS U8 g_numOfCores;
 
 /* 系统主频 */
 OS_SEC_BSS U32 g_systemClock;
+/* Tick偏移量 */
+OS_SEC_BSS S64 g_ticksOffset;
 
+/* 从核响应tick中断使能标记位 */
+#if defined(OS_OPTION_SMP)
+OS_SEC_BSS U32 g_slaveTickEnable = FALSE;
+#endif
 /* cpup */
 OS_SEC_BSS TickEntryFunc g_tickTaskEntry;
 

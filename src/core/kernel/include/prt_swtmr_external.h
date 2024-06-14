@@ -32,9 +32,13 @@ OS_SEC_ALW_INLINE INLINE U32 OsSwTmrMaxNum(void)
 #define OS_SWTMR_INDEX_2_ID(index) (((U32)(index)) + OS_SWTMR_MIN_NUM)
 #define OS_SWTMR_ID_2_INDEX(timerId) ((timerId) - OS_SWTMR_MIN_NUM)
 
+#if defined(OS_OPTION_SMP)
+#define SWTMR_CREATE_DEL_LOCK() OsSplLock(&g_tmrFreeList.spinLock)
+#define SWTMR_CREATE_DEL_UNLOCK() OsSplUnlock(&g_tmrFreeList.spinLock)
+#else
 #define SWTMR_CREATE_DEL_LOCK()
 #define SWTMR_CREATE_DEL_UNLOCK()
-
+#endif
 /* 软件定时器结构定义 */
 struct TagSwTmrCtrl {
     /* 指向前一个定时器 */
@@ -63,9 +67,32 @@ struct TagSwTmrCtrl {
     U32 arg4;
     /* 定时器超时处理函数 */
     TmrProcFunc handler;
-
+#if defined(OS_OPTION_SMP)
+    U32 coreID;
+    U32 reserved;
+#endif
+#if (defined(OS_OPTION_TICKLESS) || defined(OS_OPTION_SMP))
+    U64 expectedTick;
+#endif
 }; /* 定时器数据类型 */
 
+#if defined(OS_OPTION_SMP)
+struct TagSwTmrFreeList
+{
+    volatile uintptr_t spinLock;
+    struct TagSwTmrCtrl *freeList;
+};
+
+struct TagSwTmrSortLinkAttr {
+    /* 自旋锁 */
+    volatile uintptr_t spinLock;
+    U32 reserved;
+    /* 软件定时器头节点 */
+    struct TagListObject sortLink;
+    /* 最近超时的tick刻度 */
+    U64 nearestTicks;
+};
+#else
 struct TagSwTmrSortLinkAttr {
     /* Tick游标位置 */
     U16 cursor;
@@ -74,6 +101,7 @@ struct TagSwTmrSortLinkAttr {
     /* 软件定时器指针数组 */
     struct TagListObject *sortLink;
 };
+#endif
 
 /*
  * 模块间typedef声明

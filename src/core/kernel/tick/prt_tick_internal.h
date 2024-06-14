@@ -29,6 +29,7 @@
 /*
  * 模块内宏定义
  */
+#define CPUP_TSKMON_CORE_ID 0 // 由那个核来计算周期性的CPUP
 #define OS_SWTMR_SCAN()                \
     do {                               \
         if (g_swtmrScanHook != NULL) { \

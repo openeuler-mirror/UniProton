@@ -1,0 +1,7 @@
+config OS_OPTION_TICK
+    bool "Whether support tick feature or not"
+    default y
+
+config OS_OPTION_TICKLESS
+    bool "whether support tick less feature or not"
+    default n

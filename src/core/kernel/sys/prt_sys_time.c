@@ -45,7 +45,7 @@ OS_SEC_L2_TEXT U64 OsCurCycleGet64(void)
  */
 OS_SEC_L2_TEXT U64 PRT_TickGetCount(void)
 {
-    return g_uniTicks;
+    return (U64)(g_uniTicks + g_ticksOffset);
 }
 
 /*

@@ -27,7 +27,31 @@ OS_SEC_L2_TEXT U32 OsCpupGet(void)
 {
     return (U32)(CPUP_USE_RATE - g_cpup[TSK_GET_INDEX(IDLE_TASK_ID)].usage);
 }
+#if defined(OS_OPTION_TICKLESS)
+/*
+ * 描述: 有tick模式下的cpu占用率采样，在tick中断中被调用，每个tick调用一次，当到达采样间隔时间时计算
+ *       cpu占用率，本函数放在tick处理函数中被调用
+ */
+OS_SEC_L2_TEXT void OsCpupThreadTickTask(void)
+{
+    U64 uniTicks;
+    uniTicks = g_uniTicks;
+    /* 每个tick调用一次，当tick数到达采样间隔时计算cpu占用率，全程关中断 */
+    if ((g_ticksPerSample > 0) && (uniTicks >= g_cpupNextTick)) {
+        OsCpupTickCal();
 
+#if defined(OS_OPTION_CPUP_WARN)
+        /* cpup告警检测 */
+        if (g_cpupWarnCheck != NULL) {
+            g_cpupWarnCheck();
+        }
+#endif
+
+        g_cpupNextTick = uniTicks - (uniTicks % g_ticksPerSample) + g_ticksPerSample;
+    }
+}
+
+#else
 /*
  * 描述：有tick模式下的cpu占用率采样，在tick中断中被调用,每个tick调用一次，当到达采样间隔时间时计算cpu
  *       占用率，本函数放在tick处理函数中被调用
@@ -55,7 +79,7 @@ OS_SEC_L2_TEXT void OsCpupThreadTickTask(void)
         OsCpupTimeClear();
     }
 }
-
+#endif
 /*
  * 描述：参数检查接口，返回OS_OK成功，其他为错误码
  */
