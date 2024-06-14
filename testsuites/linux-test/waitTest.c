@@ -5,17 +5,18 @@
 #include <linux/err.h>
 #include <linux/current.h>
 
-#include "prt_sys_external.h"
 #include "prt_buildef.h"
 #include "prt_task.h"
 
 // 创建n个task，wait_event之后多次唤醒，删除部分task，以及改变condtion为的值
 
-static int magical_return = 123321;
-void waitTest(void);
+extern volatile U64 g_uniTicks;
 
+static int magical_return = 123321;
 static struct wait_queue_head g_waitQ;
 static int g_condition;
+
+void waitTest(void);
 
 static int subThread(void *data)
 {

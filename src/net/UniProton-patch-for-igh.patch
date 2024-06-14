@@ -12,10 +12,10 @@ index fb2272f0..a2e19505 100644
  config.status
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 new file mode 100644
-index 00000000..2be332ea
+index 00000000..5bc584df
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,42 @@
 +message("PROJECT_NAME = ${PROJECT_NAME}")
 +if("${PROJECT_NAME}" STREQUAL "UniProton")
 +    include_directories(
@@ -32,6 +32,7 @@ index 00000000..2be332ea
 +
 +    install(FILES
 +        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecrt.h
++        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecrt_nic_drv.h
 +        DESTINATION ethercat/include/
 +    )
 +else()
@@ -184,13 +185,17 @@ index 00000000..96439dbb
 +#define VERSION "1.6.0-rc1"
 diff --git a/devices/CMakeLists.txt b/devices/CMakeLists.txt
 new file mode 100644
-index 00000000..98726831
+index 00000000..e81094a5
 --- /dev/null
 +++ b/devices/CMakeLists.txt
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,31 @@
 +set(IGH_NET_SRC
 +    generic.c
 +)
++
++if(${CONFIG_OS_ARCH_X86_64})
++    list(APPEND IGH_NET_SRC i210_ethercat.c)
++endif()
 +
 +add_library(igh_devices OBJECT ${IGH_NET_SRC})
 +
@@ -217,22 +222,28 @@ index 00000000..98726831
 +)
 \ No newline at end of file
 diff --git a/devices/generic.c b/devices/generic.c
-index 4d4d9bbd..acc944b3 100644
+index 4d4d9bbd..4a432327 100644
 --- a/devices/generic.c
 +++ b/devices/generic.c
-@@ -43,6 +43,11 @@
+@@ -43,6 +43,17 @@
  #include "../globals.h"
  #include "ecdev.h"
  
 +#ifdef IGH_CUT
 +#include "i210.h"
 +#include "prt_typedef.h"
++#include "ecrt_nic_drv.h"
++static struct ecrt_nic g_ecrt_nic = {0};
++#endif
++
++#ifdef CODE_SUBTITU
++bool ecrt_netif_carrier_ok(void);
 +#endif
 +
  #define PFX "ec_generic: "
  
  #define ETH_P_ETHERCAT 0x88A4
-@@ -58,10 +63,12 @@ void __exit ec_gen_cleanup_module(void);
+@@ -58,10 +69,12 @@ void __exit ec_gen_cleanup_module(void);
  
  /** \cond */
  
@@ -245,7 +256,7 @@ index 4d4d9bbd..acc944b3 100644
  
  /** \endcond */
  
-@@ -71,7 +78,9 @@ typedef struct {
+@@ -71,7 +84,9 @@ typedef struct {
      struct list_head list;
      struct net_device *netdev;
      struct net_device *used_netdev;
@@ -255,7 +266,7 @@ index 4d4d9bbd..acc944b3 100644
      ec_device_t *ecdev;
      uint8_t *rx_buf;
  } ec_gen_device_t;
-@@ -146,7 +155,9 @@ int ec_gen_device_init(
+@@ -146,7 +161,9 @@ int ec_gen_device_init(
      char null = 0x00;
  
      dev->ecdev = NULL;
@@ -265,7 +276,7 @@ index 4d4d9bbd..acc944b3 100644
      dev->rx_buf = NULL;
  
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
-@@ -185,9 +196,11 @@ void ec_gen_device_clear(
+@@ -185,9 +202,11 @@ void ec_gen_device_clear(
          ecdev_close(dev->ecdev);
          ecdev_withdraw(dev->ecdev);
      }
@@ -277,7 +288,7 @@ index 4d4d9bbd..acc944b3 100644
      free_netdev(dev->netdev);
  
      if (dev->rx_buf) {
-@@ -204,14 +217,17 @@ int ec_gen_device_create_socket(
+@@ -204,14 +223,17 @@ int ec_gen_device_create_socket(
          ec_gen_interface_desc_t *desc
          )
  {
@@ -295,7 +306,7 @@ index 4d4d9bbd..acc944b3 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
      ret = sock_create_kern(&init_net, PF_PACKET, SOCK_RAW,
              htons(ETH_P_ETHERCAT), &dev->socket);
-@@ -239,6 +255,7 @@ int ec_gen_device_create_socket(
+@@ -239,6 +261,7 @@ int ec_gen_device_create_socket(
          dev->socket = NULL;
          return ret;
      }
@@ -303,7 +314,19 @@ index 4d4d9bbd..acc944b3 100644
  
      return 0;
  }
-@@ -302,6 +319,21 @@ int ec_gen_device_stop(
+@@ -270,7 +293,11 @@ int ec_gen_device_offer(
+             ecdev_withdraw(dev->ecdev);
+             dev->ecdev = NULL;
+         } else {
++#ifdef CODE_SUBTITU
++            ecdev_set_link(dev->ecdev, ecrt_netif_carrier_ok()); // FIXME
++#else
+             ecdev_set_link(dev->ecdev, netif_carrier_ok(dev->used_netdev)); // FIXME
++#endif
+             ret = 1;
+         }
+     }
+@@ -302,6 +329,25 @@ int ec_gen_device_stop(
  
  /*****************************************************************************/
  
@@ -316,16 +339,20 @@ index 4d4d9bbd..acc944b3 100644
 +    size_t len = skb->len;
 +    int ret;
 +
-+    ecdev_set_link(dev->ecdev, netif_carrier_ok(dev->used_netdev));
++    ecdev_set_link(dev->ecdev, ecrt_netif_carrier_ok());
 +
-+    ret = i210_packet_send((unsigned char *)skb->data, (int)len);
++    if (g_ecrt_nic.nic_packet_send != NULL) {
++        ret = g_ecrt_nic.nic_packet_send((unsigned char *)skb->data, (int)len, g_ecrt_nic.nic_param);
++    } else {
++        ret = -EFAULT;
++    }
 +    return ret == OS_OK ? NETDEV_TX_OK : NETDEV_TX_BUSY;
 +}
 +#else
  int ec_gen_device_start_xmit(
          ec_gen_device_t *dev,
          struct sk_buff *skb
-@@ -322,6 +354,7 @@ int ec_gen_device_start_xmit(
+@@ -322,6 +368,7 @@ int ec_gen_device_start_xmit(
  
      return ret == len ? NETDEV_TX_OK : NETDEV_TX_BUSY;
  }
@@ -333,7 +360,7 @@ index 4d4d9bbd..acc944b3 100644
  
  /*****************************************************************************/
  
-@@ -331,19 +364,25 @@ void ec_gen_device_poll(
+@@ -331,19 +378,33 @@ void ec_gen_device_poll(
          ec_gen_device_t *dev
          )
  {
@@ -343,7 +370,11 @@ index 4d4d9bbd..acc944b3 100644
 +#endif
      int ret, budget = 10; // FIXME
  
++#ifdef CODE_SUBTITU
++    ecdev_set_link(dev->ecdev, ecrt_netif_carrier_ok());
++#else
      ecdev_set_link(dev->ecdev, netif_carrier_ok(dev->used_netdev));
++#endif
  
      do {
 +#ifndef IGH_CUT
@@ -354,16 +385,38 @@ index 4d4d9bbd..acc944b3 100644
          ret = kernel_recvmsg(dev->socket, &msg, &iov, 1, iov.iov_len,
                  MSG_DONTWAIT);
 +#else
-+        ret = i210_packet_recv((unsigned char *)dev->rx_buf, EC_GEN_RX_BUF_SIZE);
++        if (g_ecrt_nic.nic_packet_recv != NULL) {
++            ret = g_ecrt_nic.nic_packet_recv((unsigned char *)dev->rx_buf, EC_GEN_RX_BUF_SIZE, g_ecrt_nic.nic_param);
++        } else {
++            ret = -EFAULT;
++        }
 +#endif /* IGH_CUT */
          if (ret > 0) {
              ecdev_receive(dev->ecdev, dev->rx_buf, ret);
          } else if (ret < 0) {
-@@ -407,6 +446,48 @@ void clear_devices(void)
+@@ -407,6 +468,75 @@ void clear_devices(void)
   * Initializes \a master_count masters.
   * \return 0 on success, else < 0
   */
 +#ifdef CODE_SUBTITU
++bool ecrt_netif_carrier_ok(void)
++{
++    if (g_ecrt_nic.nic_get_link_state == NULL) {
++        return FALSE;
++    }
++    return g_ecrt_nic.nic_get_link_state(g_ecrt_nic.nic_param);
++}
++
++int ecrt_nic_reg(const struct ecrt_nic *nic)
++{
++    if (nic == NULL || nic->nic_packet_recv == NULL || nic->nic_packet_send == NULL ||
++        nic->nic_get_mac_address == NULL || nic->nic_get_link_state == NULL) {
++            return -EFAULT;
++    }
++    g_ecrt_nic = *nic;
++    return 0;
++}
++
 +int __init ec_gen_init_module(void)
 +{
 +    int ret = 0;
@@ -374,7 +427,16 @@ index 4d4d9bbd..acc944b3 100644
 +            EC_MASTER_VERSION);
 +    INIT_LIST_HEAD(&generic_devices);
 +
-+    i210_init();
++    if (g_ecrt_nic.nic_init != NULL) {
++        g_ecrt_nic.nic_init(g_ecrt_nic.nic_param);
++    }
++
++    if (g_ecrt_nic.nic_get_mac_address == NULL || g_ecrt_nic.nic_packet_recv == NULL ||
++        g_ecrt_nic.nic_packet_send == NULL || g_ecrt_nic.nic_get_link_state == NULL) {
++            ret = -EFAULT;
++            goto out_err;
++    }
++
 +    desc = kmalloc(sizeof(ec_gen_interface_desc_t), GFP_ATOMIC);
 +    if (!desc) {
 +        ret = -ENOMEM;
@@ -385,7 +447,7 @@ index 4d4d9bbd..acc944b3 100644
 +    desc->netdev = NULL;
 +    desc->ifindex = 0;
 +
-+    ret = i210_get_mac_address(desc->dev_addr, ETH_ALEN);
++    ret = g_ecrt_nic.nic_get_mac_address(desc->dev_addr, ETH_ALEN, g_ecrt_nic.nic_param);
 +    if (ret) {
 +        kfree(desc);
 +        goto out_err;
@@ -408,7 +470,7 @@ index 4d4d9bbd..acc944b3 100644
  int __init ec_gen_init_module(void)
  {
      int ret = 0;
-@@ -455,6 +536,7 @@ out_err:
+@@ -455,6 +585,7 @@ out_err:
      clear_devices();
      return ret;
  }
@@ -416,7 +478,7 @@ index 4d4d9bbd..acc944b3 100644
  
  /*****************************************************************************/
  
-@@ -472,8 +554,10 @@ void __exit ec_gen_cleanup_module(void)
+@@ -472,8 +603,10 @@ void __exit ec_gen_cleanup_module(void)
  
  /** \cond */
  
@@ -427,6 +489,61 @@ index 4d4d9bbd..acc944b3 100644
  
  /** \endcond */
  
+diff --git a/devices/i210_ethercat.c b/devices/i210_ethercat.c
+new file mode 100644
+index 00000000..e51c4d11
+--- /dev/null
++++ b/devices/i210_ethercat.c
+@@ -0,0 +1,48 @@
++#include "unistd.h"
++#include "stdbool.h"
++#include "i210.h"
++#include "ecrt_nic_drv.h"
++
++void ecrt_i210_int(void *param)
++{
++    (void)param;
++    i210_init();
++}
++
++int ecrt_i210_packet_recv(unsigned char *packet, int size, void *param)
++{
++    (void)param;
++    return i210_packet_recv(packet, size);
++}
++
++int ecrt_i210_packet_send(const unsigned char *packet, int length, void *param)
++{
++    (void)param;
++    return i210_packet_send(packet, length);
++}
++
++bool ecrt_i210_get_link_status(void *param)
++{
++    (void)param;
++    return i210_get_link_status();
++}
++
++int ecrt_i210_get_mac_address(unsigned char *buf, int buf_len, void *param)
++{
++    (void)param;
++    return i210_get_mac_address(buf, buf_len);
++}
++
++void ecrt_i210_nic_reg(void)
++{
++    struct ecrt_nic i210_nic = {
++        .nic_init = ecrt_i210_int,
++        .nic_packet_recv = ecrt_i210_packet_recv,
++        .nic_packet_send = ecrt_i210_packet_send,
++        .nic_get_link_state = ecrt_i210_get_link_status,
++        .nic_get_mac_address = ecrt_i210_get_mac_address,
++        .nic_param = NULL,
++    };
++    ecrt_nic_reg(&i210_nic);
++    return;
++}
+\ No newline at end of file
 diff --git a/include/change_name.h b/include/change_name.h
 new file mode 100644
 index 00000000..4c11a7e3
@@ -541,6 +658,34 @@ index 00000000..4c11a7e3
 +#define ecrt_reg_request_state                            KERN_ecrt_reg_request_state
 +#define ecrt_reg_request_write                            KERN_ecrt_reg_request_write
 +#define ecrt_reg_request_read                             KERN_ecrt_reg_request_read
+\ No newline at end of file
+diff --git a/include/ecrt_nic_drv.h b/include/ecrt_nic_drv.h
+new file mode 100644
+index 00000000..14acd9f8
+--- /dev/null
++++ b/include/ecrt_nic_drv.h
+@@ -0,0 +1,21 @@
++#include "stdbool.h"
++
++/* igh网卡驱动, 用户需要实现igh所需的5个网卡函数, 使用方式可以参考i210_ethercat.c */
++/* 目前igh ethercat只能使用单网口 */
++struct ecrt_nic {
++    /* 网卡初始化, 如果用户自行初始化网卡可以不注册该函数 */
++    void (*nic_init)(void *param);
++    /* 按照MAC帧格式接收报文 */
++    int (*nic_packet_recv)(unsigned char *packet, int size, void *param);
++    /* 按照MAC帧格式发送报文 */
++    int (*nic_packet_send)(const unsigned char *packet, int length, void *param);
++    /* 网卡链路是否正常, 参考netif_carrier_ok */
++    bool (*nic_get_link_state)(void *param);
++    /* 获取MAC地址, MAC地址格式应该是6字节长的数组, uint8_t mac_buf[6] */
++    int (*nic_get_mac_address)(unsigned char *buf, int buf_len, void *param);
++    /* 接口所需的其他参数, 调用上述5个函数时都会传入该参数 */
++    void *nic_param;
++};
++
++/* 注册网卡驱动, 注册成功返回0, 需要在调用ethercat_init前调用 */
++int ecrt_nic_reg(const struct ecrt_nic *nic);
 \ No newline at end of file
 diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
 new file mode 100644
