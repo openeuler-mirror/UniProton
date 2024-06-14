@@ -40,6 +40,7 @@ static int osShellCmdTstReg(int argc, const char **argv)
 osCmdReg(CMD_TYPE_EX, "tstreg", XARGS, (CMD_CBK_FUNC)osShellCmdTstReg);
 ```
 (1)参数对应意义如下：
+```
 
 CMD_TYPE_EX: 命令行类型
 
@@ -48,9 +49,12 @@ CMD_TYPE_EX: 命令行类型
 XARGS: 运行函数的参数
 
 osShellCmdTstReg: 命令行回调运行函数
+```
 
 (2)运行情况如下：
+```
 openEuler UniProton # tstreg 1 abc
 tstreg: get 2 arguments
     no 1 arguments: 1
     no 2 arguments: abc
+```
