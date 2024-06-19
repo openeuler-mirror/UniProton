@@ -9,6 +9,8 @@
 #define MMU_OPENAMP_ADDR           0x90000000ULL
 #define OPENAMP_SHM_SIZE           0x100000
 #define MMU_LOG_MEM_ADDR           0x94000000ULL
+#define MMU_DRIVER_ADDR1           0x0c000000ULL
+#define MMU_DRIVER_ADDR2           0x08600000ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 

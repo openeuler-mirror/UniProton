@@ -15,6 +15,7 @@
 #include "show.h"
 #endif
 TskHandle g_testTskHandle[3];
+TskHandle g_sampleHandle[2];
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
@@ -118,6 +119,15 @@ void TestTaskEntry()
 #endif
 }
 
+#if defined(DRIVER_TESTCASE)
+extern int app_main(void);
+void DriverSampleEntry()
+{
+    PRT_Printf("DriveSampleEntry\n");
+    app_main();
+}
+#endif
+
 void Test2TaskEntry()
 {
     while (1) {
@@ -198,6 +208,30 @@ U32 OsTestInit(void)
     if (ret) {
         return ret;
     }
+
+#if defined(DRIVER_TESTCASE)
+    // DriverSampleEntry
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)DriverSampleEntry;
+    param.taskPrio = 26;
+    param.name = "Test2Task";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&g_sampleHandle[0], &param);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskCoreBind(g_sampleHandle[0], 1 << 3);
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(g_sampleHandle[0]);
+    if (ret) {
+        return ret;
+    }
+#endif
 
     return OS_OK;
 }
