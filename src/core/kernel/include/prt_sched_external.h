@@ -30,6 +30,9 @@ extern "C" {
 #endif
 #endif
 
+/* 入队出队的flags */
+#define OS_ENQUEUE_HEAD 1U /* 入队加头 */
+
 #if defined(OS_OPTION_SMP)
 /*
  *模块间宏定义
@@ -52,9 +55,6 @@ enum OsScheduleType{
 };
 
 #define OS_DEFAULT_SCHED_TYPE OS_SCHEDULE_RT_SINGLE
-
-/* 入队出队的flags */
-#define OS_ENQUEUE_HEAD 1U /* 入队加头 */
 
 /*
  * 模块间结构体定义

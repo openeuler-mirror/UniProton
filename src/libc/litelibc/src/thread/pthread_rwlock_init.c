@@ -12,6 +12,7 @@
  * Create: 2023-05-29
  * Description: pthread_rwlock_init 相关接口实现
  */
+#include "prt_buildef.h"
 #include "pthread.h"
 #include "prt_posix_internal.h"
 
@@ -25,6 +26,7 @@ int pthread_rwlock_init(pthread_rwlock_t *rwl, const pthread_rwlockattr_t *attr)
     }
 
     intSave = PRT_HwiLock();
+    // 需要初始化rwl为0，不然小概率初始化失败
     if ((rwl->rw_magic & RWLOCK_COUNT_MASK) == RWLOCK_MAGIC_NUM) {
         PRT_HwiRestore(intSave);
         return EBUSY;
@@ -35,6 +37,9 @@ int pthread_rwlock_init(pthread_rwlock_t *rwl, const pthread_rwlockattr_t *attr)
     INIT_LIST_OBJECT(&(rwl->rw_read));
     INIT_LIST_OBJECT(&(rwl->rw_write));
     rwl->rw_magic = RWLOCK_MAGIC_NUM;
+#if defined(OS_OPTION_SMP)
+        OsSpinLockInitInner(&rwl->rwSpinLock);
+#endif
     PRT_HwiRestore(intSave);
 
     return OS_OK;

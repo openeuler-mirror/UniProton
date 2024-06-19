@@ -6,6 +6,8 @@
 
 #include "posixtest.h"
 #include "prt_fscmem.h"
+// XOPEN_SOURCE 没有定义reallocarray接口
+#include "malloc.h"
 
 #define TNAME "malloc_reallocarray/1-1.c"
 #define MALLOC_SIZE 100

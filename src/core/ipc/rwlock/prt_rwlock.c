@@ -10,7 +10,7 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Create: 2022-11-15
- * Description: pthread rwlock功能实现
+ * Description: pthread rwlock功能实现, 只通过关中断保护, 目前不支持多核
  */
 #include "prt_rwlock_internal.h"
 #include "prt_task_external.h"
@@ -72,11 +72,14 @@ struct TagListObject *OsRwLockPendFindPos(struct TagTskCb *runTask, struct TagLi
     return node;
 }
 
-void OsRwLockPendPre(struct TagTskCb *runTask, struct TagListObject *list, U32 timeout)
+void OsRwLockPendPre(struct TagTskCb *runTask, struct TagListObject *list, U32 timeout, pthread_rwlock_t *rwl)
 {
     OsTskReadyDel(runTask);
 
-    TSK_STATUS_SET(runTask, OS_TSK_PEND);
+    TSK_STATUS_SET(runTask, OS_TSK_RW_PEND);
+#if defined(OS_OPTION_SMP)
+    runTask->taskSem = (void *)(&rwl->rwSpinLock);
+#endif
 
     if (timeout != OS_WAIT_FOREVER) {
         TSK_STATUS_SET(runTask, OS_TSK_TIMEOUT);
@@ -94,7 +97,10 @@ void OsRwLockTaskWake(struct TagTskCb *resumedTask)
         OS_TSK_DELAY_LOCKED_DETACH(resumedTask);
     }
 
-    TSK_STATUS_CLEAR(resumedTask, OS_TSK_TIMEOUT | OS_TSK_PEND);
+    TSK_STATUS_CLEAR(resumedTask, OS_TSK_TIMEOUT | OS_TSK_RW_PEND);
+#if defined(OS_OPTION_SMP)
+    resumedTask->taskSem = NULL;
+#endif
 
     if (!TSK_STATUS_TST(resumedTask, OS_TSK_SUSPEND_READY_BLOCK)) {
         OsTskReadyAddBgd(resumedTask);
@@ -158,7 +164,8 @@ OS_SEC_ALW_INLINE INLINE U32 OsRwLockCheck(pthread_rwlock_t *rwl)
     return OS_OK;
 }
 
-U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockList, U32 timeout, U32 intSave)
+U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockList, U32 timeout, U32 intSave,
+    pthread_rwlock_t *rwl)
 {
     struct TagListObject *node;
 
@@ -168,7 +175,7 @@ U32 OsRwLockPendSchedule(struct TagTskCb *runTask, struct TagListObject *lockLis
     }
 
     node = OsRwLockPendFindPos(runTask, lockList);
-    OsRwLockPendPre(runTask, node, timeout);
+    OsRwLockPendPre(runTask, node, timeout, rwl);
     if (timeout != OS_WAIT_FOREVER) {
         OsTskSchedule();
         PRT_HwiRestore(intSave);
@@ -233,7 +240,7 @@ U32 OsRwLockRdPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
         return EINVAL;
     }
 
-    return OsRwLockPendSchedule(runTask, &(rwl->rw_read), timeout, intSave);
+    return OsRwLockPendSchedule(runTask, &(rwl->rw_read), timeout, intSave, rwl);
 }
 
 U32 OsRwLockWrPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
@@ -276,7 +283,7 @@ U32 OsRwLockWrPend(pthread_rwlock_t *rwl, U32 timeout, U32 rwType)
         return OS_OK;
     }
 
-    return OsRwLockPendSchedule(runTask, &(rwl->rw_write), timeout, intSave);
+    return OsRwLockPendSchedule(runTask, &(rwl->rw_write), timeout, intSave, rwl);
 }
 
 U32 OsRwLockGetMode(struct TagListObject *readList, struct TagListObject *writeList)

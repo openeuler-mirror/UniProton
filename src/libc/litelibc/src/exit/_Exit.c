@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include "prt_task_external.h"
+#include "prt_sem_external.h"
 
 _Noreturn void _Exit(int ec)
 {
@@ -35,7 +36,7 @@ _Noreturn void _Exit(int ec)
             *((int *)g_tskCbArray[i].retval) = ec;
             continue;
         }
-        if (((OS_TSK_PEND | OS_TSK_QUEUE_PEND) & g_tskCbArray[i].taskStatus) != 0) {
+        if (((OS_TSK_PEND | OS_TSK_QUEUE_PEND | OS_TSK_RW_PEND) & g_tskCbArray[i].taskStatus) != 0) {
             ListDelete(&g_tskCbArray[i].pendList);
         }
 

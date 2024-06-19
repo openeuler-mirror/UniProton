@@ -85,6 +85,16 @@ OS_SEC_L4_TEXT U32 PRT_TaskSetPriority(TskHandle taskPid, TskPrior taskPrio)
         return OS_ERRNO_TSK_NOT_CREATED;
     }
 
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+    if (g_checkPrioritySet != NULL) {
+        ret = g_checkPrioritySet(taskCb, taskPrio);
+        if (ret != OS_OK) {
+            OsIntRestore(intSave);
+            return ret;
+        }
+    }
+#endif
+
     isReady = (OS_TSK_READY & taskCb->taskStatus);
 
     /* delete the task & insert with right priority into ready queue */
@@ -95,6 +105,7 @@ OS_SEC_L4_TEXT U32 PRT_TaskSetPriority(TskHandle taskPid, TskPrior taskPrio)
     } else {
         taskCb->priority = taskPrio;
     }
+    taskCb->origPriority = taskPrio;
 
     /* reschedule if ready changed */
     if (isReady) {

@@ -95,8 +95,7 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
         ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
         ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
-        ${APP} STREQUAL "UniPorton_test_posix_signal_interface" OR
-        ${APP} STREQUAL "UniPorton_test_posix_exit_interface")
+        ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
             add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
             target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
             # 如果从核需要跑测试用例，config加上测试用例选项

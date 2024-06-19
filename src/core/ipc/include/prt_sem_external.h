@@ -47,6 +47,8 @@
 extern volatile uintptr_t g_semPrioLock;
 #define SEM_CB_LOCK(sem) OS_MCMUTEX_LOCK(0, &(sem)->semLock)
 #define SEM_CB_UNLOCK(sem) OS_MCMUTEX_UNLOCK(0, &(sem)->semLock)
+#define RW_CB_LOCK(rwSpin) OS_MCMUTEX_LOCK(0, rwSpin)
+#define RW_CB_UNLOCK(rwSpin) OS_MCMUTEX_UNLOCK(0, rwSpin)
 #define SEM_CB_IRQ_LOCK(sem, intSave)           \
     do {                                        \
         (intSave) = OsIntLock();                \
@@ -64,6 +66,8 @@ extern volatile uintptr_t g_semPrioLock;
 #else
 #define SEM_CB_LOCK(sem) (void)(sem)
 #define SEM_CB_UNLOCK(sem) (void)(sem)
+#define RW_CB_LOCK(rwSpin) (void)(rwSpin)
+#define RW_CB_UNLOCK(rwSpin) (void)(rwSpin)
 #define SEM_CB_IRQ_LOCK(sem, intSave)           \
     do {                                        \
         (void)(sem);                            \
@@ -120,6 +124,7 @@ extern U16 g_maxSem;
 extern struct TagSemCb *g_allSem;
 
 #if defined(OS_OPTION_SMP)
+// 需要保证锁顺序避免死锁，在semCb锁内，在task rq锁外
 OS_SEC_ALW_INLINE INLINE void OsSemPrioLock(void)
 {
     OS_MCMUTEX_LOCK(0, &g_semPrioLock);
@@ -130,6 +135,7 @@ OS_SEC_ALW_INLINE INLINE void OsSemPrioUnLock(void)
     OS_MCMUTEX_UNLOCK(0, &g_semPrioLock);
 }
 
+// 需要保证锁顺序避免死锁，在semCb锁内，在task rq锁外
 OS_SEC_ALW_INLINE INLINE void OsSemIfPrioLock(struct TagSemCb *sem)
 {
    if (sem->semMode == SEM_MODE_PRIOR) {

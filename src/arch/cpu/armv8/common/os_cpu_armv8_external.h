@@ -485,7 +485,6 @@ OS_SEC_ALW_INLINE INLINE void OsSplReadUnlock(volatile uintptr_t *spinLock)
 OS_SEC_ALW_INLINE INLINE void OsSplWriteLock(volatile uintptr_t *spinLock)
 {
     U32 tmp0 = 0;
-    U32 tmp1 = 0;
 
     OS_EMBED_ASM(
         "1: ldaxr   %w0, [%2]                  \n"

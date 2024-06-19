@@ -93,7 +93,7 @@ extern "C" {
 #define OS_INCLUDE_SEM                                  YES
 
 /* 最大支持的信号量数 */
-#define OS_SEM_MAX_SUPPORT_NUM                          10
+#define OS_SEM_MAX_SUPPORT_NUM                          64
 
 /* ***************************** 配置队列模块 ******************************* */
 /* 队列模块裁剪开关 */

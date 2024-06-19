@@ -25,7 +25,7 @@
 int pthread_rwlock_trywrlock_3_1()
 {
 
-	static pthread_rwlock_t rwlock;
+	static pthread_rwlock_t rwlock = {0};
 	int rc;
 
 	/* Call without initializing rwlock */

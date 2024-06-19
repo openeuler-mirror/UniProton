@@ -24,7 +24,7 @@
 
 int pthread_rwlock_destroy_3_1()
 {
-	pthread_rwlock_t rwlock;
+	pthread_rwlock_t rwlock = {0};
 	int rc;
 
 	if(pthread_rwlock_init(&rwlock, NULL) != 0)

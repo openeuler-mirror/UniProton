@@ -27,7 +27,7 @@
 int pthread_rwlock_init_6_1()
 {
 
-	static pthread_rwlock_t rwlock;
+	static pthread_rwlock_t rwlock = {0};
 	int rc;
 
 	/* Initialize the rwlock */

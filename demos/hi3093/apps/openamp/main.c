@@ -24,6 +24,10 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 #endif
 
 #if defined(OS_OPTION_OPENAMP)
+unsigned int is_tty_ready(void);
+#endif
+
+#if defined(OS_OPTION_OPENAMP)
 extern U32 RpmsgHwiInit(void);
 int TestOpenamp()
 {
@@ -86,6 +90,16 @@ void TestTaskEntry()
     TestOpenamp();
 #endif
 
+#ifdef LOSCFG_SHELL_MICA_INPUT
+    micaShellInit();
+#endif
+
+#if defined(OS_OPTION_OPENAMP)
+    while (!is_tty_ready()) {
+        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+    }
+#endif
+
 #if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
     soem_test("eth3");
 #endif
@@ -93,10 +107,6 @@ void TestTaskEntry()
 #if defined(POSIX_TESTCASE) || defined(CXX_TESTCASE) || defined(EIGEN_TESTCASE) || defined(RHEALSTONE_TESTCASE)
     PRT_Printf("ENTER INIT\n");
     Init(0, 0, 0, 0);
-#endif
-
-#ifdef LOSCFG_SHELL_MICA_INPUT
-    micaShellInit();
 #endif
 
 #if defined(OS_SUPPORT_LIBXML2) && defined(LIBXML2_TESTCASE)

@@ -6,6 +6,8 @@
 
 #include "posixtest.h"
 #include "prt_fscmem.h"
+// XOPEN_SOURCE 没有定义memalign接口
+#include "malloc.h"
 
 #define TNAME "malloc_memalign/2-1.c"
 #define MALLOC_SIZE 100

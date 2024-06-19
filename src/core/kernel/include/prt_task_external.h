@@ -108,7 +108,7 @@ struct TagTskCb {
     void *stackPointer;
     /* 任务状态,后续内部全改成U32 */
     U32 taskStatus;
-    /* 任务的运行优先级 */
+    /* 任务的运行优先级，数字越小优先级越高 */
     TskPrior priority;
     /* 任务栈配置标记 */
     U16 stackCfgFlg;
@@ -137,6 +137,10 @@ struct TagTskCb {
     /* 存放任务名 */
     char name[OS_TSK_NAME_LEN];
 #endif
+    /* 任务原始优先级 */
+    TskPrior origPriority;
+    /* 字节对齐 */
+    U16 resv;
     /* 信号量链表指针 */
     struct TagListObject pendList;
     /* 任务延时链表指针 */
@@ -243,6 +247,11 @@ struct TagTskMonNode {
 typedef void (*TskCoresleep)(void);
 typedef void (*TaskNameGetFunc)(U32 taskId, char **taskName);
 typedef U32 (*TaskNameAddFunc)(U32 taskId, const char *name);
+typedef U32 (*OsCheckPrioritySetFunc)(struct TagTskCb *taskCB, TskPrior taskPrio);
+
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+extern OsCheckPrioritySetFunc g_checkPrioritySet;
+#endif
 
 #if defined(OS_OPTION_SMP)
 extern volatile uintptr_t g_createTskLock;
@@ -324,7 +333,7 @@ extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 // 保留一个idle task。最大任务handle为FE，FF表示硬中断线程。
 #define MAX_TASK_NUM                   ((1U << OS_TSK_TCB_INDEX_BITS) - 2)  // 254
 #define OS_TSK_BLOCK                   (OS_TSK_DELAY | OS_TSK_PEND | OS_TSK_SUSPEND  | OS_TSK_QUEUE_PEND | \
-        OS_TSK_EVENT_PEND | OS_TSK_WAITQUEUE_PEND | OS_TSK_DELETING)
+        OS_TSK_EVENT_PEND | OS_TSK_WAITQUEUE_PEND | OS_TSK_DELETING | OS_TSK_RW_PEND)
 
 #if defined(OS_OPTION_LINUX)
 #define KTHREAD_TSK_STATE_TST(tsk, tskState)   (((tsk)->kthreadTsk != NULL) && ((tsk)->kthreadTsk->state == (tskState)))

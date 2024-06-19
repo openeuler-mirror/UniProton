@@ -13,6 +13,7 @@
  * Description: Task schedule implementation
  */
 #include "prt_task_internal.h"
+#include "prt_sem_external.h"
 
 #if defined(OS_OPTION_TASK_DELETE)
 /*
@@ -25,6 +26,11 @@ OS_SEC_L4_TEXT U32 OsTaskDelStatusCheck(struct TagTskCb *taskCb)
     if ((taskCb == RUNNING_TASK) && (OS_TASK_LOCK_DATA != 0)) {
         OS_REPORT_ERROR(OS_ERRNO_TSK_DELETE_LOCKED);
         return OS_ERRNO_TSK_DELETE_LOCKED;
+    }
+
+    /* 持有锁不影响任务删除，但正常应该释放所有锁，后续改成warning */
+    if (!ListEmpty(&taskCb->semBList)) {
+        OS_REPORT_ERROR(OS_ERRNO_TSK_HAVE_MUTEX_SEM);
     }
 
     if (TSK_STATUS_TST(taskCb, OS_TSK_QUEUE_BUSY)) {

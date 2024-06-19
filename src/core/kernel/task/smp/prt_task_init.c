@@ -301,6 +301,7 @@ OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *
     taskCb->stackSize = curStackSize;
     taskCb->taskSem = NULL;
     taskCb->priority = initParam->taskPrio;
+    taskCb->origPriority = initParam->taskPrio;
     taskCb->taskEntry = initParam->taskEntry;
 #if defined(OS_OPTION_EVENT)
     taskCb->event = 0;

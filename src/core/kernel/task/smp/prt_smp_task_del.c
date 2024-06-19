@@ -100,6 +100,13 @@ OS_SEC_L4_TEXT void OsTaskDeleteResFree(TskHandle taskPID, struct TagTskCb *task
         SEM_CB_UNLOCK(pendSem);
     }
 
+    if (TSK_STATUS_TST(taskCB, OS_TSK_RW_PEND)) {
+        void *rwSpinLock = taskCB->taskSem;
+        RW_CB_LOCK(rwSpinLock);
+        ListDelete(&taskCB->pendList);
+        RW_CB_UNLOCK(rwSpinLock);
+    }
+
     if (TSK_STATUS_TST(taskCB, OS_TSK_DELAY | OS_TSK_TIMEOUT)) {
         OS_TSK_DELAY_LOCKED_DETACH(taskCB);
     }
