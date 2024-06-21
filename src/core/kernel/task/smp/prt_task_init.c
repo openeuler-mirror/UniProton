@@ -299,7 +299,7 @@ OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *
     taskCb->args[OS_TSK_PARA_3] = (uintptr_t)initParam->args[OS_TSK_PARA_3];
     taskCb->topOfStack = topStackAddr;
     taskCb->stackSize = curStackSize;
-    taskCb->taskSem = NULL;
+    taskCb->taskPend = NULL;
     taskCb->priority = initParam->taskPrio;
     taskCb->origPriority = initParam->taskPrio;
     taskCb->taskEntry = initParam->taskEntry;

@@ -71,6 +71,7 @@ OS_SEC_ALW_INLINE INLINE U32 OsInnerPend(U16 *count, struct TagListObject *pendL
     OsTskReadyDel(runTsk);
 
     TSK_STATUS_SET(runTsk, OS_TSK_QUEUE_PEND);
+    runTsk->taskPend = (void *)queueCb;
     ListTailAdd(&runTsk->pendList, pendList);
 
     /* 如果timeOut > 0,timeOut为等待时间，如果timeOut == OS_QUEUE_WAIT_FOREVER，表示永久等待 */
@@ -120,6 +121,7 @@ OS_SEC_ALW_INLINE INLINE bool OsQueuePendNeedProc(struct TagListObject *objectLi
 
     /* 去除该任务的队列阻塞位 */
     TSK_STATUS_CLEAR(resumedTask, OS_TSK_QUEUE_PEND);
+    resumedTask->taskPend = (void *)NULL;
     /* 如果阻塞的任务属于定时等待的任务时候，去掉其定时等待标志位，并将其从去除 */
     if ((resumedTask->taskStatus & OS_TSK_TIMEOUT) != 0) {
         /*

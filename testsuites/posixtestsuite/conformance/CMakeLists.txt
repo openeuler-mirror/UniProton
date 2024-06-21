@@ -442,6 +442,7 @@ list(APPEND ALL_SIGNAL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/6-1.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/raise/7-1.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigsuspend/7-1.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigsuspend/7-2.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/1-3.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/1-4.c
     ${CMAKE_CURRENT_SOURCE_DIR}/./interfaces/sigdelset/2-1.c

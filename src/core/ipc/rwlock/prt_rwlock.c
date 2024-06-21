@@ -78,7 +78,7 @@ void OsRwLockPendPre(struct TagTskCb *runTask, struct TagListObject *list, U32 t
 
     TSK_STATUS_SET(runTask, OS_TSK_RW_PEND);
 #if defined(OS_OPTION_SMP)
-    runTask->taskSem = (void *)(&rwl->rwSpinLock);
+    runTask->taskPend = (void *)(&rwl->rwSpinLock);
 #endif
 
     if (timeout != OS_WAIT_FOREVER) {
@@ -99,7 +99,7 @@ void OsRwLockTaskWake(struct TagTskCb *resumedTask)
 
     TSK_STATUS_CLEAR(resumedTask, OS_TSK_TIMEOUT | OS_TSK_RW_PEND);
 #if defined(OS_OPTION_SMP)
-    resumedTask->taskSem = NULL;
+    resumedTask->taskPend = NULL;
 #endif
 
     if (!TSK_STATUS_TST(resumedTask, OS_TSK_SUSPEND_READY_BLOCK)) {

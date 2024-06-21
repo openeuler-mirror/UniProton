@@ -16,12 +16,9 @@
 #ifndef PRT_TASK_SCHED_EXTERNAL_H
 #define PRT_TASK_SCHED_EXTERNAL_H
 
-#if defined(OS_OPTION_SMP)
-#include "prt_sched_external.h"
-#endif
 #include "prt_atomic.h"
 
-#if defined(OS_OPTION_SMP) && (OS_MAX_CORE_NUM > 1)
+struct TagTskCb;
 // 尝试根据PID获取任务所属RQ锁直到获取为止，涉及任务态的迁移，都是用RQ锁保证互斥
 extern void OsSpinLockTaskRq(struct TagTskCb* taskCB);
 
@@ -36,33 +33,5 @@ extern void OsSpinUnLockRunTaskRq(struct TagOsRunQue *runQue);
 extern void OsSpinUnlockTaskRq(struct TagTskCb *taskCB);
 
 extern U32 OsTryLockTaskOperating(U32 operate, struct TagTskCb *taskCB, uintptr_t *intSave);
-#else
-OS_SEC_ALW_INLINE INLINE void OsSpinLockTaskRq(struct TagTskCb* taskCB)
-{
-    (void)taskCB;
-}
 
-OS_SEC_ALW_INLINE INLINE struct TagOsRunQue *OsSpinLockRunTaskRq(void)
-{
-    return NULL;
-}
-
-OS_SEC_ALW_INLINE INLINE void OsSpinUnlockTaskRq(struct TagTskCb* taskCB)
-{
-    (void)taskCB;
-}
-
-OS_SEC_ALW_INLINE INLINE void OsSpinUnLockRunTaskRq(struct TagOsRunQue *runQue)
-{
-    (void)runQue;
-}
-
-OS_SEC_ALW_INLINE INLINE U32 OsTryLockTaskOperating(U32 operate, struct TagTskCb *taskCB, uintptr_t *intSave)
-{
-    (void)operate;
-    (void)taskCB;
-    *intSave = OsIntLock();
-    return OS_OK;
-}
-#endif
 #endif

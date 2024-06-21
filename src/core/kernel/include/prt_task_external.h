@@ -128,8 +128,8 @@ struct TagTskCb {
 
     /* 任务入口函数 */
     TskEntryFunc taskEntry;
-    /* 任务Pend的信号量指针 */
-    void *taskSem;
+    /* 任务信号量Pend的信号量指针，或任务队列pend的队列指针 */
+    void *taskPend;
 
     /* 任务的参数 */
     uintptr_t args[4];

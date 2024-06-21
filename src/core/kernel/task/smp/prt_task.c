@@ -94,7 +94,7 @@ OS_SEC_L0_TEXT void OsTskReadyAddNoWakeUpIpc(struct TagTskCb *task)
 }
 #endif
 /*
- * 描述：将任务添加到就绪链表头，关中断外部保证
+ * 描述：将任务从就绪链表中删除，关中断外部保证
  */
 OS_SEC_L0_TEXT void OsTskReadyDel(struct TagTskCb *taskCb)
 {

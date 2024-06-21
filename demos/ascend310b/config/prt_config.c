@@ -352,6 +352,16 @@ U32 OsStart(void)
 }
 
 #if defined(OS_OPTION_SMP)
+INIT_SEC_L4_TEXT U32 OsSlaveSchedTriggerOtherCoreInit(void)
+{
+    U32 ret;
+    ret = PRT_HwiEnable(OS_SMP_SCHED_TRIGGER_OTHER_CORE_SGI);
+    if (ret != OS_OK) {
+        return ret;
+    }
+    return ret;
+}
+
 INIT_SEC_L4_TEXT U32 OsSlaveTskRecycleIPCInit(void)
 {
     U32 ret;
@@ -393,6 +403,11 @@ INIT_SEC_L4_TEXT U32 OsSmpPreInit(void)
     if(OsGetCoreID() != OS_SYS_CORE_PRIMARY) {
         ret = OsModuleInit();
         if(ret != OS_OK) {
+            return ret;
+        }
+
+        ret = OsSlaveSchedTriggerOtherCoreInit();
+        if (ret != OS_OK) {
             return ret;
         }
 

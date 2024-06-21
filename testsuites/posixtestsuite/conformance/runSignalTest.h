@@ -10,6 +10,9 @@ extern int TEST_sigpromask_3();
 extern int TEST_sigwait_1();
 extern int TEST_sigwait_2();
 extern int TEST_sigwait_3();
+#if defined(OS_OPTION_SMP)
+extern int TEST_sigwait_7();
+#endif
 extern int TEST_sigtimedwait_1(void);
 extern int TEST_sigtimedwait_2(void);
 extern int TEST_sigwaitinfo_1(void);
@@ -38,6 +41,9 @@ extern int raise_6_1(void);
 extern int raise_7_1(void);
 
 extern int sigsuspend_7_1(void);
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+extern int sigsuspend_7_2(void);
+#endif
 
 extern int sigdelset_1_3(void);
 extern int sigdelset_1_4(void);
@@ -87,6 +93,9 @@ test_run_main *run_test_arry_1[] = {
     TEST_sigwait_1,
     TEST_sigwait_2,
     TEST_sigwait_3,
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+    TEST_sigwait_7,
+#endif
     TEST_sigtimedwait_1,
     TEST_sigtimedwait_2,
     TEST_sigwaitinfo_1,
@@ -110,6 +119,9 @@ test_run_main *run_test_arry_1[] = {
     raise_6_1,
     raise_7_1,
     sigsuspend_7_1,
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+    sigsuspend_7_2,
+#endif
     sigdelset_1_3,
     sigdelset_1_4,
     sigdelset_2_1,
@@ -150,6 +162,9 @@ char run_test_name_1[][50] = {
     "TEST_sigwait_1",
     "TEST_sigwait_2",
     "TEST_sigwait_3",
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+    "TEST_sigwait_7",
+#endif
     "TEST_sigtimedwait_1",
     "TEST_sigtimedwait_2",
     "TEST_sigwaitinfo_1",
@@ -173,6 +188,9 @@ char run_test_name_1[][50] = {
     "raise_6_1",
     "raise_7_1",
     "sigsuspend_7_1",
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+    "sigsuspend_7_2",
+#endif
     "sigdelset_1_3",
     "sigdelset_1_4",
     "sigdelset_2_1",

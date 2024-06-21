@@ -391,7 +391,7 @@ OS_SEC_TEXT bool OsTskDlyScanNoPendLock(struct TagTskCb *taskCB, struct TagOsTsk
     CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase);
     if (((taskCB->taskStatus & OS_TSK_INUSE) != 0) && (tskDlyBase == CPU_TSK_DELAY_BASE(taskCB->timeCoreID)) &&
         ((U64)taskCB->expirationTick <= (U64)g_uniTicks) && (!ListEmpty(&taskCB->timerList)) &&
-        (taskCB->taskSem == NULL)) {
+        (taskCB->taskPend == NULL)) {
         ListDelete(&taskCB->timerList);
         CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase);
     } else {
@@ -412,10 +412,10 @@ OS_SEC_TEXT bool OsTskDlyScanHasPendLock(struct TagTskCb *taskCB, volatile uintp
     CPU_OVERTIME_SORT_LIST_LOCK(tskDlyBase);
     if (((taskCB->taskStatus & OS_TSK_INUSE) != 0) && (tskDlyBase == CPU_TSK_DELAY_BASE(taskCB->timeCoreID)) &&
         ((U64)taskCB->expirationTick <= (U64)g_uniTicks) && (!ListEmpty(&taskCB->timerList)) && 
-        (taskCB->taskSem == pendedLock)) {
+        (taskCB->taskPend == pendedLock)) {
         ListDelete(&taskCB->timerList);
         ListDelete(&taskCB->pendList);
-        taskCB->taskSem = NULL;
+        taskCB->taskPend = NULL;
 
         CPU_OVERTIME_SORT_LIST_UNLOCK(tskDlyBase);
         OsSemPrioUnLock();
@@ -441,7 +441,7 @@ OS_SEC_TEXT bool OsTskDlyBaseListScan(struct TagListObject *tskList, struct TagO
         return FALSE;
     }
 
-    pendedLock = taskCB->taskSem;
+    pendedLock = taskCB->taskPend;
     if (LIKELY(pendedLock == NULL)) {
         if (OsTskDlyScanNoPendLock(taskCB, tskDlyBase)) {
             return TRUE;
