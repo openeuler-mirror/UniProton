@@ -21,7 +21,7 @@
 #include "uart.h"
 #include "console.h"
 
-#include "rpmsg_common.h"
+#include "rpmsg_common_extern.h"
 
 // 初始配置函数入口
 extern S32 OsConfigStart(void);
@@ -51,13 +51,8 @@ U32 PRT_HardDrvInit(void)
     return OS_OK;
 }
 
-#define SH_MEM_TOTAL_SIZE (VRING_SIZE * 2 + 2 * 2 * RL_BUFFER_COUNT * (RL_BUFFER_PAYLOAD_SIZE + 16U))
-char rpmsg_lite_base[SH_MEM_TOTAL_SIZE];
-size_t shmmem_length = SH_MEM_TOTAL_SIZE;
-
 U32 PRT_AppInit(void)
 {
-    current_sys_clock = OS_SYS_CLOCK;
     struct TskInitParam para;
     para.stackSize = 0x1000 << 8;
     para.name ="rpmsg thread";
@@ -67,25 +62,48 @@ U32 PRT_AppInit(void)
     para.args[2] = 0;
     para.args[3] = 0;
 
+#if defined(CONFIG_RPMSGLITE_MASTERPRJ)
+   para.taskPrio = 25;
+   para.taskEntry = rpmsg_master_rpc_on_que;
+   if(PRT_TaskCreate(&master_pid,&para) != OS_OK) {
+       uart_putstr_sync("err in rpmsg_master create");
+       goto failed;
+   }
+   if(PRT_TaskResume(master_pid) != OS_OK) {
+        uart_putstr_sync("err in rpmsg_master/remote resume");
+        goto failed;
+    }
+#elif defined(CONFIG_RPMSGLITE_SLAVEPRJ)
     para.taskPrio = 25;
+    para.taskEntry = rpmsg_remote_rpc_on_que;
+    if(PRT_TaskCreate(&remote_pid,&para) != OS_OK) {
+        uart_putstr_sync("err in rpmsg_remote create");
+        goto failed;
+    }
+    if(PRT_TaskResume(remote_pid) != OS_OK) {
+        uart_putstr_sync("err in rpmsg_master/remote resume");
+        goto failed;
+    }
+#else 
+    para.taskPrio = 24;
     para.taskEntry = rpmsg_master;
     if(PRT_TaskCreate(&master_pid,&para) != OS_OK) {
         uart_putstr_sync("err in rpmsg_master create");
         goto failed;
     }
-    para.taskPrio = 24;
+    para.taskPrio = 25;
     para.taskEntry = rpmsg_remote;
     if(PRT_TaskCreate(&remote_pid,&para) != OS_OK) {
         uart_putstr_sync("err in rpmsg_remote create");
         goto failed;
     }
 
-    if(PRT_TaskResume(master_pid) != OS_OK 
+    if(PRT_TaskResume(master_pid) != OS_OK
        || PRT_TaskResume(remote_pid) != OS_OK) {
         uart_putstr_sync("err in rpmsg_master/remote resume");
         goto failed;
     }
-
+#endif
     return OS_OK;
 failed:
     while (1) {

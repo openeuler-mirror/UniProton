@@ -9,9 +9,18 @@
 
 #include <stdint.h>
 
-/* RPMSG channel index */
-#define RPMSG_MBOX_CHANNEL (0)
+struct rpmsg_platform_shmem_config
+{
+    uint32_t buffer_payload_size; /* custom buffer payload size setting that overwrites RL_BUFFER_PAYLOAD_SIZE global
+                                     config, must be equal to (240, 496, 1008, ...) [2^n - 16] */
+    uint16_t buffer_count; /* custom buffer count setting that overwrites RL_BUFFER_COUNT global config, must be power
+                              of two (2, 4, ...) */
+    uint32_t vring_size;   /* custom vring size */
+    uint32_t vring_align;  /* custom vring alignment */
+};
+typedef struct rpmsg_platform_shmem_config rpmsg_platform_shmem_config_t;
 
+#define UNI2UNI_RPMSGLITE_TEST_LINKID 0
 /*
  * Linux requires the ALIGN to 0x1000(4KB) instead of 0x80
  */
@@ -55,6 +64,6 @@ void *platform_patova(uintptr_t addr);
 int32_t platform_init(void);
 int32_t platform_deinit(void);
 
-void gen_sw_mbox_handler(void *data);
-
+/*custom shmem config*/
+int32_t platform_get_custom_shmem_config(uint32_t link_id, rpmsg_platform_shmem_config_t *cfg);
 #endif /* RPMSG_PLATFORM_H_ */

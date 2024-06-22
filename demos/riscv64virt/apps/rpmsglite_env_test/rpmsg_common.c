@@ -57,8 +57,7 @@ int rpmsg_deinit(
     TEST_ASSERT_MESSAGE(RL_SUCCESS == result, "deinit function failed");
     TEST_ASSERT_MESSAGE(RL_FALSE == rpmsg_lite_is_link_up(rpmsg),
         "link should be down");
-    env_print("rpmsg deinit success\n");
-    return 0;
+    return RL_SUCCESS;
 }
 
 int32_t rpmsg_create_epts(
@@ -66,16 +65,18 @@ int32_t rpmsg_create_epts(
     rpmsg_lite_endpoint_t *volatile epts[],
     rl_ept_rx_cb_t ept_cb,
     int32_t count,
-    int32_t init_addr)
+    int32_t init_addr,
+    ept_rx_cb_data_t* rx_cb_data)
 {
     TEST_ASSERT_MESSAGE(epts != NULL, "NULL param");
     TEST_ASSERT_MESSAGE(count > 0, "negative number");
     for (int32_t i = 0; i < count; i++)
     {
-        epts[i] = rpmsg_lite_create_ept(instance, init_addr + i, ept_cb, (void*)((rpmsg_lite_endpoint_t**)epts + i));
+        epts[i] = rpmsg_lite_create_ept(instance, init_addr + i, ept_cb, (void*)(rx_cb_data + i));
         TEST_ASSERT_MESSAGE(NULL != epts[i], "'rpmsg_lite_create_ept' failed");
         TEST_ASSERT_MESSAGE(init_addr + i == epts[i]->addr,
                             "'rpmsg_lite_create_ept' does not provide expected address");
+        (rx_cb_data + i)->cur_ept = epts[i];
         // env_print("new endpoint:%d, instance:0x%lx, ept:0x%x, addr:%u, cb:0x%lx\n",
             // i, instance, epts[i], init_addr + i, ept_cb);
     }
@@ -90,7 +91,6 @@ int32_t rpmsg_destory_epts(
 {
     TEST_ASSERT_MESSAGE(epts != NULL, "NULL param");
     TEST_ASSERT_MESSAGE(count > 0, "negative number");
-    TEST_ASSERT_MESSAGE(count >= 3, "increase the TC_EPT_COUNT to be at least 3");
     
     //use different sequence of EP destroy to cover the case when EP is removed from the intermediate element of the EP linked list
     rpmsg_lite_destroy_ept(instance, epts[1]);

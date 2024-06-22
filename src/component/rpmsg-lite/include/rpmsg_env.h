@@ -490,12 +490,6 @@ void env_disable_cache(void);
 typedef void LOCK;
 
 typedef unsigned int env_queue_t;
-struct env_msg
-{
-    unsigned int msg_prio;
-    char data[0];
-};
-typedef struct env_msg env_msg_t;
 
 /*!
  * env_create_queue

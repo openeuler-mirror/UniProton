@@ -83,7 +83,7 @@ struct TskContext {
  */
 OS_SEC_ALW_INLINE INLINE U32 OsGetCoreID(void)
 {
-    U64 mpid;
+    U32 mpid;
     OS_EMBED_ASM("csrr %0, mhartid":"=r" (mpid)::);
     return mpid;
 }

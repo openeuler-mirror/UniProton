@@ -33,7 +33,7 @@
 #ifndef RPMSG_DEFAULT_CONFIG_H_
 #define RPMSG_DEFAULT_CONFIG_H_
 
-#define RL_USE_CUSTOM_CONFIG (1)
+#define RL_USE_CUSTOM_CONFIG (0)
 
 #if RL_USE_CUSTOM_CONFIG
 #include "rpmsg_config.h"
@@ -66,7 +66,7 @@
 //! to be implemented in platform layer. The default value is 0 (all RPMsg_Lite
 //! instances use the same shared memory arrangement as defined by common config macros).
 #ifndef RL_ALLOW_CUSTOM_SHMEM_CONFIG
-#define RL_ALLOW_CUSTOM_SHMEM_CONFIG (0)
+#define RL_ALLOW_CUSTOM_SHMEM_CONFIG (1)
 #endif
 
 #if !(defined(RL_ALLOW_CUSTOM_SHMEM_CONFIG) && (RL_ALLOW_CUSTOM_SHMEM_CONFIG == 1))
@@ -100,7 +100,7 @@
 #endif
 
 #ifndef RL_BUFFER_COUNT
-#define RL_BUFFER_COUNT(link_id) (((link_id) == 0U) ? 256U : 2U)
+#define RL_BUFFER_COUNT(link_id) (((link_id) == 0U) ? 64U : 2U)
 #endif
 #endif /* !(defined(RL_ALLOW_CUSTOM_SHMEM_CONFIG) && (RL_ALLOW_CUSTOM_SHMEM_CONFIG == 1))*/
 

@@ -13,9 +13,24 @@ set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION}")
 
+
 if(${APP} STREQUAL "shell")
 	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
 	set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
+elseif(${APP} STREQUAL "rpmsglite_env_test")
+	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsglite.ld")
+	set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsglite.ld")
+	add_definitions(-DCONFIG_SHMEM_SELF)
+elseif(${APP} STREQUAL "rpmsglite_test_master")
+	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsg_master.ld")
+        set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsg_master.ld")
+        add_definitions(-DCONFIG_SHMEM_SELF)
+	add_definitions(-DCONFIG_RPMSGLITE_MASTERPRJ)
+elseif(${APP} STREQUAL "rpmsglite_test_slave")
+	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsg_slave.ld")
+        set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rpmsg_slave.ld")
+        add_definitions(-DCONFIG_SHMEM_SELF)
+	add_definitions(-DCONFIG_RPMSGLITE_SLAVEPRJ)
 else()
 	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rv64virt.ld")
 	set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rv64virt.ld")
@@ -32,6 +47,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/driver
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/misc_m
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp/ipi_module/include
     ${HOME_PATH}/output/libc/include
     ${HOME_PATH}/output/shell/adapter/include
     ${HOME_PATH}/output/shell/include
