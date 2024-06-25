@@ -3,8 +3,6 @@
 
 #include "cache_asm.h"
 
-#define UART_BASE_ADDR       0xFEB50000ULL
-
 #define OPENAMP_SHARED_MEM_LENGTH   0x2000000U
 #define OPENAMP_LOG_LENGTH    0x200000U
 
@@ -17,6 +15,52 @@
 #endif
 
 #define MMU_GIC_ADDR          0xFE600000ULL
+
+#define MMU_PMU1_IOC_ADDR     0xFD5F0000ULL
+#define MMU_PMU2_IOC_ADDR     0xFD5F4000ULL
+#define MMU_BUS_IOC_ADDR      0xFD5F8000ULL
+
+#define MMU_CRU_ADDR          0xFD7C0000ULL
+#define MMU_PMU1_CRU_ADDR     0xFD7F0000ULL
+
+#define MMU_GPIO0_ADDR        0xFD8A0000ULL
+#define MMU_GPIO1_ADDR        0xFEC20000ULL
+#define MMU_GPIO2_ADDR        0xFEC30000ULL
+#define MMU_GPIO3_ADDR        0xFEC40000ULL
+#define MMU_GPIO4_ADDR        0xFEC50000ULL
+
+#define MMU_UART0_ADDR        0xFD890000ULL
+// #define MMU_UART1_ADDR        0xFEB40000ULL
+#define MMU_UART2_ADDR        0xFEB50000ULL
+// #define MMU_UART3_ADDR        0xFEB60000ULL
+// #define MMU_UART4_ADDR        0xFEB70000ULL
+// #define MMU_UART5_ADDR        0xFEB80000ULL
+// #define MMU_UART6_ADDR        0xFEB90000ULL
+// #define MMU_UART7_ADDR        0xFEBA0000ULL
+// #define MMU_UART8_ADDR        0xFEBB0000ULL
+// #define MMU_UART9_ADDR        0xFEBC0000ULL
+
+// #define MMU_CAN0_ADDR         0xFEA50000ULL
+#define MMU_CAN1_ADDR         0xFEA60000ULL
+// #define MMU_CAN2_ADDR         0xFEA70000ULL
+
+#define MMU_I2C0_ADDR         0xFD880000ULL
+// #define MMU_I2C1_ADDR         0xFEA90000ULL
+// #define MMU_I2C2_ADDR         0xFEAA0000ULL
+// #define MMU_I2C3_ADDR         0xFEAB0000ULL
+// #define MMU_I2C4_ADDR         0xFEAC0000ULL
+// #define MMU_I2C5_ADDR         0xFEAD0000ULL
+// #define MMU_I2C6_ADDR         0xFEC80000ULL
+// #define MMU_I2C7_ADDR         0xFEC90000ULL
+// #define MMU_I2C8_ADDR         0xFECA0000ULL
+
+#define MMU_TIMER_ADDR        0xFEAE0000ULL
+
+#define MMU_SPI0_ADDR         0xFEB00000ULL
+// #define MMU_SPI1_ADDR         0xFEB10000ULL
+// #define MMU_SPI2_ADDR         0xFEB20000ULL
+// #define MMU_SPI3_ADDR         0xFEB30000ULL
+// #define MMU_SPI4_ADDR         0xFECB0000ULL
 
 #define TEST_CLK_INT               30
 
