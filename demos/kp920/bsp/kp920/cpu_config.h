@@ -6,10 +6,10 @@
 
 /* 系统内存空间1 */
 #if defined(OS_OPTION_RSC_TABLE)
-    #define MMU_IMAGE_ADDR             0x30100000ULL
+    #define MMU_IMAGE_ADDR             0x51000000ULL
     #define MMU_IMAGE_ADDR_LEN         0x1000000
-    #define MMU_OPENAMP_ADDR           0x30000000ULL
-    #define OPENAMP_SHM_SIZE           0x100000
+    #define MMU_OPENAMP_ADDR           0x50000000ULL
+    #define OPENAMP_SHM_SIZE           0x1000000
 #else
     #define MMU_IMAGE_ADDR             0x202783000000ULL
     #define MMU_IMAGE_ADDR_LEN         0x7D000000           /* 2000MB */
