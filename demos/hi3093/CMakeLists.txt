@@ -53,6 +53,8 @@ include_directories(
     ${HOME_PATH}/src/shell/adapter/include
     ${HOME_PATH}/src/shell/full/include
     ${HOME_PATH}/src/component/mica
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -63,6 +65,7 @@ link_libraries(
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libHI3093.a"
     -Wl,--no-whole-archive
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/drivers/libs/libdriver.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     -Wl,--end-group
 )
@@ -162,6 +165,11 @@ elseif(${APP} STREQUAL "UniPorton_test_sem")
     add_subdirectory(${HOME_PATH}/testsuites/kern-test tmp)
     target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:semTest>)
+elseif (${APP} STREQUAL "netTest" OR
+        ${APP} STREQUAL "uartTest")
+    add_subdirectory(drivers)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:drivers>)
+    target_compile_options(rpmsg PUBLIC -DDRIVER_TESTCASE)
     add_executable(${APP} ${OBJS})
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)

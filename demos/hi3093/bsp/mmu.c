@@ -46,6 +46,18 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .size      = SHM_MAP_SIZE,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt  = MMU_DRIVER_ADDR1,
+        .phys  = MMU_DRIVER_ADDR1,
+        .size  = 0x00ffffff,
+        .max_level = 0x2,
+        .attrs = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt  = MMU_DRIVER_ADDR2,
+        .phys  = MMU_DRIVER_ADDR2,
+        .size  = 0x17FFFF,
+        .max_level = 0x2,
+        .attrs = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }
 };
 
