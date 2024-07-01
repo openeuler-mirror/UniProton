@@ -79,6 +79,9 @@ typedef struct __pthread_attr_s {
 
 #if defined(__NEED_pthread_rwlock_t) && !defined(__DEFINED_pthread_rwlock_t)
 #include "list_types.h"
+#include "prt_buildef.h"
+#define __NEED_uintptr_t
+#include <bits/alltypes.h>
 
 typedef struct __pthread_rwlock_s {
     unsigned int rw_magic : 16;
@@ -88,6 +91,9 @@ typedef struct __pthread_rwlock_s {
     struct __pthread_rwlock_s *next;
     struct TagListObject rw_write;
     struct TagListObject rw_read;
+#if defined(OS_OPTION_SMP)
+    volatile uintptr_t rwSpinLock;
+#endif
 } pthread_rwlock_t;
 #define __DEFINED_pthread_rwlock_t
 #endif  /* defined(__NEED_pthread_rwlock_t) */

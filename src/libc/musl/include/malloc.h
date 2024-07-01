@@ -15,6 +15,7 @@ void *realloc (void *, size_t);
 void free (void *);
 void *valloc (size_t);
 void *memalign(size_t, size_t);
+void *reallocarray (void *, size_t, size_t);
 
 size_t malloc_usable_size(void *);
 

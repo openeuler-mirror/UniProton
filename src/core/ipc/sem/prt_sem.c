@@ -45,14 +45,6 @@ OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, Sem
     return OS_OK;
 }
 
-OS_SEC_ALW_INLINE INLINE void OsSemPostBinMutex(struct TagSemCb *semPosted, struct TagTskCb *resumedTask)
-{
-    semPosted->semOwner = resumedTask->taskPid;
-    if (semPosted->semType == SEM_TYPE_BIN) {
-        ListDelete(&semPosted->semBList);
-        ListTailAdd(&semPosted->semBList, &resumedTask->semBList);
-    }
-}
 #else
 OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, SemHandle semHandle)
 {
@@ -71,16 +63,187 @@ OS_SEC_ALW_INLINE INLINE U32 OsSemPostErrorCheck(struct TagSemCb *semPosted, Sem
 }
 #endif
 
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+/* 遍历任务持有的互斥信号量，获取阻塞中任务的最高优先级，需要semPrio锁保护 */
+OS_SEC_ALW_INLINE INLINE void OsGetPendTskMaxPriority(struct TagTskCb *taskCb, TskPrior *maxPriority)
+{
+    TskPrior curMaxPrior = *maxPriority;
+    struct TagSemCb *curSem = NULL;
+    struct TagTskCb *pendTask = NULL;
+
+    LIST_FOR_EACH(curSem, &taskCb->semBList, struct TagSemCb, semBList) {
+        if (!ListEmpty(&curSem->semList)) {
+            pendTask = GET_TCB_PEND(OS_LIST_FIRST(&(curSem->semList)));
+            if (pendTask->priority < curMaxPrior) {
+                curMaxPrior = pendTask->priority;
+            }
+        }
+    }
+    *maxPriority = curMaxPrior;
+    return;
+}
+
 /*
- * 描述：把当前运行任务挂接到信号量链表上
+ * 描述：判断任务是否可以重设优先级，PRT_TaskSetPriority中调用此函数。
+ */
+OS_SEC_L4_TEXT U32 OsCheckPrioritySet(struct TagTskCb *taskCb, TskPrior taskPrio)
+{
+    struct TagSemCb *curSem = NULL;
+    TskPrior maxPriority = taskCb->origPriority;
+
+    if (taskCb->origPriority != taskCb->priority) {
+        return OS_ERRNO_TSK_PRIORITY_INHERIT;
+    }
+
+    curSem = taskCb->taskSem;
+    if (TSK_STATUS_TST(taskCb, OS_TSK_PEND) && curSem != NULL) {
+        if (GET_SEM_TYPE(curSem->semType) == SEM_TYPE_BIN) {
+            return OS_ERRNO_TSK_PEND_MUTEX;
+        }
+        if (curSem->semMode == SEM_MODE_PRIOR) {
+            // 只有开启优先级继承时才有该限制，保证唤醒的任务在等待队列中优先级最高，如此不需要触发优先级继承
+            return OS_ERRNO_TSK_PEND_PRIOR;
+        }
+    }
+
+    /* 未持有互斥信号量 */
+    if (ListEmpty(&taskCb->semBList)) {
+        return OS_OK;
+    }
+
+    /* 遍历持有的互斥信号量，获取pend任务的最高优先级，此处需要semIfPrior锁保护 */
+    OsGetPendTskMaxPriority(taskCb, &maxPriority);
+
+    if (taskPrio > maxPriority) {
+        return OS_ERRNO_TSK_PRIOR_LOWER_THAN_PENDTSK;
+    }
+
+    return OS_OK;
+}
+
+/*
+ * 描述：按照任务新设置的优先级，调整阻塞于信号量的任务优先级队列
+ */
+OS_SEC_ALW_INLINE INLINE void OsResortSemList(struct TagTskCb *taskCb)
+{  
+    /* 调整信号量优先级队列，外部需要锁OsSemIfPrioLock，taskrq */
+    struct TagTskCb *curTskCb = NULL;
+    struct TagSemCb *semPended = (struct TagSemCb *)taskCb->taskSem;
+
+    ListDelete(&taskCb->pendList);
+
+    /* 遍历链表，找到合适的位置插入 */
+    LIST_FOR_EACH(curTskCb, &semPended->semList, struct TagTskCb, pendList) {
+        /* 找到一个优先级低于目标任务的任务 */
+        if (taskCb->priority < curTskCb->priority) {
+            /* 插入到该任务前面 */
+            ListTailAdd(&taskCb->pendList, &curTskCb->pendList);
+            return;
+        }
+    }
+
+    /* 优先级低于或等于队列中所有其他任务，加在整个队列尾部 */
+    ListTailAdd(&taskCb->pendList, &semPended->semList);
+}
+
+/*
+ * 描述：当前任务因为互斥信号量阻塞，需要升高持有互斥信号量的任务的优先级，外部受到semPrio锁保护
+ */
+OS_SEC_L0_TEXT void OsPriorityInherit(struct TagSemCb *semPended, struct TagTskCb *runTsk)
+{
+    struct TagTskCb *semOwnerTask;
+    struct TagSemCb *recurSem;
+    TskPrior newPriority = runTsk->priority;
+    
+    if (GET_SEM_TYPE(semPended->semType) != SEM_TYPE_BIN) {
+        return;
+    }
+
+    semOwnerTask = GET_TCB_HANDLE(semPended->semOwner);
+
+    OsSpinLockTaskRq(semOwnerTask);
+    while (semOwnerTask->priority > newPriority) {
+        /* 信号量持有任务处于就绪状态，调整就绪队列后退出 */
+        if (TSK_STATUS_TST(semOwnerTask, OS_TSK_READY)) {
+            OsTskReadyDel(semOwnerTask);
+            semOwnerTask->priority = newPriority;
+            /* 添加到就绪链表同优先级尾部 */
+            OsTskReadyAdd(semOwnerTask);
+            OsSpinUnlockTaskRq(semOwnerTask);
+            return;
+        }
+        semOwnerTask->priority = newPriority;
+        /* 信号量持有任务不处于信号量阻塞状态与就绪状态，直接退出 */
+        if (!TSK_STATUS_TST(semOwnerTask, OS_TSK_PEND)) {
+            OsSpinUnlockTaskRq(semOwnerTask);
+            return;
+        }
+        /* 信号量持有任务也处于阻塞状态，获取所阻塞的信号量 */
+        recurSem = (struct TagSemCb *)semOwnerTask->taskSem;
+        /* 如果是优先级唤醒模式先重排信号量的阻塞优先级队列 */
+        if (recurSem->semMode == SEM_MODE_PRIOR) {
+            OsResortSemList(semOwnerTask);
+        }
+        OsSpinUnlockTaskRq(semOwnerTask);
+        /* 所阻塞的信号量不为互斥型，直接退出 */
+        if (GET_SEM_TYPE(recurSem->semType) != SEM_TYPE_BIN) {
+            return;
+        }
+        /* 所阻塞的信号量类型为互斥型，多级优先级继承，提升拥有该互斥信号量的任务优先级 */
+        semOwnerTask = GET_TCB_HANDLE(recurSem->semOwner);
+        OsSpinLockTaskRq(semOwnerTask);
+    }
+    OsSpinUnlockTaskRq(semOwnerTask);
+}
+
+/*
+ * 描述：任务释放互斥信号量时尝试恢复原本优先级，需要semPrio锁保护
+ */
+OS_SEC_L0_TEXT bool OsPriorityRestore(void)
+{
+    struct TagSemCb *curSem = NULL;
+    struct TagTskCb *taskCb = NULL;
+    struct TagTskCb *runTsk = RUNNING_TASK;
+    TskPrior maxPriority = runTsk->origPriority;
+
+    if (runTsk->priority == runTsk->origPriority) {
+        return FALSE;
+    }
+
+    OsSpinLockTaskRq(runTsk);
+
+    /* 遍历当前任务持有的互斥信号量，获取pend任务的最高优先级 */
+    OsGetPendTskMaxPriority(runTsk, &maxPriority);
+
+    /* 最高优先级与任务当前优先级相等，不需要调整 */
+    if (maxPriority == runTsk->priority) {
+        OsSpinUnlockTaskRq(runTsk);
+        return FALSE;
+    }
+
+    /* 优先级降到最高优先，最高优先级至少为原始优先级 */
+    OsTskReadyDel(runTsk);
+    runTsk->priority = maxPriority;
+    if (!TSK_STATUS_TST(runTsk, OS_TSK_SUSPEND_READY_BLOCK)) {
+        // 中间放过锁，这里可能已经被置suspend, readAdd前必须有能否readyAdd的判断
+        OsTskReadyAddBgd(runTsk);
+    }
+    OsSpinUnlockTaskRq(runTsk);
+    return TRUE;
+}
+#endif
+
+/*
+ * 描述：把当前运行任务挂接到信号量链表上，外部受semPrio锁保护
  */
 OS_SEC_L0_TEXT void OsSemPendListPut(struct TagSemCb *semPended, U32 timeOut)
 {
     struct TagTskCb *curTskCb = NULL;
     struct TagTskCb *runTsk = RUNNING_TASK;
     struct TagListObject *pendObj = &runTsk->pendList;
-    OsSemIfPrioLock(semPended);
+    struct TagOsRunQue *runQue;
 
+    runQue = OsSpinLockRunTaskRq();
     OsTskReadyDel((struct TagTskCb *)runTsk);
 
     runTsk->taskSem = (void *)semPended;
@@ -109,14 +272,20 @@ TIMER_ADD:
         OsTskTimerAdd((struct TagTskCb *)runTsk, timeOut);
     }
 
-    OsSemIfPrioUnLock(semPended);
+    OsSpinUnLockRunTaskRq(runQue);
+
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+    /* 优先级继承，仅二进制信号量支持 */
+    OsPriorityInherit(semPended, runTsk);
+#endif
 }
 
 /*
  * 描述：从非空信号量链表上摘首个任务放入到ready队列
  */
-OS_SEC_L0_TEXT struct TagTskCb *OsSemPendListGet(struct TagSemCb *semPended)
+OS_SEC_L0_TEXT void OsSemPendListGet(struct TagSemCb *semPended)
 {
+    /* 任务阻塞链表上的第一个任务/优先级最高的任务 */
     struct TagTskCb *taskCb = GET_TCB_PEND(OS_LIST_FIRST(&(semPended->semList)));
 
     ListDelete(OS_LIST_FIRST(&(semPended->semList)));
@@ -137,10 +306,21 @@ OS_SEC_L0_TEXT struct TagTskCb *OsSemPendListGet(struct TagSemCb *semPended)
     }
     OsSpinUnlockTaskRq(taskCb);
 
+    semPended->semOwner = taskCb->taskPid;
 #if defined(OS_OPTION_BIN_SEM)
-    OsSemPostBinMutex(semPended, taskCb);
+    /*
+     * 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它，
+     * 再把它挂接到新的持有它的任务的持有链表上；然后尝试降低任务的优先级
+     */
+    if (GET_SEM_TYPE(semPended->semType) == SEM_TYPE_BIN) {
+        // 此处需要受到 semIfPrio 锁保护
+        ListDelete(&semPended->semBList);
+        ListTailAdd(&semPended->semBList, &taskCb->semBList);  
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+        (void)OsPriorityRestore();
 #endif
-    return taskCb;
+    }
+#endif
 }
 
 OS_SEC_L0_TEXT U32 OsSemPendParaCheck(U32 timeout)
@@ -159,7 +339,7 @@ OS_SEC_L0_TEXT bool OsSemPendNotNeedSche(struct TagSemCb *semPended, struct TagT
 {
 #if defined(OS_OPTION_SEM_RECUR_PV)
     if (GET_SEM_TYPE(semPended->semType) == SEM_TYPE_BIN && semPended->semOwner == runTsk->taskPid &&
-        (GET_MUTEX_TYPE(semPended->semType) == PTHREAD_MUTEX_RECURSIVE)) {
+        GET_MUTEX_TYPE(semPended->semType) == SEM_MUTEX_TYPE_RECUR) {
         semPended->recurCount++;
         return TRUE;
     }
@@ -169,7 +349,7 @@ OS_SEC_L0_TEXT bool OsSemPendNotNeedSche(struct TagSemCb *semPended, struct TagT
         semPended->semCount--;
         semPended->semOwner = runTsk->taskPid;
 #if defined(OS_OPTION_BIN_SEM)
-        /* 如果是互斥信号量，把持有的互斥信号量挂接起来 */
+        /* 如果是互斥信号量，把持有的互斥信号量挂接起来，此处需要受semPrio锁保护 */
         if (GET_SEM_TYPE(semPended->semType) == SEM_TYPE_BIN) {
             ListTailAdd(&semPended->semBList, &runTsk->semBList);
         }
@@ -188,6 +368,7 @@ OS_SEC_L0_TEXT U32 PRT_SemPend(SemHandle semHandle, U32 timeout)
     U32 ret;
     struct TagTskCb *runTsk = NULL;
     struct TagSemCb *semPended = NULL;
+    struct TagOsRunQue *runQue = NULL;
 
     if (semHandle >= (SemHandle)g_maxSem) {
         return OS_ERRNO_SEM_INVALID;
@@ -208,59 +389,42 @@ OS_SEC_L0_TEXT U32 PRT_SemPend(SemHandle semHandle, U32 timeout)
     }
 
     runTsk = (struct TagTskCb *)RUNNING_TASK;
-
+    OsSemIfPrioLock(semPended);
     if (OsSemPendNotNeedSche(semPended, runTsk) == TRUE) {
+        OsSemIfPrioUnLock(semPended);
         SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return OS_OK;
     }
 
     ret = OsSemPendParaCheck(timeout);
     if (ret != OS_OK) {
+        OsSemIfPrioUnLock(semPended);
         SEM_CB_IRQ_UNLOCK(semPended, intSave);
         return ret;
     }
     /* 把当前任务挂接在信号量链表上 */
     OsSemPendListPut(semPended, timeout);
 
+    OsSemIfPrioUnLock(semPended);
     SEM_CB_UNLOCK(semPended);
     if (timeout != OS_WAIT_FOREVER) {
         /* 触发任务调度 */
         OsTskSchedule();
 
+        runQue = OsSpinLockRunTaskRq();
         /* 判断是否是等待信号量超时 */
         if (TSK_STATUS_TST(runTsk, OS_TSK_TIMEOUT)) {
-
-            struct TagOsRunQue *thisQue = OsSpinLockRunTaskRq();
-
             TSK_STATUS_CLEAR(runTsk, OS_TSK_TIMEOUT);
-
-            OsSpinUnLockRunTaskRq(thisQue);
+            OsSpinUnLockRunTaskRq(runQue);
             OsIntRestore(intSave);
             return OS_ERRNO_SEM_TIMEOUT;
         }
+        OsSpinUnLockRunTaskRq(runQue);
     } 
     /* 恢复ps的快速切换 */
     OsTskScheduleFastPs(intSave);
     OsIntRestore(intSave);
     return OS_OK;
-}
-
-OS_SEC_ALW_INLINE INLINE void OsSemPostSchePre(struct TagSemCb *semPosted)
-{
-    struct TagTskCb *resumedTask = NULL;
-
-    resumedTask = OsSemPendListGet(semPosted);
-    semPosted->semOwner = resumedTask->taskPid;
-#if defined(OS_OPTION_BIN_SEM)
-    /*
-     * 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它，
-     * 再把它挂接到新的持有它的任务的持有链表上；然后尝试降低任务的优先级
-     */
-    if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
-        ListDelete(&semPosted->semBList);
-        ListTailAdd(&semPosted->semBList, &resumedTask->semBList);
-    }
-#endif
 }
 
 /*
@@ -271,7 +435,7 @@ OS_SEC_ALW_INLINE INLINE bool OsSemPostIsInvalid(struct TagSemCb *semPosted)
 {
     if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
 #if defined(OS_OPTION_SEM_RECUR_PV)
-        if ((GET_MUTEX_TYPE(semPosted->semType) == PTHREAD_MUTEX_RECURSIVE) && semPosted->recurCount > 0) {
+        if (GET_MUTEX_TYPE(semPosted->semType) == SEM_MUTEX_TYPE_RECUR && semPosted->recurCount > 0) {
             semPosted->recurCount--;
             return TRUE;
         }
@@ -315,7 +479,7 @@ OS_SEC_L0_TEXT U32 PRT_SemPost(SemHandle semHandle)
 
     /* 如果有任务阻塞在信号量上，就激活信号量阻塞队列上的首个任务 */
     if (!ListEmpty(&semPosted->semList)) {
-        OsSemPostSchePre(semPosted);
+        OsSemPendListGet(semPosted);
         OsSemIfPrioUnLock(semPosted);
         SEM_CB_UNLOCK(semPosted);
         /* 相当于快速切换+中断恢复 */
@@ -323,11 +487,22 @@ OS_SEC_L0_TEXT U32 PRT_SemPost(SemHandle semHandle)
     } else {
         semPosted->semCount++;
         
-#if defined(OS_OPTION_BIN_SEM)
         semPosted->semOwner = OS_INVALID_OWNER_ID;
+#if defined(OS_OPTION_BIN_SEM)
         /* 如果释放的是互斥信号量，就从释放此互斥信号量任务的持有链表上摘除它 */
         if (GET_SEM_TYPE(semPosted->semType) == SEM_TYPE_BIN) {
             ListDelete(&semPosted->semBList);
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+            /* 尝试降低当前任务优先级 */
+            if (OsPriorityRestore()) {
+                /* 优先级发生变化，触发任务调度 */
+                OsSemIfPrioUnLock(semPosted);
+                SEM_CB_UNLOCK(semPosted);
+                OsTskSchedule();
+                OsIntRestore(intSave);
+                return OS_OK;
+            }
+#endif
         }
 #endif
         OsSemIfPrioUnLock(semPosted);

@@ -98,6 +98,9 @@ OS_SEC_TEXT void OsTaskScan(void)
         } else if ((OS_TSK_QUEUE_PEND & taskCb->taskStatus) != 0) {
             ListDelete(&taskCb->pendList);
             TSK_STATUS_CLEAR(taskCb, OS_TSK_QUEUE_PEND);
+        } else if ((OS_TSK_RW_PEND & taskCb->taskStatus) != 0) {
+            ListDelete(&taskCb->pendList);
+            TSK_STATUS_CLEAR(taskCb, OS_TSK_RW_PEND);
         } else if ((OS_TSK_DELAY_INTERRUPTIBLE & taskCb->taskStatus) != 0) {
             TSK_STATUS_CLEAR(taskCb, OS_TSK_DELAY_INTERRUPTIBLE);
 #if defined(OS_OPTION_LINUX)

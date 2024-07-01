@@ -50,7 +50,7 @@ static void* pthread_rwlock_timedwrlock_5_1_fn_wr_1(void *arg)
 	pthread_rwlock_timedwrlock_5_1_thread_state = ENTERED_THREAD;
 	struct timespec abs_timeout;
 	int rc;
-	pthread_rwlock_t rwlock;
+	pthread_rwlock_t rwlock = {0};
 
 	if(pthread_rwlock_init(&rwlock, NULL) != 0)
 	{
@@ -103,7 +103,7 @@ static void* pthread_rwlock_timedwrlock_5_1_fn_wr_2(void *arg)
 	pthread_rwlock_timedwrlock_5_1_thread_state = ENTERED_THREAD;
 	struct timespec abs_timeout;
 	int rc;
-	pthread_rwlock_t rwlock;
+	pthread_rwlock_t rwlock = {0};
 
 	if(pthread_rwlock_init(&rwlock, NULL) != 0)
 	{

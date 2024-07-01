@@ -84,6 +84,7 @@ OS_SEC_L0_TEXT void OsTskReadyAdd(struct TagTskCb *task)
 
     return;
 }
+
 #if (defined(OS_OPTION_SMP) && (OS_MAX_CORE_NUM > 1))
 OS_SEC_L0_TEXT void OsTskReadyAddNoWakeUpIpc(struct TagTskCb *task)
 {

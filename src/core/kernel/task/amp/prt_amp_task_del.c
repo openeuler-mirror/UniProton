@@ -19,7 +19,7 @@
 OS_SEC_L4_TEXT void OsTaskDeleteResInit(struct TagTskCb *taskCb)
 {
 
-    if (((OS_TSK_PEND | OS_TSK_QUEUE_PEND) & taskCb->taskStatus) != 0) {
+    if (((OS_TSK_PEND | OS_TSK_QUEUE_PEND | OS_TSK_RW_PEND) & taskCb->taskStatus) != 0) {
         ListDelete(&taskCb->pendList);
     }
 

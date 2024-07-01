@@ -16,6 +16,7 @@
 #include "prt_posix_internal.h"
 #include "prt_sem_external.h"
 
+/* pthread mutex attr中的proctol属性无效，是否开启优先级继承由宏控制 */
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 {
     U32 ret;
@@ -36,12 +37,13 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
     switch (mutex->type) {
         case PTHREAD_MUTEX_NORMAL:
         case PTHREAD_MUTEX_ERRORCHECK:
-            ret = OsSemCreate(OS_SEM_FULL, SEM_TYPE_BIN | (protocol << 8), SEM_MODE_PRIOR, &mutex->mutex_sem, (U32)&mutex->mutex_sem);
+            ret = OsSemCreate(OS_SEM_FULL, SEM_TYPE_BIN | (protocol << 8), SEM_MODE_PRIOR,
+                              (SemHandle *)&mutex->mutex_sem, (U32)&mutex->mutex_sem);
             break;
 
         case PTHREAD_MUTEX_RECURSIVE:
-            ret = OsSemCreate(OS_SEM_FULL, SEM_TYPE_BIN | (PTHREAD_MUTEX_RECURSIVE << 4) | (protocol << 8), SEM_MODE_PRIOR,
-                              &mutex->mutex_sem, (U32)&mutex->mutex_sem);
+            ret = OsSemCreate(OS_SEM_FULL, SEM_TYPE_BIN | (SEM_MUTEX_TYPE_RECUR << 4) | (protocol << 8), SEM_MODE_PRIOR,
+                              (SemHandle *)&mutex->mutex_sem, (U32)&mutex->mutex_sem);
             break;
 
         default:

@@ -29,7 +29,7 @@
 
 int pthread_rwlock_unlock_4_1()
 {
-	static pthread_rwlock_t rwlock;
+	static pthread_rwlock_t rwlock = {0};
 	int rc;
 	
 	rc = pthread_rwlock_unlock(&rwlock);

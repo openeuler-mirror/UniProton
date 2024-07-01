@@ -579,6 +579,13 @@ extern "C" {
 #define OS_TSK_SIG_PAUSE 0x20000
 
 /*
+ * 任务或任务控制块状态标志。
+ *
+ * 任务暂停，等待任何信号处理完成
+ */
+#define OS_TSK_RW_PEND 0x40000
+
+/*
  * 任务模块的错误码定义。
  */
 /*
@@ -831,7 +838,6 @@ extern "C" {
  */
 #define OS_ERRNO_TSK_STACKADDR_TOO_BIG OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1b)
 
-
 #define OS_ERRNO_TSK_OPERATION_BUSY OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1c)
 
 #define OS_ERRNO_TSK_BIND_CORE_INVALID OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x1d)
@@ -845,6 +851,51 @@ extern "C" {
 #define OS_ERRNO_TSK_DESTCORE_NOT_RUNNING OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x22)
 
 #define OS_ERRNO_BUILD_ID_INVALID   OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x23)
+
+/*
+ * 任务错误码：任务继承优先级中
+ *
+ * 值: 0x02000324
+ *
+ * 解决方案: 等待任务恢复原本优先级后再设置任务的优先级
+ */
+#define OS_ERRNO_TSK_PRIORITY_INHERIT OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x24)
+
+/*
+ * 任务错误码：任务阻塞在互斥信号量上
+ *
+ * 值: 0x02000325
+ *
+ * 解决方案: 等待任务恢复调度后再设置任务的优先级
+ */
+#define OS_ERRNO_TSK_PEND_MUTEX OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x25)
+
+/*
+ * 任务错误码：任务阻塞在优先级信号量上
+ *
+ * 值: 0x02000326
+ *
+ * 解决方案: 等待任务恢复调度后再设置任务的优先级
+ */
+#define OS_ERRNO_TSK_PEND_PRIOR OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x26)
+
+/*
+ * 任务错误码：重设优先级时低于阻塞在目标任务持有的互斥信号量的任务的优先级
+ *
+ * 值: 0x02000327
+ *
+ * 解决方案: 等待目标任务释放互斥信号量后再设置优先级
+ */
+#define OS_ERRNO_TSK_PRIOR_LOWER_THAN_PENDTSK OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x27)
+
+/*
+ * 任务错误码：删除任务时，任务持有互斥信号量
+ *
+ * 值: 0x02000328
+ *
+ * 解决方案: 删除任务前应该将其持有的互斥信号量释放
+ */
+#define OS_ERRNO_TSK_HAVE_MUTEX_SEM OS_ERRNO_BUILD_ERROR(OS_MID_TSK, 0x28)
 
 
 // #if defined(OS_OPTION_SMP)

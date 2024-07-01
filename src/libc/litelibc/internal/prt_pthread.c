@@ -20,6 +20,7 @@
 #include "amp/prt_task_internal.h"
 #endif
 #include "prt_err_external.h"
+#include "prt_sem_external.h"
 
 void OsPthreadNotifyParents(struct TagTskCb *tskCb)
 {

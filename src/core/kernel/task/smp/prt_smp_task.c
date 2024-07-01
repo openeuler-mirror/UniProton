@@ -401,6 +401,7 @@ OS_SEC_TEXT bool OsTskDlyScanNoPendLock(struct TagTskCb *taskCB, struct TagOsTsk
     return FALSE;
 }
 
+/* 等待互斥锁的任务超时后，持有互斥锁的任务优先级无法恢复 */
 OS_SEC_TEXT bool OsTskDlyScanHasPendLock(struct TagTskCb *taskCB, volatile uintptr_t *pendedLock,
                                          struct TagOsTskSortedDelayList *tskDlyBase)
 {
@@ -446,12 +447,13 @@ OS_SEC_TEXT bool OsTskDlyBaseListScan(struct TagListObject *tskList, struct TagO
             return TRUE;
         }
     } else {
+        // 如果rwlock要支持smp, 应该走入该分支
         if (OsTskDlyScanHasPendLock(taskCB, pendedLock, tskDlyBase)) {
             return TRUE;
         }
     }
 
-    TSK_STATUS_CLEAR(taskCB, OS_TSK_PEND | OS_TSK_QUEUE_PEND | OS_TSK_EVENT_PEND| OS_TSK_DELAY);
+    TSK_STATUS_CLEAR(taskCB, OS_TSK_PEND | OS_TSK_QUEUE_PEND | OS_TSK_RW_PEND | OS_TSK_EVENT_PEND| OS_TSK_DELAY);
 
     if(!(taskCB->taskStatus & (OS_TSK_SUSPEND_READY_BLOCK))) {
         OsTskReadyAddBgd(taskCB);

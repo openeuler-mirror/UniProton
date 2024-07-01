@@ -19,16 +19,19 @@ OS_SEC_BSS struct TagSemCb *g_allSem;
 #if defined(OS_OPTION_SMP)
 OS_SEC_BSS volatile uintptr_t g_semPrioLock;
 #endif
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+extern U32 OsCheckPrioritySet(struct TagTskCb *taskCb, TskPrior taskPrio);
+#endif
 
 OS_SEC_L4_TEXT bool OsSemBusy(SemHandle semHandle)
 {
     struct TagSemCb *semCb = NULL;
 
     semCb = GET_SEM(semHandle);
-    if (GET_MUTEX_TYPE(semCb->semType) != PTHREAD_MUTEX_RECURSIVE && semCb->semCount == 0 &&
+    if (GET_MUTEX_TYPE(semCb->semType) != SEM_MUTEX_TYPE_RECUR && semCb->semCount == 0 &&
         GET_SEM_TYPE(semCb->semType) == SEM_TYPE_BIN) {
         return TRUE;
-    } else if (GET_MUTEX_TYPE(semCb->semType) == PTHREAD_MUTEX_RECURSIVE && semCb->semCount == 0 &&
+    } else if (GET_MUTEX_TYPE(semCb->semType) == SEM_MUTEX_TYPE_RECUR && semCb->semCount == 0 &&
         semCb->semOwner != RUNNING_TASK->taskPid) {
         return TRUE;
     }
@@ -85,25 +88,26 @@ OS_SEC_L4_TEXT U32 OsSemInit(void)
 #if defined(OS_OPTION_SMP)
     OsSpinLockInitInner(&g_semPrioLock);
 #endif
+
+#if defined(OS_OPTION_SEM_PRIO_INHERIT)
+    g_checkPrioritySet = OsCheckPrioritySet;
+#endif
     return ret;
 }
 
 OS_SEC_ALW_INLINE INLINE void OsSemCreateCbInit(U32 count, U32 semType, enum SemMode semMode,
                                            struct TagSemCb *semCreated)
 {
-        semCreated->semCount = count;
-        semCreated->semStat = OS_SEM_USED;
-        semCreated->semMode = semMode;
-        semCreated->semType = semType;
-        semCreated->semOwner = OS_INVALID_OWNER_ID;
-    if (semType == SEM_TYPE_BIN) {
-    } else {
-        if (GET_MUTEX_TYPE(semType) == PTHREAD_MUTEX_RECURSIVE) {
-            OS_LIST_INIT(&semCreated->semBList);
+    semCreated->semCount = count;
+    semCreated->semStat = OS_SEM_USED;
+    semCreated->semMode = semMode;
+    semCreated->semType = semType;
+    semCreated->semOwner = OS_INVALID_OWNER_ID;
+    if (GET_SEM_TYPE(semType) == SEM_TYPE_BIN) {
+        OS_LIST_INIT(&semCreated->semBList);
 #if defined(OS_OPTION_SEM_RECUR_PV)
-            semCreated->recurCount = 0;
+        semCreated->recurCount = 0;
 #endif
-        }
     }
 
     OS_LIST_INIT(&semCreated->semList);
@@ -173,6 +177,17 @@ OS_SEC_L4_TEXT U32 PRT_SemCreate(U32 count, SemHandle *semHandle)
     return ret;
 }
 
+#if defined(OS_OPTION_BIN_SEM)
+/*
+ * 描述：创建一个互斥信号量，支持优先级继承
+ */
+OS_SEC_L4_TEXT U32 PRT_SemMutexCreate(SemHandle *semHandle)
+{
+    return OsSemCreate(OS_SEM_FULL, SEM_TYPE_BIN | (SEM_MUTEX_TYPE_RECUR << 4), SEM_MODE_PRIOR, semHandle,
+        (U32)(uintptr_t)semHandle);
+}
+#endif
+
 /*
  * 描述：删除一个信号量
  */
@@ -200,7 +215,8 @@ OS_SEC_L4_TEXT U32 PRT_SemDelete(SemHandle semHandle)
     }
 #ifdef OS_OPTION_BIN_SEM
     if ((semDeleted->semOwner != OS_INVALID_OWNER_ID) && (GET_SEM_TYPE(semDeleted->semType) == SEM_TYPE_BIN)) {
-        ListDelete(&semDeleted->semBList);
+        SEM_CB_IRQ_UNLOCK(semDeleted, intSave);
+        return OS_ERRNO_SEM_MUTEX_HOLDING;
     }
 #endif
     semDeleted->semStat = OS_SEM_UNUSED;

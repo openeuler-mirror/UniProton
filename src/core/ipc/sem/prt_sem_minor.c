@@ -13,6 +13,7 @@
  * Description: 信号量模块
  */
 #include "prt_sem_external.h"
+#include "prt_task_external.h"
 
 /*
  * 描述：获取信号量详细信息。
@@ -31,9 +32,9 @@ OS_SEC_L4_TEXT U32 PRT_SemGetInfo(SemHandle semHandle, struct SemInfo *semInfo)
     }
     semGet = GET_SEM(semHandle);
 
-    intSave = OsIntLock();
+    SEM_CB_IRQ_LOCK(semGet, intSave);
     if (semGet->semStat == OS_SEM_UNUSED) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semGet, intSave);
         return OS_ERRNO_SEM_INVALID;
     }
 
@@ -42,7 +43,7 @@ OS_SEC_L4_TEXT U32 PRT_SemGetInfo(SemHandle semHandle, struct SemInfo *semInfo)
     semInfo->mode = semGet->semMode;
     semInfo->type = (GET_SEM_TYPE(semGet->semType) == SEM_TYPE_COUNT) ? SEM_TYPE_COUNT : SEM_TYPE_BIN;
 
-    OsIntRestore(intSave);
+    SEM_CB_IRQ_UNLOCK(semGet, intSave);
     return OS_OK;
 }
 
@@ -91,9 +92,9 @@ OS_SEC_L4_TEXT U32 PRT_SemGetPendList(SemHandle semHandle, U32 *tskCnt, U32 *pid
     }
 
     semCb = GET_SEM(semHandle);
-    intSave = OsIntLock();
+    SEM_CB_IRQ_LOCK(semCb, intSave);
     if (semCb->semStat == OS_SEM_UNUSED) {
-        OsIntRestore(intSave);
+        SEM_CB_IRQ_UNLOCK(semCb, intSave);
         return OS_ERRNO_SEM_INVALID;
     }
 
@@ -106,7 +107,7 @@ OS_SEC_L4_TEXT U32 PRT_SemGetPendList(SemHandle semHandle, U32 *tskCnt, U32 *pid
 
     *tskCnt = taskCount;
 
-    OsIntRestore(intSave);
+    SEM_CB_IRQ_UNLOCK(semCb, intSave);
 
     if (taskCount > len) {
         return OS_ERRNO_SEM_INPUT_BUF_NOT_ENOUGH;

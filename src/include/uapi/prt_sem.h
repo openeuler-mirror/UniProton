@@ -178,6 +178,15 @@ extern "C" {
 #define OS_ERRNO_SEM_MUTEX_POST_INTERR OS_ERRNO_BUILD_ERROR(OS_MID_SEM, 0x11)
 
 /*
+ * 信号量错误码：互斥信号量删除和时有持有信号量的任务。
+ *
+ * 值: 0x0200070a
+ *
+ * 解决方案: 如果当前互斥信号量有任务持有，不能进行删除操作。
+ */
+#define OS_ERRNO_SEM_MUTEX_HOLDING OS_ERRNO_BUILD_ERROR(OS_MID_SEM, 0x12)
+
+/*
  * 信号量等待时间设定：表示不等待。
  */
 #define OS_NO_WAIT 0
@@ -217,8 +226,16 @@ typedef U16 SemHandle;
  */
 /* 计数型信号量 */
 #define SEM_TYPE_COUNT 0
-/* 二进制信号量 */
+/* 二进制互斥信号量 */
 #define SEM_TYPE_BIN 1
+
+/*
+ * 二进制互斥信号量，互斥类型。
+ */
+/* 不可嵌套调用PV操作 */
+#define SEM_MUTEX_TYPE_NORMAL 0
+/* 可以被同一任务嵌套调用PV操作 */
+#define SEM_MUTEX_TYPE_RECUR 1
 
 /*
  * 信号量模块被阻塞线程唤醒方式。
@@ -272,6 +289,26 @@ struct SemInfo {
  */
 extern U32 PRT_SemCreate(U32 count, SemHandle *semHandle);
 
+#if defined(OS_OPTION_BIN_SEM)
+/*
+ * @brief 创建一个互斥信号量。
+ *
+ * @par 描述
+ * 创建一个互斥信号量，设定初始计数器数值为1，唤醒方式为优先级模式，支持优先级继承，支持嵌套PV操作。
+ * @attention
+ * <ul><li>创建是否成功会受到"核内信号量裁剪开关"和"最大支持信号量"配置项的限制。</li></ul>
+ * <ul><li>任务删除时不会释放持有互斥信号量，应该在任务删除/退出前主动释放持有的互斥信号量，否则可能导致死锁等问题</li></ul>
+ *
+ * @param semHandle [OUT] 类型#SemHandle *，输出信号量句柄。
+ *
+ * @retval #OS_OK  0x00000000，操作成功。
+ * @retval #其它值，操作失败。
+ * @par 依赖
+ * <ul><li>prt_sem.h：该接口声明所在的头文件。</li></ul>
+ * @see PRT_SemDelete
+ */
+extern U32 PRT_SemMutexCreate(SemHandle *semHandle);
+#endif
 /*
  * @brief 删除一个信号量。
  *

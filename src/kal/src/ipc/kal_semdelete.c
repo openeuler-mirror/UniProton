@@ -24,6 +24,7 @@ int KAL_SemDelete(uintptr_t semid)
         case OS_OK:
         case OS_ERRNO_SEM_INVALID:
             return 0;
+        case OS_ERRNO_SEM_MUTEX_HOLDING:
         case OS_ERRNO_SEM_PENDED:
             return EAGAIN;
         default:
