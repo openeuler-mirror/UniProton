@@ -38,6 +38,9 @@
 
 #include "prt_task.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -81,6 +84,12 @@ int sys_chdir(FAR const char *path)
   FAR char *oldpwd;
   FAR char *abspath;
   int ret;
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  if(proxyPath(path)) {
+    PRT_ProxyChdir(path);
+  }
+#endif
 
   /* Verify that 'path' refers to a directory */
 

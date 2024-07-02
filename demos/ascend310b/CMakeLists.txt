@@ -49,6 +49,10 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${HOME_PATH}/src/shell/adapter/include
         ${HOME_PATH}/src/shell/full/include
         ${HOME_PATH}/src/component/mica
+        ${HOME_PATH}/src/component/proxy
+        ${HOME_PATH}/src/om/include
+        ${HOME_PATH}/src/mem/include
+        ${OUTPUT_PATH}/drivers/include/
     )
 elseif(${CONFIG_GUEST_OS})
     include_directories(
@@ -71,6 +75,7 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/libASCEND310B.a"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+        "${TOOLCHAIN_PATH}/lib/gcc/aarch64-none-elf/10.3.1/libgcc.a"
         -Wl,--end-group
     )
 elseif(${CONFIG_GUEST_OS})

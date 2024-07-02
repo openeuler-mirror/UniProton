@@ -5,6 +5,7 @@ add_library(base_sys OBJECT ${SYS_SOURCE})
 target_include_directories(base_sys PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/vfs
     ${FS_BASE_DIR}/
 )
 

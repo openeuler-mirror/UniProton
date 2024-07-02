@@ -9,6 +9,12 @@ if(NOT "${CONFIG_CONFIG_PSEUDOFS_SOFTLINKS}")
     )
 endif()
 
+if(NOT "${CONFIG_OS_OPTION_PROXY}")
+    list(REMOVE_ITEM VFS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/fs_proxy.c
+    )
+endif()
+
 # Stream support
 
 if(NOT "${CONFIG_CONFIG_FILE_STREAM}")
