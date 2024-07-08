@@ -20,6 +20,10 @@
 #include <time.h>
 #include "prt_signal.h"
 #include "posixtest.h"
+#include "prt_typedef.h"
+#include "prt_mem.h"
+#include "prt_task.h"
+#include "prt_config.h"
 
 #define PTHREAD_NUN 2
 static unsigned int g_TestValue = 0;
@@ -417,3 +421,118 @@ int TEST_sigwaitinfo_1(void)
 
     return PTS_FAIL;
 }
+
+#if (defined(OS_OPTION_SMP) && (OS_SYS_CORE_RUN_NUM > 1))
+/* 测试用例7：等待信号中不存在pending信号，线程挂起等待，同时改变线程优先级，信号来同时改变线程优先级，
+    后线程可恢复执行 */
+static TskHandle g_testHandle;
+extern U8 g_numOfCores;
+void *TEST_sigwait_pthread_7()
+{
+    int sig;
+    sigset_t set;
+    int ret = sigemptyset(&set);
+    if (ret != 0) {
+        error_code = 1;
+        return NULL;
+    }
+    ret = sigaddset(&set, g_signo);
+    if (ret != 0) {
+        error_code = 2;
+        return NULL;
+    }
+    g_testHandle = getpid();
+
+    g_TestValue++;
+    ret = sigwait(&set, &sig);
+    if (ret != 0) {
+        error_code = 3;
+        return NULL;
+    }
+    if (sig != g_signo) {
+        error_code = 4;
+        return NULL;
+    }
+    g_TestValue++;
+
+    return NULL;
+}
+
+int TEST_slave_sigwait(void)
+{
+    error_code = 0;
+    g_TestValue = 0;
+    g_signo = SIGINT;
+
+    if(pthread_create(&g_pthread[0], NULL, TEST_sigwait_pthread_7, NULL) != 0) {
+        printf("Error creating thread.\n");
+        return PTS_FAIL;
+    }
+
+    TEST_sleep_sec(1);
+    if (g_TestValue != 1) {
+        printf("TEST_sigwait_2 g_TestValue check fail g_TestValue = %u.\n", g_TestValue);
+        return PTS_FAIL;
+    }
+
+    g_TestValue++;
+    /* 主核pthread_kill 同时，从核改变对应任务优先级，验证PRT_SignalDeliver是否生效 */
+    U32 ret = PRT_TaskSetPriority(g_testHandle, 10);
+    if (ret != 0) {
+        printf("PRT_TaskSetPriority error\n");
+    }
+
+    return PTS_PASS;
+}
+
+int TEST_sigwait_7(void)
+{
+    U32 ret;
+    U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
+    struct TskInitParam param = {0};
+    TskHandle testTskHandle;
+
+    // task 1
+    param.stackAddr = PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.taskEntry = (TskEntryFunc)TEST_slave_sigwait;
+    param.taskPrio = 25;
+    param.name = "SlaveTask";
+    param.stackSize = 0x2000;
+
+    ret = PRT_TaskCreate(&testTskHandle, &param);
+    if (ret) {
+        return ret;
+    }
+
+    
+    ret = PRT_TaskCoreBind(testTskHandle, 1 << (PRT_GetPrimaryCore() + 1));
+    if (ret) {
+        return ret;
+    }
+
+    ret = PRT_TaskResume(testTskHandle);
+    if (ret) {
+        return ret;
+    }
+
+    while(g_TestValue != 1);
+    /* 从核sigwait 同时，主核改变对应任务优先级，验证PRT_SignalWait是否生效 */
+    ret = PRT_TaskSetPriority(g_testHandle, 15);
+    if (ret != 0) {
+        printf("PRT_TaskSetPriority error\n");
+    }
+    while(g_TestValue != 2);
+
+    ret = pthread_kill(g_pthread[0], g_signo);
+    if (ret != 0) {
+        printf("TEST_sigwait_2 send signal fail ret = %d.\n", ret);
+        return PTS_FAIL;
+    }
+    pthread_join(g_pthread[0], NULL);
+
+    printf("TEST_sigwait_2 sigwait end, error_code = %d, g_TestValue = %u.\n", error_code, g_TestValue);
+    if (error_code == 0 && g_TestValue == 3) {
+        return PTS_PASS;
+    }
+}
+#endif

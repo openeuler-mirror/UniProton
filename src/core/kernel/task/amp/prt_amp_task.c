@@ -92,7 +92,7 @@ OS_SEC_TEXT void OsTaskScan(void)
         if ((OS_TSK_PEND & taskCb->taskStatus) != 0) {
             TSK_STATUS_CLEAR(taskCb, OS_TSK_PEND);
             ListDelete(&taskCb->pendList);
-            taskCb->taskSem = NULL;
+            taskCb->taskPend = NULL;
         } else if ((OS_TSK_EVENT_PEND & taskCb->taskStatus) != 0) {
             TSK_STATUS_CLEAR(taskCb, OS_TSK_EVENT_PEND);
         } else if ((OS_TSK_QUEUE_PEND & taskCb->taskStatus) != 0) {
@@ -121,4 +121,32 @@ OS_SEC_TEXT void OsTaskScan(void)
     if (needSchedule) {
         OsTskScheduleFast();
     }
+}
+
+OS_SEC_L0_TEXT void OsSpinLockTaskRq(struct TagTskCb* taskCB)
+{
+    (void)taskCB;
+}
+
+OS_SEC_L0_TEXT struct TagOsRunQue *OsSpinLockRunTaskRq(void)
+{
+    return NULL;
+}
+
+OS_SEC_L0_TEXT void OsSpinUnlockTaskRq(struct TagTskCb* taskCB)
+{
+    (void)taskCB;
+}
+
+OS_SEC_L0_TEXT void OsSpinUnLockRunTaskRq(struct TagOsRunQue *runQue)
+{
+    (void)runQue;
+}
+
+OS_SEC_L0_TEXT U32 OsTryLockTaskOperating(U32 operate, struct TagTskCb *taskCB, uintptr_t *intSave)
+{
+    (void)operate;
+    (void)taskCB;
+    *intSave = OsIntLock();
+    return OS_OK;
 }

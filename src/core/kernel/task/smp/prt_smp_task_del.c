@@ -90,9 +90,9 @@ OS_SEC_L4_TEXT void OsTaskDeleteResFree(TskHandle taskPID, struct TagTskCb *task
 {
     OS_MHOOK_ACTIVATE_PARA1(OS_HOOK_TSK_DELETE, taskPID);
 
-    /* 任务阻塞 */
+    /* 任务信号量阻塞 */
     if (TSK_STATUS_TST(taskCB, OS_TSK_PEND)) {
-        struct TagSemCb *pendSem = taskCB->taskSem;
+        struct TagSemCb *pendSem = taskCB->taskPend;
         SEM_CB_LOCK(pendSem);
         OsSemPrioLock();
         ListDelete(&taskCB->pendList);
@@ -101,11 +101,20 @@ OS_SEC_L4_TEXT void OsTaskDeleteResFree(TskHandle taskPID, struct TagTskCb *task
     }
 
     if (TSK_STATUS_TST(taskCB, OS_TSK_RW_PEND)) {
-        void *rwSpinLock = taskCB->taskSem;
+        void *rwSpinLock = taskCB->taskPend;
         RW_CB_LOCK(rwSpinLock);
         ListDelete(&taskCB->pendList);
         RW_CB_UNLOCK(rwSpinLock);
     }
+#if defined(OS_OPTION_QUEUE)
+    /* 任务队列阻塞 */
+    if (TSK_STATUS_TST(taskCB, OS_TSK_QUEUE_PEND)) {
+        struct TagQueCb *queueCB = taskCB->taskPend;
+        QUEUE_CB_LOCK(queueCB);
+        ListDelete(&taskCB->pendList);
+        QUEUE_CB_UNLOCK(queueCB);
+    }
+#endif
 
     if (TSK_STATUS_TST(taskCB, OS_TSK_DELAY | OS_TSK_TIMEOUT)) {
         OS_TSK_DELAY_LOCKED_DETACH(taskCB);

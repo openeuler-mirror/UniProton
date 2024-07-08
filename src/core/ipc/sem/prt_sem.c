@@ -95,7 +95,7 @@ OS_SEC_L4_TEXT U32 OsCheckPrioritySet(struct TagTskCb *taskCb, TskPrior taskPrio
         return OS_ERRNO_TSK_PRIORITY_INHERIT;
     }
 
-    curSem = taskCb->taskSem;
+    curSem = taskCb->taskPend;
     if (TSK_STATUS_TST(taskCb, OS_TSK_PEND) && curSem != NULL) {
         if (GET_SEM_TYPE(curSem->semType) == SEM_TYPE_BIN) {
             return OS_ERRNO_TSK_PEND_MUTEX;
@@ -128,7 +128,7 @@ OS_SEC_ALW_INLINE INLINE void OsResortSemList(struct TagTskCb *taskCb)
 {  
     /* 调整信号量优先级队列，外部需要锁OsSemIfPrioLock，taskrq */
     struct TagTskCb *curTskCb = NULL;
-    struct TagSemCb *semPended = (struct TagSemCb *)taskCb->taskSem;
+    struct TagSemCb *semPended = (struct TagSemCb *)taskCb->taskPend;
 
     ListDelete(&taskCb->pendList);
 
@@ -179,7 +179,7 @@ OS_SEC_L0_TEXT void OsPriorityInherit(struct TagSemCb *semPended, struct TagTskC
             return;
         }
         /* 信号量持有任务也处于阻塞状态，获取所阻塞的信号量 */
-        recurSem = (struct TagSemCb *)semOwnerTask->taskSem;
+        recurSem = (struct TagSemCb *)semOwnerTask->taskPend;
         /* 如果是优先级唤醒模式先重排信号量的阻塞优先级队列 */
         if (recurSem->semMode == SEM_MODE_PRIOR) {
             OsResortSemList(semOwnerTask);
@@ -246,7 +246,7 @@ OS_SEC_L0_TEXT void OsSemPendListPut(struct TagSemCb *semPended, U32 timeOut)
     runQue = OsSpinLockRunTaskRq();
     OsTskReadyDel((struct TagTskCb *)runTsk);
 
-    runTsk->taskSem = (void *)semPended;
+    runTsk->taskPend = (void *)semPended;
 
     TSK_STATUS_SET(runTsk, OS_TSK_PEND);
 
@@ -299,7 +299,7 @@ OS_SEC_L0_TEXT void OsSemPendListGet(struct TagSemCb *semPended)
 
     /* 必须先去除 OS_TSK_TIMEOUT 态，再入队[睡眠时是先出ready队，再置OS_TSK_TIMEOUT态] */
     TSK_STATUS_CLEAR(taskCb, OS_TSK_PEND);
-    taskCb->taskSem = NULL;
+    taskCb->taskPend = NULL;
     /* 如果去除信号量阻塞位后，该任务不处于阻塞态则将该任务挂入就绪队列并触发任务调度 */
     if (!TSK_STATUS_TST(taskCb, OS_TSK_SUSPEND)) {
         OsTskReadyAddBgd(taskCb);

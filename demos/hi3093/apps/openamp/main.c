@@ -14,8 +14,8 @@
 #include "shell.h"
 #include "show.h"
 #endif
-TskHandle g_testTskHandle[3];
 TskHandle g_sampleHandle[2];
+TskHandle g_testTskHandle;
 U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 
 extern U32 PRT_PrintfInit();
@@ -149,6 +149,7 @@ U32 TaskTest()
     U32 ret;
     U8 ptNo = OS_MEM_DEFAULT_FSC_PT;
     struct TskInitParam param = {0};
+    TskHandle testTskHandle[2];
 
     // task 2
     param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
@@ -157,12 +158,12 @@ U32 TaskTest()
     param.name = "Test2Task";
     param.stackSize = 0x2000;
 
-    ret = PRT_TaskCreate(&g_testTskHandle[1], &param);
+    ret = PRT_TaskCreate(&testTskHandle[0], &param);
     if (ret) {
         return ret;
     }
 
-    ret = PRT_TaskResume(g_testTskHandle[1]);
+    ret = PRT_TaskResume(testTskHandle[0]);
     if (ret) {
         return ret;
     }
@@ -174,12 +175,12 @@ U32 TaskTest()
     param.name = "Test3Task";
     param.stackSize = 0x2000;
 
-    ret = PRT_TaskCreate(&g_testTskHandle[2], &param);
+    ret = PRT_TaskCreate(&testTskHandle[1], &param);
     if (ret) {
         return ret;
     }
 
-    ret = PRT_TaskResume(g_testTskHandle[2]);
+    ret = PRT_TaskResume(testTskHandle[1]);
     if (ret) {
         return ret;
     }
@@ -199,12 +200,12 @@ U32 OsTestInit(void)
     param.name = "TestTask";
     param.stackSize = 0x3000;
 
-    ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
+    ret = PRT_TaskCreate(&g_testTskHandle, &param);
     if (ret) {
         return ret;
     }
     
-    ret = PRT_TaskResume(g_testTskHandle[0]);
+    ret = PRT_TaskResume(g_testTskHandle);
     if (ret) {
         return ret;
     }

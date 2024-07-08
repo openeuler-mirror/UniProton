@@ -94,7 +94,7 @@ OS_SEC_L4_TEXT U32 PRT_SemGetPendList(SemHandle semHandle, U32 *tskCnt, U32 *pid
     semCb = GET_SEM(semHandle);
     SEM_CB_IRQ_LOCK(semCb, intSave);
     if (semCb->semStat == OS_SEM_UNUSED) {
-        SEM_CB_IRQ_UNLOCK(semCb, intSave);
+        SEM_CB_IRQ_UNLOCK(semCb, intSave); 
         return OS_ERRNO_SEM_INVALID;
     }
 

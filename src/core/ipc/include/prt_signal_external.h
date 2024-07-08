@@ -16,6 +16,7 @@
 #define PRT_SIGNAL_EXTERNAL_H
 
 #include "prt_task_external.h"
+#include "prt_task_sched_external.h"
 
 extern void OsInitSigVectors(struct TagTskCb *taskCb);
 extern void OsSigDefaultHandler(int signum);

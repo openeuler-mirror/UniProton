@@ -50,7 +50,7 @@ OS_SEC_L4_TEXT U32 PRT_TaskGetPendSem(TskHandle taskId, U16 *semId, U16 *pendSta
     *pendState = OS_TSK_PEND & taskCb->taskStatus;
 
     if (*pendState == OS_TSK_PEND) {
-        *semId = ((struct TagSemCb *)taskCb->taskSem)->semId;
+        *semId = ((struct TagSemCb *)taskCb->taskPend)->semId;
     }
 
     OsSpinUnlockTaskRq(taskCb);

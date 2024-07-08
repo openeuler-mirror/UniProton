@@ -75,6 +75,8 @@ OS_SEC_L2_TEXT U32 PRT_QueueGetNodeNum(U32 queueId, U32 taskPid, U32 *queueNum)
         return ret;
     }
 
+    QUEUE_CB_LOCK(queueCb);
+
     if (taskPid != OS_QUEUE_PID_INVALID) {
         for (loop = 0; loop < queueCb->nodeNum; loop++) {
             queueNode = (struct QueNode *)(uintptr_t)&queueCb->queue[loop * (queueCb->nodeSize)];
@@ -87,6 +89,8 @@ OS_SEC_L2_TEXT U32 PRT_QueueGetNodeNum(U32 queueId, U32 taskPid, U32 *queueNum)
             }
         }
     }
+
+    QUEUE_CB_UNLOCK(queueCb);
 
     *queueNum = (taskPid == OS_QUEUE_PID_ALL) ? numAll : num;
 

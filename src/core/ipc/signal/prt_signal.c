@@ -17,6 +17,7 @@
 #include "prt_signal_external.h"
 #include "prt_hook_external.h"
 #include "prt_task_external.h"
+#include "prt_task_sched_external.h"
 
 OS_SEC_L4_TEXT void OsSigDefaultHandler(int signum)
 {
@@ -60,7 +61,9 @@ OS_SEC_ALW_INLINE INLINE U32 OsSignalWaitSche(struct TagTskCb *runTsk, const sig
 
     OsSignalTimeOutSet(runTsk, timeOutTick);
 
+    OsSpinUnlockTaskRq(runTsk);
     OsTskSchedule();
+    OsSpinLockTaskRq(runTsk);
 
     /* 任务返回上下文 */
     if ((runTsk->taskStatus & OS_TSK_TIMEOUT) != 0) {
@@ -133,6 +136,8 @@ OS_SEC_ALW_INLINE INLINE void OsSignalWaitReSche(struct TagTskCb *taskCb, U32 ta
         OsTskReadyAddBgd(taskCb);
     }
 
+    OsSpinUnlockTaskRq(taskCb);
+
     OsTskSchedule();
     return;
 }
@@ -151,7 +156,9 @@ OS_SEC_ALW_INLINE INLINE void OsHandleOneSignal(struct TagTskCb *runTsk, int sig
         }
 
         /* 清除pending标记 */
+        OsSpinLockTaskRq(runTsk);
         runTsk->sigPending &= ~sigMask(signum);
+        OsSpinUnlockTaskRq(runTsk);
         ListDelete(&(infoNode->siglist));
         PRT_MemFree((U32)OS_MID_SIGNAL, infoNode);
         break;
@@ -224,7 +231,9 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
 
     uintptr_t intSave = OsIntLock();
     struct TagTskCb *taskCb = (struct TagTskCb *)GET_TCB_HANDLE(taskId);
+    OsSpinLockTaskRq(taskCb);
     if (TSK_IS_UNUSED(taskCb)) {
+        OsSpinUnlockTaskRq(taskCb);
         OsIntRestore(intSave);
         return OS_ERRNO_SIGNAL_TSK_NOT_CREATED;
     }
@@ -232,6 +241,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
     /* 将信号加入pending中，若已存在则更新，不存在则创建 */
     U32 ret = OsAddSignalPendingFlag(taskCb, info);
     if (ret != OS_OK) {
+        OsSpinUnlockTaskRq(taskCb);
         OsIntRestore(intSave);
         return ret;
     }
@@ -246,12 +256,14 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
 
     /* 信号是否为阻塞信号，若是则不返回不处理 */
     if ((taskCb->sigMask & sigMask(signum)) != 0) {
+        OsSpinUnlockTaskRq(taskCb);
         OsIntRestore(intSave);
         return OS_OK;
     }
 
     /* 判断信号是否是当前的任务处理，若是则处理 */
     if (taskId == RUNNING_TASK->taskPid) {
+        OsSpinUnlockTaskRq(taskCb);
         OsHandleOneSignal(taskCb, signum);
         OsIntRestore(intSave);
         return OS_OK;
@@ -278,7 +290,11 @@ OS_SEC_L4_TEXT U32 PRT_SignalDeliver(TskHandle taskId, signalInfo *info)
             wake_up_process(taskCb->kthreadTsk);
         }
 #endif
+        OsSpinUnlockTaskRq(taskCb);
+
         OsTskSchedule();
+    } else {
+        OsSpinUnlockTaskRq(taskCb);
     }
 
     OsIntRestore(intSave);
@@ -304,9 +320,12 @@ OS_SEC_L4_TEXT U32 PRT_SignalWait(const signalSet *set, signalInfo *info, U32 ti
     }
 
     struct TagTskCb *runTsk = RUNNING_TASK;
+    OsSpinLockTaskRq(runTsk);
+
     /* 等待信号集中已有未决信号 */
     if ((runTsk->sigPending & *set) != 0) {
         ret = OsSigWaitProcPendingSignal(runTsk, set, info);
+        OsSpinUnlockTaskRq(runTsk);
         OsIntRestore(intSave);
         return ret;
     }
@@ -314,11 +333,13 @@ OS_SEC_L4_TEXT U32 PRT_SignalWait(const signalSet *set, signalInfo *info, U32 ti
     /* 等待信号集中没有未决信号则需要将当前任务挂起等待 */
     ret = OsSignalWaitSche(runTsk, set, timeOutTick);
     if (ret != OS_OK) {
+        OsSpinUnlockTaskRq(runTsk);
         OsIntRestore(intSave);
         return ret;
     }
 
     ret = OsSigWaitProcPendingSignal(runTsk, set, info);
+    OsSpinUnlockTaskRq(runTsk);
     OsIntRestore(intSave);
     return ret;
 }
@@ -327,6 +348,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalMask(int how, const signalSet *set, signalSet *olds
 {
     uintptr_t intSave = OsIntLock();
     struct TagTskCb *runTsk = RUNNING_TASK;
+    OsSpinLockTaskRq(runTsk);
     if (oldset != NULL) {
         *oldset = runTsk->sigMask;
     }
@@ -349,6 +371,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalMask(int how, const signalSet *set, signalSet *olds
         }
     }
 
+    OsSpinUnlockTaskRq(runTsk);
     OsIntRestore(intSave);
     return OS_OK;
 }
@@ -361,12 +384,14 @@ OS_SEC_L4_TEXT U32 PRT_SignalAction(int signum, const struct _sigaction *act, st
 
     uintptr_t intSave = OsIntLock();
     struct TagTskCb *runTsk = RUNNING_TASK;
+    OsSpinLockTaskRq(runTsk);
 
     if (oldact != NULL) {
         oldact->saHandler = runTsk->sigVectors[signum];
     }
 
     if (act == NULL) {
+        OsSpinUnlockTaskRq(runTsk);
         OsIntRestore(intSave);
         return OS_OK;
     }
@@ -380,6 +405,7 @@ OS_SEC_L4_TEXT U32 PRT_SignalAction(int signum, const struct _sigaction *act, st
         runTsk->sigVectors[signum] = handler;
     }
 
+    OsSpinUnlockTaskRq(runTsk);
     OsIntRestore(intSave);
     return OS_OK;
 }
@@ -390,6 +416,7 @@ OS_SEC_L4_TEXT U32 PRT_SigSuspend(const signalSet *mask)
     uintptr_t intSave = OsIntLock();
 
     struct TagTskCb *runTsk = RUNNING_TASK;
+    OsSpinLockTaskRq(runTsk);
 
     signalSet saveedMask = runTsk->sigMask;
     runTsk->sigMask = *mask;
@@ -401,20 +428,25 @@ OS_SEC_L4_TEXT U32 PRT_SigSuspend(const signalSet *mask)
     if ((runTsk->sigPending & waitMask) != 0) {
         OsHandleUnBlockSignal(runTsk);
         runTsk->sigMask = saveedMask;
+        OsSpinUnlockTaskRq(runTsk);
         OsIntRestore(intSave);
     } else {
         if (runTsk->taskPid == IDLE_TASK_ID) {
+            OsSpinUnlockTaskRq(runTsk);
             return OS_ERRNO_SIGNAL_TASKID_INVALID;
         }
+
         OsIntRestore(intSave);
         /* 等待信号集中没有未屏蔽信号则需要将当前任务挂起等待 */
         ret = OsSignalWaitSche(runTsk, &waitMask, OS_SIGNAL_WAIT_FOREVER);
         if (ret != OS_OK) {
+            OsSpinUnlockTaskRq(runTsk);
             return ret;
         }
 
         OsHandleUnBlockSignal(runTsk);
         runTsk->sigMask = saveedMask;
+        OsSpinUnlockTaskRq(runTsk);
     }
 
     return ret;

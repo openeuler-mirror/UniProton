@@ -8,6 +8,7 @@
 #if defined(OS_OPTION_SMP)
 #include "prt_module_external.h"
 #endif
+#include "prt_config.h"
 
 #if (OS_GIC_VER == 3)
 
@@ -240,6 +241,7 @@ U32 OsSicInitLocal(void)
 {
     U32 ret;
     U32 intId;
+    U32 coreID = PRT_GetCoreID();
 
     OsSicrInit();
 
@@ -250,6 +252,23 @@ U32 OsSicInitLocal(void)
 
     for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
         OsSicSetGroup(intId, SIC_GROUP_G1NS);
+    }
+
+    if (coreID == OS_SYS_CORE_PRIMARY) {
+        for (coreID = OS_SYS_CORE_PRIMARY; coreID < OS_SYS_CORE_PRIMARY + OS_SYS_CORE_RUN_NUM; coreID++) {
+            /* 清除SGI和PPI的disable，pending，active */
+            for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
+                OsGicrDisableInt(coreID, intId);
+            }
+
+            for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
+                OsGicrClearPendingBit(coreID, intId);
+            }
+
+            for (intId = 0; intId < MIN_GIC_SPI_NUM; ++intId) {
+                OsGicrClearActiveBit(coreID, intId);
+            }
+        }
     }
 
     return OS_OK;

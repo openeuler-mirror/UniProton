@@ -100,7 +100,7 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
     tskCb->stackPointer = (void *)stackPtr;
     tskCb->topOfStack = topStackAddr;
     tskCb->stackSize = curStackSize;
-    tskCb->taskSem = NULL;
+    tskCb->taskPend = NULL;
     tskCb->priority = attr->schedparam.sched_priority;
     tskCb->origPriority = tskCb->priority;
     tskCb->taskEntry = OsPthreadWrapper;
