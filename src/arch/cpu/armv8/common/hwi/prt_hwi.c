@@ -120,8 +120,14 @@ OS_SEC_TEXT void OsHwiReportHwiNumErr(void)
 OS_SEC_L0_TEXT void OsHwiDispatchHandle(U32 arg1)
 {
     U32 hwiNum;
+    U64 irqStartTime = 0;
     (void)arg1;
 
+#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
+    if ((UNI_FLAG & OS_FLG_HWI_ACTIVE) == 0) {
+        irqStartTime = OsCurCycleGet64();
+    }
+#endif
     UNI_FLAG |= OS_FLG_HWI_ACTIVE;
     OS_INT_COUNT++;
     /* ARMv8硬件约束，fiq和和irq都会在在异常和入口被mask掉 */
@@ -146,6 +152,8 @@ OS_HWI_CONTINUE:
     if (OS_INT_COUNT > 0) {
         return;
     }
+    /* 在最外层记录中断耗时 */
+    OS_IRQ_TIME_RECORD(irqStartTime);
 
     UNI_FLAG &= ~OS_FLG_HWI_ACTIVE;
 

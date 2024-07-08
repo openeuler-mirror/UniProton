@@ -56,6 +56,9 @@ OS_SEC_L4_TEXT U32 OsTskAMPInit(void)
 
     /* 在初始化时给RUNNING_TASK的PID赋一个合法的无效值，放置在Trace使用时出现异常 */
     RUNNING_TASK->taskPid = idx + g_tskBaseId;
+#if defined(OS_OPTION_RR_SCHED)
+    RUNNING_TASK->policy = OS_TSK_SCHED_ZOMBIE;
+#endif
 
     /* Init empty ready list for each priority. */
     for (idx = 0; idx < OS_TSK_NUM_OF_PRIORITIES; idx++) {

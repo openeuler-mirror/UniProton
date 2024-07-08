@@ -174,6 +174,7 @@ OS_SEC_L4_TEXT void OsHwiDispatchHandle(U64 archNum)
 {
     U64 intSave;
     U32 hwiNum = (U32)archNum;
+    U64 irqStartTime = 0;
     if (OS_INT_COUNT > INT_NEST_DEPTH) {
         return;
     }
@@ -182,8 +183,13 @@ OS_SEC_L4_TEXT void OsHwiDispatchHandle(U64 archNum)
         OS_GOTO_SYS_ERROR();
     }
     intSave = PRT_HwiLock();
+#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
+    irqStartTime = OsCurCycleGet64();
+#endif
     OsHwiHookDispatcher(hwiNum);
     PRT_HwiClearPendingBit(hwiNum);
+    /* 记录中断耗时 */
+    OS_IRQ_TIME_RECORD(irqStartTime);
 
     PRT_HwiRestore(intSave);
 }

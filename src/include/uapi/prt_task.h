@@ -586,6 +586,14 @@ extern "C" {
 #define OS_TSK_RW_PEND 0x40000
 
 /*
+ * 任务调度策略
+ * FIFO，默认调度策略，任务不会自动让出
+ * RR，时间片轮转调度，任务在时间片耗尽后会自动让出
+ */
+#define OS_TSK_SCHED_FIFO 0x0U
+#define OS_TSK_SCHED_RR 0x1U
+
+/*
  * 任务模块的错误码定义。
  */
 /*
@@ -980,6 +988,8 @@ struct TskModInfo {
     U32 idleStackSize;
     /* 任务栈初始化魔术字 */
     U32 magicWord;
+    /* 时间片调度，时间片粒度，单位ms */
+    U32 timeSliceMs;
 };
 
 /*
@@ -1101,6 +1111,8 @@ struct TskInitParam {
      * 若配置为0表示从系统内部空间分配，否则用户指定栈起始地址
      */
     uintptr_t stackAddr;
+    /* 任务调度策略 */
+    U16 policy;
 };
 
 /*

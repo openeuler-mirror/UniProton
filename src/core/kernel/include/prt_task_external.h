@@ -108,6 +108,14 @@ struct TagTskCb {
     void *stackPointer;
     /* 任务状态,后续内部全改成U32 */
     U32 taskStatus;
+#if defined(OS_OPTION_RR_SCHED)
+    /* 任务得到调度的时间 */
+    U64 startTime;
+#if defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
+    /* 中断处理消耗时间 */
+    U64 irqUsedTime;
+#endif
+#endif
     /* 任务的运行优先级，数字越小优先级越高 */
     TskPrior priority;
     /* 任务栈配置标记 */
@@ -139,8 +147,15 @@ struct TagTskCb {
 #endif
     /* 任务原始优先级 */
     TskPrior origPriority;
+#if defined(OS_OPTION_RR_SCHED)
+    /* 调度策略 */
+    U16 policy;
+    /* 剩余时间片 */
+    U32 timeSlice;
+#else
     /* 字节对齐 */
     U16 resv;
+#endif
     /* 信号量链表指针 */
     struct TagListObject pendList;
     /* 任务延时链表指针 */
@@ -289,6 +304,7 @@ extern TaskNameAddFunc g_taskNameAdd;
 extern TaskNameGetFunc g_taskNameGet;
 
 extern volatile TskCoresleep g_taskCoreSleep;
+extern U32 g_timeSliceCycle;
 
 #if defined(OS_OPTION_POWEROFF)
 typedef void (*PowerOffFuncT)(void);
@@ -334,6 +350,11 @@ extern SetOfflineFlagFuncT g_setOfflineFlagHook;
 #define MAX_TASK_NUM                   ((1U << OS_TSK_TCB_INDEX_BITS) - 2)  // 254
 #define OS_TSK_BLOCK                   (OS_TSK_DELAY | OS_TSK_PEND | OS_TSK_SUSPEND  | OS_TSK_QUEUE_PEND | \
         OS_TSK_EVENT_PEND | OS_TSK_WAITQUEUE_PEND | OS_TSK_DELETING | OS_TSK_RW_PEND)
+
+// 僵尸任务，没有调度策略
+#define OS_TSK_SCHED_ZOMBIE         0xABAB
+// 默认时间片长度 5ms
+#define OS_TSK_DEFAULT_TIME_SLICE_MS        5
 
 #if defined(OS_OPTION_LINUX)
 #define KTHREAD_TSK_STATE_TST(tsk, tskState)   (((tsk)->kthreadTsk != NULL) && ((tsk)->kthreadTsk->state == (tskState)))
@@ -553,6 +574,30 @@ extern volatile uintptr_t g_createTskLock;
 #define OS_TSK_INDEX_MASK         ((1U << OS_TSK_ID_BITS_NUM) -1)
 
 #define OS_TSK_COMPOSE(tId)       (tId)
+#endif
+
+#if defined(OS_OPTION_RR_SCHED)
+OS_SEC_ALW_INLINE INLINE void OsTimeSliceUpdate(struct TagTskCb *taskCb, U64 currTime, U64 nonTskTime)
+{
+    U64 incTime;
+    if (currTime <= taskCb->startTime || taskCb->policy != OS_TSK_SCHED_RR) {
+        goto EXIT;
+    }
+    incTime = currTime - taskCb->startTime;
+    if (incTime <= nonTskTime) {
+        goto EXIT;
+    }
+    incTime -= nonTskTime;
+
+    if (incTime > taskCb->timeSlice) {
+        taskCb->timeSlice = 0;
+    } else {
+        taskCb->timeSlice -= (U32)incTime;
+    }
+
+EXIT:
+    taskCb->startTime = currTime;
+}
 #endif
 
 #endif /* PRT_TASK_EXTERNAL_H */
