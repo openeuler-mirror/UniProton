@@ -201,7 +201,8 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeoutMs)
     }
     void *ignore = 0; /* if msg == NULL, the fetched msg should be dropped */
     U64 tick = ROUND_UP_DIV((U64)timeoutMs * OsSysGetTickPerSecond(), OS_SYS_MS_PER_SECOND);
-    U32 ret = PRT_QueueRead((U32)(*mbox), msg ? msg : &ignore, sizeof(void *), tick ? (U32)tick : OS_WAIT_FOREVER);
+    U32 size = sizeof(char *);
+    U32 ret = PRT_QueueRead((U32)(*mbox), msg ? msg : &ignore, &size, tick ? (U32)tick : OS_WAIT_FOREVER);
     switch (ret) {
         case OS_OK:
             return ERR_OK;
@@ -224,7 +225,8 @@ u32_t sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
     }
 
     void *ignore = 0; /* if msg==NULL, the fetched msg should be dropped */
-    U32 ret = PRT_QueueRead((U32)*mbox, msg ? msg : &ignore, sizeof(void *), 0);
+    U32 size = sizeof(char *);
+    U32 ret = PRT_QueueRead((U32)*mbox, msg ? msg : &ignore, &size, 0);
     switch (ret) {
         case OS_OK:
             return ERR_OK;
