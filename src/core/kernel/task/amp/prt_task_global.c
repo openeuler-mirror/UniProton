@@ -35,6 +35,8 @@ OS_SEC_BSS PowerOffFuncT g_sysPowerOffHook;
 OS_SEC_BSS SetOfflineFlagFuncT g_setOfflineFlagHook;
 #endif
 
+OS_SEC_BSS U32 g_timeSliceCycle = (U32_MAX - 1);
+
 #if defined(OS_OPTION_SEM_PRIO_INHERIT)
 OS_SEC_L4_DATA OsCheckPrioritySetFunc g_checkPrioritySet;
 #endif

@@ -70,8 +70,10 @@ OS_SEC_L4_TEXT void OsFirstTimeSwitch(void)
 {
     struct TagOsRunQue *runQue = THIS_RUNQ();
 
-    RUNNING_TASK = OsPickNextTask(runQue); 
-
+    RUNNING_TASK = OsPickNextTask(runQue);
+#if defined(OS_OPTION_RR_SCHED)
+    RUNNING_TASK->startTime = OsCurCycleGet64();
+#endif
     OsOnlineCoreAdd(THIS_CORE());
 
     OsContextSwitch(OS_PST_ZOMBIE_TASK, RUNNING_TASK);
@@ -225,6 +227,9 @@ OS_SEC_ALW_INLINE INLINE U32 OsTskInitZombieTask(void)
 
     zombieTask->taskStatus = OS_TSK_INUSE;
     zombieTask->priority = 0;
+#if defined(OS_OPTION_RR_SCHED)
+    zombieTask->policy = OS_TSK_SCHED_ZOMBIE;
+#endif
 
     for(index = 0; index < g_maxNumOfCores; index++) {
         runQue = GET_RUNQ(index);

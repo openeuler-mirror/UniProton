@@ -132,11 +132,15 @@ OS_SEC_L4_TEXT void *OsTskContextInit(U32 taskId, U32 stackSize, uintptr_t *topS
 
 OS_SEC_L0_TEXT void OsHwiDispatchTail_rv64(void)
 {
+    U64 irqStartTime = 0;
     if (TICK_NO_RESPOND_CNT > 0) {
         if ((UNI_FLAG & OS_FLG_TICK_ACTIVE) != 0) {
             // OsTskContextLoad， 回到被打断的tick处理现场
             return;
         }
+#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
+        irqStartTime = OsCurCycleGet64();
+#endif
         UNI_FLAG |= OS_FLG_TICK_ACTIVE;
 
         do {
@@ -148,7 +152,11 @@ OS_SEC_L0_TEXT void OsHwiDispatchTail_rv64(void)
         } while (TICK_NO_RESPOND_CNT > 0);
 
         UNI_FLAG &= ~OS_FLG_TICK_ACTIVE;
+        OS_IRQ_TIME_RECORD(irqStartTime);
     }
+#if defined(OS_OPTION_RR_SCHED)
+    OsHwiEndCheckTimeSlice(OsCurCycleGet64());
+#endif
 }
 
 OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)

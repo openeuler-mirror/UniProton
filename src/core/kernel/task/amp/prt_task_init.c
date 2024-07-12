@@ -39,6 +39,14 @@ OS_SEC_L4_TEXT U32 OsTskRegister(struct TskModInfo *modInfo)
     g_tskModInfo.defaultSize = modInfo->defaultSize;
     g_tskModInfo.idleStackSize = modInfo->idleStackSize;
     g_tskModInfo.magicWord = modInfo->magicWord;
+    if (modInfo->timeSliceMs == 0) {
+        g_tskModInfo.timeSliceMs = OS_TSK_DEFAULT_TIME_SLICE_MS;
+    } else {
+        g_tskModInfo.timeSliceMs = modInfo->timeSliceMs;
+    }
+
+    /* system clock 正常远大于1000 */
+    g_timeSliceCycle = (g_systemClock / OS_SYS_MS_PER_SECOND) * g_tskModInfo.timeSliceMs;
 
     /* task模块有动态加载的场景 */
     if (g_tskIdleEntry == NULL) {
@@ -304,6 +312,18 @@ OS_SEC_L4_TEXT void OsTskCreateTcbInit(uintptr_t stackPtr, struct TskInitParam *
     taskCb->eventMask = 0;
 #endif
     taskCb->lastErr = 0;
+#if defined(OS_OPTION_RR_SCHED)
+    if (initParam->policy == OS_TSK_SCHED_RR) {
+        taskCb->policy = OS_TSK_SCHED_RR;
+    } else {
+        taskCb->policy = OS_TSK_SCHED_FIFO;
+    }
+    taskCb->startTime = 0;
+    taskCb->timeSlice = g_timeSliceCycle;
+#if defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
+    taskCb->irqUsedTime = 0;
+#endif
+#endif
 
     INIT_LIST_OBJECT(&taskCb->semBList);
     INIT_LIST_OBJECT(&taskCb->pendList);

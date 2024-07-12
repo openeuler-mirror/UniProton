@@ -6,15 +6,13 @@
 #include "prt_sys_external.h"
 #include "securec.h"
 #include "time.h"
+#include "kern_test_public.h"
 
 // #define USE_P_MUTEX
 
 #if defined(USE_P_MUTEX)
 #include "pthread.h"
 #endif
-
-volatile U32 g_testFinish = 0;
-volatile int g_testResult = 0;
 
 #define TASK_PRIOR_C 28
 #define TASK_PRIOR_B 27
@@ -31,10 +29,6 @@ SemHandle g_test_sem_B = -1;
 volatile TskHandle g_task_A = -1;
 volatile TskHandle g_task_B = -1;
 volatile TskHandle g_task_C = -1;
-
-#if defined(OS_OPTION_OPENAMP)
-unsigned int is_tty_ready(void);
-#endif
 
 extern void OsTimeGetRealTime(struct timespec *realTime);
 void OsTick2Timeout(struct timespec *time, U32 ticks)
@@ -53,27 +47,6 @@ void OsTick2Timeout(struct timespec *time, U32 ticks)
     }
     return;
 }
-
-// printf接口内部有调用pthread_mutex锁可能影响测试结果，此处使用prt_log相关接口
-#define TEST_IF_ERR_RET_VOID(ret, str)  \
-    if (ret) {                                                  \
-        g_testResult = (int)(ret);                              \
-        g_testFinish = 1;                                       \
-        PRT_Log(OS_LOG_INFO, OS_LOG_F1, str, sizeof(str) - 1);  \
-        return;                                                 \
-    }
-
-#define TEST_IF_ERR_RET_VOID_FMT(ret, fmt, ...)  \
-    if (ret) {                                                      \
-        g_testResult = (int)(ret);                                  \
-        g_testFinish = 1;                                           \
-        PRT_LogFormat(OS_LOG_INFO, OS_LOG_F1, fmt, __VA_ARGS__);    \
-        return;                                                     \
-    }
-
-#define TEST_LOG(str) PRT_Log(OS_LOG_INFO, OS_LOG_F1, str, sizeof(str) - 1)
-
-#define TEST_LOG_FMT(fmt, ...) PRT_LogFormat(OS_LOG_INFO, OS_LOG_F1, fmt, __VA_ARGS__)
 
 #if defined(USE_P_MUTEX)
 static inline U32 test_mutex_init(void *lock)
@@ -139,63 +112,6 @@ static U32 test_mutex_destroy(void* lock)
 }
 #endif
 
-static TskHandle test_start_task(TskEntryFunc func, TskPrior taskPrio)
-{
-    U32 ret;
-    TskHandle testTskHandle;
-    struct TskInitParam param = {0};
-    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, 0x3000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = func;
-    // 支持的优先级(0~31)
-    param.taskPrio = taskPrio;
-    param.name = "testThread";
-    param.stackSize = 0x3000;
-
-    ret = PRT_TaskCreate(&testTskHandle, &param);
-    if (ret) {
-        printf("create task fail, %u\n", ret);
-        return -1;
-    }
-
-    ret = PRT_TaskResume(testTskHandle);
-    if (ret) {
-        printf("resume task fail, %u\n", ret);
-        return -1;
-    }
-    return testTskHandle;
-}
-
-static TskHandle test_start_task_param(TskEntryFunc func, TskPrior taskPrio, uintptr_t arg1, uintptr_t arg2,
-    uintptr_t arg3, uintptr_t arg4)
-{
-    U32 ret;
-    TskHandle testTskHandle;
-    struct TskInitParam param = {0};
-    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, 0x3000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = func;
-    // 支持的优先级(0~31)
-    param.taskPrio = taskPrio;
-    param.name = "testThread";
-    param.stackSize = 0x3000;
-    param.args[0] = arg1;
-    param.args[1] = arg2;
-    param.args[2] = arg3;
-    param.args[3] = arg4;
-
-    ret = PRT_TaskCreate(&testTskHandle, &param);
-    if (ret) {
-        printf("create task fail, %u\n", ret);
-        return -1;
-    }
-
-    ret = PRT_TaskResume(testTskHandle);
-    if (ret) {
-        printf("resume task fail, %u\n", ret);
-        return -1;
-    }
-    return testTskHandle;
-}
-
 static void test_prior_inherit_task_A(void)
 {
     U32 ret;
@@ -236,7 +152,7 @@ static void test_prior_inherit_task_B(void)
     g_task_B = handle;
 
     /* 2. 创建任务A */
-    handle = test_start_task((TskEntryFunc)test_prior_inherit_task_A, TASK_PRIOR_A);
+    handle = test_start_task((TskEntryFunc)test_prior_inherit_task_A, TASK_PRIOR_A, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task B create task fail");
 
 #if !defined(OS_OPTION_SEM_PRIO_INHERIT)
@@ -268,7 +184,7 @@ static void test_prior_inherit_task_C(void)
     TEST_IF_ERR_RET_VOID(ret, "[ERROR] task C lock fail");
     TEST_LOG("[prior_inherit] task C get mutex lock A");
 
-    handle = test_start_task((TskEntryFunc)test_prior_inherit_task_B, TASK_PRIOR_B);
+    handle = test_start_task((TskEntryFunc)test_prior_inherit_task_B, TASK_PRIOR_B, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* (如果没开优先级继承，此处B会取代C得到调度） */
@@ -359,7 +275,7 @@ static void test_prior_restore_task_C(void)
     TEST_IF_ERR_RET_VOID(ret, "[ERROR] task C lock B fail");
     TEST_LOG("[prior_restore] task C get mutex lock B");
 
-    handle = test_start_task((TskEntryFunc)test_prior_restore_task_B, TASK_PRIOR_B);
+    handle = test_start_task((TskEntryFunc)test_prior_restore_task_B, TASK_PRIOR_B, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     TEST_LOG("[prior_restore] task C get sched in");
@@ -373,7 +289,7 @@ static void test_prior_restore_task_C(void)
     TEST_LOG("[prior_restore] task C check prior B success");
 #endif
 
-    handle = test_start_task((TskEntryFunc)test_prior_restore_task_A, TASK_PRIOR_A);
+    handle = test_start_task((TskEntryFunc)test_prior_restore_task_A, TASK_PRIOR_A, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     TEST_LOG("[prior_restore] task C get sched in");
@@ -505,7 +421,7 @@ static void test_tsk_timeout_or_delete_task_C(void)
     sem = (SemHandle)g_test_sem_A;
 #endif
 
-    handle = test_start_task((TskEntryFunc)test_tsk_timeout_or_delete_task_B, TASK_PRIOR_B);
+    handle = test_start_task((TskEntryFunc)test_tsk_timeout_or_delete_task_B, TASK_PRIOR_B, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* 等待任务B超时 */
@@ -525,7 +441,7 @@ static void test_tsk_timeout_or_delete_task_C(void)
     TEST_LOG("[timeout_delete] task C check prior B success");
 #endif
 
-    handle = test_start_task((TskEntryFunc)test_tsk_timeout_or_delete_task_A, TASK_PRIOR_A);
+    handle = test_start_task((TskEntryFunc)test_tsk_timeout_or_delete_task_A, TASK_PRIOR_A, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     TEST_LOG("[timeout_delete] task C get sched in");
@@ -678,7 +594,7 @@ static void test_prior_propagation_task_C(void)
     TEST_IF_ERR_RET_VOID(ret, "[ERROR] task C lock B fail");
     TEST_LOG("[prior_propagation] task C get mutex lock B");
 
-    handle = test_start_task((TskEntryFunc)test_prior_propagation_task_B, TASK_PRIOR_B);
+    handle = test_start_task((TskEntryFunc)test_prior_propagation_task_B, TASK_PRIOR_B, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* 3. 检查自身优先级为B，创建任务A */
@@ -691,7 +607,7 @@ static void test_prior_propagation_task_C(void)
     TEST_LOG("[prior_propagation] task C check prior B success");
 #endif
 
-    handle = test_start_task((TskEntryFunc)test_prior_propagation_task_A, TASK_PRIOR_A);
+    handle = test_start_task((TskEntryFunc)test_prior_propagation_task_A, TASK_PRIOR_A, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     TEST_LOG("[prior_propagation] task C get sched in");
@@ -810,7 +726,7 @@ static void test_prior_set_task_C(void)
     TEST_IF_ERR_RET_VOID(ret, "[ERROR] task C lock B fail");
     TEST_LOG("[prior_set] task C get mutex lock B");
 
-    handle = test_start_task((TskEntryFunc)test_prior_set_task_B, TASK_PRIOR_B);
+    handle = test_start_task((TskEntryFunc)test_prior_set_task_B, TASK_PRIOR_B, OS_TSK_SCHED_FIFO);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* 3. 修改B优先级，失败（等待互斥），修改自身优先级，失败（继承），释放锁B */
@@ -916,22 +832,22 @@ static void test_prior_pend_list_task_C(void)
     TEST_LOG("[prior_pend_list] task C get mutex lock");
 
     /* 创建任务B1，B1获取到锁后，等待队列长度应该为1 */
-    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_B, 0, 1, 0, 0);
+    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_B, OS_TSK_SCHED_FIFO, 0, 1, 0, 0);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* 创建任务A1，A1获取到锁后，等待队列长度应该为3 */
-    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_A, 1, 3, 0, 0);
+    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_A, OS_TSK_SCHED_FIFO, 1, 3, 0, 0);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     /* 创建任务B2，B2获取到锁后，等待队列长度应该为0 */
-    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_B, 2, 0, 0, 0);
+    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_B, OS_TSK_SCHED_FIFO, 2, 0, 0, 0);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     // 此时任务C优先级可能已经提升为A，需要等待一段时间后创建任务A2
     PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
 
     /* 创建任务A2，A2获取到锁后，等待队列长度应该为2 */
-    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_A, 3, 2, 0, 0);
+    handle = test_start_task_param((TskEntryFunc)test_prior_pend_list_task_param, TASK_PRIOR_A, OS_TSK_SCHED_FIFO, 3, 2, 0, 0);
     TEST_IF_ERR_RET_VOID((handle == -1), "[ERROR] task C create task fail");
 
     // 此时任务C优先级可能已经提升为A，需要等待一段时间后释放锁
@@ -957,7 +873,7 @@ static int prt_sem_mutex_test_start(TskEntryFunc func)
     g_task_B = -1;
     g_task_C = -1;
 
-    g_task_C = test_start_task(func, TASK_PRIOR_C);
+    g_task_C = test_start_task(func, TASK_PRIOR_C, OS_TSK_SCHED_FIFO);
     if (g_task_C == -1) {
         return -1;
     }
@@ -1083,24 +999,7 @@ static int test_prior_pend_list(void) {
     return prt_sem_mutex_test_start((TskEntryFunc)test_prior_pend_list_task_C);
 }
 
-typedef int (*test_fn)(void);
-
-typedef struct test_case {
-    char *name;
-    test_fn fn;
-    int skip;
-} test_case_t;
-
-#define TEST_CASE(func, s) {         \
-    .name = #func,                   \
-    .fn = func,                      \
-    .skip = s                        \
-}
-
-#define TEST_CASE_Y(func) TEST_CASE(func, 0)
-#define TEST_CASE_N(func) TEST_CASE(func, 1)
-
-static test_case_t g_cases[] = {
+test_case_t g_cases[] = {
     TEST_CASE_Y(test_prior_inherit),
     TEST_CASE_Y(test_prior_restore),
     TEST_CASE_Y(test_tsk_timeout_or_delete),
@@ -1109,63 +1008,9 @@ static test_case_t g_cases[] = {
     TEST_CASE_Y(test_prior_pend_list),
 };
 
-static void prt_sem_mutex_test_entry()
+int g_test_case_size = sizeof(g_cases);
+
+void prt_kern_test_end()
 {
-    int i = 0;
-    int cnt = 0;
-    int fails = 0;
-    int len = sizeof(g_cases) / sizeof(test_case_t);
-#if defined(OS_OPTION_OPENAMP)
-    /* 如果使用openamp则等待tty打开后开始测试，不会错过打印 */
-    while (!is_tty_ready()) {
-        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
-    }
-#endif
-    printf("\r\n===test start=== \r\n");
-    for (i = 0, cnt = 0; i < len; i++) {
-        test_case_t *tc = &g_cases[i];
-        if (tc->skip) {
-            printf("\r\n===%s skip === \r\n", tc->name);
-            continue;
-        }
-        printf("\r\n===%s start === \r\n", tc->name);
-        cnt++;
-        int ret = tc->fn();
-        if (ret) {
-            fails++;
-            printf("\r\n===%s failed ===\r\n", tc->name);
-        } else {
-            printf("\r\n===%s success ===\r\n", tc->name);
-        }
-    }
-    printf("\r\n===test end, total: %d, fails:%d ===\r\n", cnt, fails);
     TEST_LOG("sem mutex test finished\n");
-}
-
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
-{
-    U32 ret;
-    struct TskInitParam param = {0};
-    TskHandle testTskHandle;
-    (void)(param1);
-    (void)(param2);
-    (void)(param3);
-    (void)(param4);
-
-    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, OS_MEM_DEFAULT_FSC_PT, 0x3000, MEM_ADDR_ALIGN_016);
-    param.taskEntry = (TskEntryFunc)prt_sem_mutex_test_entry;
-    // 支持的优先级(0~31)
-    param.taskPrio = 25;
-    param.name = "testlog";
-    param.stackSize = 0x3000;
-
-    ret = PRT_TaskCreate(&testTskHandle, &param);
-    if (ret) {
-        return;
-    }
-
-    ret = PRT_TaskResume(testTskHandle);
-    if (ret) {
-        return;
-    }
 }
