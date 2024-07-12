@@ -35,12 +35,14 @@ SECTIONS
         . = ALIGN(8);
         __text_end = .;
     } > IMU_SRAM
-    . = ALIGN(8);
+    . = ALIGN(4096);
     data_copy_start = .;
+    __protect_len = data_copy_start - ORIGIN(IMU_SRAM);
+    __non_protect_len = ORIGIN(MMU_MEM) + LENGTH(MMU_MEM) - data_copy_start;
     
     .eh_frame_hdr :
     { 
-        . = ALIGN(8);
+        . = ALIGN(4096);
         __eh_frame_hdr_start = .;
         *(.eh_frame_hdr)
         *(.eh_frame_entry .eh_frame_entry.*)
@@ -223,7 +225,7 @@ SECTIONS
     .mmu.table.base :
     {
         PROVIDE (g_mmu_page_begin = .);
-        PROVIDE (g_mmu_page_end = g_mmu_page_begin + 0x8000);
+        PROVIDE (g_mmu_page_end = g_mmu_page_begin + 0x10000);
     } > MMU_MEM
 
     .resource_table : ALIGN(8)
