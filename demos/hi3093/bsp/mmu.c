@@ -14,7 +14,13 @@ extern U64 g_mmu_page_begin;
 extern U64 g_mmu_page_end;
 extern U32 g_cfgPrimaryCore;
 static OS_SEC_BSS U64 g_mmu_tcr = 0;
+extern U32 data_copy_start;
+extern U64 __protect_len;
+extern U64 __non_protect_len;
 
+// level 2 每个entry的粒度是 0x200000   2097152     (21bit)
+// level 3 每个entry的粒度是 0x1000     4096        (12bit)
+// 三级表代表需要更多表项, 需要把 0x1000000 的 MMU_IMAGE_ADDR 分割为8个三级表
 static mmu_mmap_region_s g_mem_map_info[] = {
     {
         .virt      = MMU_OPENAMP_ADDR,
@@ -23,10 +29,18 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
+        // 受保护区域，包括代码段
         .virt      = MMU_IMAGE_ADDR,
         .phys      = MMU_IMAGE_ADDR,
-        .size      = 0x1000000,
-        .max_level = 0x2,
+        .size      = (U64)&__protect_len,
+        .max_level = 0x3,
+        .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RX,
+    }, {
+        // 代码段后的区域
+        .virt      = (U64)&data_copy_start,
+        .phys      = (U64)&data_copy_start,
+        .size      = (U64)&__non_protect_len,
+        .max_level = 0x3,
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
     }, {
         .virt      = MMU_GIC_ADDR,
