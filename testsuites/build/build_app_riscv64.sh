@@ -3,7 +3,7 @@
 # use to pass tool chain path to cmakefile
 export TOOLCHAIN_PATH=/opt/buildtools/riscv
 # use to check_out demo  path
-export APP_PATH=../../demos/riscv64virt
+export APP_PATH=../../boards/riscv64/riscv64virt
 # use to creat tmp file 
 export TMP_DIR=`pwd`/tmp
 # uset to target out elf dir
