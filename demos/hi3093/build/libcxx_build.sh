@@ -9,8 +9,8 @@ tar -xzvf gcc-10.3.0.tar.gz
 
 patch -d ./gcc-10.3.0 -p1 < $UNIPROTON_PATH/demos/hi3093/component/libstdc++-uniproton.patch
 
-CC_OPTION="-nostdinc -I $UNIPROTON_PATH/output/libc/include/"
-CXX_OPTION="-I $GCC_PATH/gcc-10.3.0/libstdc++-v3/build/include/ -I $UNIPROTON_PATH/output/libc/include/ -I $CXX_COMPILE_PATH/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/include -g -nostdlib -nostdinc -nostdinc++"
+CC_OPTION="-nostdinc -I $UNIPROTON_PATH/demos/hi3093/include/ -I $UNIPROTON_PATH/output/libc/include/"
+CXX_OPTION="-I $GCC_PATH/gcc-10.3.0/libstdc++-v3/build/include/ -I $UNIPROTON_PATH/demos/hi3093/include/ -I $UNIPROTON_PATH/output/libc/include/ -I $CXX_COMPILE_PATH/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/include -g -nostdlib -nostdinc -nostdinc++"
 export SDKTARGETSYSROOT=/opt/openeuler/oecore-x86_64/sysroots/aarch64-openeuler-linux
 export PATH="$PATH:/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin"
 export CC="aarch64-openeuler-linux-gcc  -mlittle-endian -fstack-protector-strong  -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=$SDKTARGETSYSROOT ${CC_OPTION}"
