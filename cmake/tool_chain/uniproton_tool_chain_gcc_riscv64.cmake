@@ -20,10 +20,15 @@ set(OBJCOPY_PATH "$ENV{OBJCOPY_PATH}" ) #OBJCOPY_PATH
 set(COMPILE_MODE "$ENV{COMPILE_MODE}" )
 set(CC_TYPE "$ENV{CC_TYPE}" ) 
 set(TOOLCHAIN_DIR "$ENV{HCC_PATH}") #该路径应该是外部传入,指向编译工具路径
+set(TOOLCHAIN_PREFIX "riscv64-unknown-elf-")
+
+if(DEFINED ENV{RISCV_NATIVE} AND "$ENV{RISCV_NATIVE}" STREQUAL "true")
+    set(TOOLCHAIN_PREFIX "")
+endif()
 
 ##compiler specified in /etc/profile
-set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/riscv64-unknown-elf-gcc" CACHE PATH "gcc C compiler" FORCE)
-set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/riscv64-unknown-elf-gcc" CACHE PATH "gcc ASM compiler" FORCE)
+set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc C compiler" FORCE)
+set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc ASM compiler" FORCE)
 
 #if use rv64virt open -g for debug information and -O0
 if( ${CPU_TYPE} STREQUAL "rv64virt")
@@ -46,7 +51,7 @@ if(num_lines GREATER 0)
     set(CMAKE_ASM_COMPILE_OBJECT "${CMAKE_ASM_COMPILE_OBJECT} -DOS_ARCH_SURPORT_F")
 endif()
 
-set(CMAKE_LINKER "${TOOLCHAIN_DIR}/riscv64-unknown-elf-ld" CACHE STRING "" FORCE)
-set(CMAKE_AR "${TOOLCHAIN_DIR}/riscv64-unknown-elf-ar" CACHE STRING "" FORCE)
+set(CMAKE_LINKER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}ld" CACHE STRING "" FORCE)
+set(CMAKE_AR "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}ar" CACHE STRING "" FORCE)
 set(CMAKE_C_LINK_FLAGS "-r ")
 set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -r <TARGET> <OBJECTS>")

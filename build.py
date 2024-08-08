@@ -25,6 +25,10 @@ class Compile:
     def get_config(self, cpu_type, cpu_plat):
         self.compile_mode = get_compile_mode()
         self.lib_type, self.plam_type, self.hcc_path, self.kconf_dir, self.system, self.core = get_cpu_info(cpu_type, cpu_plat, self.build_machine_platform)
+        if platform.uname()[-1] == 'riscv64':
+            self.hcc_path = os.path.dirname(
+                subprocess.check_output(['which', 'gcc'], text=True).strip()
+            )
         if not self.compile_mode and self.lib_type and self.plam_type and self.hcc_path and self.kconf_dir:
             log_msg('error', 'load config.xml env error')
             sys.exit(0)
@@ -74,8 +78,13 @@ class Compile:
 
         if platform.uname()[-1] == 'aarch64':
             self.build_machine_platform = 'arm64'
-        else:
+        elif platform.uname()[-1] == 'x86_64':
             self.build_machine_platform = 'x86'
+        else:
+            self.build_machine_platform = 'riscv64'
+            self.cmake_env_path = os.path.dirname(
+                subprocess.check_output(['which', 'cmake'], text=True).strip()
+            )
 
     # 获取当前编译的路径信息，配置文件信息，编译选项信息
     def __init__(self, cpu_type: str, make_option="normal", lib_run_type="FPGA", choice="ALL", make_phase="ALL",
