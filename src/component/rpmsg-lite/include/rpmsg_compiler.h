@@ -54,4 +54,7 @@
 #define RL_PACKED_END __attribute__((__packed__))
 #endif
 
+#ifndef RL_WEAK
+#define RL_WEAK __attribute__((__weak__)) 
+#endif
 #endif /* RPMSG_COMPILER_H_ */

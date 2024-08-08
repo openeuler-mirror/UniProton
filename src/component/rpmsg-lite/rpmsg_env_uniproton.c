@@ -33,12 +33,12 @@
 /**************************************************************************
  * FILE NAME
  *
- *       rpmsg_env_bm.c
+ *       rpmsg_env_uniproton.c
  *
  *
  * DESCRIPTION
  *
- *       This file is Bare Metal Implementation of env layer for OpenAMP.
+ *       This file is Uniproton OS Implementation of env layer for OpenAMP.
  *
  *
  **************************************************************************/
@@ -52,7 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "prt_sys_external.h"
 #include "prt_sem.h"
 #include "prt_queue.h"
 
@@ -75,16 +74,6 @@ static struct isr_info isr_table[ISR_COUNT];
 #error "This RPMsg-Lite port requires RL_USE_ENVIRONMENT_CONTEXT set to 0"
 #endif
 
-#define RL_UNIPROTON_ENV_TEST (1)
-#if RL_UNIPROTON_ENV_TEST == 1
-void* env_lock_m2r = NULL;
-void* env_lock_r2m = NULL;
-#define WAIT_FOR_REMOTE() env_lock_mutex(env_lock_r2m)
-#define WAIT_FOR_MASTER() env_lock_mutex(env_lock_m2r)
-#define NOTIFY_REMOTE() env_unlock_mutex(env_lock_m2r)
-#define NOTIFY_MASTER() env_unlock_mutex(env_lock_r2m)
-#endif
-
 /*!
  * env_wait_for_link_up
  *
@@ -94,12 +83,10 @@ void* env_lock_r2m = NULL;
  */
 uint32_t env_wait_for_link_up(volatile uint32_t *link_state, uint32_t link_id, uint32_t timeout_ms)
 {
-#if RL_UNIPROTON_ENV_TEST == 1
-    WAIT_FOR_REMOTE();
-    *link_state = 1U;
-#else
-
-#endif
+    while (*link_state != 1U)
+    {
+        env_sleep_msec(10);
+    }
     return 1U;
 }
 
@@ -136,13 +123,6 @@ int32_t env_init(void)
     {
         return 0;
     }
-    // first call
-#if RL_UNIPROTON_ENV_TEST == 1
-    if (env_create_mutex(&env_lock_m2r, 0) != RL_SUCCESS
-        || env_create_mutex(&env_lock_r2m, 0) != RL_SUCCESS) {
-        return -1;
-    }
-#endif
     (void)env_memset(isr_table, 0, sizeof(isr_table));
     return platform_init();
 }
@@ -332,13 +312,13 @@ int32_t env_create_mutex(void **lock, int32_t count)
      * this marks the mutex handle as initialized.
      */
     *lock = context;
-#else 
+#else
     if ((*lock = env_allocate_memory(sizeof(SemHandle))) == NULL) {
         return 1;
     }
 #endif
 
-    if (PRT_SemCreate(count, *((SemHandle**)lock)) != OS_OK) {
+    if (PRT_SemCreate(count, *((SemHandle **)lock)) != OS_OK) {
         CHECK_FREE(*lock);
         return 1;
     }
@@ -357,7 +337,7 @@ void env_delete_mutex(void *lock)
 #if defined(RL_USE_STATIC_API) && (RL_USE_STATIC_API == 1)
     return;
 #else
-    PRT_SemDelete(*((SemHandle*)lock));
+    PRT_SemDelete(*((SemHandle *)lock));
 #endif
 }
 
@@ -369,8 +349,9 @@ void env_delete_mutex(void *lock)
  */
 void env_lock_mutex(void *lock)
 {
-    if (lock != NULL) {
-        PRT_SemPend(*((SemHandle*)lock), OS_WAIT_FOREVER);
+    if (lock != NULL)
+    {
+        PRT_SemPend(*((SemHandle *)lock), OS_WAIT_FOREVER);
     }
 }
 
@@ -381,8 +362,9 @@ void env_lock_mutex(void *lock)
  */
 void env_unlock_mutex(void *lock)
 {
-    if (lock != NULL) {
-        PRT_SemPost(*((SemHandle*)lock));
+    if (lock != NULL)
+    {
+        PRT_SemPost(*((SemHandle *)lock));
     }
 }
 
@@ -391,18 +373,9 @@ void env_unlock_mutex(void *lock)
  *
  * Suspends the calling thread for given time , in msecs.
  */
-#define MSEC_PER_SEC 1000
-extern struct TickModInfo g_tickModInfo;
-/*must be inited by user, one OS init once*/
-uint64_t current_sys_clock = 0;
 void env_sleep_msec(uint32_t num_msec)
 {
-    uint64_t ticks = current_sys_clock / g_tickModInfo.tickPerSecond;
-    if (!current_sys_clock || ticks < MSEC_PER_SEC)
-        env_print("ERROR: No specific sys clock frequency or not enough ticks per second!\n");
-    ticks = num_msec * ticks / MSEC_PER_SEC;
-    /*delay the task for @ticks*/
-    PRT_TaskDelay(ticks);
+    platform_time_delay(num_msec);
 }
 
 /*!
@@ -554,7 +527,7 @@ int32_t env_create_queue(void **queue, int32_t length, int32_t element_size)
 
 void env_delete_queue(void *queue)
 {
-    PRT_QueueDelete(*(env_queue_t*)queue);
+    PRT_QueueDelete(*(env_queue_t *)queue);
 #if !(defined(RL_USE_STATIC_API) && (RL_USE_STATIC_API == 1))
     env_free_memory(queue);
 #endif
@@ -575,11 +548,15 @@ void env_delete_queue(void *queue)
 int32_t env_put_queue(void *queue, void *msg, uintptr_t timeout_ms)
 {
     /*avoid using this in ISR*/
-    return PRT_QueueWrite(*(env_queue_t *)queue,  
-                          msg,
-                          sizeof(rpmsg_queue_rx_cb_data_t),
-                          (U32)timeout_ms,
-                          ((env_msg_t*)msg)->msg_prio);
+    /*FIX:PRT_queue considers a return of 0 to be a success, the logic of rpmsglite env queue is the opposite.*/
+    /*FIX:Uniproton use priority queue, while rpmsglite use it as normal queue*/
+    return ((int32_t)PRT_QueueWrite(*(env_queue_t *)queue,
+                                    msg,
+                                    sizeof(rpmsg_queue_rx_cb_data_t),
+                                    (U32)timeout_ms,
+                                    OS_QUEUE_NORMAL) == 0
+                ? 1
+                : 0);
 }
 
 /*!
@@ -598,11 +575,11 @@ int32_t env_get_queue(void *queue, void *msg, uintptr_t timeout_ms)
 {
     /*avoid using this in ISR*/
     U32 len = sizeof(rpmsg_queue_rx_cb_data_t);
-    return PRT_QueueRead(
-                 (U32)(uintptr_t)queue,
-                 msg,
-                 &len,
-                 (U32)timeout_ms);
+    /*FIX:Uniproton considers a return of 0 to be a success, the logic of rpmsglite is the opposite.*/
+    return (
+        (int32_t)PRT_QueueRead(*(env_queue_t *)queue, msg, &len, (U32)timeout_ms) == 0
+            ? 1
+            : 0);
 }
 
 /*!

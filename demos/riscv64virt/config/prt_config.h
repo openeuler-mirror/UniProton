@@ -77,9 +77,27 @@ extern "C" {
 /* 用户可以创建的最大分区数，取值范围[0,253] */
 #define OS_MEM_MAX_PT_NUM                               10
 /* 私有FSC内存分区起始地址 */
-#define OS_MEM_FSC_PT_ADDR                              (uintptr_t)(rmem_start)
-/* 私有FSC内存分区大小 */
-#define OS_MEM_FSC_PT_SIZE                              0x3000000
+
+#if defined(CONFIG_RPMSGLITE_MASTERPRJ)
+
+	#define OS_MEM_FSC_PT_ADDR                              (uintptr_t)(rmem_start)
+	/* �~A�~\~IFSC�~F~E�~X�~H~F�~L�大�~O */
+	#define OS_MEM_FSC_PT_SIZE                              0x29FF000
+
+#elif defined(CONFIG_RPMSGLITE_SLAVEPRJ)
+
+	#define OS_MEM_FSC_PT_ADDR                              (uintptr_t)(rmem_start)
+	/* �~A�~\~IFSC�~F~E�~X�~H~F�~L�大�~O */
+	#define OS_MEM_FSC_PT_SIZE                              0x01000000
+
+#else
+
+	#define OS_MEM_FSC_PT_ADDR                              (uintptr_t)(rmem_start)
+	/* 私有FSC内存分区大小 */
+	#define OS_MEM_FSC_PT_SIZE                              0x3000000
+
+#endif
+
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */

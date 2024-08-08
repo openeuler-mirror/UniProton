@@ -27,8 +27,9 @@
 #define PLIC    0x0c000000L
 #define CLINT   0x2000000L
 
-#define CLINT_MSI              (CLINT)
-#define CLINT_TIME             (CLINT+0xBFF8)
-#define CLINT_TIMECMP(hart_id) (CLINT+0x4000+8*(hart_id))
+#define CLINT_MSI              	(CLINT)
+#define CLINT_MSI_REG(core)	(CLINT_MSI + (core)*4)
+#define CLINT_TIME             	(CLINT+0xBFF8)
+#define CLINT_TIMECMP(hart_id) 	(CLINT+0x4000+8*(hart_id))
 
 #endif 

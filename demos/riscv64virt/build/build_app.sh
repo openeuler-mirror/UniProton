@@ -30,7 +30,11 @@ for one_arg in $*; do
     elif [[ $one_arg == "UniProton_test_posix_prng_interface" ]]; then
 	export APP=UniProton_test_posix_prng_interface
     elif [[ $one_arg == "rpmsglite_env_test" ]]; then
-    export APP=rpmsglite_env_test
+        export APP=rpmsglite_env_test
+    elif [[ $one_arg == "rpmsglite_test_master" ]]; then
+	export APP=rpmsglite_test_master
+    elif [[ $one_arg == "rpmsglite_test_slave" ]]; then
+	export APP=rpmsglite_test_slave
     else
         echo "[Error] Not support args - $one_arg"
         exit 1

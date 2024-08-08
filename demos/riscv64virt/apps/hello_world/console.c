@@ -13,6 +13,7 @@
  * Description: console控制台相关的代码
  */
 #include "uart.h"
+#include "riscv_ipi.h"
 #include "prt_typedef.h"
 #include <string.h>
 #include "prt_sys.h"
@@ -701,7 +702,7 @@ void console_base_info()
 #else 
     uart_putstr_sync("unkown platform\n");
 #endif
-
+   
     uart_putstr_sync("cpuType : ");
 #if (OS_CPU_TYPE == OS_RV64_VIRT)
     uart_putstr_sync("qemu virt\n");
@@ -758,7 +759,7 @@ void console_base_info()
     uart_putstr_sync("\n");
 
     uart_putstr_sync(">> ");
-
+    send_ipi(0, 20);
 }
 void console_error_handle()
 {

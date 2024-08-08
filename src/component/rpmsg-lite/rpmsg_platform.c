@@ -4,80 +4,38 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <stdio.h>
-#include <string.h>
 #include "rpmsg_platform.h"
 #include "rpmsg_env.h"
+#include "rpmsg_compiler.h"
 
 #if defined(RL_USE_ENVIRONMENT_CONTEXT) && (RL_USE_ENVIRONMENT_CONTEXT == 1)
 #error "This RPMsg-Lite port requires RL_USE_ENVIRONMENT_CONTEXT set to 0"
 #endif
 
-static int32_t disable_counter = 0;
+static int32_t disable_counter;
 static void *platform_lock;
 #if defined(RL_USE_STATIC_API) && (RL_USE_STATIC_API == 1)
 static LOCK_STATIC_CONTEXT platform_lock_static_ctxt;
 #endif
 
-static void platform_global_isr_disable(void)
+static void platform_global_isr_disable(void) {}
+static void platform_global_isr_enable(void) {}
+
+int32_t RL_WEAK platform_init_interrupt(uint32_t vector_id, void *isr_data)
 {
-
-}
-
-static void platform_global_isr_enable(void)
-{
-
-}
-
-int32_t platform_init_interrupt(uint32_t vector_id, void *isr_data)
-{
-    env_lock_mutex(platform_lock);
-    /* Register ISR to environment layer */
-    env_register_isr(vector_id, isr_data);
-    env_unlock_mutex(platform_lock);
-
+    platform_global_isr_disable();
+    platform_global_isr_enable();
     return 0;
 }
 
-int32_t platform_deinit_interrupt(uint32_t vector_id)
+int32_t RL_WEAK platform_deinit_interrupt(uint32_t vector_id)
 {
-    env_lock_mutex(platform_lock);
-    /* Unregister ISR from environment layer */
-    env_unregister_isr(vector_id);
-    env_unlock_mutex(platform_lock);
-
+    platform_global_isr_disable();
+    platform_global_isr_enable();
     return 0;
 }
 
-#ifndef RL_UNIPROTON_ENV_TEST
-#define RL_UNIPROTON_ENV_TEST (1)
-extern void* env_lock_m2r;
-extern void* env_lock_r2m;
-#define WAIT_FOR_REMOTE() env_lock_mutex(env_lock_r2m)
-#define WAIT_FOR_MASTER() env_lock_mutex(env_lock_m2r)
-#define NOTIFY_REMOTE() env_unlock_mutex(env_lock_m2r)
-#define NOTIFY_MASTER() env_unlock_mutex(env_lock_r2m)
-#endif
-
-void platform_notify(uint32_t vector_id)
-{
-    env_lock_mutex(platform_lock);
-#if RL_UNIPROTON_ENV_TEST == 1
-    if (!(vector_id & 2U)) {
-        /*master2remote*/
-        env_isr(vector_id | 2U);
-        NOTIFY_REMOTE();
-    }
-    else {
-        /*remote2master*/
-        env_isr(vector_id & (~2U));
-        NOTIFY_MASTER();
-    }
-#else
-
-#endif
-    env_unlock_mutex(platform_lock);
-}
+void RL_WEAK platform_notify(uint32_t vector_id) {}
 
 /**
  * platform_time_delay
@@ -86,10 +44,7 @@ void platform_notify(uint32_t vector_id)
  *
  * This is not an accurate delay, it ensures at least num_msec passed when return.
  */
-void platform_time_delay(uint32_t num_msec)
-{
-
-}
+void RL_WEAK platform_time_delay(uint32_t num_msec) {}
 
 /**
  * platform_interrupt_enable
@@ -101,19 +56,9 @@ void platform_time_delay(uint32_t num_msec)
  * @return vector_id Return value is never checked.
  *
  */
-int32_t platform_interrupt_enable(uint32_t vector_id)
+int32_t RL_WEAK platform_interrupt_enable(uint32_t vector_id)
 {
-    RL_ASSERT(0 < disable_counter);
-
-    platform_global_isr_disable();
-    disable_counter--;
-
-    if (disable_counter == 0)
-    {
-    }
-    platform_global_isr_enable();
-
-    return ((int32_t)vector_id);
+    return 0;
 }
 
 /**
@@ -126,20 +71,9 @@ int32_t platform_interrupt_enable(uint32_t vector_id)
  * @return vector_id Return value is never checked.
  *
  */
-int32_t platform_interrupt_disable(uint32_t vector_id)
+int32_t RL_WEAK platform_interrupt_disable(uint32_t vector_id)
 {
-    RL_ASSERT(0 <= disable_counter);
-
-    platform_global_isr_disable();
-    /* virtqueues use the same GIC vector
-       if counter is set - the interrupts are disabled */
-    if (disable_counter == 0)
-    {
-    }
-    disable_counter++;
-    platform_global_isr_enable();
-
-    return ((int32_t)vector_id);
+    return 0;
 }
 
 /**
@@ -148,7 +82,7 @@ int32_t platform_interrupt_disable(uint32_t vector_id)
  * Dummy implementation
  *
  */
-void platform_map_mem_region(uint32_t vrt_addr, uint32_t phy_addr, uint32_t size, uint32_t flags)
+void RL_WEAK platform_map_mem_region(uint32_t vrt_addr, uint32_t phy_addr, uint32_t size, uint32_t flags)
 {
 }
 
@@ -158,7 +92,7 @@ void platform_map_mem_region(uint32_t vrt_addr, uint32_t phy_addr, uint32_t size
  * Dummy implementation
  *
  */
-void platform_cache_all_flush_invalidate(void)
+void RL_WEAK platform_cache_all_flush_invalidate(void)
 {
 }
 
@@ -168,7 +102,7 @@ void platform_cache_all_flush_invalidate(void)
  * Dummy implementation
  *
  */
-void platform_cache_disable(void)
+void RL_WEAK platform_cache_disable(void)
 {
 }
 
@@ -178,9 +112,9 @@ void platform_cache_disable(void)
  * Dummy implementation
  *
  */
-uintptr_t platform_vatopa(void *addr)
+uintptr_t RL_WEAK platform_vatopa(void *addr)
 {
-    return ((uintptr_t)(char *)addr);
+    return (uintptr_t)0;
 }
 
 /**
@@ -189,9 +123,9 @@ uintptr_t platform_vatopa(void *addr)
  * Dummy implementation
  *
  */
-void *platform_patova(uintptr_t addr)
+void * RL_WEAK platform_patova(uintptr_t addr)
 {
-    return ((void *)(char *)addr);
+    return ((void *)0);
 }
 
 /**
@@ -199,19 +133,13 @@ void *platform_patova(uintptr_t addr)
  *
  * platform/environment init
  */
-int32_t platform_init(void)
+int32_t RL_WEAK platform_init(void)
 {
-
-    /* Create lock used in multi-instanced RPMsg */
+    platform_lock = NULL;
+    disable_counter = 0;
 #if defined(RL_USE_STATIC_API) && (RL_USE_STATIC_API == 1)
-    if (0 != env_create_mutex(&platform_lock, 1, &platform_lock_static_ctxt))
-#else
-    if (0 != env_create_mutex(&platform_lock, 1))
+    platform_lock_static_ctxt = 0;
 #endif
-    {
-        return -1;
-    }
-
     return 0;
 }
 
@@ -220,11 +148,27 @@ int32_t platform_init(void)
  *
  * platform/environment deinit process
  */
-int32_t platform_deinit(void)
+int32_t RL_WEAK platform_deinit(void)
 {
-    /* Delete lock used in multi-instanced RPMsg */
-    env_delete_mutex(platform_lock);
-    platform_lock = ((void *)0);
-
     return 0;
 }
+
+#if defined(RL_ALLOW_CUSTOM_SHMEM_CONFIG) && (RL_ALLOW_CUSTOM_SHMEM_CONFIG == 1)
+/**
+ * platform_get_custom_shmem_config
+ *
+ * Provide rpmsg_platform_shmem_config structure for the rpmsg_lite instance initialization
+ * based on the link_id.
+ *
+ * @param link_id Link ID provided by the rpmsg_lite init function
+ * @param cfg Pointer to the rpmsg_platform_shmem_config structure to be filled
+ *
+ * @return Status of function execution, 0 on success.
+ *
+ */
+int32_t RL_WEAK platform_get_custom_shmem_config(uint32_t link_id, rpmsg_platform_shmem_config_t *cfg)
+{
+    return 0;
+}
+
+#endif /* defined(RL_ALLOW_CUSTOM_SHMEM_CONFIG) && (RL_ALLOW_CUSTOM_SHMEM_CONFIG == 1) */

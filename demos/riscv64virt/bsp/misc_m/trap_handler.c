@@ -18,7 +18,9 @@
 #include "platform.h"
 #include "prt_config.h"
 #include "prt_tick.h"
-
+#include "../ipi_module/src/riscv_ipi_external.h"
+#include "uart.h"
+#include "shmem_self.h"
 #define OS_IS_INTERUPT(mcause)     (mcause & 0x8000000000000000ull)
 #define OS_IS_EXCEPTION(mcause)    (~(OS_IS_INTERUPT))
 #define OS_IS_TICK_INT(mcause)     (mcause == 0x8000000000000007ull)
@@ -38,7 +40,8 @@ extern void hwi_timer_handler();    //用户可以使用的时钟分发函数
 
 void clear_soft_pending()
 {
-    *(U32*)CLINT_MSI = 0;
+    U32 core = PRT_GetCoreID();;
+    *(volatile U32*)CLINT_MSI_REG(core) = 0;
 }
 
 //用户实现的样例时钟中断
@@ -64,6 +67,16 @@ void trap_entry(U64 mcause)
             hwi_timer_handler();
         } else if(OS_IS_SOFT_INT(mcause)) {
             clear_soft_pending();
+	    U32 ipidata = GET_SHMEM(PRT_GetCoreID());
+	    U32 ret = riscv_ipi_handler(ipidata);
+	    if(ret == OS_ERRNO_IPI_NOHANDLER) {
+		uart_printf("[INFO] : no hook ipi handler\n");
+	    	uart_printf("[INFO] : ipidata : %d\n",ipidata);
+	    }
+	    else if(ret != OS_OK) {
+		uart_printf("[ERROR] : error in ipi handler!\n");
+		while(1) __asm__ __volatile__("wfi");
+	    }
         } else if(OS_IS_EXT_INT(mcause)) {
             hwi_handler();
         }
