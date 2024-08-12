@@ -34,7 +34,11 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .phys      = MMU_IMAGE_ADDR,
         .size      = (U64)&__protect_len,
         .max_level = 0x3,
+#ifdef OS_GDB_STUB
+        .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RWX,
+#else
         .attrs     = MMU_ATTR_CACHE_SHARE | MMU_ACCESS_RX,
+#endif
     }, {
         // 代码段后的区域
         .virt      = (U64)&data_copy_start,

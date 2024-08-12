@@ -32,10 +32,9 @@ SECTIONS
         __os_stub_text_start = .;
         *(.stub.text)
         __os_stub_text_end = .;
-        . = ALIGN(8);
+        . = ALIGN(4096);
         __text_end = .;
     } > IMU_SRAM
-    . = ALIGN(4096);
     data_copy_start = .;
     __protect_len = data_copy_start - ORIGIN(IMU_SRAM);
     __non_protect_len = ORIGIN(MMU_MEM) + LENGTH(MMU_MEM) - data_copy_start;
