@@ -124,6 +124,7 @@
                 <name>riscv64</name>
                 <compile_path_x86>/opt/buildtools/riscv/bin</compile_path_x86>
                 <compile_path_arm64>None</compile_path_arm64>
+                <compile_path_riscv64>/usr/bin</compile_path_riscv64>
                 <kconf_dir>riscv64_rv64virt</kconf_dir>
             </platform>
         </project>
@@ -135,6 +136,7 @@
                 <name>riscv64</name>
                 <compile_path_x86>/opt/buildtools/riscv/bin</compile_path_x86>
                 <compile_path_arm64>None</compile_path_arm64>
+                <compile_path_riscv64>/usr/bin</compile_path_riscv64>
                 <kconf_dir>riscv64_d1s</kconf_dir>
             </platform>
         </project>
