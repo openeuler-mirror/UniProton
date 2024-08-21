@@ -34,6 +34,13 @@
 #include "prt_queue.h"
 #include "prt_proxy_ext.h"
 
+#if defined(OS_OPTION_PROXY) && defined(OS_SUPPORT_NET)
+#include <sys/socket.h>
+#include "lwip/sockets.h"
+#include "lwip/priv/sockets_priv.h"
+#include "lwip/if_api.h"
+#endif
+
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "../../shell/full/include/shmsg.h"
 #endif
@@ -77,12 +84,20 @@
         return ret_value;                                      \
     }
 
+#define CHECK_NULL_PTR_RETURN(ptr) do { \
+    if ((ptr) == NULL) {                \
+        set_errno(EFAULT);              \
+        return -1;                      \
+    }                                   \
+} while (0)
+
 #define CHECK_ARG(cond, err_value)                 \
         CHECK_AND_SET_ERRNO(cond, -1, err_value)
 
 #define CHECK_INIT()    CHECK_COND(g_ept == NULL, -RPC_ENEED_INIT)
 
 #define MAX_RECORDS 128
+#define MAX_FDS 20
 
 #define WEAK_ALIAS(old, new) \
     extern __typeof(old) new __attribute__((__weak__, __alias__(#old)))
@@ -3337,24 +3352,374 @@ ssize_t PRT_ProxyWritev(int fd, const struct iovec *iov, int iovcnt)
     return ret;
 }
 
-#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
-WEAK_ALIAS(PRT_ProxyOpen, open);
-WEAK_ALIAS(PRT_ProxyReadLoop, read);
-WEAK_ALIAS(PRT_ProxyWrite, write);
-WEAK_ALIAS(PRT_ProxyClose, close);
-WEAK_ALIAS(PRT_ProxyLseek, lseek);
-WEAK_ALIAS(PRT_ProxyFcntl, fcntl);
-WEAK_ALIAS(PRT_ProxyUnlink, unlink);
-WEAK_ALIAS(PRT_ProxyFreeAddrInfo, freeaddrinfo);
-WEAK_ALIAS(PRT_ProxyGetAddrInfo, getaddrinfo);
-WEAK_ALIAS(PRT_ProxyGetHostByAddr, gethostbyaddr);
-WEAK_ALIAS(PRT_ProxyGetHostByName, gethostbyname);
-WEAK_ALIAS(PRT_ProxyPoll, poll);
-WEAK_ALIAS(PRT_ProxyGetPeerName, getpeername);
-WEAK_ALIAS(PRT_ProxyGetHostName, gethostname);
-WEAK_ALIAS(PRT_ProxyGetSockName, getsockname);
-WEAK_ALIAS(PRT_ProxyGetSockOpt, getsockopt);
-WEAK_ALIAS(PRT_ProxySelect, select);
+#if defined(OS_OPTION_PROXY) && defined(OS_SUPPORT_NET)
+typedef struct socket_record {
+    int fd;
+    int domain;
+    int type;
+    int protocol;
+    bool isProxy;
+} socket_record_t;
+
+int g_fds[MAX_FDS][2] = {0};
+socket_record_t sock_record[MAX_FDS];
+
+void socket_init()
+{
+    for(int i = 0; i < MAX_FDS; i++) {
+        g_fds[i][0] = FD_SETSIZE + i + 1;
+        g_fds[i][1] = 0;
+        sock_record[i].fd = -1;
+    }
+}
+
+int socket_find(int fd)
+{
+    int index = fd - 1 - FD_SETSIZE;
+
+    if(g_fds[index][1] == 1) {
+        return index;
+    }
+    return -1;
+}
+
+int socket_getfd()
+{
+    for(int i = 0; i < MAX_FDS; i++) {
+        if(g_fds[i][0] > 0 && g_fds[i][1] == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+{
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_accept(sock_record[index].fd, addr, addrlen);
+    }
+
+    return PRT_ProxyAccept(sock_record[index].fd, addr, addrlen);
+}
+
+int bind(int s, const struct sockaddr *name, socklen_t namelen)
+{
+    CHECK_NULL_PTR_RETURN(name);
+    if (namelen < sizeof(*name)) {
+        set_errno(EINVAL);
+        return -1;
+    }
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    // 代表之前调用了socket,但是没有setsocketopt，直接运行bind,这时候默认走代理 
+    if(sock_record[index].fd < 0 && sock_record[index].domain > 0) {
+        sock_record[index].fd = PRT_ProxySocket(sock_record[index].domain, sock_record[index].type,
+            sock_record[index].protocol);
+        if (sock_record[index].fd < 0) {
+            return -SOCKET_PROXY;
+        }
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_bind(sock_record[index].fd, name, namelen);
+    }
+
+    return PRT_ProxyBind(sock_record[index].fd, name, namelen);
+}
+
+int shutdown(int s, int how)
+{
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_shutdown(sock_record[index].fd, how);
+    }
+
+    return PRT_ProxyShutdown(sock_record[index].fd, how);;
+}
+
+int getpeername(int s, struct sockaddr *name, socklen_t *namelen)
+{
+    CHECK_NULL_PTR_RETURN(name);
+    CHECK_NULL_PTR_RETURN(namelen);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_getpeername(sock_record[index].fd, name, namelen);
+    }
+
+    return PRT_ProxyGetPeerName(sock_record[index].fd, name, namelen);
+}
+
+int getsockname(int s, struct sockaddr *name, socklen_t *namelen)
+{
+    CHECK_NULL_PTR_RETURN(name);
+    CHECK_NULL_PTR_RETURN(namelen);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_getsockname(sock_record[index].fd, name, namelen);
+    }
+
+    return PRT_ProxyGetSockName(sock_record[index].fd, name, namelen);
+}
+
+int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
+{
+    CHECK_NULL_PTR_RETURN(optval);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_getsockopt(sock_record[index].fd, level, optname, optval, optlen);
+    }
+
+    return PRT_ProxyGetSockOpt(sock_record[index].fd, level, optname, optval, optlen);
+}
+
+// 这里要区分，是绑定到网口还是其他操作属性
+// 限制：第一次需要SO_BINDTODEVICE，才能执行其他setsockopt操作
+char *net_card = "ethxxxyyy";
+int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen)
+{
+    CHECK_NULL_PTR_RETURN(optval);
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if(optname == SO_BINDTODEVICE) {
+        char *device_name = (char *)malloc(optlen);
+        if (device_name == NULL) {
+            return -SOCKET_NOMEM;
+        }
+        (void)memcpy_s(device_name, optlen, (char *)optval, optlen);
+
+        int ret = strcmp(net_card, device_name);
+        if (ret == 0) {
+            // local
+            sock_record[index].isProxy = false;
+            sock_record[index].fd = lwip_socket(sock_record[index].domain, sock_record[index].type,
+                sock_record[index].protocol);
+            if (sock_record[index].fd < 0) {
+                return -SOCKET_LOCAL;
+            }
+        }
+    }
+
+    if(sock_record[index].fd < 0 && sock_record[index].domain > 0) {
+        sock_record[index].fd = PRT_ProxySocket(sock_record[index].domain, sock_record[index].type,
+            sock_record[index].protocol);
+        if (sock_record[index].fd < 0) {
+            return -SOCKET_PROXY;
+        }
+    }
+
+    if(sock_record[index].isProxy == true) {
+        return PRT_ProxySetSockOpt(sock_record[index].fd, level, optname, optval, optlen);
+    }
+    return lwip_setsockopt(sock_record[index].fd, level, optname, optval, optlen);
+
+}
+
+int close(int s)
+{
+    // 网络socket fd统一大于FD_SETSIZE
+    if(s <= FD_SETSIZE) {
+        return PRT_ProxyClose(s);
+    }
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    g_fds[index][1] = 0;
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_close(sock_record[index].fd);
+    }
+    return PRT_ProxyClose(sock_record[index].fd);
+}
+
+int connect(int s, const struct sockaddr *name, socklen_t namelen)
+{
+    CHECK_NULL_PTR_RETURN(name);
+    if (namelen < sizeof(*name)) {
+        set_errno(EINVAL);
+        return -1;
+    }
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    // 代表之前调用了socket,但是没有setsocketopt，直接运行connect,这时候默认走代理 
+    if(sock_record[index].fd < 0 && sock_record[index].domain > 0) {
+        sock_record[index].fd = PRT_ProxySocket(sock_record[index].domain, sock_record[index].type,
+            sock_record[index].protocol);
+        if (sock_record[index].fd < 0) {
+            return -SOCKET_PROXY;
+        }
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_connect(sock_record[index].fd, name, namelen);
+    }
+
+    return PRT_ProxyConnect(sock_record[index].fd, name, namelen);
+}
+
+int listen(int s, int backlog)
+{
+    if (backlog < 0) {
+        set_errno(EINVAL);
+        return -1;
+    }
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_listen(sock_record[index].fd, backlog);
+    }
+
+    return PRT_ProxyListen(sock_record[index].fd, backlog);
+}
+
+ssize_t recv(int s, void *mem, size_t len, int flags)
+{
+    CHECK_NULL_PTR_RETURN(mem);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_recv(sock_record[index].fd, mem, len, flags);
+    }
+
+    return PRT_ProxyRecv(sock_record[index].fd, mem, len, flags);
+}
+
+ssize_t recvfrom(int s, void *mem, size_t len, int flags,
+                             struct sockaddr *from, socklen_t *fromlen)
+{
+    CHECK_NULL_PTR_RETURN(mem);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_recvfrom(sock_record[index].fd, mem, len, flags, from, fromlen);
+    }
+
+    return PRT_ProxyRecvFrom(sock_record[index].fd, mem, len, flags, from, fromlen);
+}
+
+ssize_t send(int s, const void *dataptr, size_t size, int flags)
+{
+    CHECK_NULL_PTR_RETURN(dataptr);
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_send(sock_record[index].fd, dataptr, size, flags);
+    }
+
+    return  PRT_ProxySend(sock_record[index].fd, dataptr, size, flags);
+}
+
+ssize_t sendto(int s, const void *dataptr, size_t size, int flags,
+                           const struct sockaddr *to, socklen_t tolen)
+{
+    CHECK_NULL_PTR_RETURN(dataptr);
+    if (to && tolen < sizeof(*to)) {
+        set_errno(EINVAL);
+        return -1;
+    }
+
+    int index = socket_find(s);
+    if (index < 0) {
+        return -SOCKET_FIND;
+    }
+
+    // 代表之前调用了socket, 但是没有setsocketopt, 直接运行sendto, 这时候默认走代理 
+    if(sock_record[index].fd < 0 && sock_record[index].domain > 0) {
+        sock_record[index].fd = PRT_ProxySocket(sock_record[index].domain, sock_record[index].type,
+            sock_record[index].protocol);
+        if (sock_record[index].fd < 0) {
+            return -SOCKET_PROXY;
+        }
+    }
+
+    if (sock_record[index].isProxy == false) {
+        return lwip_sendto(sock_record[index].fd, dataptr, size, flags, to, tolen);
+    }
+
+    return PRT_ProxySendTo(sock_record[index].fd, dataptr, size, flags, to, tolen);
+}
+
+static pthread_mutex_t socket_lock = PTHREAD_MUTEX_INITIALIZER;
+
+int socket(int domain, int type, int protocol)
+{
+    pthread_mutex_lock(&socket_lock);
+    if(g_fds[0][0] == 0) {
+        socket_init();
+    }
+
+    int index = socket_getfd();
+    if(index < 0) {
+        pthread_mutex_unlock(&socket_lock);
+        return -SOCKET_GETFD;
+    }
+
+    pthread_mutex_unlock(&socket_lock);
+
+    g_fds[index][1] = 1;
+    sock_record[index].domain = domain;
+    sock_record[index].type = type;
+    sock_record[index].protocol = protocol;
+    sock_record[index].isProxy = true;
+
+    return g_fds[index][0];
+}
+#endif
+
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API) && !defined(OS_SUPPORT_NET)
 WEAK_ALIAS(PRT_ProxyAccept, accept);
 WEAK_ALIAS(PRT_ProxyBind, bind);
 WEAK_ALIAS(PRT_ProxyConnect, connect);
@@ -3366,6 +3731,26 @@ WEAK_ALIAS(PRT_ProxySendTo, sendto);
 WEAK_ALIAS(PRT_ProxySetSockOpt, setsockopt);
 WEAK_ALIAS(PRT_ProxyShutdown, shutdown);
 WEAK_ALIAS(PRT_ProxySocket, socket);
+WEAK_ALIAS(PRT_ProxyGetSockName, getsockname);
+WEAK_ALIAS(PRT_ProxyGetSockOpt, getsockopt);
+WEAK_ALIAS(PRT_ProxyGetPeerName, getpeername);
+WEAK_ALIAS(PRT_ProxyClose, close);
+#endif
+
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
+WEAK_ALIAS(PRT_ProxyOpen, open);
+WEAK_ALIAS(PRT_ProxyReadLoop, read);
+WEAK_ALIAS(PRT_ProxyWrite, write);
+WEAK_ALIAS(PRT_ProxyLseek, lseek);
+WEAK_ALIAS(PRT_ProxyFcntl, fcntl);
+WEAK_ALIAS(PRT_ProxyUnlink, unlink);
+WEAK_ALIAS(PRT_ProxyFreeAddrInfo, freeaddrinfo);
+WEAK_ALIAS(PRT_ProxyGetAddrInfo, getaddrinfo);
+WEAK_ALIAS(PRT_ProxyGetHostByAddr, gethostbyaddr);
+WEAK_ALIAS(PRT_ProxyGetHostByName, gethostbyname);
+WEAK_ALIAS(PRT_ProxyPoll, poll);
+WEAK_ALIAS(PRT_ProxyGetHostName, gethostname);
+WEAK_ALIAS(PRT_ProxySelect, select);
 WEAK_ALIAS(PRT_ProxyFopen, fopen);
 WEAK_ALIAS(PRT_ProxyFclose, fclose);
 WEAK_ALIAS(PRT_ProxyFreadLoop, fread);

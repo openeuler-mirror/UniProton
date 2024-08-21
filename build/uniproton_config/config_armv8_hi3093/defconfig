@@ -184,3 +184,8 @@ CONFIG_OS_OPTION_LOG=y
 #
 # CONFIG_OS_OPTION_RR_SCHED is not set
 # CONFIG_OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT is not set
+
+#
+# Net Modules Configuration
+#
+# CONFIG_OS_SUPPORT_NET is not set
