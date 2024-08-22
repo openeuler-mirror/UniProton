@@ -10,7 +10,8 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ff15)
     include(FetchContent)
     FetchContent_Declare(
         ff15
-        URL http://elm-chan.org/fsw/ff/arc/ff15.zip
+        GIT_REPOSITORY https://gitee.com/open-instrument/fatfs.git
+        GIT_TAG b11f08931929e5f2f1fe8a3a2c0bd16d222b5625
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ff15
         PATCH_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && patch -p1 -d ff15 < ${CMAKE_CURRENT_SOURCE_DIR}/0000-adapter_fix_for_ff15.patch
     )
