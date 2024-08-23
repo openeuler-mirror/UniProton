@@ -35,6 +35,9 @@
 
 #include "inode/inode.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -211,6 +214,12 @@ errout:
 int sys_chmod(FAR const char *path, mode_t mode)
 {
   struct stat buf;
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  if(proxyPath(path)) {
+    PRT_ProxyChmod(path, mode);
+  }
+#endif
 
   buf.st_mode = mode;
 

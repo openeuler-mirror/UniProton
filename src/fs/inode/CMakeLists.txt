@@ -4,6 +4,7 @@ add_library(base_inode OBJECT ${INODE_SOURCE})
 
 target_include_directories(base_inode PUBLIC 
     ${FS_BASE_DIR}/include
+    ${FS_BASE_DIR}/vfs
     ${FS_BASE_DIR}/
 )
 

@@ -34,6 +34,9 @@
 
 #include "inode/inode.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -63,6 +66,11 @@ int sys_rmdir(FAR const char *pathname)
   int errcode;
   int ret;
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  if(proxyPath(pathname)) {
+    return PRT_ProxyRmdir(pathname);
+  }
+#endif
   /* Get an inode for the directory (or for the mountpoint containing the
    * directory).  inode_find() automatically increments the reference count
    * on the inode if one is found.

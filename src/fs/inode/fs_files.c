@@ -46,9 +46,13 @@
 #endif
 
 #include <nuttx/sys/sys_unistd.h>
+#include <nuttx/sys/sys_fcntl.h>
 
 #include "inode/inode.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -601,6 +605,30 @@ int sys_dup2(int fd1, int fd2)
 {
   int ret;
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  int index1 = fds_find(fd1);
+  if(index1 < 0) {
+      return ERROR;
+  }
+
+// fd2可能是标准输入输出，也可能是打开的文件
+  if(fd2 > FILE_FDS_SIZE)
+  {
+    int index2 = fds_find(fd2);
+    if(index2 < 0) {
+      return ERROR;
+    }
+    fd2 = fds_record[index2].fd;
+  }
+
+  if(fds_record[index1].isProxy) 
+  {
+    return PRT_ProxyDup2(fds_record[index1].fd, fd2);
+  }
+
+  fd1 = fds_record[index1].fd;
+#endif
+
   ret = nx_dup2(fd1, fd2);
   if (ret < 0)
     {
@@ -735,6 +763,31 @@ int sys_close(int fd)
   /* close() is a cancellation point */
 
   (void)enter_cancellation_point();
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY) && defined(OS_SUPPORT_NET)
+  if (fd > SOCKET_FDS_SIZE && fd < FILE_FDS_SIZE)
+  {
+    return PRT_CoexistClose(fd);
+  }
+#endif
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  if (fd <= SOCKET_FDS_SIZE)
+  {
+    return PRT_ProxyClose(fd); 
+  }
+
+  int index = fds_find(fd);
+  if (index < 0) {
+      return ERROR;
+  }
+
+  if(fds_record[index].isProxy == true) 
+  {
+    fds_index[index][1] = 0;
+    return PRT_ProxyClose(fds_record[index].fd);
+  }
+  fd = fds_record[index].fd;
+#endif
 
   ret = nx_close(fd);
   if (ret < 0)
@@ -742,6 +795,10 @@ int sys_close(int fd)
       set_errno(-ret);
       ret = ERROR;
     }
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  fds_index[index][1] = 0;
+#endif
 
   leave_cancellation_point();
   return ret;

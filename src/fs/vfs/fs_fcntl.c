@@ -38,6 +38,9 @@
 
 #include "inode/inode.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -311,6 +314,20 @@ int sys_fcntl(int fd, int cmd, ...)
   /* Setup to access the variable argument list */
 
   va_start(ap, cmd);
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  int index = fds_find(fd);
+  if (index < 0) {
+      return ERROR;
+  }
+
+  if(fds_record[index].isProxy == true) 
+  {
+    return PRT_ProxyFcntl(fds_record[index].fd, cmd, ap);
+  }
+
+  fd = fds_record[index].fd;
+#endif
 
   /* Get the file structure corresponding to the file descriptor. */
 

@@ -32,6 +32,9 @@
 #include <nuttx/sys/sys_unistd.h>
 #include <nuttx/sys/sys_stat.h>
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -81,6 +84,12 @@
 int sys_access(FAR const char *path, int amode)
 {
   struct stat s;
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  if(proxyPath(path)) {
+    return PRT_ProxyAccess(path, amode);
+  }
+#endif
 
   if (sys_stat(path, &s))
     {

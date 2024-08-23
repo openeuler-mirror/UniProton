@@ -357,11 +357,13 @@ DEF_CONVERT(accept4)
 DEF_CONVERT(gai_strerror)
 {
     DEFINE_CB_VARS(gai_strerror)
+    static char gai_outp[MAX_STRING_LEN];
     if (resp->isNull) {
         return;
     }
     int len = strlen(resp->buf) + 1;
-    memcpy_s(outp->buf, len, resp->buf, len);
+    memcpy_s(gai_outp, len, resp->buf, len);
+    outp->buf = gai_outp;
 }
 
 DEF_CONVERT(putchar)
@@ -3393,7 +3395,7 @@ int socket_getfd()
     return -1;
 }
 
-int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+int PRT_CoexistAccept(int s, struct sockaddr *addr, socklen_t *addrlen)
 {
     int index = socket_find(s);
     if (index < 0) {
@@ -3407,7 +3409,7 @@ int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
     return PRT_ProxyAccept(sock_record[index].fd, addr, addrlen);
 }
 
-int bind(int s, const struct sockaddr *name, socklen_t namelen)
+int PRT_CoexistBind(int s, const struct sockaddr *name, socklen_t namelen)
 {
     CHECK_NULL_PTR_RETURN(name);
     if (namelen < sizeof(*name)) {
@@ -3436,7 +3438,7 @@ int bind(int s, const struct sockaddr *name, socklen_t namelen)
     return PRT_ProxyBind(sock_record[index].fd, name, namelen);
 }
 
-int shutdown(int s, int how)
+int PRT_CoexistShutdown(int s, int how)
 {
     int index = socket_find(s);
     if (index < 0) {
@@ -3450,7 +3452,7 @@ int shutdown(int s, int how)
     return PRT_ProxyShutdown(sock_record[index].fd, how);;
 }
 
-int getpeername(int s, struct sockaddr *name, socklen_t *namelen)
+int PRT_CoexistGetPeerName(int s, struct sockaddr *name, socklen_t *namelen)
 {
     CHECK_NULL_PTR_RETURN(name);
     CHECK_NULL_PTR_RETURN(namelen);
@@ -3467,7 +3469,7 @@ int getpeername(int s, struct sockaddr *name, socklen_t *namelen)
     return PRT_ProxyGetPeerName(sock_record[index].fd, name, namelen);
 }
 
-int getsockname(int s, struct sockaddr *name, socklen_t *namelen)
+int PRT_CoexistGetSockName(int s, struct sockaddr *name, socklen_t *namelen)
 {
     CHECK_NULL_PTR_RETURN(name);
     CHECK_NULL_PTR_RETURN(namelen);
@@ -3484,7 +3486,7 @@ int getsockname(int s, struct sockaddr *name, socklen_t *namelen)
     return PRT_ProxyGetSockName(sock_record[index].fd, name, namelen);
 }
 
-int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
+int PRT_CoexistGetSockOpt(int s, int level, int optname, void *optval, socklen_t *optlen)
 {
     CHECK_NULL_PTR_RETURN(optval);
 
@@ -3503,7 +3505,7 @@ int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen)
 // 这里要区分，是绑定到网口还是其他操作属性
 // 限制：第一次需要SO_BINDTODEVICE，才能执行其他setsockopt操作
 char *net_card = "ethxxxyyy";
-int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen)
+int PRT_CoexistSetSockOpt(int s, int level, int optname, const void *optval, socklen_t optlen)
 {
     CHECK_NULL_PTR_RETURN(optval);
     int index = socket_find(s);
@@ -3545,7 +3547,7 @@ int setsockopt(int s, int level, int optname, const void *optval, socklen_t optl
 
 }
 
-int close(int s)
+int PRT_CoexistClose(int s)
 {
     // 网络socket fd统一大于FD_SETSIZE
     if(s <= FD_SETSIZE) {
@@ -3565,7 +3567,7 @@ int close(int s)
     return PRT_ProxyClose(sock_record[index].fd);
 }
 
-int connect(int s, const struct sockaddr *name, socklen_t namelen)
+int PRT_CoexistConnect(int s, const struct sockaddr *name, socklen_t namelen)
 {
     CHECK_NULL_PTR_RETURN(name);
     if (namelen < sizeof(*name)) {
@@ -3594,7 +3596,7 @@ int connect(int s, const struct sockaddr *name, socklen_t namelen)
     return PRT_ProxyConnect(sock_record[index].fd, name, namelen);
 }
 
-int listen(int s, int backlog)
+int PRT_CoexistListen(int s, int backlog)
 {
     if (backlog < 0) {
         set_errno(EINVAL);
@@ -3613,7 +3615,7 @@ int listen(int s, int backlog)
     return PRT_ProxyListen(sock_record[index].fd, backlog);
 }
 
-ssize_t recv(int s, void *mem, size_t len, int flags)
+ssize_t PRT_CoexistRecv(int s, void *mem, size_t len, int flags)
 {
     CHECK_NULL_PTR_RETURN(mem);
 
@@ -3629,7 +3631,7 @@ ssize_t recv(int s, void *mem, size_t len, int flags)
     return PRT_ProxyRecv(sock_record[index].fd, mem, len, flags);
 }
 
-ssize_t recvfrom(int s, void *mem, size_t len, int flags,
+ssize_t PRT_CoexistRecvFrom(int s, void *mem, size_t len, int flags,
                              struct sockaddr *from, socklen_t *fromlen)
 {
     CHECK_NULL_PTR_RETURN(mem);
@@ -3646,7 +3648,7 @@ ssize_t recvfrom(int s, void *mem, size_t len, int flags,
     return PRT_ProxyRecvFrom(sock_record[index].fd, mem, len, flags, from, fromlen);
 }
 
-ssize_t send(int s, const void *dataptr, size_t size, int flags)
+ssize_t PRT_ProxySend(int s, const void *dataptr, size_t size, int flags)
 {
     CHECK_NULL_PTR_RETURN(dataptr);
 
@@ -3662,7 +3664,7 @@ ssize_t send(int s, const void *dataptr, size_t size, int flags)
     return  PRT_ProxySend(sock_record[index].fd, dataptr, size, flags);
 }
 
-ssize_t sendto(int s, const void *dataptr, size_t size, int flags,
+ssize_t PRT_CoexistSendTo(int s, const void *dataptr, size_t size, int flags,
                            const struct sockaddr *to, socklen_t tolen)
 {
     CHECK_NULL_PTR_RETURN(dataptr);
@@ -3694,7 +3696,7 @@ ssize_t sendto(int s, const void *dataptr, size_t size, int flags,
 
 static pthread_mutex_t socket_lock = PTHREAD_MUTEX_INITIALIZER;
 
-int socket(int domain, int type, int protocol)
+int PRT_CoexistSocket(int domain, int type, int protocol)
 {
     pthread_mutex_lock(&socket_lock);
     if(g_fds[0][0] == 0) {
@@ -3719,6 +3721,7 @@ int socket(int domain, int type, int protocol)
 }
 #endif
 
+// 代理网络类支持接口
 #if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API) && !defined(OS_SUPPORT_NET)
 WEAK_ALIAS(PRT_ProxyAccept, accept);
 WEAK_ALIAS(PRT_ProxyBind, bind);
@@ -3734,22 +3737,48 @@ WEAK_ALIAS(PRT_ProxySocket, socket);
 WEAK_ALIAS(PRT_ProxyGetSockName, getsockname);
 WEAK_ALIAS(PRT_ProxyGetSockOpt, getsockopt);
 WEAK_ALIAS(PRT_ProxyGetPeerName, getpeername);
+WEAK_ALIAS(PRT_ProxyFreeAddrInfo, freeaddrinfo);
+WEAK_ALIAS(PRT_ProxyGetAddrInfo, getaddrinfo);
+WEAK_ALIAS(PRT_ProxyGetHostByAddr, gethostbyaddr);
+WEAK_ALIAS(PRT_ProxyGetHostByName, gethostbyname);
+WEAK_ALIAS(PRT_ProxyGetHostName, gethostname);
+WEAK_ALIAS(PRT_ProxyIfNameIndex, if_nameindex);
+WEAK_ALIAS(PRT_ProxyGaiStrError, gai_strerror);
+WEAK_ALIAS(PRT_ProxyAccept4, accept4);
+#endif
+
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API) && !defined(OS_SUPPORT_NET) && !defined(OS_OPTION_NUTTX_VFS)
 WEAK_ALIAS(PRT_ProxyClose, close);
 #endif
 
-#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API)
+// 代理网络和本地网络共存支持接口
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API) && defined(OS_SUPPORT_NET)
+WEAK_ALIAS(PRT_CoexistAccept, accept);
+WEAK_ALIAS(PRT_CoexistBind, bind);
+WEAK_ALIAS(PRT_CoexistConnect, connect);
+WEAK_ALIAS(PRT_CoexistListen, listen);
+WEAK_ALIAS(PRT_CoexistRecv, recv);
+WEAK_ALIAS(PRT_CoexistRecvFrom, recvfrom);
+WEAK_ALIAS(PRT_CoexistSend, send);
+WEAK_ALIAS(PRT_CoexistSendTo, sendto);
+WEAK_ALIAS(PRT_CoexistSetSockOpt, setsockopt);
+WEAK_ALIAS(PRT_CoexistShutdown, shutdown);
+WEAK_ALIAS(PRT_CoexistSocket, socket);
+WEAK_ALIAS(PRT_CoexistGetSockName, getsockname);
+WEAK_ALIAS(PRT_CoexistGetSockOpt, getsockopt);
+WEAK_ALIAS(PRT_CoexistGetPeerName, getpeername);
+WEAK_ALIAS(PRT_CoexistClose, close);
+#endif
+
+// 代理支持的文件类和系统调用类接口
+#if defined(OS_OPTION_PROXY) && !defined(OS_OPTION_PROXY_NO_API) && !defined(OS_OPTION_NUTTX_VFS)
 WEAK_ALIAS(PRT_ProxyOpen, open);
 WEAK_ALIAS(PRT_ProxyReadLoop, read);
 WEAK_ALIAS(PRT_ProxyWrite, write);
 WEAK_ALIAS(PRT_ProxyLseek, lseek);
 WEAK_ALIAS(PRT_ProxyFcntl, fcntl);
 WEAK_ALIAS(PRT_ProxyUnlink, unlink);
-WEAK_ALIAS(PRT_ProxyFreeAddrInfo, freeaddrinfo);
-WEAK_ALIAS(PRT_ProxyGetAddrInfo, getaddrinfo);
-WEAK_ALIAS(PRT_ProxyGetHostByAddr, gethostbyaddr);
-WEAK_ALIAS(PRT_ProxyGetHostByName, gethostbyname);
 WEAK_ALIAS(PRT_ProxyPoll, poll);
-WEAK_ALIAS(PRT_ProxyGetHostName, gethostname);
 WEAK_ALIAS(PRT_ProxySelect, select);
 WEAK_ALIAS(PRT_ProxyFopen, fopen);
 WEAK_ALIAS(PRT_ProxyFclose, fclose);
@@ -3801,9 +3830,6 @@ WEAK_ALIAS(PRT_ProxyMkdir, mkdir);
 WEAK_ALIAS(PRT_ProxyRmdir, rmdir);
 WEAK_ALIAS(PRT_ProxyPipe, pipe);
 WEAK_ALIAS(PRT_ProxyFscanfx, fscanf);
-WEAK_ALIAS(PRT_ProxyIfNameIndex, if_nameindex);
 WEAK_ALIAS(PRT_ProxyPutChar, putchar);
-WEAK_ALIAS(PRT_ProxyGaiStrError, gai_strerror);
-WEAK_ALIAS(PRT_ProxyAccept4, accept4);
 WEAK_ALIAS(PRT_ProxyWritev, writev);
 #endif

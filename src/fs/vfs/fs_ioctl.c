@@ -34,6 +34,9 @@
 
 #include "inode/inode.h"
 
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+#include "fs_proxy.h"
+#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -212,12 +215,37 @@ int file_ioctl(FAR struct file *filep, int req, ...)
  *      descriptor 'fd' references.
  *
  ****************************************************************************/
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+int proxyIoctl(int fd, int req, va_list ap)
+{
+  void *arg;
+  arg = va_arg(ap, void *);
+  va_end(ap);
+
+  PRT_ProxyIoctl(fd, req, arg, sizeof(struct winsize));
+}
+#endif
 
 int sys_ioctl(int fd, int req, ...)
 {
   FAR struct file *filep;
   va_list ap;
   int ret;
+  va_start(ap, req);
+
+#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
+  int index = fds_find(fd);
+  if (index < 0) {
+      return ERROR;
+  }
+
+  if(fds_record[index].isProxy == true) 
+  {
+    return proxyIoctl(fds_record[index].fd, req, ap);
+  }
+
+  fd = fds_record[index].fd;
+#endif
 
   /* Get the file structure corresponding to the file descriptor. */
 
@@ -229,7 +257,6 @@ int sys_ioctl(int fd, int req, ...)
 
   /* Let file_vioctl() do the real work. */
 
-  va_start(ap, req);
   ret = file_vioctl(filep, req, ap);
   va_end(ap);
 
