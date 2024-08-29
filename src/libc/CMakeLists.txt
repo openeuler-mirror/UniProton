@@ -555,6 +555,9 @@ target_include_directories(musllibc PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/generic
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/include
+        ${HOME_PATH}/src/core/ipc/rwlock
+        ${HOME_PATH}/src/kal/include
+        ${HOME_PATH}/src/core/kernel/task
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS musllibc)

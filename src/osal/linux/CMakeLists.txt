@@ -6,6 +6,16 @@ file(GLOB_RECURSE LINUX_SOURCE
 
 add_library(linuxlib OBJECT ${LINUX_SOURCE})
 
+target_include_directories(linuxlib PUBLIC
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include
+        ${HOME_PATH}/src/core/ipc/rwlock
+        ${HOME_PATH}/src/drivers/i210
+        ${HOME_PATH}/src/core/kernel/task
+)
+
 target_compile_options(linuxlib PUBLIC
         -Wno-bad-function-cast
         -Wno-unused-value

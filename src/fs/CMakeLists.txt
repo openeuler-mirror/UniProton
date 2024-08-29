@@ -10,6 +10,10 @@ target_include_directories(fs_init PUBLIC
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/vfs
     ${FS_BASE_DIR}/
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 
 add_custom_target(copy_include_file ALL)

@@ -1,3 +1,14 @@
-add_library_ex(prt_sys.c)
-add_library_ex(prt_sys_init.c)
-add_library_ex(prt_sys_time.c)
+file(GLOB_RECURSE KERNEL_SYS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+
+add_library(kernel_sys OBJECT ${KERNEL_SYS_SRC})
+
+target_include_directories(kernel_sys PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include
+)
+
+list(APPEND ALL_OBJECT_LIBRARYS kernel_sys)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)

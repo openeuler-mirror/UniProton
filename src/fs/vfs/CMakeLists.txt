@@ -56,6 +56,10 @@ target_compile_options(base_vfs PUBLIC
 target_include_directories(base_vfs PUBLIC 
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_vfs)
