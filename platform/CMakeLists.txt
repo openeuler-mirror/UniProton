@@ -11,6 +11,12 @@ else()
     file(GLOB_RECURSE SEC_SRC RELATIVE ${CMAKE_CURRENT_LIST_DIR} "./libboundscheck/src/*.c") #遍历搜索src目录下的所有c文件,RELATIVE为使用相对路径
     add_library(${LIB_SEC_NAME} STATIC ${SEC_SRC}) #在文件夹上层选择性编译与否
 
+    target_include_directories(${LIB_SEC_NAME} PRIVATE
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include)
+
     set_target_properties(${LIB_SEC_NAME} PROPERTIES SUFFIX ".lib")
 
 endif()

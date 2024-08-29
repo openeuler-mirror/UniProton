@@ -1,18 +1,25 @@
-#条件判断
-if(${CONFIG_OS_OPTION_SMP})##条件判断
-    ##根据条件添加库
-    add_library_ex(prt_rt_single.c)
-    ##条件结束符号
-endif()##条件结束符号
-
-if(${CONFIG_OS_OPTION_SMP})##条件判断
-    ##根据条件添加库
-    add_library_ex(prt_sched.c)
-    add_library_ex(prt_sched_class.c)
-    add_library_ex(prt_sched_init.c)
-    ##条件结束符号
+if(${CONFIG_OS_OPTION_SMP})
+    set(KERNEL_SCHED_SRC
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_rt_single.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_sched.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_sched_class.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_sched_init.c)
 else()
-    add_library_ex(prt_sched_single.c)
-endif()##条件结束符号
+    set(KERNEL_SCHED_SRC
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_sched_single.c)
+endif()
+
+add_library(sched_src OBJECT ${KERNEL_SCHED_SRC})
+
+target_include_directories(sched_src PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include
+)
+
+list(APPEND ALL_OBJECT_LIBRARYS sched_src)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
 
 

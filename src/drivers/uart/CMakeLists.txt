@@ -52,6 +52,10 @@ add_library(nuttx_uart OBJECT ${UART_SOURCE})
 target_include_directories(nuttx_uart PUBLIC 
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 
 target_compile_options(nuttx_uart PUBLIC 

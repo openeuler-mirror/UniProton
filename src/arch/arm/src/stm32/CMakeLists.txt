@@ -25,6 +25,10 @@ target_include_directories(stm32_arch PUBLIC
     ${SRC_ARCH_DIRECTORY}/arm/include/stm32
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 if ("${CONFIG_OS_OPTION_STM32_FLASH}")
 target_include_directories(stm32_arch PUBLIC 

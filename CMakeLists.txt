@@ -100,17 +100,6 @@ execute_process(
     "
 )
 
-include_directories(
-        ./src/libc/litelibc/internal/include
-        ./src/libc/litelibc/include
-        ./src/libc/musl/src/include
-        ./src/libc/musl/include
-        ./src/core/ipc/rwlock
-        ./src/kal/include
-        ./src/drivers/i210
-        ./src/core/kernel/task
-)
-
 if (${CONFIG_OS_OPTION_LINUX})
 set(LINUX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/osal/linux)
 include_directories(

@@ -1,2 +1,8 @@
-set(SRCS prt_cxx_stub.c)
-add_library_ex(${SRCS})
+set(CXX_STUB
+        ${CMAKE_CURRENT_SOURCE_DIR}/prt_cxx_stub.c
+)
+
+add_library(cxx_stub OBJECT ${CXX_STUB})
+
+list(APPEND ALL_OBJECT_LIBRARYS cxx_stub)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)

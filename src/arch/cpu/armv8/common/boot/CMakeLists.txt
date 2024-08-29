@@ -1,2 +1,13 @@
-add_library_ex(prt_bss_init.c)
-add_library_ex(prt_hw_boot.c)
+file(GLOB_RECURSE ARMV8_BOOT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+
+add_library(armv8_boot OBJECT ${ARMV8_BOOT_SRC})
+
+target_include_directories(armv8_boot PUBLIC
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include
+)
+
+list(APPEND ALL_OBJECT_LIBRARYS armv8_boot)
+set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)

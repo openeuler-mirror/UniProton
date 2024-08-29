@@ -14,6 +14,10 @@ target_include_directories(nuttx_net PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${NET_BASE_DIR}/adapter/include
     ${NET_BASE_DIR}/lwip/src/include
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 
 target_compile_options(nuttx_net PUBLIC 

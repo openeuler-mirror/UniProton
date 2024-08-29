@@ -53,6 +53,10 @@ target_include_directories(libshell PUBLIC
         ${HOME_PATH}/src/core/kernel/irq
         ${HOME_PATH}/src/core/kernel/include
         ${HOME_PATH}/src/om/cpup
+        ${HOME_PATH}/src/libc/litelibc/internal/include
+        ${HOME_PATH}/src/libc/litelibc/include
+        ${HOME_PATH}/src/libc/musl/src/include
+        ${HOME_PATH}/src/libc/musl/include
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS libshell)

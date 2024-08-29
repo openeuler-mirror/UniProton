@@ -4,7 +4,11 @@ add_subdirectory(sys)
 add_subdirectory(task)
 add_subdirectory(tick)
 add_subdirectory(timer)
-add_subdirectory(spinlock)
+
+if(${CONFIG_INTERNAL_OS_SPIN_LOCK})
+    add_subdirectory(spinlock) 
+endif()
+
 if((${CONFIG_OS_ARCH_ARMV8}) OR (${CONFIG_OS_ARCH_X86_64}) OR (${CONFIG_OS_ARCH_RISCV64}))
     add_subdirectory(sched)
 endif()

@@ -39,6 +39,10 @@ add_library(base_driver OBJECT ${DRIVER_SOURCE})
 target_include_directories(base_driver PUBLIC 
     ${FS_BASE_DIR}/include
     ${FS_BASE_DIR}/
+    ${HOME_PATH}/src/libc/litelibc/internal/include
+    ${HOME_PATH}/src/libc/litelibc/include
+    ${HOME_PATH}/src/libc/musl/src/include
+    ${HOME_PATH}/src/libc/musl/include
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS base_driver)
