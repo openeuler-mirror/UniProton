@@ -42,22 +42,23 @@ else()
 	set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rv64virt.ld")
 endif()
 
-include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
-import_kconfig(${HOME_PATH}/build/uniproton_config/config_riscv64_rv64virt/defconfig)
+include(${HOME_PATH}/build/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/defconfig)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/hw/riscv64
     ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/config/rv64virt
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/driver
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/misc_m
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/ipi_module/include
-    ${HOME_PATH}/output/libc/include
-    ${HOME_PATH}/output/shell/adapter/include
-    ${HOME_PATH}/output/shell/include
-    ${HOME_PATH}/libboundscheck/include
+    ${HOME_PATH}/build/output/shell/adapter/include
+    ${HOME_PATH}/build/output/shell/include
+    ${HOME_PATH}/platform/libboundscheck/include
+    ${HOME_PATH}/src/include/uapi/
+    ${HOME_PATH}/src/include/uapi/hw/riscv64
+    ${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/
+    ${HOME_PATH}/build/output/libc/include
 )
 
 
@@ -76,8 +77,8 @@ if(DEFINED ENV{RISCV_NATIVE} AND "$ENV{RISCV_NATIVE}" STREQUAL "true")
   )
   link_libraries(
     -Wl,--start-group
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRV64VIRT.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libRV64VIRT.a"
     "${TOOLCHAIN_PATH}/lib/gcc/${LIB_PATH}"
     -Wl,--end-group
   )
@@ -87,8 +88,8 @@ else()
   )
   link_libraries(
     -Wl,--start-group
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRV64VIRT.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libRV64VIRT.a"
     "${TOOLCHAIN_PATH}/lib/gcc/riscv64-unknown-elf/13.2.0/libgcc.a"
     -Wl,--end-group
   )

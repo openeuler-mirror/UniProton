@@ -153,3 +153,7 @@ CONFIG_OS_SUPPORT_CXX=y
 # enable I40E
 #
 CONFIG_OS_SUPPORT_I40E=y
+#
+# Net Modules Configuration
+#
+CONFIG_OS_SUPPORT_NET=y

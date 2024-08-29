@@ -132,4 +132,9 @@ CONFIG_OS_POSIX_SET_TZDST=y
 #
 # Openamp Modules Configuration
 #
-# CONFIG_OS_OPTION_OPENAMP is not set
+CONFIG_OS_OPTION_OPENAMP=y
+
+#
+# Lua Modules Configuration
+#
+CONFIG_OS_OPTION_LUA=y

@@ -10,8 +10,8 @@ set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builti
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
 
-include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
-import_kconfig(${HOME_PATH}/build/uniproton_config/config_m4/defconfig)
+include(${HOME_PATH}/build/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/defconfig)
 
 set(CXX_LIB ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crti.o
             ${TOOLCHAIN_PATH}/lib/gcc/arm-none-eabi/10.2.1/crtbegin.o
@@ -37,23 +37,29 @@ endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "-nostdlib -Wl,-EL -Wl,-d -Wl,-no-enum-size-warning  -u _printf_float -nostartfiles -static -T ${ldfile}")
 
-set(OUTPUT_PATH ${HOME_PATH}/output)
 include_directories(
-                    ${OUTPUT_PATH}/libc/include
-                    ${OUTPUT_PATH}/UniProton/include
-                    ${OUTPUT_PATH}/libboundscheck/include
-                    ${CMAKE_CURRENT_SOURCE_DIR}/config
-                    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/bsp
+    ${HOME_PATH}/build/output/libc/include
+    ${HOME_PATH}/build/output/UniProton/include
+    ${HOME_PATH}/platform/libboundscheck/include
+    ${HOME_PATH}/src/include/uapi/
+    ${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/
+)
+
 if(${APP} STREQUAL "shell" OR ${APP} STREQUAL "fatfs")
 include_directories(
-                    ${OUTPUT_PATH}/drivers/include/
-                    ${OUTPUT_PATH}/shell/include/
-                    ${OUTPUT_PATH}/shell/adapter/include
+                    ${HOME_PATH}/build/output/drivers/include/
+                    ${HOME_PATH}/build/output/shell/include/
+                    ${HOME_PATH}/build/output/shell/adapter/include
                     )
 endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
-link_libraries("${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexM4.a" "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib")
+link_libraries(
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexM4.a" 
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexM4.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib")
 link_libraries(-lgcc)
 
 add_subdirectory(bsp)

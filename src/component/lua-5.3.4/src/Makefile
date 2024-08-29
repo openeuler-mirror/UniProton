@@ -6,8 +6,8 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= $(TOOLCHAIN_GCC_PATH) -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -nostdinc -nostdlib $(SYSCFLAGS) $(MYCFLAGS) -I../../../../output/libc/include
+CC= $(LUA_GCC_PATH) -std=gnu99
+CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -nostdinc -nostdlib $(SYSCFLAGS) $(MYCFLAGS) -I ../../../../build/output/libc/include
 LDFLAGS= -nostdinc -nostdlib $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= $(SYSLIBS) $(MYLIBS)
 

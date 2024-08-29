@@ -3,13 +3,13 @@ project(exmaples LANGUAGES C ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../)
 
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
-set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
-set(CMAKE_LINKER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-ld)
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-g++)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
+set(CMAKE_LINKER ${TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-ld)
 
 set(POSIX_OPTION "-D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS")
-set(CC_OPTION "-g -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -specs=nosys.specs -nostartfiles -funwind-tables -nostdinc -nostdlib")
+set(CC_OPTION "-g -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables -nostdinc -nostdlib")
 set(AS_OPTION "-g -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -mgeneral-regs-only -DENV_EL1")
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
@@ -17,29 +17,32 @@ set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
 set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rk3568_jailhouse.ld")
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/rk3568_jailhouse.ld")
 
-include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
-import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_rk3568_jailhouse/defconfig)
+include(${HOME_PATH}/build/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/defconfig)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/rk3568_jailhouse
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/uart
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/ivshmem
-    ${HOME_PATH}/output/libc/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${HOME_PATH}/build/lua/include
+    ${HOME_PATH}/platform/libboundscheck/include
+    ${HOME_PATH}/src/include/uapi/
+    ${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/
+    ${HOME_PATH}/build/open-amp/output/usr/local/include
+    ${HOME_PATH}/build/libmetal/output/usr/local/include
+    ${HOME_PATH}/build/output/libc/include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libRK3568_JAILHOUSE.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/liblua.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libRK3568_JAILHOUSE.a"
+    "${HOME_PATH}/build/lua/lib/liblua.a"
+    "${HOME_PATH}/build/libmetal/output/usr/local/lib/libmetal.a"
+    "${HOME_PATH}/build/open-amp/output/usr/local/lib/libopen_amp.a"
     -Wl,--end-group
     -lgcc
 )

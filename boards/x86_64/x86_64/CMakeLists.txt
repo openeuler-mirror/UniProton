@@ -19,53 +19,54 @@ set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/x86_64.l
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/x86_64.ld")
 set(CMAKE_CXX_STANDARD 17)
 
-include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
-import_kconfig(${HOME_PATH}/build/uniproton_config/config_x86_64/defconfig)
+include(${HOME_PATH}/build/cmake/functions/uniproton_functions.cmake)
+import_kconfig(${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/defconfig)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Eigen
     ${CMAKE_CURRENT_SOURCE_DIR}/include/x86_64
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include/bits
     ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp
     ${CMAKE_CURRENT_SOURCE_DIR}/bsp/x86_64
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/ethercat
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/modbus/include/modbus
+    ${HOME_PATH}/src/component/eigen-3.4.0
+    ${HOME_PATH}/build/modbus/include/modbus
+    ${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}/
+    ${HOME_PATH}/build/open-amp/output/usr/local/include
+    ${HOME_PATH}/build/libmetal/output/usr/local/include
     ${HOME_PATH}/testsuites/modbusTest/
     ${HOME_PATH}/testsuites/forteTest/
     ${HOME_PATH}/src/arch/cpu/x86_64/common
     ${HOME_PATH}/src/arch/cpu/x86_64/common/hwi
     ${HOME_PATH}/platform/libboundscheck/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
-    ${HOME_PATH}/output/libc/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
-    ${OUTPUT_PATH}/shell/include/
-    ${OUTPUT_PATH}/shell/adapter/include
+    ${HOME_PATH}/build/libcxx/include
+    ${HOME_PATH}/build/output/libc/include
+    ${HOME_PATH}/build/output/ethercat/include/
+    ${HOME_PATH}/build/output/linux/include/
+    ${HOME_PATH}/src/component/boost_1_54_0
+    ${HOME_PATH}/build/output/shell/include/
+    ${HOME_PATH}/build/output/shell/adapter/include
     ${HOME_PATH}/src/drivers/i210
     ${HOME_PATH}/src/net/lwip_port
     ${HOME_PATH}/src/net/adapter/include
     ${HOME_PATH}/src/net/adapter/include/arch
-    ${HOME_PATH}/output/lwip/src/include
+    ${HOME_PATH}/build/output/lwip/src/include
     ${HOME_PATH}/src/osal/linux/include_self_def
+    ${HOME_PATH}/src/include/uapi/
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 link_libraries(
     -Wl,--start-group
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libCortexMXsec_c.lib"
     -Wl,--whole-archive
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libX86_64.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/libX86_64.a"
     -Wl,--no-whole-archive
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/libs/libforte-static.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
+    "${HOME_PATH}/build/libmetal/output/usr/local/lib/libmetal.a"
+    "${HOME_PATH}/build/open-amp/output/usr/local/lib/libopen_amp.a"
+    "${HOME_PATH}/build/build_forte/src/libforte-static.a"
+    "${HOME_PATH}/build/libcxx/lib/libstdc++.a"
     "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a"
-    "${TOOLCHAIN_PATH}//lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
+    "${TOOLCHAIN_PATH}/lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
     -Wl,--end-group
 )
 
@@ -74,7 +75,7 @@ add_subdirectory(bsp)
 add_subdirectory(config)
 add_subdirectory(apps)
 if (${CONFIG_OS_SUPPORT_CXX})
-add_subdirectory(component/boost_1_54_0)
+add_subdirectory(${HOME_PATH}/src/component/boost_1_54_0 boost)
 endif()
 
 # 打印依赖代理接口

@@ -40,7 +40,7 @@ if(CACHE_FOUND)
 endif()
 
 ############################## 公共函数定义导入 ##############################
-include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
+include(${HOME_PATH}/build/cmake/functions/uniproton_functions.cmake)
 
 ############################## 编译参数 ##################################
 #下述这些参数的设置要放在项目设置之后！
@@ -159,5 +159,5 @@ if (NOT ${COMPILE_OPTION} STREQUAL "sec")
 add_subdirectory(src)
 
 ##############################不同平台，根据需要链接出不同的lib库############
-include(./cmake/tool_chain/${CPU_TYPE}_${PLAM_TYPE}.cmake)
+include(./build/cmake/tool_chain/${CPU_TYPE}_${PLAM_TYPE}.cmake)
 endif()

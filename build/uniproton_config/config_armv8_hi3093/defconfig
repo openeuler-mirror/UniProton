@@ -169,6 +169,11 @@ CONFIG_OS_OPTION_PROXY=y
 # CONFIG_OS_SUPPORT_SOEM is not set
 
 #
+# enable ccl
+#
+# CONFIG_OS_SUPPORT_CCL is not set
+
+#
 # Shell Modules Configuration. Adapted from LiteOS
 #
 CONFIG_CONFIG_LOCAL_ECHO=y
