@@ -15,12 +15,17 @@ new file mode 100644
 index 00000000..5bc584df
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,52 @@
 +message("PROJECT_NAME = ${PROJECT_NAME}")
 +if("${PROJECT_NAME}" STREQUAL "UniProton")
 +    include_directories(
 +        ./include
 +        ./
++        ${HOME_PATH}/src/libc/litelibc/internal/include
++        ${HOME_PATH}/src/libc/litelibc/include
++        ${HOME_PATH}/src/libc/musl/src/include
++        ${HOME_PATH}/src/libc/musl/include
++        ${HOME_PATH}/src/drivers/i210
 +    )
 +
 +    add_subdirectory(master)
@@ -46,6 +51,11 @@ index 00000000..5bc584df
 +    include_directories(
 +        ./include
 +        ./master
++        ${HOME_PATH}/src/libc/litelibc/internal/include
++        ${HOME_PATH}/src/libc/litelibc/include
++        ${HOME_PATH}/src/libc/musl/src/include
++        ${HOME_PATH}/src/libc/musl/include
++        ${HOME_PATH}/src/drivers/i210
 +    )
 +
 +    add_subdirectory(tool)
