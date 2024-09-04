@@ -28,9 +28,9 @@ void udelay(unsigned long usec);
 #define BOOT_SYNC_USING 0x5a5a5a5a
 #define BOOT_SYNC_READY 0xabababab
 
-#define isb() asm volatile("isb sy" : : : "memory")
-#define dsb() asm volatile("dsb sy" : : : "memory")
-#define dmb() asm volatile("dmb sy" : : : "memory")
+#define isb() __asm volatile("isb sy" : : : "memory")
+#define dsb() __asm volatile("dsb sy" : : : "memory")
+#define dmb() __asm volatile("dmb sy" : : : "memory")
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))

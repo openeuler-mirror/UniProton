@@ -23,7 +23,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_raspi4</kconf_dir>
             </platform>
@@ -34,7 +34,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_hi3093</kconf_dir>
             </platform>
@@ -45,7 +45,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_atlasa1</kconf_dir>
             </platform>
@@ -56,7 +56,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_kp920</kconf_dir>
             </platform>
@@ -78,7 +78,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_rk3568_jailhouse</kconf_dir>
             </platform>
@@ -89,7 +89,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_rk3588</kconf_dir>
             </platform>
@@ -100,7 +100,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_ascend310b</kconf_dir>
             </platform>
@@ -146,7 +146,7 @@
             <lib_type>SRE</lib_type>
             <platform plat_name="armv8">
                 <name>armv8</name>
-                <compile_path_x86>/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin</compile_path_x86>
+                <compile_path_x86>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_x86>
                 <compile_path_arm64>/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr/bin</compile_path_arm64>
                 <kconf_dir>armv8_e2000q</kconf_dir>
             </platform>

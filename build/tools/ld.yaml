@@ -1,0 +1,43 @@
+config:
+  armv8:
+    ascend310b:
+      main_ld: ascend310b_openamp.ld
+    atlasa1:
+      main_ld: atlasa1.ld
+    e2000q:
+      main_ld: e2000q.ld
+    hi3093:
+      main_ld: hi3093.ld
+    kp920:
+      main_ld: kp920.ld
+      rsc_ld: kp920_rsc.ld
+    raspi4:
+      main_ld: raspi4.ld
+    rk3568_jailhouse:
+      main_ld: rk3568_jailhouse.ld
+    rk3588:
+      main_ld: rk3588.ld
+  cortex:
+    m4:
+      main_ld: helloworld.ld
+      shell: shell.ld
+      fatfs: fatfs.ld
+      stdio: fatfs.ld
+      helloworld: helloworld.ld
+      helloworld_sim: qemu_helloworld.ld
+  x86_64:
+    uvp:
+      main_ld: uvp_x86.ld
+    x86_64:
+      main_ld: x86_64.ld
+  riscv64:
+    ds_d1s:
+      main_ld: shell.ld
+    riscv64virt:
+      main_ld: rv64virt.ld
+      shell: shell.ld
+      rpmsglite_env_test: rpmsglite.ld
+      rpmsglite_test_master: rpmsg_master.ld
+      rpmsglite_test_slave: rpmsg_slave.ld
+
+

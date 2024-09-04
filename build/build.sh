@@ -8,12 +8,16 @@ if [[ $3 == "sim" || $3 == "SIM" ]]; then
     SIM="_SIM_"
     APP=${4}
 elif [ "$3" != "" ]; then
+    SIM=""
     APP=${3}
 else
+    SIM=""
     APP=${CPU_TYPE}
 fi
 
 export HOME_PATH=$(dirname "$PWD")
+export APP_VAR=${APP}
+export SIM_VAR=${SIM}
 
 function clean()
 {
@@ -88,6 +92,20 @@ function get_toolchain()
     TOOLCHAIN_PATH=$(xmllint --xpath  "$XPATH_EXPR" ./tools/config.xml)/..
 }
 
+function musl_process()
+{
+    echo ' Build generic_include_file!'
+    pushd ${HOME_PATH}/src/libc/musl
+    mkdir -p include/bits/
+    cp arch/generic/bits/*.h include/bits/
+    cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/*.h include/bits/
+    sed -f tools/mkalltypes.sed arch/${CMAKE_SYSTEM_PROCESSOR}/bits/alltypes.h.in include/alltypes.h.in > include/bits/alltypes.h
+    cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in include/bits/syscall.h
+    sed -n -e s/__NR_/SYS_/p < arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in >> include/bits/syscall.h
+    popd
+    echo ' End generic_include_file!'
+}
+
 function build_image()
 {
     echo "================================================"
@@ -110,25 +128,24 @@ function build_image()
     # 组件获取
     sh ./auxiliary/build_fetch.sh ${DEFCONFIG} ${ARCH_TYPE}
 
-    # 内核编译,删除上次生成的内核静态库以及头文件，然后重新编
+    # 组件依赖处理
+    pushd ${HOME_PATH}/build/tools
+        python3 -c "import make_buildef; make_buildef.make_buildef('$HOME_PATH','$KCONF_DIR','CREATE')"
+    popd
+
+    musl_process
+
+    # 组件编译
+    sh ./auxiliary/build_component.sh $TOOLCHAIN_PATH ${ARCH_TYPE} ${CPU_TYPE} ${KCONF_DIR} ${DEFCONFIG}
+
+    # 内核编译, 删除上次生成的内核静态库以及头文件, 然后重新编
     rm -rf ${HOME_PATH}/build/output
     pushd ${HOME_PATH}/build/tools
         python3 build.py $CPU_TYPE
     popd
 
-    # 组件编译
-    sh ./auxiliary/build_component.sh $TOOLCHAIN_PATH ${ARCH_TYPE} ${CPU_TYPE} ${KCONF_DIR} ${DEFCONFIG}
-
-    # 具体形态单板编译
-    export TMP_DIR=$APP
-    echo "cmake start"
-    cmake -S ${HOME_PATH}/boards/${ARCH_TYPE}/${CPU_TYPE} -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING=${CPU_TYPE} -DARCH_TYPE:SRTING=${ARCH_TYPE} -DKCONF_DIR:SRTING=${KCONF_DIR} -DSIM:STRING=$SIM
-    echo "cmake end"
-
-    pushd $TMP_DIR
-    make $APP
-    popd
-    cp ./$TMP_DIR/$APP $APP.elf
+    # 编译后处理
+    cp ${HOME_PATH}/build/output/${CPU_TYPE}/${ARCH_TYPE}/FPGA/$APP $APP.elf
 
     if [[ "${APP}" == "cxxTest" || "${APP}" == "eigenTest" ]]; then
         python ./tools/bin_helper.py -f ./$APP.elf --nocopy
@@ -156,7 +173,6 @@ function build_image()
     else
         echo "=========================no objcopy======================="
     fi
-    rm -rf $TMP_DIR
 
     echo "================================================"
     echo "Build ${ARCH_TYPE}_${CPU_TYPE} successfully"
@@ -182,18 +198,22 @@ function usage()
 case ${ARCH_TYPE} in
     "armv8")
         CONFIG_COMPILE_PATH="compile_path_arm64"
+        CMAKE_SYSTEM_PROCESSOR=aarch64
         build_image
         ;;
     "x86_64")
         CONFIG_COMPILE_PATH="compile_path_x86"
+        CMAKE_SYSTEM_PROCESSOR=x86_64
         build_image
         ;;
     "cortex")
         CONFIG_COMPILE_PATH="compile_path_arm64"
+        CMAKE_SYSTEM_PROCESSOR=arm
         build_image
         ;;
     "riscv64")
         CONFIG_COMPILE_PATH="compile_path_riscv64"
+        CMAKE_SYSTEM_PROCESSOR=riscv64
         build_image
         ;;
     "clean")

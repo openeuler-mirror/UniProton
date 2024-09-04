@@ -14,6 +14,7 @@
 #include "rtt_viewer.h"
 #endif
 #include "nuttx/mtd/mtd.h"
+#include "nuttx/fs/fs.h"
 
 #define FLASH_OFFSET 256
 #define FLASH_SIZE OS_OPTION_FLASH_SIZE
@@ -179,7 +180,6 @@ U32 PRT_Printf(const char *format, ...)
     va_list vaList;
     char buff[0x200] = { 0 };
     S32 count;
-    U32 ret;
 
     va_start(vaList, format);
     count = vsprintf_s(buff, 0x200, format, vaList);

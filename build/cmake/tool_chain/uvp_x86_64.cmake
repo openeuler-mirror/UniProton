@@ -18,7 +18,7 @@ endforeach()
 string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
 string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
 #编译.a库
-add_library(uvp_x86 STATIC "${UVP_X86_SRCS}")
+add_library(UVP STATIC "${UVP_X86_SRCS}")
 add_custom_target(cleanobj)
 add_custom_command(TARGET cleanobj POST_BUILD
                    COMMAND echo "Finish Building!"
@@ -69,7 +69,7 @@ install(FILES
 )
 
 install(TARGETS
-    uvp_x86
+    UVP
     EXPORT ${uvp_x86_export}
     ARCHIVE DESTINATION ${INSTALL_UVP_X86_ARCHIVE_DIR}/
 )

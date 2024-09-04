@@ -194,3 +194,8 @@ CONFIG_OS_OPTION_LOG=y
 # Net Modules Configuration
 #
 # CONFIG_OS_SUPPORT_NET is not set
+
+#
+# HI3093_DRIVER Configuration
+#
+# CONFIG_OS_HI3093_DRIVER is not set

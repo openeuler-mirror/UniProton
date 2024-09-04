@@ -17,6 +17,10 @@ set(LIB_RUN_TYPE "$ENV{LIB_RUN_TYPE}" )
 set(HOME_PATH "$ENV{HOME_PATH}" )
 set(BUILD_MACHINE_PLATFORM "$ENV{BUILD_MACHINE_PLATFORM}" )
 set(RPROTON_BINARY_DIR "$ENV{RPROTON_BINARY_DIR}" )
+set(TOOLCHAIN_DIR "$ENV{HCC_PATH}")
+set(APP_VAR "$ENV{APP_VAR}" )
+set(UNIPROTON_LD_FILE "$ENV{UNIPROTON_LD_FILE}" )
+set(SIM "$ENV{SIM_VAR}" )
 #用于保存所有的对象库
 set(ALL_OBJECT_LIBRARYS "" CACHE STRING INTERNAL)
 
@@ -55,6 +59,8 @@ message("CMAKE_LINKER is ${CMAKE_LINKER}")
 message("CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}")
 message("BUILD_MACHINE_PLATFORM= ${BUILD_MACHINE_PLATFORM}")
 message("CONFIG_FILE_PATH= ${CONFIG_FILE_PATH}")
+message("UNIPROTON_LD_FILE= ${UNIPROTON_LD_FILE}")
+message("SIM= ${SIM}")
 
 if (${COMPILE_MODE} STREQUAL "debug")
 add_compile_options("-g") #编译 -g 选项，打开后可以在sdk调试时看到调试信息
@@ -86,19 +92,6 @@ endif()
 
 if (${CONFIG_OS_OPTION_POSIX})
 set(muslsrcdir ${CMAKE_CURRENT_SOURCE_DIR}/src/libc/musl)
-execute_process(
-    WORKING_DIRECTORY ${muslsrcdir}
-    COMMAND sh -c "
-        echo ' Build generic_include_file!'
-        mkdir -p include/bits/
-        cp arch/generic/bits/*.h include/bits/
-        cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/*.h include/bits/
-        sed -f tools/mkalltypes.sed arch/${CMAKE_SYSTEM_PROCESSOR}/bits/alltypes.h.in include/alltypes.h.in > include/bits/alltypes.h
-        cp arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in include/bits/syscall.h
-        sed -n -e s/__NR_/SYS_/p < arch/${CMAKE_SYSTEM_PROCESSOR}/bits/syscall.h.in >> include/bits/syscall.h
-        echo ' End generic_include_file!'
-    "
-)
 
 if (${CONFIG_OS_OPTION_LINUX})
 set(LINUX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/osal/linux)
@@ -160,4 +153,104 @@ add_subdirectory(src)
 
 ##############################不同平台，根据需要链接出不同的lib库############
 include(./build/cmake/tool_chain/${CPU_TYPE}_${PLAM_TYPE}.cmake)
+endif()
+
+set(APP ${APP_VAR})
+add_subdirectory(boards/${PLAM_TYPE}/${CPU_TYPE})
+string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
+set(BOARDS ${CPU_TYPE_UP}_APPS)
+
+message("APP= ${APP}")
+message("BOARDS= ${BOARDS}")
+message("CPU_TYPE_UP= ${CPU_TYPE_UP}")
+
+# 定义要链接的库列表，根据对应的defconfig文件将对应库的.a文件链接进去
+set(LIBRARIES1 "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/libCortexMXsec_c.lib")
+list(APPEND LIBRARIES2 "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/lib${BOARDS}.a")
+
+if (${CONFIG_OS_ARCH_X86_64})
+    list(APPEND LIBRARIES2 "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/lib${CPU_TYPE_UP}.a")
+else()
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/lib${CPU_TYPE_UP}.a")
+endif()
+
+if (${CONFIG_OS_OPTION_OPENAMP})
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/libmetal/output/usr/local/lib/libmetal.a")
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/open-amp/output/usr/local/lib/libopen_amp.a")
+endif()
+
+if (${CONFIG_OS_OPTION_FORTE})
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/build_forte/src/libforte-static.a")
+endif()
+
+if (${CONFIG_OS_OPTION_MODBUS})
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/modbus/lib/libmodbus.a")
+endif()
+
+if (${CONFIG_OS_SUPPORT_CXX})
+    if (${CONFIG_OS_ARCH_ARMV8})
+        list(APPEND LIBRARIES3 "${HOME_PATH}/build/libcxx/lib/libstdc++.a")
+        list(APPEND LIBRARIES3 "${TOOLCHAIN_DIR}/../lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/libgcc.a")
+        list(APPEND LIBRARIES3 "${TOOLCHAIN_DIR}/../lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/libgcc_eh.a")
+    endif()
+
+    if (${CONFIG_OS_ARCH_X86_64})
+        list(APPEND LIBRARIES3 "${HOME_PATH}/src/component/libcxx/lib/libstdc++.a")
+        list(APPEND LIBRARIES3 "${TOOLCHAIN_DIR}/../lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc.a")
+        list(APPEND LIBRARIES3 "${TOOLCHAIN_DIR}/../lib64/gcc/x86_64-openeuler-linux-gnu/10.3.1/libgcc_eh.a")
+    endif()
+endif()
+
+if (${CONFIG_OS_HI3093_DRIVER})
+    list(APPEND LIBRARIES3 "${HOME_PATH}/boards/armv8/hi3093/drivers/libs/libdriver.a")
+endif()
+
+if (${CONFIG_OS_OPTION_LUA})
+    list(APPEND LIBRARIES3 "${HOME_PATH}/build/lua/lib/liblua.a")
+endif()
+
+if (${CONFIG_INTERNAL_OS_CORTEX_M4})
+link_libraries(
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/libM4_APPS.a"
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/libCortexM4.a" 
+    "${HOME_PATH}/build/output/${CPU_TYPE}/${PLAM_TYPE}/FPGA/libCortexMXsec_c.lib")
+else()
+link_libraries(
+    -Wl,--start-group
+    ${LIBRARIES1}
+    -Wl,--whole-archive
+    ${LIBRARIES2}
+    -Wl,--no-whole-archive
+    ${LIBRARIES3}
+    -Wl,--end-group
+)
+endif()
+
+if("${CONFIG_INTERNAL_OS_RK3568_JAILHOUSE}" STREQUAL "y" OR "${CONFIG_INTERNAL_OS_CORTEX_M4}" STREQUAL "y")
+link_libraries(-lgcc)
+endif()
+
+if (${CONFIG_INTERNAL_OS_CORTEX_M4})
+    add_executable(${APP} ${HOME_PATH}/src/arch/cpu/armv7-m/cortex-m4/prt_vector.S)
+    target_link_libraries(${APP} CortexMXsec_c CortexM4 ${BOARDS})
+else()
+    add_executable(${APP} ${HOME_PATH}/boards/${PLAM_TYPE}/${CPU_TYPE}/build/start.S)
+    add_dependencies(${APP} CortexMXsec_c ${CPU_TYPE_UP} ${BOARDS})
+endif()
+
+if(${CONFIG_LOSCFG_SHELL})
+set(LD_OPTS)
+list(APPEND LD_OPTS
+    -uhelp_shellcmd
+    -umemInfo_shellcmd
+    -utaskInfo_shellcmd
+    -uuname_shellcmd
+    -uhwi_shellcmd
+    -ucpup_shellcmd
+    -usem_shellcmd
+    -uswtmr_shellcmd
+    -uqueue_shellcmd
+    -usysteminfo_shellcmd
+)
+target_link_options(${APP} PUBLIC ${LD_OPTS})
 endif()

@@ -1,5 +1,5 @@
 if (${CONFIG_OS_OPTION_OPENAMP})
-    set(SRCS start.S cache_asm.S hwi_init.c print.c timer.c mmu.c print_openamp.c)
+    set(SRCS cache_asm.S hwi_init.c print.c timer.c mmu.c print_openamp.c)
     add_library(bsp OBJECT ${SRCS})
 elseif(${CONFIG_GUEST_OS})
     set(SRCS

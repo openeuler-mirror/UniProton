@@ -16,7 +16,7 @@ endforeach()
 #编译结果
 string(TOUPPER ${PLAM_TYPE} PLAM_TYPE_UP)
 string(TOUPPER ${CPU_TYPE} CPU_TYPE_UP)
-add_library(atlasa1  STATIC "${GUEST_SRCS}")
+add_library(ATLASA1  STATIC "${GUEST_SRCS}")
 add_custom_target(cleanobj)
 add_custom_command(TARGET cleanobj POST_BUILD
 				COMMAND echo finishing)
@@ -69,7 +69,7 @@ install(TARGETS
 )
 
 install(TARGETS
-	atlasa1
+	ATLASA1
 	EXPORT ${atlasa1_armv8_export}
 	ARCHIVE DESTINATION ${INSTALL_atlasa1_ARMV8_ARCHIVE_DIR}/
 )

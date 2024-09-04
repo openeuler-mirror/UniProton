@@ -100,7 +100,7 @@ static void UartInterruptHandler(void)
 void UartPutChar(unsigned char ch)
 {
     while (UART_REG(UART_FR) & UART_TXFF) {
-        asm volatile("yield" ::: "memory");
+        __asm volatile("yield" ::: "memory");
     }
     UART_REG(UART_DR) = ch;
 }

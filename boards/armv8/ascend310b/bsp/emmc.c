@@ -25,7 +25,7 @@ U32 EMMC_WriteFileComplete(U32 size)
     if (g_shm_wr->used_size != size) {
         return 1;
     }
-    asm volatile("mov x0, #1025 \n"
+    __asm volatile("mov x0, #1025 \n"
                  "hvc #0 \n"
                  : : : "memory");
     return 0;

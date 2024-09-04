@@ -20,6 +20,29 @@ from get_config_info import *
 
 class Compile:
 
+    #获取ldfile信息，根据ld.yaml读取
+    def getLdFile(self):
+        defconfig_file = '%s/defconfig'%(self.config_file_path)
+        yaml_data = read_yaml_file('ld.yaml')
+        rsc_ld = self.cpu_type + '_rsc.ld'
+        with open(defconfig_file, 'r') as file:
+            content = file.read()
+
+        if 'CONFIG_OS_OPTION_RSC_TABLE=y' in content:
+            self.ld_file = get_value_from_yaml(yaml_data, 'config', self.plam_type, self.cpu_type, rsc_ld)
+            return
+        
+        sim_var = os.getenv('SIM_VAR')
+        expected_value = '_SIM_'
+        if sim_var == expected_value:
+            self.ld_file = get_value_from_yaml(yaml_data, 'config', self.plam_type, self.cpu_type, 'helloworld_sim')
+            return
+
+        self.ld_file = get_value_from_yaml(yaml_data, 'config', self.plam_type, self.cpu_type, os.getenv('APP_VAR'))
+        if self.ld_file is None:
+            self.ld_file = get_value_from_yaml(yaml_data, 'config', self.plam_type, self.cpu_type, 'main_ld')
+        return
+    
     # 根据makechoice获取config的配置的环境，compile_mode， lib_type,
     def get_config(self, cpu_type, cpu_plat):
         self.compile_mode = get_compile_mode()
@@ -34,6 +57,8 @@ class Compile:
         self.config_file_path = '%s/build/uniproton_config/config_%s'%(self.home_path, self.kconf_dir)
 
         self.objcopy_path = self.hcc_path
+
+        self.getLdFile()
 
     def setCmdEnv(self):
         self.build_time_tag = time.strftime('%Y-%m-%d_%H:%M:00')
@@ -56,6 +81,7 @@ class Compile:
         os.environ["CORE"] = self.core
         os.environ["OBJCOPY_PATH"] = self.objcopy_path
         os.environ['PATH'] = '%s:%s' % (self.hcc_path, os.getenv('PATH'))
+        os.environ["UNIPROTON_LD_FILE"] = self.ld_file
 
     # 环境准备，准备执行cmake，make，makebuildfile，CmakeList需要的环境
     # 每次compile之前请调用该函数
@@ -103,6 +129,7 @@ class Compile:
         self.log_file = ""
         self.config_file_path = ""
         self.build_time_tag = ""
+        self.ld_file = ""
         self.build_dir = globle.build_dir
         self.home_path = globle.home_path
         self.kbuild_path = globle.kbuild_path

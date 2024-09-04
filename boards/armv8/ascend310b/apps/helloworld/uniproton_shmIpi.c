@@ -5,7 +5,7 @@ int uniproton_shm_send_ipi(struct cpu_info info)
 {
     unsigned int vmId = info.vmId;
     unsigned int ret = 0;
-    asm volatile("mov x2, %[vmid] \n"
+    __asm volatile("mov x2, %[vmid] \n"
                  "mov x0, #1023 \n"
                  "mov x1, #10 \n"
                  "hvc #0 \n"

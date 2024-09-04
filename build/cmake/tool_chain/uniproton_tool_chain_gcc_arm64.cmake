@@ -20,6 +20,9 @@ set(OBJCOPY_PATH "$ENV{OBJCOPY_PATH}" ) #OBJCOPY_PATH
 set(COMPILE_MODE "$ENV{COMPILE_MODE}" )
 set(CC_TYPE "$ENV{CC_TYPE}" ) 
 set(TOOLCHAIN_DIR "$ENV{HCC_PATH}") #该路径应该是外部传入,指向编译工具路径
+set(HOME_PATH "$ENV{HOME_PATH}" )
+set(APP_VAR "$ENV{APP_VAR}" )
+set(UNIPROTON_LD_FILE "$ENV{UNIPROTON_LD_FILE}" )
 
 
 # 设置gcc_arm64编译器公共的编译选项
@@ -30,16 +33,22 @@ set(CC_MD_DEPENDENT_FLAGS "-Wl,--build-id=none")
 set(CC_OPT_FLAGS "")
 set(CC_SEC_FLAGS "${CC_SEC_FLAGS} -fno-PIE")
 # 待确认的编译选项，暂时没进行分类，待处理
-set(CC_OTHER_FLAGS "-fno-builtin -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables")
+set(CC_OTHER_FLAGS "-march=armv8.2-a -fno-builtin -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -finline-limit=20 -mstrict-align -mlittle-endian -nostdinc -nostdlib -nostartfiles -funwind-tables")
 set(CC_DEFINE_FLAGS "")
 
+set(POSIX_OPTION "-D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS")
+
 ##compiler specified in /etc/profile
-set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/aarch64-none-elf-gcc" CACHE PATH "arm-gcc C compiler" FORCE)
-set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/aarch64-none-elf-gcc" CACHE PATH "arm-gcc ASM compiler" FORCE)
+set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/aarch64-openeuler-linux-gcc" CACHE PATH "arm-gcc C compiler" FORCE)
+set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/aarch64-openeuler-linux-gcc" CACHE PATH "arm-gcc ASM compiler" FORCE)
+set(CMAKE_CXX_COMPILER "${TOOLCHAIN_DIR}/aarch64-openeuler-linux-g++" CACHE PATH "arm-gcc cxx compiler" FORCE)
 
 # 设置C和ASM相关的所有使用的编译选项
-set(CMAKE_C_FLAGS "${CC_OPT_LEVEL} ${CC_OVERALL_FLAGS_COMMON} ${CC_WARN_FLAGS_COMMON} ${CC_WARN_FLAGS} ${CC_LANGUAGE_FLAGS_COMMON} ${CC_LANGUAGE_FLAGS} ${CC_CDG_FLAGS} ${CC_MD_DEPENDENT_FLAGS} ${CC_OPT_FLAGS} ${CC_SEC_FLAGS} ${CC_OTHER_FLAGS} ${CC_DEFINE_FLAGS_COMMON} ${CC_DEFINE_FLAGS}")
+set(CMAKE_C_FLAGS "${POSIX_OPTION} ${CC_OPT_LEVEL} ${CC_OVERALL_FLAGS_COMMON} ${CC_WARN_FLAGS_COMMON} ${CC_WARN_FLAGS} ${CC_LANGUAGE_FLAGS_COMMON} ${CC_LANGUAGE_FLAGS} ${CC_CDG_FLAGS} ${CC_MD_DEPENDENT_FLAGS} ${CC_OPT_FLAGS} ${CC_SEC_FLAGS} ${CC_OTHER_FLAGS} ${CC_DEFINE_FLAGS_COMMON} ${CC_DEFINE_FLAGS}")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} ${ASM_EXTRA_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -nostdinc++")
+set(CMAKE_CXX_STANDARD 17)
+
 set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
 file(STRINGS "$ENV{CONFIG_FILE_PATH}/defconfig" config_options REGEX "^CONFIG_OS_OPTION_POSIX" ENCODING "UTF-8")
 foreach(config_option ${config_options})
@@ -47,7 +56,12 @@ foreach(config_option ${config_options})
 endforeach()
 set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER> <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
 
-set(CMAKE_LINKER "${TOOLCHAIN_DIR}/aarch64-none-elf-ld" CACHE STRING "" FORCE) 
-set(CMAKE_AR "${TOOLCHAIN_DIR}/aarch64-none-elf-ar" CACHE STRING "" FORCE) 
+set(CMAKE_LINKER "${TOOLCHAIN_DIR}/aarch64-openeuler-linux-ld" CACHE STRING "" FORCE) 
+set(CMAKE_AR "${TOOLCHAIN_DIR}/aarch64-openeuler-linux-ar" CACHE STRING "" FORCE) 
 set(CMAKE_C_LINK_FLAGS "-r ")
 set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -r <TARGET> <OBJECTS>") 
+
+# 设立链接选项
+set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy -Wl,-gc-sections -Wl,--eh-frame-hdr")
+set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${HOME_PATH}/boards/${PLAM_TYPE}/${CPU_TYPE}/build/${UNIPROTON_LD_FILE}")
+set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${HOME_PATH}/boards/${PLAM_TYPE}/${CPU_TYPE}/build/${UNIPROTON_LD_FILE}")

@@ -1,7 +1,6 @@
 #ifndef CPU_CONFIG_H
 #define CPU_CONFIG_H
 
-#include "cache_asm.h"
 #include "prt_gic_external.h"
 
 /* 系统内存空间1 */

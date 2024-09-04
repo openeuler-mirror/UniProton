@@ -31,7 +31,7 @@ if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then
         git clone https://gitee.com/src-openeuler/libmetal.git
         mv ./libmetal/libmetal-2022.10.0.tar.gz .
         rm -rf ./libmetal
-        tar -zxvf libmetal-2022.10.0.tar.gz
+        tar -zxf libmetal-2022.10.0.tar.gz
         rm -f libmetal-2022.10.0.tar.gz
         mv ./libmetal-2022.10.0 ./libmetal
         cp ./patch/UniProton-patch-for-libmetal.patch ./libmetal
@@ -47,7 +47,7 @@ if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then
         git clone https://gitee.com/src-openeuler/OpenAMP.git
         mv ./OpenAMP/openamp-2022.10.1.tar.gz .
         rm -rf ./OpenAMP
-        tar -zxvf openamp-2022.10.1.tar.gz
+        tar -zxf openamp-2022.10.1.tar.gz
         rm -f openamp-2022.10.1.tar.gz
         mv ./openamp-2022.10.1 ./open-amp
         cp ./patch/UniProton-patch-for-openamp.patch ./open-amp
@@ -64,12 +64,12 @@ if grep -q "CONFIG_OS_SUPPORT_CXX=y" "$DEFCONFIG"; then
     then
         echo "################# get cxx support x86#################"
         wget https://gcc.gnu.org/pub/gcc/releases/gcc-10.3.0/gcc-10.3.0.tar.gz
-        tar -xzvf gcc-10.3.0.tar.gz
+        tar -zxf gcc-10.3.0.tar.gz
         patch -d ./gcc-10.3.0 -p1 < ./patch/libstdc++-uniproton.patch
     fi
     popd
 
-    pushd ${HOME_PATH}/build
+    pushd ${HOME_PATH}/src/component
     if [ ! -d "./libcxx" ] && [ "${ARCH_TYPE}" = "x86_64" ]
     then
         echo "################# get cxx support x86 #################"
@@ -108,7 +108,7 @@ if grep -q "CONFIG_OS_SUPPORT_EIGEN=y" "$DEFCONFIG"; then
     then
         echo "################# get eigen #################"
         wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
-        tar -zxvf eigen-3.4.0.tar.gz
+        tar -zxf eigen-3.4.0.tar.gz
         rm -f eigen-3.4.0.tar.gz
         cp eigen-3.4.0/doc/examples/*cpp* ${HOME_PATH}/testsuites/eigen-test/
     fi
