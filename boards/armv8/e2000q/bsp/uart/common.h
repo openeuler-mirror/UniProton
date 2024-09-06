@@ -9,10 +9,10 @@
 
 #define DIV_ROUND_CLOSEST(x, divisor, result) \
 ({                                         \
-    typeof(x) __x = x;                     \
-    typeof(divisor) __d = divisor;         \
-    result = (((typeof(x)) - 1) > 0 ||     \
-     ((typeof(divisor)) - 1) > 0 ||        \
+    __typeof__(x) __x = x;                     \
+    __typeof__(divisor) __d = divisor;         \
+    result = (((__typeof__(x)) - 1) > 0 ||     \
+     ((__typeof__(divisor)) - 1) > 0 ||        \
      (((__x) > 0) == ((__d) > 0))) ?       \
         (((__x) + ((__d) / 2)) / (__d)) :  \
         (((__x) - ((__d) / 2)) / (__d));   \

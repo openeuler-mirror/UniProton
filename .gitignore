@@ -29,6 +29,7 @@
 /src/component/libmodbus
 /src/component/eigen-3.4.0
 /src/component/forte
+/src/component/libcxx
 /testsuites/cxx-test/tools/.compiles_list
 /testsuites/cxx-test/tools/.run_test.cc
 /testsuites/build/*.bin

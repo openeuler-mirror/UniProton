@@ -134,7 +134,7 @@ S32 main(void)
 {
     PRT_UartInit();
     U64 t;
-    asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
+    __asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
     PRT_Printf("[uniproton] start time 0.%llu s\n", t / 48);
     return OsConfigStart();
 }

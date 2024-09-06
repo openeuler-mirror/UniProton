@@ -6,6 +6,7 @@ import xml.dom.minidom
 import sys
 import logging
 import globle
+import yaml
 from logs import BuilderNolog, log_msg
 
 
@@ -78,3 +79,20 @@ def get_compile_mode():
     cpu_list = config_tree.documentElement.getElementsByTagName(nameNode)
     compile_mode = getNodeValue(cpu_list[0])
     return compile_mode
+
+# 读取YAML文件
+def read_yaml_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        try:
+            return yaml.safe_load(file)
+        except yaml.YAMLError as e:
+            print(e)
+            return None
+ 
+# 获取特定键对应的值
+def get_value_from_yaml(data, *keys):
+    for key in keys:
+        data = data.get(key)
+        if data is None:
+            return None
+    return data

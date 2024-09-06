@@ -7,7 +7,7 @@
 PLAT= none
 
 CC= $(LUA_GCC_PATH) -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -nostdinc -nostdlib $(SYSCFLAGS) $(MYCFLAGS) -I ../../../../build/output/libc/include
+CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 -nostdinc -nostdlib $(SYSCFLAGS) $(MYCFLAGS) -I ${HOME_PATH}/src/libc/musl/include -I ${HOME_PATH}/src/libc/litelibc/include
 LDFLAGS= -nostdinc -nostdlib $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= $(SYSLIBS) $(MYLIBS)
 

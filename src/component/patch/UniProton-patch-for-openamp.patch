@@ -1,7 +1,7 @@
 diff -urN openamp-2022.10.1/CMakeLists.txt open-amp/CMakeLists.txt
 --- openamp-2022.10.1/CMakeLists.txt	2022-12-13 11:21:05.000000000 +0800
 +++ open-amp/CMakeLists.txt	2024-08-31 11:12:10.497712945 +0800
-@@ -7,6 +7,21 @@
+@@ -7,6 +7,23 @@
    cmake_policy(SET CMP0077 NEW)
  endif()
  
@@ -14,6 +14,8 @@ diff -urN openamp-2022.10.1/CMakeLists.txt open-amp/CMakeLists.txt
 +  ${HOME_PATH}/src/include/uapi/
 +  ${HOME_PATH}/src/libc/litelibc/include
 +  ${HOME_PATH}/src/libc/musl/include
++  ${HOME_PATH}/src/arch/include
++  ${HOME_PATH}/src/utility/lib/include
 +  ${HOME_PATH}/build/uniproton_config/config_${KCONF_DIR}
 +  ${HOME_PATH}/boards/${ARCH_TYPE}/${CPU_TYPE}/config
 +  ${HOME_PATH}/boards/${ARCH_TYPE}/${CPU_TYPE}/bsp/${CPU_TYPE}

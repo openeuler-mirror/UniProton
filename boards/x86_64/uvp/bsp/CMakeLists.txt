@@ -1,4 +1,4 @@
-set(SRCS start.S cpu_offline.c print.c)
+set(SRCS cpu_offline.c print.c)
 if(${CONFIG_OS_GDB_STUB}) 
     list(APPEND SRCS gdbstub_cfg.c)
 endif()

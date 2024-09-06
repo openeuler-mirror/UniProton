@@ -150,7 +150,7 @@ enum MapType { MAP_CACHED, MAP_UNCACHED };
 static U64 __attribute__((aligned(4096)))
     pageDirectory[JAILHOUSE_INMATE_MEM_PAGE_DIR_LEN];
 
-#define DSB(domain)	asm volatile("dsb " #domain ::: "memory")
+#define DSB(domain)	__asm volatile("dsb " #domain ::: "memory")
 
 #define DEFAULT_IRQ_BASE	(commRegion->vpciIrqBase + 32)
 

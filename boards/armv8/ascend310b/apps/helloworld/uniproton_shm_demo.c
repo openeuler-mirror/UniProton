@@ -33,7 +33,7 @@ void ShmSendEntry()
         shm_wr->used_size = sizeof(unsigned long long);
         shm_wr->resevered = 2;
         shm_wr->op_type = SHM_OP_READY_TO_READ;
-        asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
+        __asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
         *(U64 *)shm_wr->data = t;
         shm_send_ipi(IPI_TARGET);
         PRT_TaskDelay(OS_TICK_PER_SECOND * 3);
@@ -91,7 +91,7 @@ void IpiHandle(uintptr_t para)
             break;
         case 2:
             /* 通信响应测试 */
-            asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
+            __asm volatile("mrs %0, CNTPCT_EL0\n" : "=r" (t));
             shm_rd->op_type = SHM_OP_READ_END;
             PRT_Printf("[uniproton]read period %llu us\n", (t - *(U64 *)shm_rd->data) / 48);
             break;

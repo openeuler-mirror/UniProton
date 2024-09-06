@@ -4,3 +4,9 @@ list(APPEND SRCS
     semihosting_dbg.c)
 endif()
 add_library(bsp OBJECT ${SRCS})
+
+target_compile_options(bsp PUBLIC 
+    -Wno-unused-but-set-variable
+    -Wno-pointer-arith
+    -Wno-return-type
+)

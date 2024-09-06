@@ -146,7 +146,7 @@ CONFIG_OS_OPTION_DYNAMIC_MODULE=y
 #
 # enable CXX
 #
-CONFIG_OS_SUPPORT_CXX=y
+# CONFIG_OS_SUPPORT_CXX is not set
 
 #
 # enable Libxml2
@@ -166,7 +166,7 @@ CONFIG_OS_SUPPORT_CXX=y
 #
 # Forte Modules Configuration
 #
-CONFIG_OS_OPTION_FORTE=y
+# CONFIG_OS_OPTION_FORTE is not set
 
 #
 # Net Modules Configuration
