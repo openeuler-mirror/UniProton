@@ -32,9 +32,6 @@
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -184,20 +181,6 @@ off_t nx_seek(int fd, off_t offset, int whence)
 off_t sys_lseek(int fd, off_t offset, int whence)
 {
   off_t newpos;
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  int index = fds_find(fd);
-  if (index < 0) {
-      return ERROR;
-  }
-
-  if(fds_record[index].isProxy == true) 
-  {
-    return PRT_ProxyLseek(fds_record[index].fd, offset, whence);
-  }
-
-  fd = fds_record[index].fd;
-#endif
 
   /* Let nx_seek do the real work */
 

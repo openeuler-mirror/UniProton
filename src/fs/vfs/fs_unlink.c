@@ -31,13 +31,9 @@
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/sys/sys_unistd.h>
-#include <nuttx/sys/sys_fcntl.h>
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -216,12 +212,6 @@ errout_with_search:
 int sys_unlink(FAR const char *pathname)
 {
   int ret;
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if (proxyPath(pathname)) {
-    return PRT_ProxyUnlink(pathname);
-  }
-#endif
 
   ret = nx_unlink(pathname);
   if (ret < 0)

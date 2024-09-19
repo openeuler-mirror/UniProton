@@ -36,9 +36,6 @@
 #include <nuttx/sys/sys_stat.h>
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -253,20 +250,6 @@ int sys_fstat(int fd, FAR struct stat *buf)
 {
   FAR struct file *filep;
   int ret;
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  int index = fds_find(fd);
-  if (index < 0) {
-      return ERROR;
-  }
-
-  if(fds_record[index].isProxy == true) 
-  {
-    return PRT_ProxyFstat(fds_record[index].fd, buf);
-  }
-
-  fd = fds_record[index].fd;
-#endif
 
   /* First, get the file structure.  Note that on failure,
    * fs_getfilep() will return the errno.

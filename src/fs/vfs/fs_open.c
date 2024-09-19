@@ -42,9 +42,6 @@
 #include "inode/inode.h"
 #include "driver/driver.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -259,7 +256,6 @@ static int nx_vopen(FAR struct TagTskCb *tcb,
 
   fd = file_allocate_from_tcb(tcb, filep.f_inode, filep.f_oflags,
                               filep.f_pos, filep.f_priv, 0, false);
-  
   if (fd < 0)
     {
       file_close(&filep);
@@ -433,6 +429,7 @@ int nx_open(FAR const char *path, int oflags, ...)
  *   on any failure with the errno value set appropriately.
  *
  ****************************************************************************/
+
 int sys_open(FAR const char *path, int oflags, ...)
 {
   va_list ap;
@@ -441,28 +438,6 @@ int sys_open(FAR const char *path, int oflags, ...)
   /* open() is a cancellation point */
 
   (void)enter_cancellation_point();
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  int fd_ctl = vfs_fd_ctl(path);
-
-  int index = fds_find(fd_ctl);
-  if (index < 0) {
-      return ERROR;
-  }
-
-  // 代理
-  if(fds_record[index].isProxy == true)
-  {
-    fd = PRT_ProxyOpen(path, oflags, 0666);
-    if (fd < 0) {
-      fds_index[index][1] = 0;
-      return fd;
-    }
-
-    fds_record[index].fd = fd;
-    return fd_ctl;
-  }
-#endif
 
   /* Let nx_vopen() do most of the work */
 
@@ -479,10 +454,5 @@ int sys_open(FAR const char *path, int oflags, ...)
     }
 
   leave_cancellation_point();
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  fds_record[index].fd = fd;
-  return fd_ctl;
-#else
   return fd;
-#endif
 }

@@ -24,40 +24,38 @@ list(REMOVE_ITEM LITELIBC_SOURCE
 endif()
 
 # 依赖VFS的接口
-if(${CONFIG_OS_OPTION_PROXY})
-    if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
-        list(REMOVE_ITEM LITELIBC_SOURCE
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/close.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/dup.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/dup2.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/gethostname.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/read.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/write.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/unlink.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/readlink.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/rmdir.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/access.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/getcwd.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/chdir.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/pipe.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fopen.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fclose.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/freopen.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/rename.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/tmpfile.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/popen.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/pclose.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/remove.c
-        )
+if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
+list(REMOVE_ITEM LITELIBC_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/close.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/dup.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/dup2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/gethostname.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/read.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/write.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/unlink.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/readlink.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/rmdir.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/access.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/getcwd.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/chdir.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/unistd/pipe.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fopen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/fclose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/freopen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/rename.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/tmpfile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/popen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/pclose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/remove.c
+)
 
-        #移除litelibc中的stat模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入stat模块
-        file(GLOB_RECURSE LITELIBC_STAT_SOURCE litelibc/src/stat/*.c)
-        list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_STAT_SOURCE})
+#移除litelibc中的stat模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入stat模块
+file(GLOB_RECURSE LITELIBC_STAT_SOURCE litelibc/src/stat/*.c)
+list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_STAT_SOURCE})
 
-        #移除litelibc中的fcntl模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入fcntl模块
-        file(GLOB_RECURSE LITELIBC_FCNTL_SOURCE litelibc/src/fcntl/*.c)
-        list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_FCNTL_SOURCE})
-    endif()
+#移除litelibc中的fcntl模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入fcntl模块
+file(GLOB_RECURSE LITELIBC_FCNTL_SOURCE litelibc/src/fcntl/*.c)
+list(REMOVE_ITEM LITELIBC_SOURCE ${LITELIBC_FCNTL_SOURCE})
 
 endif()
 
@@ -319,31 +317,29 @@ list(REMOVE_ITEM MUSL_STDIO_SOURCE
     
 )
 
-if(${CONFIG_OS_OPTION_PROXY})
-    if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
-        list(REMOVE_ITEM MUSL_STDIO_SOURCE
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fwrite.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fputs.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fopen.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fclose.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fread.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/freopen.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fputs.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fgets.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/feof.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fprintf.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ferror.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ungetc.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/getc.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fseek.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ftell.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/clearerr.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/getc_unlocked.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fflush.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fileno.c
-            ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fscanf.c
-        )
-    endif()
+if (${CONFIG_OS_OPTION_PROXY})
+list(REMOVE_ITEM MUSL_STDIO_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fwrite.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fputs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fopen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fclose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fread.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/freopen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fputs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fgets.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/feof.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fprintf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ferror.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ungetc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/getc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fseek.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/ftell.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/clearerr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/getc_unlocked.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fflush.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fileno.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/fscanf.c
+)
 endif()
 
 if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp" OR ${CPU_TYPE} STREQUAL "hi3093")

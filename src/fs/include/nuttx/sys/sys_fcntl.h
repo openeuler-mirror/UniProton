@@ -27,7 +27,6 @@
 
 #include <stdarg.h>
 #include <fcntl.h>
-#include <stdbool.h>
 
 int sys_open(const char *path, int oflags, ...);
 int sys_fcntl(int fd, int cmd, ...);

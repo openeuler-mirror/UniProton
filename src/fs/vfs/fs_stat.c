@@ -36,9 +36,6 @@
 #include <nuttx/fs/ioctl.h>
 #include <nuttx/sys/sys_stat.h>
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -205,11 +202,6 @@ int sys_stat(FAR const char *path, FAR struct stat *buf)
 {
   int ret;
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if(proxyPath(path)) {
-    return PRT_ProxyStat(path, buf);
-  }
-#endif
   ret = nx_stat(path, buf, 1);
   if (ret < 0)
     {
@@ -224,11 +216,6 @@ int sys_lstat(FAR const char *path, FAR struct stat *buf)
 {
   int ret;
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if(proxyPath(path)) {
-    return PRT_ProxyStat(path, buf);
-  }
-#endif
   ret = nx_stat(path, buf, 0);
   if (ret < 0)
     {
