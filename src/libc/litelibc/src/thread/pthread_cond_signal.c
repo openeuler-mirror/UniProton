@@ -36,11 +36,9 @@ int __private_cond_signal(pthread_cond_t *cond, int isOnce)
             &resumedTask->condNode != &cond->head;) {
                 nextTask = LIST_COMPONENT(resumedTask->condNode.next, struct TagTskCb, condNode);
                 needSched = true;
+                ListDelete(&resumedTask->condNode);
 
                 eRet = PRT_EventWrite(resumedTask->taskPid, cond->eventMask);
-                if ((resumedTask->taskStatus & OS_TSK_TIMEOUT) == 0) {
-                    ListDelete(&resumedTask->condNode);
-                }
                 if (eRet != OS_OK) {
                     PRT_TaskUnlock();
                     PRT_HwiRestore(intSave);

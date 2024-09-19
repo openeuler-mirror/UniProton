@@ -46,7 +46,6 @@ list(REMOVE_ITEM LITELIBC_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/tmpfile.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/popen.c
     ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/pclose.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/stdio/remove.c
 )
 
 #移除litelibc中的stat模块，只有定义CONFIG_OS_OPTION_NUTTX_VFS才加入stat模块
@@ -134,12 +133,8 @@ endif()
 
 if (${CPU_TYPE} STREQUAL "hi3093" AND "${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y")
     list(APPEND  MULS_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/misc/getauxval.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsprintf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sscanf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vsscanf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vfscanf.c
     )
 endif()
 
@@ -301,9 +296,7 @@ list(APPEND  MUSL_STDLIB_SOURCE
 )
 
 # 适配stdio
-if (NOT (${CONFIG_OS_SUPPORT_CXX}))
-    file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
-endif()
+file(GLOB MUSL_STDIO_SOURCE musl/src/stdio/*.c)
 
 list(APPEND MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/unistd/lseek.c
