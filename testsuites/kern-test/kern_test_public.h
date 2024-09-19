@@ -1,7 +1,6 @@
 #ifndef KERN_TEST_PUBLIC_H
 #define KERN_TEST_PUBLIC_H
 #include "prt_buildef.h"
-#include "prt_task.h"
 #include "prt_log.h"
 
 #ifdef __cplusplus
@@ -14,15 +13,6 @@ extern volatile U32 g_testFinish;
 extern volatile int g_testResult;
 
 // printf接口内部有调用pthread_mutex锁可能影响测试结果，此处使用prt_log相关接口
-
-#define TEST_IF_ERR_RET(ret, str)  \
-    if (ret) {                                                  \
-        g_testResult = (int)(ret);                              \
-        g_testFinish = 1;                                       \
-        PRT_Log(OS_LOG_INFO, OS_LOG_F1, str, sizeof(str) - 1);  \
-        return g_testResult;                                    \
-    }
-
 #define TEST_IF_ERR_RET_VOID(ret, str)  \
     if (ret) {                                                  \
         g_testResult = (int)(ret);                              \
