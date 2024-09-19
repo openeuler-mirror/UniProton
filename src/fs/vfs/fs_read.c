@@ -36,9 +36,6 @@
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -168,20 +165,6 @@ ssize_t sys_read(int fd, FAR void *buf, size_t nbytes)
   /* read() is a cancellation point */
 
   (void)enter_cancellation_point();
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  int index = fds_find(fd);
-  if (index < 0) {
-      return ERROR;
-  }
-
-  if(fds_record[index].isProxy == true) 
-  {
-    return PRT_ProxyReadLoop(fds_record[index].fd, buf, nbytes);
-  }
-
-  fd = fds_record[index].fd;
-#endif
 
   /* Let nx_read() do the real work */
 

@@ -1,7 +1,7 @@
 # Allowed compilation APP:
 # x86_64 UniPorton_test_posix_time_interface UniPorton_test_proxy_posix_interface UniPorton_test_libxml2_interface
 # task-switch task-preempt semaphore-shuffle interrupt-latency deadlock-break message-latency
-# linuxTest ethercatTest UniProton_modbus_demo UniProton_forte_demo UniProton_lwip_demo
+# linuxTest ethercatTest UniProton_modbus_demo UniProton_forte_demo
 export ALL="x86_64"
 
 gcc_file=/opt/buildtools/openeuler_gcc_x86_64/bin/x86_64-openeuler-linux-gnu-gcc

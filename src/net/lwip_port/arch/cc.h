@@ -58,9 +58,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef LWIP_LOGGER
-#define LWIP_LOGGER(msg)
-#endif
 
 #define LWIP_RAND() ((u32_t)rand())
 #define LWIP_PLATFORM_DIAG(x) {printf x;}

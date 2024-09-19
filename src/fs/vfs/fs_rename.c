@@ -37,9 +37,6 @@
 #include <nuttx/sys/sys_stdio.h>
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -471,11 +468,6 @@ int sys_rename(FAR const char *oldpath, FAR const char *newpath)
       goto errout;
     }
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if(proxyPath(oldpath) && proxyPath(newpath)) {
-    return PRT_ProxyRename(oldpath, newpath);
-  }
-#endif
   /* Get an inode that includes the oldpath */
 
   SETUP_SEARCH(&olddesc, oldpath, true);

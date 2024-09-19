@@ -49,8 +49,6 @@ testcases:
   # - ../27_io/basic_fstream
   # - ../27_io/basic_ofstream
   # - ../21_strings/c_strings
-  # - ../test_boost/system/dynamic_link_test.cc
-  # - ../test_boost/thread/default_pass.cc
 #use default value
 exclude_prefix: []
 testcases_base: ../

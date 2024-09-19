@@ -57,9 +57,6 @@ OS_SEC_L0_TEXT void OsActiveTask(struct TagOsRunQue *runQue, struct TagTskCb *ts
     if (tsk->isOnRq) {
         return;
     }
-#if defined(OS_OPTION_RR_SCHED)
-    tsk->timeSlice = g_timeSliceCycle;
-#endif
     OsEnqueueTask(runQue, tsk, flags);
 
     OsIncNrRunning(runQue);

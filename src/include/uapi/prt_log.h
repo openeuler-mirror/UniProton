@@ -93,4 +93,5 @@ extern bool PRT_IsLogInit(void);
 #endif /* __cpluscplus */
 #endif /* __cpluscplus */
 
-#endif /* PRT_LOG_H */
+#endif /* PRT_TYPEDEF_H */
+

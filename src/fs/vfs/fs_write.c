@@ -36,9 +36,6 @@
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -196,19 +193,6 @@ ssize_t nx_write(int fd, FAR const void *buf, size_t nbytes)
 ssize_t sys_write(int fd, FAR const void *buf, size_t nbytes)
 {
   ssize_t ret;
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  int index = fds_find(fd);
-  if (index < 0) {
-      return ERROR;
-  }
-
-  if(fds_record[index].isProxy == true) 
-  {
-    return PRT_ProxyWrite(fds_record[index].fd, buf, nbytes);
-  }
-  fd = fds_record[index].fd;
-#endif
 
   /* write() is a cancellation point */
 

@@ -8,7 +8,6 @@ set(FS_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_include_directories(fs_init PUBLIC 
     ${FS_BASE_DIR}/include
-    ${FS_BASE_DIR}/vfs
     ${FS_BASE_DIR}/
 )
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2024 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -9,21 +9,37 @@
  * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Create: 2024-06-13
- * Description: lwip注册初始化头文件
+ * Create: 2022-09-21
+ * Description: 网络
  */
+#ifndef LWIP_PORTING_SYS_ARCH_H
+#define LWIP_PORTING_SYS_ARCH_H
 
-#ifndef NET_TEST_H
-#define NET_TEST_H
+#include <stdint.h>
 
-#include "lwip/ip_addr.h"
-#include "lwip/sockets.h"
-#include "lwip/etharp.h"
-#include "lwip/tcpip.h"
-#include "arch/net_register.h"
+/**
+ * Semaphore
+ */
+typedef uint32_t sys_sem_t;
 
-void lwipInit();
-void lwip_test_udp();
-int proxy_udp_client();
+/**
+ * Mutex
+ */
+typedef sys_sem_t sys_mutex_t;
 
-#endif /* _UNIT_TEST_H_ */
+/**
+ * MessageBox
+ */
+typedef sys_sem_t sys_mbox_t;
+
+/**
+ * Protector
+ */
+typedef void *sys_prot_t;
+
+/**
+ * Thread
+ */
+typedef sys_sem_t sys_thread_t;
+
+#endif /* LWIP_PORTING_SYS_ARCH_H */

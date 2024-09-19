@@ -58,17 +58,11 @@ extern "C" {
 /* 最大支持的任务数,最大共支持254个 */
 #define OS_TSK_MAX_SUPPORT_NUM                          32
 /* 缺省的任务栈大小 */
-#ifdef OS_SUPPORT_CXX
-#define OS_TSK_DEFAULT_STACK_SIZE                       0x4000
-#else
 #define OS_TSK_DEFAULT_STACK_SIZE                       0x1000
-#endif
 /* IDLE任务栈的大小 */
 #define OS_TSK_IDLE_STACK_SIZE                          0x1000
 /* 任务栈初始化魔术字，默认是0xCA，只支持配置一个字节 */
 #define OS_TSK_STACK_MAGIC_WORD                         0xCA
-/* 时间片轮转调度的时间片粒度，单位ms */
-#define OS_TSK_TIME_SLICE_MS                            5
 
 /* ***************************** 配置CPU占用率及CPU告警模块 **************** */
 /* CPU占用率模块裁剪开关 */
@@ -99,11 +93,7 @@ extern "C" {
 #define OS_INCLUDE_SEM                                  YES
 
 /* 最大支持的信号量数 */
-#ifdef OS_SUPPORT_CXX
-#define OS_SEM_MAX_SUPPORT_NUM                          200
-#else
 #define OS_SEM_MAX_SUPPORT_NUM                          64
-#endif
 
 /* ***************************** 配置队列模块 ******************************* */
 /* 队列模块裁剪开关 */

@@ -104,7 +104,6 @@ void OsTaskInfoSet(struct TskModInfo *taskModInfo)
     taskModInfo->defaultSize = OS_TSK_DEFAULT_STACK_SIZE;
     taskModInfo->idleStackSize = OS_TSK_IDLE_STACK_SIZE;
     taskModInfo->magicWord = WORD_PACK((U32)OS_TSK_STACK_MAGIC_WORD);
-    taskModInfo->timeSliceMs = OS_TSK_TIME_SLICE_MS;
 }
 #else
 #error "OS_INCLUDE_TASK MUST BE YES! The SWI has been cut out，the task can not cut out."

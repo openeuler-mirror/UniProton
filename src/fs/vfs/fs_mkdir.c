@@ -35,9 +35,6 @@
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -66,12 +63,6 @@ int sys_mkdir(const char *pathname, mode_t mode)
   FAR struct inode *inode;
   int errcode;
   int ret;
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if(proxyPath(pathname)) {
-    PRT_ProxyMkdir(pathname, mode);
-  }
-#endif
 
   mode &= ~getumask();
 

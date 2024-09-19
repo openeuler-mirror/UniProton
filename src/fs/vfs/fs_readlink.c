@@ -32,13 +32,9 @@
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/sys/sys_unistd.h>
-#include <nuttx/sys/sys_fcntl.h>
 
 #include "inode/inode.h"
 
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-#include "fs_proxy.h"
-#endif
 #ifdef CONFIG_PSEUDOFS_SOFTLINKS
 
 /****************************************************************************
@@ -78,12 +74,6 @@ ssize_t sys_readlink(FAR const char *path, FAR char *buf, size_t bufsize)
   int ret;
 
   DEBUGASSERT(path != NULL && buf != NULL && bufsize > 0);
-
-#if defined(OS_OPTION_NUTTX_VFS) && defined(OS_OPTION_PROXY)
-  if(proxyPath(path)) {
-    return PRT_ProxyReadLink(path, buf, bufsize);
-  }
-#endif
 
   /* Find the inode that includes this path (without dereferencing the final)
    * symbolic link node.

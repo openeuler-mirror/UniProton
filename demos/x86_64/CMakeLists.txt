@@ -45,12 +45,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_54_0
     ${OUTPUT_PATH}/shell/include/
     ${OUTPUT_PATH}/shell/adapter/include
-    ${HOME_PATH}/src/drivers/i210
-    ${HOME_PATH}/src/net/lwip_port
-    ${HOME_PATH}/src/net/adapter/include
-    ${HOME_PATH}/src/net/adapter/include/arch
-    ${HOME_PATH}/output/lwip/src/include
-    ${HOME_PATH}/src/osal/linux/include_self_def
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -154,18 +148,6 @@ if (${APP} STREQUAL "UniProton_forte_demo")
         add_executable(${APP} ${OBJS})
     else()
         message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_OPTION_FORTE AND CONFIG_OS_SUPPORT_CXX")
-        return()
-    endif()
-endif()
-
-if (${APP} STREQUAL "UniProton_lwip_demo")
-    if ("${CONFIG_OS_SUPPORT_NET}" STREQUAL "y")
-        add_subdirectory(${HOME_PATH}/testsuites/lwipTest tmp)
-        target_compile_options(ethercat PUBLIC -DLWIP_DEMO)
-        list(APPEND OBJS $<TARGET_OBJECTS:ethercat> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:lwipUdpClient>)
-        add_executable(${APP} ${OBJS})
-    else()
-        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_NET")
         return()
     endif()
 endif()
