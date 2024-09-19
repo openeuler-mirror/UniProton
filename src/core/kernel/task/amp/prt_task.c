@@ -60,9 +60,6 @@ OS_SEC_L0_TEXT void OsTskReadyAdd(struct TagTskCb *task)
 {
     struct TagOsRunQue *rq = &g_runQueue;
     TSK_STATUS_SET(task, OS_TSK_READY);
-#if defined(OS_OPTION_RR_SCHED)
-    task->timeSlice = g_timeSliceCycle;
-#endif
 
     OS_TSK_EN_QUE(rq, task, 0);
     OsTskHighestSet();

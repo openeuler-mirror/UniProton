@@ -123,35 +123,6 @@ OS_SEC_L0_TEXT void OsContextSwitch(struct TagTskCb *prev, struct TagTskCb *next
     OsTskContextLoad((uintptr_t)next);
 }
 
-#if defined(OS_OPTION_RR_SCHED)
-/* 更新当前任务的剩余时间片，并检查是否需要切换 */
-OS_SEC_L0_TEXT void OsHwiEndCheckTimeSlice(U64 currTime)
-{
-    struct TagTskCb *currTsk = RUNNING_TASK;
-    if (currTsk == NULL) {
-        return;
-    }
-#if defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-    OsTimeSliceUpdate(currTsk, currTime, currTsk->irqUsedTime);
-    currTsk->irqUsedTime = 0;
-#else
-    OsTimeSliceUpdate(currTsk, currTime, 0);
-#endif
-    if (currTsk->policy != OS_TSK_SCHED_RR) {
-        return;
-    }
-
-    if (currTsk->timeSlice != 0) {
-        return;
-    }
-
-    OsTskReadyDel(currTsk);
-    /* 进队列后默认在队列尾部 */
-    OsTskReadyAdd(currTsk);
-    return;
-}
-#endif
-
 /*
  * 描述：调度的主入口
  * 备注：NA
@@ -160,15 +131,11 @@ OS_SEC_L0_TEXT void OsMainSchedule(void)
 {
     struct TagTskCb *taskOrigin = NULL;
     struct TagTskCb *taskNext = NULL;
-
+    
     // U32 thisCore = OsGetHwThreadId();
     struct TagOsRunQue *runQue = THIS_RUNQ();
 
     taskOrigin = runQue->tskCurr;
-#if defined(OS_OPTION_RR_SCHED)
-    U64 currTime = OsCurCycleGet64();
-    OsTimeSliceUpdate(taskOrigin, currTime, 0);
-#endif
     if (runQue->uniTaskLock == 0) {
         OsWorkHandler();
 
@@ -179,9 +146,6 @@ OS_SEC_L0_TEXT void OsMainSchedule(void)
             } while (runQue->needReschedule);
 
             if(taskNext != taskOrigin) {
-#if defined(OS_OPTION_RR_SCHED)
-                taskNext->startTime = currTime;
-#endif
                 OsContextSwitch(taskOrigin, taskNext);
             }
         }

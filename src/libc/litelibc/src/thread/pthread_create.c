@@ -122,19 +122,6 @@ OS_SEC_ALW_INLINE INLINE void OsPthreadCreateTcbInit(uintptr_t stackPtr, pthread
     tskCb->joinableSem = 0;
     tskCb->tsdUsed = 0;
 
-#if defined(OS_OPTION_RR_SCHED)
-    if (attr->schedpolicy == SCHED_RR) {
-        tskCb->policy = OS_TSK_SCHED_RR;
-    } else {
-        tskCb->policy = OS_TSK_SCHED_FIFO;
-    }
-    tskCb->startTime = 0;
-    tskCb->timeSlice = g_timeSliceCycle;
-#if defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-    tskCb->irqUsedTime = 0;
-#endif
-#endif
-
     INIT_LIST_OBJECT(&tskCb->semBList);
     INIT_LIST_OBJECT(&tskCb->pendList);
     INIT_LIST_OBJECT(&tskCb->timerList);

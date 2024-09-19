@@ -63,8 +63,6 @@ extern "C" {
 #define OS_TSK_IDLE_STACK_SIZE                          0x1000
 /* 任务栈初始化魔术字，默认是0xCA，只支持配置一个字节 */
 #define OS_TSK_STACK_MAGIC_WORD                         0xCA
-/* 时间片轮转调度的时间片粒度，单位ms */
-#define OS_TSK_TIME_SLICE_MS                            5
 
 /* ***************************** 配置CPU占用率及CPU告警模块 **************** */
 /* CPU占用率模块裁剪开关 */

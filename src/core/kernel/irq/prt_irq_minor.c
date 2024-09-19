@@ -93,16 +93,12 @@ OS_SEC_L4_TEXT U32 OsHwiAffinityGet(HwiHandle hwiNum)
  */
 OS_SEC_TEXT void OsHwiDispatchTail(void)
 {
-    U64 irqStartTime = 0;
     struct TagOsRunQue *rq = THIS_RUNQ();
 
     if (UNLIKELY(rq->tickNoRespondCnt > 0)) {
         if ((rq->uniFlag & OS_FLG_TICK_ACTIVE) != 0) {
             return;
         }
-#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-        irqStartTime = OsCurCycleGet64();
-#endif
         rq->uniFlag |= OS_FLG_TICK_ACTIVE;
 
         do {
@@ -113,16 +109,12 @@ OS_SEC_TEXT void OsHwiDispatchTail(void)
         } while (rq->tickNoRespondCnt > 0);
 
         rq->uniFlag &= ~OS_FLG_TICK_ACTIVE;
-        OS_IRQ_TIME_RECORD(irqStartTime);
     }
 
     if (rq->uniTaskLock == 0) {
         rq->shakeCount++;
         PRT_DMB();
     }
-#if defined(OS_OPTION_RR_SCHED)
-    OsHwiEndCheckTimeSlice(OsCurCycleGet64());
-#endif
     OsMainSchedule();
 }
 

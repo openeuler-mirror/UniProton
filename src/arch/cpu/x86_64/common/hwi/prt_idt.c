@@ -78,15 +78,11 @@ void OsIdtInit(void)
 
 void OsHwiTail(void)
 {
-    U64 irqStartTime = 0;
     if (TICK_NO_RESPOND_CNT > 0) {
         if (UNI_FLAG & OS_FLG_TICK_ACTIVE) {
             // OsTskContextLoad，回到被打断的tick处理现场
             return;
         }
-#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-        irqStartTime = OsCurCycleGet64();
-#endif
         UNI_FLAG |= OS_FLG_TICK_ACTIVE;
 
         do {
@@ -96,11 +92,7 @@ void OsHwiTail(void)
         } while (TICK_NO_RESPOND_CNT > 0);
 
         UNI_FLAG &= ~OS_FLG_TICK_ACTIVE;
-        OS_IRQ_TIME_RECORD(irqStartTime);
     }
-#if defined(OS_OPTION_RR_SCHED)
-    OsHwiEndCheckTimeSlice(OsCurCycleGet64());
-#endif
 
     OsMainSchedule();
     return;
@@ -125,13 +117,7 @@ STUB_TEXT void OsHwiDbgExcProc(U64 stackFrame)
 void OsHwiDispatchProc(U64 stackFrame)
 {
     struct StackFrame *frame;
-    U64 irqStartTime = 0;
     frame = (struct StackFrame *)(stackFrame + 0x200);
-#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-    if ((UNI_FLAG & OS_FLG_HWI_ACTIVE) == 0) {
-        irqStartTime = OsCurCycleGet64();
-    }
-#endif
     UNI_FLAG |= OS_FLG_HWI_ACTIVE;
     OS_INT_COUNT++;
 
@@ -163,7 +149,6 @@ void OsHwiDispatchProc(U64 stackFrame)
     if (OS_INT_COUNT > 0) {
         return;
     }
-    OS_IRQ_TIME_RECORD(irqStartTime);
     UNI_FLAG &= ~OS_FLG_HWI_ACTIVE;
 
     OsHwiTail();

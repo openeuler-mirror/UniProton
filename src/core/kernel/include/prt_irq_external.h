@@ -52,23 +52,11 @@ struct TagHwiModeForm {
 };
 #endif
 
-#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-#define OS_IRQ_TIME_RECORD(irqStartTime)                                    \
-    if ((irqStartTime) != 0 && RUNNING_TASK != NULL) {                      \
-        RUNNING_TASK->irqUsedTime += OsCurCycleGet64() - (irqStartTime);    \
-    }
-#else
-#define OS_IRQ_TIME_RECORD(irqStartTime) (void)irqStartTime
-#endif
-
 /* 模块内函数声明 */
 extern void OsHwiDefaultHandler(HwiArg arg);
 extern void OsHwiHookDispatcher(HwiHandle archHwi);
 extern void OsHwiCombineDispatchHandler(HwiArg arg);
 
 extern void OsHwiDispatchTail(void);
-#if defined(OS_OPTION_RR_SCHED)
-extern void OsHwiEndCheckTimeSlice(U64 currTime);
-#endif
 
 #endif /* PRT_IRQ_EXTERNAL_H */

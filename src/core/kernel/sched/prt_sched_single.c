@@ -14,39 +14,6 @@
  */
 #include "prt_hook_external.h"
 #include "prt_task_external.h"
-#include "prt_irq_external.h"
-
-#if defined(OS_OPTION_RR_SCHED)
-/* 在中断尾部调用，更新当前任务的剩余时间片，并检查是否需要切换 */
-OS_SEC_L0_TEXT void OsHwiEndCheckTimeSlice(U64 currTime)
-{
-    struct TagTskCb *currTsk = RUNNING_TASK;
-    if (currTsk == NULL) {
-        return;
-    }
-#if defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-    OsTimeSliceUpdate(currTsk, currTime, currTsk->irqUsedTime);
-    currTsk->irqUsedTime = 0;
-#else
-    OsTimeSliceUpdate(currTsk, currTime, 0);
-#endif
-    if (currTsk->policy != OS_TSK_SCHED_RR) {
-        return;
-    }
-
-    if (currTsk->timeSlice != 0) {
-        return;
-    }
-
-    OsTskReadyDel(currTsk);
-    /* 进队列后默认在队列尾部 */
-    OsTskReadyAdd(currTsk);
-    if ((g_highestTask != currTsk) && (g_uniTaskLock == 0)) {
-        UNI_FLAG |= OS_FLG_TSK_REQ;
-    }
-    return;
-}
-#endif
 
 /*
  * 描述: 调度的主入口
@@ -54,12 +21,10 @@ OS_SEC_L0_TEXT void OsHwiEndCheckTimeSlice(U64 currTime)
  */
 OS_SEC_L0_TEXT void OsMainSchedule(void)
 {
-    struct TagTskCb *prevTsk = RUNNING_TASK;
-#if defined(OS_OPTION_RR_SCHED)
-    U64 currTime = OsCurCycleGet64();
-    OsTimeSliceUpdate(prevTsk, currTime, 0);
-#endif
+    struct TagTskCb *prevTsk;
     if ((UNI_FLAG & OS_FLG_TSK_REQ) != 0) {
+        prevTsk = RUNNING_TASK;
+
         /* 清除OS_FLG_TSK_REQ标记位 */
         UNI_FLAG &= ~OS_FLG_TSK_REQ;
 
@@ -70,9 +35,6 @@ OS_SEC_L0_TEXT void OsMainSchedule(void)
 
         /* 有任务切换钩子&最高优先级任务等待调度 */
         if (prevTsk != g_highestTask) {
-#if defined(OS_OPTION_RR_SCHED)
-            g_highestTask->startTime = currTime;
-#endif
             OsTskSwitchHookCaller(prevTsk->taskPid, g_highestTask->taskPid);
         }
     }
@@ -103,9 +65,6 @@ OS_SEC_L4_TEXT void OsFirstTimeSwitch(void)
     OsTskHighestSet();
     RUNNING_TASK = g_highestTask;
     TSK_STATUS_SET(RUNNING_TASK, OS_TSK_RUNNING);
-#if defined(OS_OPTION_RR_SCHED)
-    RUNNING_TASK->startTime = OsCurCycleGet64();
-#endif
     OsTskContextLoad((uintptr_t)RUNNING_TASK);
     // never get here
     return;
@@ -117,15 +76,11 @@ OS_SEC_L4_TEXT void OsFirstTimeSwitch(void)
  */
 OS_SEC_L0_TEXT void OsHwiDispatchTail(void)
 {
-    U64 irqStartTime = 0;
     if (TICK_NO_RESPOND_CNT > 0) {
         if ((UNI_FLAG & OS_FLG_TICK_ACTIVE) != 0) {
             // OsTskContextLoad， 回到被打断的tick处理现场
             return;
         }
-#if defined(OS_OPTION_RR_SCHED) && defined(OS_OPTION_RR_SCHED_IRQ_TIME_DISCOUNT)
-        irqStartTime = OsCurCycleGet64();
-#endif
         UNI_FLAG |= OS_FLG_TICK_ACTIVE;
 
         do {
@@ -137,11 +92,7 @@ OS_SEC_L0_TEXT void OsHwiDispatchTail(void)
         } while (TICK_NO_RESPOND_CNT > 0);
 
         UNI_FLAG &= ~OS_FLG_TICK_ACTIVE;
-        OS_IRQ_TIME_RECORD(irqStartTime);
     }
-#if defined(OS_OPTION_RR_SCHED)
-    OsHwiEndCheckTimeSlice(OsCurCycleGet64());
-#endif
 
     OsMainSchedule();
 }
