@@ -13,14 +13,11 @@
  * Description: 网络
  */
 
-#ifndef UNIPROTON_LWIPOPTS_H
-#define UNIPROTON_LWIPOPTS_H
+#ifndef LWIP_PORTING_NETDB_H
+#define LWIP_PORTING_NETDB_H
 
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include "lwip/arch.h"
 #include <netdb.h>
+#include_next <lwip/netdb.h>
 
-// Just redirect
-#include "lwip/lwipopts.h"
-
-#endif // UNIPROTON_LWIPOPTS_H
+#endif /* LWIP_PORTING_NETDB_H */

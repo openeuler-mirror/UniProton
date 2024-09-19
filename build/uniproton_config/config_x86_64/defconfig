@@ -167,8 +167,3 @@ CONFIG_OS_OPTION_DYNAMIC_MODULE=y
 # Forte Modules Configuration
 #
 # CONFIG_OS_OPTION_FORTE is not set
-
-#
-# Net Modules Configuration
-#
-# CONFIG_OS_SUPPORT_NET is not set
