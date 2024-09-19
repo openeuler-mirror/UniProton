@@ -1,11 +1,4 @@
-if [ "$RISCV_NATIVE" = "true" ]; then
-    export TOOLCHAIN_PATH="/usr"
-    export TOOLCHAIN_PREFIX=""
-else
-    export TOOLCHAIN_PATH="/opt/buildtools/riscv"
-    export TOOLCHAIN_PREFIX="riscv64-unknown-elf-"
-fi
-
+export TOOLCHAIN_PATH=/opt/buildtools/riscv
 export APP=shell
 
 
@@ -34,6 +27,6 @@ if [ ! -d "out"  ]; then
   mkdir out
 fi 
 cp ./$TMP_DIR/$APP ./out/$APP.elf
-$TOOLCHAIN_PATH/bin/${TOOLCHAIN_PREFIX}objcopy -O binary ./out/$APP.elf ./out/$APP.bin
-$TOOLCHAIN_PATH/bin/${TOOLCHAIN_PREFIX}objdump -D ./out/$APP.elf > ./out/$APP.asm
+$TOOLCHAIN_PATH/bin/riscv64-unknown-elf-objcopy -O binary ./out/$APP.elf ./out/$APP.bin
+$TOOLCHAIN_PATH/bin/riscv64-unknown-elf-objdump -D ./out/$APP.elf > ./out/$APP.asm
 rm -rf $TMP_DIR

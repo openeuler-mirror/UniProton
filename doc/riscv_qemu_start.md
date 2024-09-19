@@ -43,10 +43,6 @@
     ```shell
     docker exec -it a0bb8e520c03 /bin/bash
     ```
-    如果是在RISC-V平台原生构建，请在执行构建脚本之前执行一下命令:
-    ```shell
-    export RISCV_NATIVE=true
-    ```
 
   - 连上后，进入目录 `/opt/buildroot`, 可以观察到一系列 UniProton 编译依赖的软件
 
