@@ -28,6 +28,9 @@ typedef enum {
     MMU_ITS1_TYPE,
     MMU_UART_TYPE,
     MMU_ECAM_TYPE,
+#ifdef OS_SUPPORT_SPI
+    MMU_SUBCTRL_TYPE,
+#endif
     MMU_RESERVE_S_TYPE,
     MMU_RESERVE_E_TYPE = MMU_RESERVE_S_TYPE + MMU_MAP_RESREVED_NUM - 1,
     MMU_MAX_TYPE,
@@ -103,6 +106,15 @@ static mmu_mmap_region_s g_mem_map_info[MMU_MAX_TYPE] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     },
+#ifdef OS_SUPPORT_SPI
+    {
+        .virt      = MMU_SUBCTRL_ADDR,
+        .phys      = MMU_SUBCTRL_ADDR,
+        .size      = MMU_SUBCTRL_ADDR_LEN,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    },
+#endif
     /* 这里预留MMU_MAP_RESREVED_NUM个mmu页表用于pcie设备io、mem空间的映射 */
     [MMU_RESERVE_S_TYPE ... MMU_RESERVE_E_TYPE] = {
         .virt      = MMU_INVALID_ADDR,
