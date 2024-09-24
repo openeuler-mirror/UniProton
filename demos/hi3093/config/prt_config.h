@@ -90,6 +90,8 @@ extern "C" {
 /* 私有FSC内存分区大小 */
 #ifdef OS_SUPPORT_LIBXML2 /* libxml测试套需要4MB内存*/
 #define OS_MEM_FSC_PT_SIZE                              0x400000
+#elif defined(OS_SUPPORT_OPC_UA)
+#define OS_MEM_FSC_PT_SIZE                              0x200000
 #else
 #define OS_MEM_FSC_PT_SIZE                              0x80000
 #endif

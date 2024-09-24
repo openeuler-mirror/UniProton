@@ -189,3 +189,8 @@ CONFIG_OS_OPTION_LOG=y
 # Net Modules Configuration
 #
 # CONFIG_OS_SUPPORT_NET is not set
+
+#
+# OPC UA Configuration
+#
+# CONFIG_OS_SUPPORT_OPC_UA is not set

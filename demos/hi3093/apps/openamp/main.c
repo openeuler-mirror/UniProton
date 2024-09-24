@@ -85,6 +85,10 @@ void soem_test(const char *ifname);
 extern void test_ccl();
 #endif
 
+#if defined(OPCUA_TESTCASE) && defined(OS_SUPPORT_OPC_UA)
+extern void opcua_server_start();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -116,6 +120,10 @@ void TestTaskEntry()
 
 #if defined(LIBCCL_TESTCASE)
     test_ccl();
+#endif
+
+#if defined(OPCUA_TESTCASE) && defined(OS_SUPPORT_OPC_UA)
+    opcua_server_start();
 #endif
 }
 

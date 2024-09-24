@@ -111,3 +111,20 @@ rm -rf ../../../testsuites/soemTest/test
 cp -r test ../../../testsuites/soemTest/
 fi
 popd
+
+pushd ../component
+if [[ "${APP}" == "opcuaTest" && ! -d "./open62541-1.4.4" ]]
+then
+echo "################# get opcua #################"
+rm -rf open62541-1.4.4*
+wget https://github.com/open62541/open62541/archive/refs/tags/v1.4.4.tar.gz
+mv v1.4.4.tar.gz open62541-1.4.4.tar.gz
+tar -zxvf open62541-1.4.4.tar.gz
+cd ./open62541-1.4.4 && mkdir build
+cd ./build && cmake ..
+make
+cd .. && mv ./build/src_generated .
+cp ../UniProton-patch-for-open62541.patch .
+patch -p1 -d . < UniProton-patch-for-open62541.patch
+fi
+popd
