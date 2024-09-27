@@ -15,8 +15,8 @@ else()
     set(CMAKE_LINKER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-ld)
 endif()
 
-set(CC_OPTION "-g -march=armv8.2-a+nosimd -nostdlib -nostdinc -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables")
-set(AS_OPTION "-g -march=armv8.2-a+nofp+nosimd -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -mgeneral-regs-only -DENV_EL1")
+set(CC_OPTION "-g -march=armv8.2-a -nostdlib -nostdinc -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -funwind-tables")
+set(AS_OPTION "-g -march=armv8.2-a -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -O0 -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -mgeneral-regs-only -DENV_EL1")
 set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy -Wl,-gc-sections -Wl,--eh-frame-hdr")
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -nostdinc++")
@@ -92,6 +92,19 @@ endif()
 if (${CONFIG_OS_OPTION_OPENAMP})
     add_subdirectory(${HOME_PATH}/src/component/mica mica)
     list(APPEND OBJS $<TARGET_OBJECTS:mica>)
+endif()
+
+if(${CONFIG_OS_SUPPORT_OPC_UA})
+    include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/open62541-1.4.4/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/open62541-1.4.4/plugins/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/open62541-1.4.4/deps
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/open62541-1.4.4/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/open62541-1.4.4/src_generated
+    )
+    add_subdirectory(component/open62541-1.4.4)
+    list(APPEND OBJS $<TARGET_OBJECTS:open62541>)
+    link_libraries("${TOOLCHAIN_PATH}/lib/gcc/aarch64-none-elf/10.3.1/libgcc.a")
 endif()
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
@@ -174,6 +187,11 @@ elseif (${APP} STREQUAL "netTest" OR
     add_subdirectory(drivers)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:drivers>)
     target_compile_options(rpmsg PUBLIC -DDRIVER_TESTCASE)
+    add_executable(${APP} ${OBJS})
+elseif(${APP} STREQUAL "opcuaTest")
+    add_subdirectory(${HOME_PATH}/testsuites/opcuaTest tmp)
+    target_compile_options(rpmsg PUBLIC -DOPCUA_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:opcuaServer>)
     add_executable(${APP} ${OBJS})
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:proxy> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)

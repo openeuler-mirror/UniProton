@@ -316,7 +316,7 @@ list(REMOVE_ITEM MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stdin.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stdout.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/stderr.c
-    
+    ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/vprintf.c
 )
 
 if(${CONFIG_OS_OPTION_PROXY})
