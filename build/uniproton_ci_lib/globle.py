@@ -24,7 +24,8 @@ cpus_ = {'all': ['clean', 'm4', 'raspi4', 'hi3093', 'atlasa1', 'kp920', 'x86_64'
          'uvp': ['uvp'],
          'rv64virt': ['rv64virt'],
          'ds-d1s': ['ds-d1s'],
-         'e2000q': ['e2000q']
+         'e2000q': ['e2000q'],
+	 'milkvduol' : ['milkvduol']
          }
 
 cpu_plat = {'m4': ['cortex'],
@@ -39,5 +40,6 @@ cpu_plat = {'m4': ['cortex'],
             'uvp': ['x86_64'],
             'rv64virt': ['riscv64'],
             'ds-d1s': ['riscv64'],
-            'e2000q': ['armv8']
+            'e2000q': ['armv8'],
+	    'milkvduol' : ['riscv64']
            }

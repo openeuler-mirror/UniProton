@@ -17,6 +17,10 @@
 #include "rpmsg_backend.h"
 void (*g_rpmsg_ipi_handler)(void);
 
+#if (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+extern void cmdqu_intr(void);
+#endif
+
 static void IrqHandler(void)
 {
     if (g_rpmsg_ipi_handler)
@@ -31,13 +35,16 @@ U32 RpmsgHwiInit(void)
     if (ret != OS_OK) {
         return ret;
     }
-
+#if (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+    ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)cmdqu_intr, 0);
+#else
     ret = PRT_HwiCreate(OS_OPENAMP_NOTIFY_HWI_NUM, (HwiProcFunc)IrqHandler, 0);
+#endif
     if (ret != OS_OK) {
         return ret;
     }
 
-#if (OS_GIC_VER == 3)
+#if (OS_GIC_VER == 3 || OS_PLIC_VER == 1)
     ret = PRT_HwiEnable(OS_OPENAMP_NOTIFY_HWI_NUM);
     if (ret != OS_OK) {
         return ret;

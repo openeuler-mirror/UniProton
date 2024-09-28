@@ -22,6 +22,9 @@
 #if defined(OS_GDB_STUB)
 #include "prt_notifier.h"
 #endif
+#if (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+#include "rtos_cmdqu.h"
+#endif
 /*
  * Use resource tables's  reserved[0] to carry some extra information.
  * The following IDs come from PSCI definition
@@ -75,6 +78,15 @@ static int virtio_notify(void *priv, uint32_t id)
     uint16_t coreMask = 1;
 #if defined(OS_OPTION_SMP)
     OsHwiMcTrigger(0, coreMask, OS_HWI_IPI_NO_07);
+#elif (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+    int ret;
+    cmdqu_t notify_cmd;
+    notify_cmd.ip_id = 0;
+    notify_cmd.cmd_id = CMDQU_MCS_COMMUNICATE;
+    notify_cmd.block = 0;
+    notify_cmd.resv.mstime = 0;
+    notify_cmd.param_ptr = id;
+    ret = rtos_cmdqu_send(&notify_cmd);
 #else
     OsHwiMcTrigger(coreMask, OS_HWI_IPI_NO_07);
 #endif
@@ -185,7 +197,12 @@ void receive_message(void)
 
 static void rpmsg_ipi_init(void)
 {
+#if (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+    request_cmdqu_irq(CMDQU_MCS_COMMUNICATE, rpmsg_ipi_handler,
+NULL);
+#else
     g_rpmsg_ipi_handler = rpmsg_ipi_handler;
+#endif
 }
 
 struct virtio_device *

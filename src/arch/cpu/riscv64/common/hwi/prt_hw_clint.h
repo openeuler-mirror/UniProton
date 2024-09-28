@@ -30,9 +30,23 @@
 #include "./board/ds_d1s/platform.h"
 #endif
 
-#define CLINT_MSI              (CLINT)
-#define CLINT_TIME             (CLINT+0xBFF8)
-#define CLINT_TIMECMP(hart_id) (CLINT+0x4000+8*(hart_id))
+#if (OS_CPU_TYPE == OS_RV64_MILKVDUOL)
+#include "./board/milkvduol/platform.h"
+#endif
 
+#define CLINT_MSI              (CLINT)
+
+#if (OS_CPU_TYPE == OS_RV64_MILKVDUOL)
+    #define CLINT_TIME(cnt)        __asm__ __volatile__("csrr %0, time\n":"=r"(cnt)::"memory");
+#else 
+    #define CLINT_TIME             (CLINT+0xBFF8)
+#endif
+
+#if (OS_CPU_TYPE == OS_RV64_MILKVDUOL)
+    #define CLINT_TIMECMPL0	       (CLINT + 0x4000)
+    #define CLINT_TIMECMPH0        (CLINT + 0x4004)
+#else
+    #define CLINT_TIMECMP(hart_id) (CLINT+0x4000+8*(hart_id))
+#endif
 
 #endif

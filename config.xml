@@ -150,4 +150,15 @@
             </platform>
         </project>
     </projects>
+    <projects>
+    <project cpu_type="milkvduol">
+             <lib_type>SRE</lib_type>
+             <platform plat_name="riscv64">
+                 <name>riscv64</name>
+                 <compile_path_x86>/opt/buildtools/host-tools/gcc/riscv64-elf-x86_64/bin</compile_path_x86>
+                 <compile_path_arm64>None</compile_path_arm64>
+                 <kconf_dir>riscv64_milkvduol</kconf_dir>
+             </platform>
+         </project>
+     </projects>
 </config>
