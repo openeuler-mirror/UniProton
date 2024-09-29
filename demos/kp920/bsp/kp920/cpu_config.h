@@ -38,6 +38,9 @@
 #define MMU_ITS1_ADDR               0x2000A8100000ULL
 #define MMU_ITS_ADDR_LEN            0x100000ULL /* 1MB */
 
+#define MMU_SUBCTRL_ADDR            0x201070000ULL
+#define MMU_SUBCTRL_ADDR_LEN        0x200000
+
 #define MMU_INVALID_ADDR            0x0ULL
 
 #define UART_BASE_ADDR             MMU_UART_ADDR

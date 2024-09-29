@@ -3648,7 +3648,7 @@ ssize_t PRT_CoexistRecvFrom(int s, void *mem, size_t len, int flags,
     return PRT_ProxyRecvFrom(sock_record[index].fd, mem, len, flags, from, fromlen);
 }
 
-ssize_t PRT_ProxySend(int s, const void *dataptr, size_t size, int flags)
+ssize_t PRT_CoexistSend(int s, const void *dataptr, size_t size, int flags)
 {
     CHECK_NULL_PTR_RETURN(dataptr);
 

@@ -279,3 +279,8 @@ CONFIG_CONFIG_BOARD_LOOPSPERMSEC=25000
 # Net Modules Configuration
 #
 # CONFIG_OS_SUPPORT_NET is not set
+
+#
+# Spi Modules Configuration
+#
+# CONFIG_OS_SUPPORT_SPI is not set

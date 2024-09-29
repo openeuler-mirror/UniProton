@@ -7,6 +7,7 @@
 #include "prt_config_internal.h"
 #include "prt_task.h"
 #include "cpu_config.h"
+#include "spi.h"
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shell.h"
 #include "show.h"
@@ -80,6 +81,7 @@ void micaShellInit()
 }
 #endif
 
+extern void spi_loop();
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
@@ -106,6 +108,10 @@ void TestTaskEntry()
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
     micaShellInit();
+#endif
+
+#ifdef OS_SUPPORT_SPI
+    spi_loop();
 #endif
 }
 
