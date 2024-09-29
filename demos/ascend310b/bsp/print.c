@@ -33,9 +33,10 @@ static void TestPutc(unsigned char ch)
 #else
 void uart_poll_send(unsigned char ch)
 {
-    volatile int time = 100;
-    *(unsigned long long int *)(UART_BASE_ADDR + UART_DR) = ch;
-    while(time--);
+    while (UART_REG(UART_FR) & UART_TXFF) {
+        asm volatile("yield" ::: "memory");
+    }
+    UART_REG(UART_DR) = ch;
 }
 
 void TestPutc(unsigned char ch)
