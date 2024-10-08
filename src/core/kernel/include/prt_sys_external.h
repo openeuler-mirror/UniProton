@@ -28,6 +28,8 @@
 #define OS_VAR_ARRAY_NUM OS_MAX_CORE_NUM
 #endif
 
+#define OS_SYS_STACK_TOP_MAGIC 0xC5A2C1C6
+
 #define ARRAY_COUNT(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #if defined(OS_OPTION_SMP)

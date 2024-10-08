@@ -17,6 +17,7 @@
 #include "prt_irq_external.h"
 #include "prt_hwi_internal.h"
 
+extern U32 PRT_Printf(const char *format, ...);
 OS_SEC_DATA OsVoidFunc g_hwiSplLockHook = NULL;
 OS_SEC_DATA OsVoidFunc g_hwiSplUnLockHook = NULL;
 /*
@@ -114,6 +115,14 @@ OS_SEC_TEXT void OsHwiReportHwiNumErr(void)
     return;
 }
 
+void OsSysStackCheck(void)
+{   
+    if (*((U32 *)(OsGetSysStackStart(OsGetHwThreadId()))) != OS_SYS_STACK_TOP_MAGIC) {
+        PRT_Printf("Core: %u system stack overflow, magic word changed to 0x%x\n",
+            OsGetHwThreadId(), *((U32 *)(OsGetSysStackStart(OsGetHwThreadId()))));
+        OsAsmIll();
+    }
+}
 /*
  * 描述: 中断处理, 调用处外部已关中断
  */
@@ -143,6 +152,9 @@ OS_SEC_L0_TEXT void OsHwiDispatchHandle(U32 arg1)
     OsHwiNestedIntEnable();
     OsHwiHookDispatcher(hwiNum);
     OsHwiNestedIntDisable();
+#if defined(OS_OPTION_INTERRUPT_PRO)
+    OsSysStackCheck();
+#endif
 
 OS_HWI_CONTINUE:
     // 清除中断位

@@ -35,6 +35,8 @@ CONFIG_OS_BYTE_ORDER="OS_LITTLE_ENDIAN"
 # CONFIG_OS_OPTION_SMP is not set
 # CONFIG_OS_OPTION_DCACHE is not set
 CONFIG_OS_CACHE_LINE_SIZE=64
+# CONFIG_OS_OPTION_INTERRUPT_PRO is not set
+# CONFIG_OS_OPTION_INTERRUPT_PRO=y
 
 #
 # Openamp Modules Configuration, mutually exclusive with Guest

@@ -46,6 +46,7 @@
 #define ARMV8_X29_INIT_VALUE    0x29292929UL
 
 #define ARMV8_SPSR_INIT_VALUE   0x305U   // EL1_SP1 | D | A | I | F
+extern U32 PRT_Printf(const char *format, ...);
 
 /* Tick中断对应的硬件定时器ID */
 OS_SEC_DATA U32 g_tickTimerID = U32_INVALID;
@@ -53,6 +54,21 @@ OS_SEC_DATA U32 g_tickTimerID = U32_INVALID;
 // 系统栈配置
 OS_SEC_DATA uintptr_t g_sysStackHigh[OS_VAR_ARRAY_NUM] = {(uintptr_t)&__os_sys_sp_end};
 OS_SEC_DATA uintptr_t g_sysStackLow[OS_VAR_ARRAY_NUM] = {(uintptr_t)&__os_sys_sp_start};
+
+/*
+ * 描述: 将系统栈初始化为魔术字
+ */
+INIT_SEC_L4_TEXT void InitSystemStack(void)
+{
+    U32 loop;
+    U32 stackSize = (U32)((uintptr_t)(&__os_sys_sp_end) - (uintptr_t)(&__os_sys_sp_start));
+
+    /* 初始化系统栈，并写入栈魔术字 */
+    for (loop = 1; loop < (stackSize / sizeof(U32)); loop++) {
+        *((U32 *)((uintptr_t)&__os_sys_sp_end) - loop) = OS_SYS_STACK_TOP_MAGIC;
+    }
+    *((U32 *)((uintptr_t)&__os_sys_sp_start)) = OS_SYS_STACK_TOP_MAGIC;
+}
 /*
  * 描述: 分配各核的系统栈空间
  */
@@ -70,11 +86,13 @@ INIT_SEC_L4_TEXT void InitSystemSp(void)
         g_sysStackLow[loop] = g_sysStackHigh[loop] - stackStep;
     }
 
+    InitSystemStack();
     return;
 }
 #else
 INIT_SEC_L4_TEXT void InitSystemSp(void)
 {
+    InitSystemStack();
     return;
 }
 #endif
