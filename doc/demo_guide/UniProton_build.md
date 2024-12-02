@@ -1,6 +1,36 @@
 # 构建方法
+【注】提供两种UniProton编译环境搭建方式，推荐直接使用docker镜像搭建环境
 
-## 一、Linux下的编译
+## 一、提供镜像，用户自行下载(推荐使用)
+
+1. 在虚拟机操作命令：
+
+   ```bash
+   docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
+   ```
+
+   执行完成之后，创建容器并进入（默认挂载当前执行命令的目录为容器内的/home/uniproton目录）
+
+   ```bash
+   docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
+   ```
+
+2. 下载UniProton代码
+
+   ```bash
+   git clone https://gitee.com/openeuler/UniProton.git
+   ```
+
+3. 编译demos
+
+- 进入到UniProton/demos/xxx/build目录下直接运行sh build_app.sh一键式编译。（shell脚本里包含OS内核编译步骤）
+
+   ```bash
+   cd demos/m4/build
+   sh build_app.sh
+   ```
+
+## 二、Linux环境直接编译
 
 ### 1.1 搭建Linux编译环境
 
@@ -138,17 +168,7 @@ sudo python setup.py install
    git clone https://gitee.com/openeuler/UniProton.git
    ```
 
-2. 编译OS内核
-
-- 下载 libboundscheck, 按照[指导](../platform/README.md)操作
-
-- 执行编译，进入到 UniProton 根目录下执行命令即可
-
-   ```bash
-   python build.py m4
-   ```
-
-3. 编译demos
+2. 编译demos
 
 - 进入到UniProton/demos/xxx/build目录下直接运行sh build_app.sh一键式编译。（shell脚本里包含OS内核编译步骤）
 
@@ -156,50 +176,9 @@ sudo python setup.py install
    cd demos/m4/build
    sh build_app.sh
    ```
-
-## 二、提供镜像，用户自行下载
-
-1. 在虚拟机操作命令：
-
-   ```bash
-   docker pull swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
-   ```
-
-   执行完成之后，创建容器并进入（默认挂载当前执行命令的目录为容器内的/home/uniproton目录）
-
-   ```bash
-   docker run -it -v $(pwd):/home/uniproton swr.cn-north-4.myhuaweicloud.com/openeuler-embedded/uniproton:v004
-   ```
-
-2. 下载UniProton代码
-
-   ```bash
-   git clone https://gitee.com/openeuler/UniProton.git
-   ```
-
-3. 编译OS内核
-
-- 下载 libboundscheck, 按照[指导](../platform/README.md)操作
-
-- 执行编译，进入到 UniProton 根目录下执行命令即可
-
-   ```bash
-   python build.py m4
-   ```
-
-4. 编译demos
-
-- 进入到UniProton/demos/xxx/build目录下直接运行sh build_app.sh一键式编译。（shell脚本里包含OS内核编译步骤）
-
-   ```bash
-   cd demos/m4/build
-   sh build_app.sh
-   ```
-
 
 
 ## 三、 编译结果
 
-生成的静态库文件存放在 output/UniProton/lib/cortex_m4 目录下。
-生成的二进制文件存放在 demos/m4/build 目录下。
+生成的静态库文件存放在 demos/xxx/libs 目录下，生成的二进制文件存放在 demos/xxx/build 目录下。
 
