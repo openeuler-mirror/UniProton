@@ -99,6 +99,11 @@ OS_SEC_L4_TEXT U64 PRT_ClkCycle2Us(U64 cycle)
     return DIV64(cycle, g_systemClock / OS_SYS_US_PER_SECOND);
 }
 
+OS_SEC_L4_TEXT U64 PRT_ClkCycle2Ns(U64 cycle)
+{
+    return DIV64(1000 * cycle, g_systemClock / OS_SYS_US_PER_SECOND);
+}
+
 OS_SEC_L4_TEXT U8 PRT_GetPrimaryCore(void)
 {
     return g_primaryCoreId;
