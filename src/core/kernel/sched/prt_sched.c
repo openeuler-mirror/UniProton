@@ -16,6 +16,7 @@
 #include "prt_hook_external.h"
 #include "prt_task_external.h"
 #include "prt_rt_external.h"
+#include "prt_perf.h"
 
 OS_SEC_BSS struct TagOsRunQue g_runQueue[OS_MAX_CORE_NUM]; // 核的局部运行队列
 
@@ -81,6 +82,9 @@ OS_SEC_L0_TEXT void OsReschedTaskNoWakeIpc(struct TagTskCb *task)
  */
 OS_SEC_L0_TEXT void OsTskSchedule(void)
 {
+#if defined(OS_OPTION_PERF) && defined(OS_OPTION_PERF_SW_PMU)
+    PRT_PERF(TASK_SWITCH);
+#endif
     struct TagOsRunQue *runQue = THIS_RUNQ();
     
     if ((runQue->uniFlag & OS_INT_ACTIVE_MASK) != 0 ) {

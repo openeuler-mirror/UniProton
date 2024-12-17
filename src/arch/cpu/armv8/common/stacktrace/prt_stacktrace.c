@@ -82,8 +82,9 @@ OS_SEC_L2_TEXT U32 PRT_GetStackTraceByTaskID(U32 *maxDepth, uintptr_t *list, Tsk
 #endif
 
     // 区分调用场景进行处理
+    bool hwiTickActive = ((uniFlag & OS_FLG_HWI_ACTIVE) != 0) || ((uniFlag & OS_FLG_TICK_ACTIVE) != 0);
     if (!excFlag) { // 非异常场景
-        if ((taskCB == runningTask) && ((uniFlag & OS_FLG_HWI_ACTIVE) == 0)) {
+        if ((taskCB == runningTask) && !hwiTickActive) {
             isSelf = TRUE;
         }
     }
@@ -93,7 +94,7 @@ OS_SEC_L2_TEXT U32 PRT_GetStackTraceByTaskID(U32 *maxDepth, uintptr_t *list, Tsk
         return OS_OK;
     }
 
-    if ((taskCB->taskStatus & OS_TSK_RUNNING) != 0) {
+    if (((taskCB->taskStatus & OS_TSK_RUNNING) != 0) && !hwiTickActive) {
         *maxDepth = 0;
         return OS_ERRNO_STACKTRACE_TSK_RUNNING;
     }

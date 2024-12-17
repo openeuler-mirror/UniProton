@@ -34,3 +34,5 @@ endif()
 if(${CONFIG_OS_SUPPORT_RPMSGLITE})
     add_subdirectory(component/rpmsg-lite)
 endif()
+
+add_subdirectory(extended)

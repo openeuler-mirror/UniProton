@@ -241,6 +241,11 @@ struct TagTskCb {
     struct streamlist ta_streamlist;
 #endif
 #endif
+
+#if defined(OS_OPTION_PERF)
+    uintptr_t pc;
+    uintptr_t fp;
+#endif
 };
 
 /*

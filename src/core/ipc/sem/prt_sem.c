@@ -15,6 +15,7 @@
 #include "prt_sem_external.h"
 #include "prt_asm_cpu_external.h"
 #include "prt_task_sched_external.h"
+#include "prt_perf.h"
 
 /* 核内信号量最大个数 */
 OS_SEC_BSS U16 g_maxSem;
@@ -364,6 +365,9 @@ OS_SEC_L0_TEXT bool OsSemPendNotNeedSche(struct TagSemCb *semPended, struct TagT
  */
 OS_SEC_L0_TEXT U32 PRT_SemPend(SemHandle semHandle, U32 timeout)
 {
+#if defined(OS_OPTION_PERF) && defined(OS_OPTION_PERF_SW_PMU)
+    PRT_PERF(SEM_PEND);
+#endif
     uintptr_t intSave;
     U32 ret;
     struct TagTskCb *runTsk = NULL;

@@ -721,18 +721,18 @@ OS_SEC_ALW_INLINE INLINE U32 OsUnwindGetFirstFrame(const struct TagTskCb *task,
         frameInfo->regs.pc = contex->pc;
         frameInfo->regs.lr = contex->lr;
     } else {
-        if ((task == NULL) || (task == RUNNING_TASK)) {
-            frameInfo->regs.lr = OsGetLR();
-            frameInfo->regs.sp = OsGetSp();
-            frameInfo->regs.pc = OsGetPC();
-        } else {
-            if ((task->taskStatus & OS_TSK_RUNNING) != 0) {
-                return OS_FAIL;
-            }
+        bool hwiTickActive = ((UNI_FLAG & OS_FLG_HWI_ACTIVE) != 0) || ((UNI_FLAG & OS_FLG_TICK_ACTIVE) != 0);
+        if ((task != NULL) && (hwiTickActive || ((task->taskStatus & OS_TSK_RUNNING) == 0))) {
             frameInfo->regs.sp = (uintptr_t)(task->stackPointer) + sizeof(struct TskContext);
             frameInfo->regs.pc = ((struct TskContext *)(task->stackPointer))->elr;
             frameInfo->regs.lr = ((struct TskContext *)(task->stackPointer))->x30;
+        } else {
+            frameInfo->regs.lr = OsGetLR();
+            frameInfo->regs.sp = OsGetSp();
+            frameInfo->regs.pc = OsGetPC();
         }
+
+        list[(*index)++] = frameInfo->regs.pc;
     }
     return OS_OK;
 }

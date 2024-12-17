@@ -14,3 +14,7 @@ if (${CONFIG_OS_OPTION_NUTTX_UART})
         add_subdirectory(arm/src/stm32)
     endif()
 endif()
+
+if (${CONFIG_OS_OPTION_PERF})
+    add_subdirectory(arm64/src/pmu)
+endif()
