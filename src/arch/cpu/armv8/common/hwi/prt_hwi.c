@@ -240,3 +240,20 @@ OS_SEC_L0_TEXT void PRT_HwiRestore(uintptr_t intSave)
     }
     return;
 }
+
+OS_SEC_L4_TEXT U32 PRT_HwiDelExitHook(HwiExitHook hook)
+{
+    return OsHookDel(OS_HOOK_HWI_EXIT, (OsVoidFunc)hook);
+}
+OS_SEC_L4_TEXT U32 PRT_HwiAddExitHook(HwiExitHook hook)
+{
+    return OsHookAdd(OS_HOOK_HWI_EXIT, (OsVoidFunc)hook);
+}
+OS_SEC_L4_TEXT U32 PRT_HwiDelEntryHook(HwiEntryHook hook)
+{
+    return OsHookDel(OS_HOOK_HWI_ENTRY, (OsVoidFunc)hook);
+}
+OS_SEC_L4_TEXT U32 PRT_HwiAddEntryHook(HwiEntryHook hook)
+{
+    return OsHookAdd(OS_HOOK_HWI_ENTRY, (OsVoidFunc)hook);
+}
