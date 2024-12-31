@@ -17,6 +17,10 @@
 
 #include "cpu_config.h"
 #include "prt_buildef.h"
+#if (OS_CPU_TYPE==OS_RV64_MILKVDUOL)
+#include "uart.h"
+#define PRT_Printf uart_printf
+#endif
 
 #define VDEV_START_ADDR		MMU_OPENAMP_ADDR
 #define SHM_SIZE		OPENAMP_SHM_SIZE
@@ -41,7 +45,17 @@
 #define RPMSG_ROLE		RPMSG_REMOTE
 
 #define OS_OPENAMP_NOTIFY_HWI_NUM	OS_HWI_IPI_NO_07
+
+#if defined(OS_ARCH_RISCV64)
+
+#define OS_OPENAMP_NOTIFY_HWI_PRIO	3 // CAUSE 0 FOR PLIC IS DISABLE INTERRUPT
+
+#else
+
 #define OS_OPENAMP_NOTIFY_HWI_PRIO	0
+
+#endif
+
 
 #define BIT(n)	(1 << (n))
 

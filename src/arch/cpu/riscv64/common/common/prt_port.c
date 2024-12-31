@@ -164,7 +164,11 @@ OS_SEC_L2_TEXT U64 PRT_ClkGetCycleCount64(void)
     U64 cycle;
     uintptr_t intSave;
     intSave = PRT_HwiLock();
+#if (OS_CPU_TYPE == OS_RV64_MILKVDUOL)
+    CLINT_TIME(cycle);
+#else 
     cycle = *(U64 *)CLINT_TIME;
+#endif
     PRT_HwiRestore(intSave);
     return cycle;
 }

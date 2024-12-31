@@ -31,13 +31,16 @@ set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc C
 set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc ASM compiler" FORCE)
 
 #if use rv64virt open -g for debug information and -O0
-if( ${CPU_TYPE} STREQUAL "rv64virt")
-set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -g -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
-set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O0  -mcmodel=medany  -g ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+if( ${CPU_TYPE} STREQUAL "rv64virt" OR ${CPU_TYPE} STREQUAL "ds-d1s")
+    set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -g -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+    set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O0  -mcmodel=medany  -g ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+elseif( ${CPU_TYPE} STREQUAL "milkvduol")
+    set(SUPPRESSED_WARNINGS "-Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast")
+    set(SPECIFIC_FLAGS "-static -mcmodel=medany -march=rv64imafdc -mabi=lp64d -Os -nostdlib -nostdinc -nostartfiles -nodefaultlibs -fno-builtin -fno-PIE -fno-PIC -fno-stack-protector -fzero-initialized-in-bss -fomit-frame-pointer -ffunction-sections -fdata-sections -fno-aggressive-loop-optimizations -fno-inline-small-functions -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -finline-limit=20 -mstrict-align")
+    set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+    set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER>  ${SPECIFIC_FLAGS} ${COMPILE_WARING_FLAG} ${SUPPRESSED_WARNINGS}  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
 else()
-#if use real board, customize CFLAGS for your board
-set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
-set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER>  -mcmodel=medany ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
+    message(FATAL_ERROR "don't support for the cpu type")
 endif()
 
 file(STRINGS "$ENV{CONFIG_FILE_PATH}/defconfig" config_options REGEX "^CONFIG_OS_OPTION_POSIX" ENCODING "UTF-8")
