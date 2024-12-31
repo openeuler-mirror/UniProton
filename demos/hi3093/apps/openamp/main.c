@@ -89,6 +89,10 @@ extern void test_ccl();
 extern void opcua_server_start();
 #endif
 
+#if defined(JITTER_TESTCASE)
+extern void interrupt_jitter_test_entry();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -124,6 +128,10 @@ void TestTaskEntry()
 
 #if defined(OPCUA_TESTCASE) && defined(OS_SUPPORT_OPC_UA)
     opcua_server_start();
+#endif
+
+#if defined(JITTER_TESTCASE)
+    interrupt_jitter_test_entry();
 #endif
 }
 
