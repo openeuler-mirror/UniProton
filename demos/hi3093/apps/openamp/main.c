@@ -93,6 +93,10 @@ extern void opcua_server_start();
 extern void interrupt_jitter_test_entry();
 #endif
 
+#if defined(CYCLIC_TESTCASE)
+extern void cyclictest_entry();
+#endif
+
 void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -132,6 +136,10 @@ void TestTaskEntry()
 
 #if defined(JITTER_TESTCASE)
     interrupt_jitter_test_entry();
+#endif
+
+#if defined(CYCLIC_TESTCASE)
+    cyclictest_entry();
 #endif
 }
 
