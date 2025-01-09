@@ -29,11 +29,6 @@ int __sigaction(int signum, const struct sigaction *__restrict act, struct sigac
         return -1;
     }
 
-    if (act->sa_flags == SA_SIGINFO) {
-        errno = ENOTSUP;
-        return -1;
-    }
-
     uintptr_t intSave = OsIntLock();
     struct TagTskCb *runTsk = RUNNING_TASK;
     if (oldact != NULL) {
@@ -43,6 +38,11 @@ int __sigaction(int signum, const struct sigaction *__restrict act, struct sigac
     if (act == NULL) {
         OsIntRestore(intSave);
         return 0;
+    }
+
+    if (act->sa_flags == SA_SIGINFO) {
+        errno = ENOTSUP;
+        return -1;
     }
 
     runTsk->sigMask |= act->sa_mask.__bits[0];
