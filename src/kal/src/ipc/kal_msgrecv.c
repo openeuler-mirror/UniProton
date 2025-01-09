@@ -24,7 +24,7 @@ int KAL_MsgRecv(uintptr_t msqid, void *msgp, ssize_t *msgsz, long msgtype, int f
         return ENOTSUP;
     }
     timeout = (flag & IPC_NOWAIT) ? OS_QUEUE_NO_WAIT : OS_QUEUE_WAIT_FOREVER;
-    ret = PRT_QueueRead((U32)msqid, msgp, (U32 *)&msgsz, timeout);
+    ret = PRT_QueueRead((U32)msqid, msgp, (U32 *)msgsz, timeout);
     switch (ret) {
         case OS_OK:
             return 0;
