@@ -33,6 +33,10 @@
 #include "./board/milkvduol/platform.h"
 #endif
 
+#if (OS_CPU_TYPE == OS_RV64_VISIONFIVE2)
+#include "./board/visionfive2/platform.h"
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -43,12 +47,22 @@ extern "C" {
 #define PLIC_CLAIM_NO_PENDING_VAL 0U
 #define PLIC_PRIORITY (PLIC + 0x0)
 #define PLIC_PENDING (PLIC + 0x1000)
-#define PLIC_MENABLE(hart) (PLIC + 0x2000 + (hart)*0x100)
-#define PLIC_SENABLE(hart) (PLIC + 0x2080 + (hart)*0x100)
-#define PLIC_MPRIORITY(hart) (PLIC + 0x200000 + (hart)*0x2000)
-#define PLIC_SPRIORITY(hart) (PLIC + 0x201000 + (hart)*0x2000)
-#define PLIC_MCLAIM(hart) (PLIC + 0x200004 + (hart)*0x2000)
-#define PLIC_SCLAIM(hart) (PLIC + 0x201004 + (hart)*0x2000)
+
+#if (OS_CPU_TYPE == OS_RV64_VISIONFIVE2)
+#define PLIC_MENABLE(hart) (PLIC + 0x2080 + (hart - 1) * 0x100)
+#define PLIC_SENABLE(hart) (PLIC + 0x2000 + (hart) * 0x100)
+#define PLIC_MPRIORITY(hart) (PLIC + 0x201000 + (hart -1) * 0x2000)
+#define PLIC_SPRIORITY(hart) (PLIC + 0x200000 + (hart) * 0x2000)
+#define PLIC_MCLAIM(hart) (PLIC + 0x201004 + (hart -1) * 0x2000)
+#define PLIC_SCLAIM(hart) (PLIC + 0x200004 + (hart) * 0x2000)
+#else
+#define PLIC_MENABLE(hart) (PLIC + 0x2000 + (hart) * 0x100)
+#define PLIC_SENABLE(hart) (PLIC + 0x2080 + (hart) * 0x100)
+#define PLIC_MPRIORITY(hart) (PLIC + 0x200000 + (hart) * 0x2000)
+#define PLIC_SPRIORITY(hart) (PLIC + 0x201000 + (hart) * 0x2000)
+#define PLIC_MCLAIM(hart) (PLIC + 0x200004 + (hart) * 0x2000)
+#define PLIC_SCLAIM(hart) (PLIC + 0x201004 + (hart) * 0x2000)
+#endif
 
 #define PLIC_GET_PRIO(hwiNum)   ((*(U32 *)(PLIC + (hwiNum)*4)))
 
