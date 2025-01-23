@@ -45,3 +45,20 @@ C++相关测试用例位于UniProton/testsuites/cxx-test目录下，通过修改
 sh build_app.sh cxxTest
 ```
 编译生成的libc++位于UniProton/demos/hi3093/component/libcxx目录下，测试程序为build目录下的cxxTest.elf。
+
+## 3 C++使用相关注意事项
+
+1) 在UniProton上使用C++开发功能代码时，需关闭对C++有影响的开关配置。在UniProton/build/uniproton_config/config_armv8_hi3093/defconfig中关闭以下几个开关：
+```
+CONFIG_OS_OPTION_SMP
+CONFIG_OS_OPTION_BIN_SEM
+CONFIG_OS_OPTION_SEM_RECUR_PV
+CONFIG_OS_OPTION_SEM_PRIOR
+CONFIG_OS_OPTION_SEM_PRIO_INHERIT
+```
+
+2) C++相关功能特性对系统的内存等资源要求较高，如果在运行C++程序时出现异常，可参考以下几种思路修改配置：
+* 异常可能是由任务栈溢出导致，在PRT_TaskCreate创建任务时可根据需求增大任务初始化参数stackSize。如果是使用pthread_create创建任务，可增大配置项OS_TSK_DEFAULT_STACK_SIZE。
+* 如果动态申请的内存较多，可能导致fsc内存资源不足。此时可根据需求增大fsc配置项OS_MEM_FSC_PT_SIZE。
+* 如果使用较多的信号量，可增大配置项OS_SEM_MAX_SUPPORT_NUM，避免信号量不足产生异常。
+* 其他可能因资源分配不足导致异常的配置项有最大支持任务数OS_TSK_MAX_SUPPORT_NUM，软件定时器最大个数OS_TICK_SWITIMER_MAX_NUM以及共享内存最大空间SHMSEG_MAX_SHM_TOTAL_SIZE，如定位异常发生与这些资源申请相关，可根据需要适当增大配置项。

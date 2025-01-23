@@ -3,6 +3,7 @@
 ## 1 编译时使能gdbstub功能：
 * defconfig 设置CONFIG_OS_GDB_STUB=y
 * aarch64需要额外设置CONFIG_OS_OPTION_POWEROFF=y
+* 如需调试内核代码，在config.xml中将UniProton_compile_mode设置为debug
 
 ## 2 如何进行调试：
 混合部署场景下，需要在linux上实现转发模块，用于在gdbstub和gdb之间进行消息转发。
