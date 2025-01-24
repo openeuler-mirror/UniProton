@@ -6,9 +6,8 @@
 #include "cpu_config.h"
 
 #define US_PER_TICK  (OS_SYS_US_PER_SECOND / OS_TICK_PER_SECOND)
-#define TIME_INTERVAL_US 1000
-#define LOOP_NUMS 1000
-
+U64 g_timeIntervalUs;
+U64 g_loopNums;
 extern U64 g_timerFrequency;
 
 static inline void ResetTimer()
@@ -34,13 +33,13 @@ void CyclicThread()
     float time_diff_us;
     U32 loop_cnt = 0;
     U64 cycle = g_timerFrequency / OS_TICK_PER_SECOND;
-    U64 tick = TIME_INTERVAL_US / US_PER_TICK + (TIME_INTERVAL_US % US_PER_TICK > 0);
+    U64 tick = g_timeIntervalUs / US_PER_TICK + (g_timeIntervalUs % US_PER_TICK > 0);
     float max = 0;
     float min = FLT_MAX;
     float avg = 0;
 
-    printf("\ncyclictest time interval is %d us, loop num is %d\n", TIME_INTERVAL_US, LOOP_NUMS);
-    while (loop_cnt < LOOP_NUMS) {
+    printf("\ncyclictest time interval is %d us, loop num is %d\n", g_timeIntervalUs, g_loopNums);
+    while (loop_cnt < g_loopNums) {
         intSave = PRT_HwiLock();
         ResetTimer();
         PRT_HwiRestore(intSave);
@@ -67,9 +66,11 @@ void CyclicThread()
     printf("\n===cyclictest thread finish===\n");
 }
 
-void cyclictest_entry()
+void cyclictest_entry(U64 interval, U64 loopNums)
 {
     U32 ret;
+    g_timeIntervalUs = interval;
+    g_loopNums = loopNums;
     struct TskInitParam param = {0};
     TskHandle taskId;
     param.taskEntry = (TskEntryFunc)CyclicThread;

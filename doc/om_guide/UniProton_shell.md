@@ -58,3 +58,22 @@ tstreg: get 2 arguments
     no 1 arguments: 1
     no 2 arguments: abc
 ```
+
+## 5 性能测试shell命令：
+新增性能测试rhealstone与cyclictest的shell命令，在编译时，需打开性能测试命令行支持开关：
+```
+CONFIG_LOSCFG_SHELL_TEST=y
+```
+
+性能测试命令具体使用方式如下：
+1) rhealstone命令的使用方式为：
+```
+rhealstone [testcase]
+```
+其中参数testcase代表具体测试的用例名称，包含deadlock-break, interrupt-latency, message-latency, semaphore-shuffle, task-preempt, task-switch六个用例。
+
+2) cyclictest命令的使用方式为：
+```
+cyclictest [-i] [interval] [-l] [loopNum]
+```
+其中可选参数-i设置了每次循环中任务睡眠的时间间隔，单位为微秒，默认值为1000；可选参数-l设置了任务的循环次数，默认值为1000。

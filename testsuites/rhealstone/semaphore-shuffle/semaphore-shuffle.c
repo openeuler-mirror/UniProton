@@ -12,14 +12,14 @@
 
 #define BENCHMARKS 50000
 
-TskHandle taskId[2];
-SemHandle semId;
-uintptr_t telapsed;
-uintptr_t tswitch;
-U32 count;
-U32 semFlag;
+static TskHandle taskId[2];
+static SemHandle semId;
+static uintptr_t telapsed;
+static uintptr_t tswitch;
+static U32 count;
+static U32 semFlag;
 
-void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     U32 status;
 
@@ -43,11 +43,9 @@ void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
         }
         PRT_TaskDelay(0);
     }
-
-    rtems_test_assert(false);
 }
 
-void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     benchmark_timer_initialize();
     for (count = 0; count < BENCHMARKS; count++) {
@@ -75,11 +73,10 @@ void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
             tswitch,
             0
         );
-        PRT_SysReboot();
     }
 }
 
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void SemaphoreShuffleTest()
 {
     struct TskInitParam param = { 0 };
     TskHandle pid;
@@ -133,6 +130,11 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
     semFlag = 1;
     status = PRT_TaskResume(taskId[0]);
     directive_failed(status, "benchmark_task_create of TA01");
-
-    rtems_test_assert(false);
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    SemaphoreShuffleTest();
+}
+#endif

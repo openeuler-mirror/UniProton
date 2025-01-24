@@ -35,10 +35,10 @@
 #define INTERRUPT_LATENCY_TEST_INT 15
 #endif
 
-uintptr_t timerOverhead;
-uintptr_t interruptTime;
+static uintptr_t timerOverhead;
+static uintptr_t interruptTime;
 
-void Isr_handler(U32 intNum)
+static void Isr_handler(U32 intNum)
 {
     /* See how long it took system to recognize interrupt */
     interruptTime = benchmark_timer_read();
@@ -47,7 +47,7 @@ void Isr_handler(U32 intNum)
 #endif
 }
 
-void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     U32 ret;
     U32 prio = 0;
@@ -96,6 +96,7 @@ void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
     __asm__ __volatile__("dsb sy":::"memory", "cc");
 #endif
     PRT_HwiDisable(INTERRUPT_LATENCY_TEST_INT);
+    PRT_HwiDelete(INTERRUPT_LATENCY_TEST_INT);
     put_time(
         "Rhealstone: Interrupt Latency",
         interruptTime,
@@ -103,11 +104,9 @@ void Task_1(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
         timerOverhead,
         0
     );
-
-    PRT_SysReboot();
 }
 
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void InterruptLatencyTest()
 {
     U32 status;
     TskHandle taskId;
@@ -131,9 +130,11 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
     benchmark_timer_initialize();
 #endif
     timerOverhead = benchmark_timer_read();
-
-    TskHandle selfTaskId;
-    PRT_TaskSelf(&selfTaskId);
-    status = PRT_TaskDelete(selfTaskId);
-    directive_failed(status, "PRT_TaskDelete of SELF");
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    InterruptLatencyTest();
+}
+#endif

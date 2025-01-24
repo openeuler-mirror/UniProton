@@ -18,6 +18,11 @@ elseif(${APP} STREQUAL "task-preempt")
 elseif(${APP} STREQUAL "task-switch")
     set(BUILD_APP "task-switch")
     set(ALL_SRC  ${CMAKE_CURRENT_SOURCE_DIR}/task-switch/task-switch.c)
+elseif(${CONFIG_LOSCFG_SHELL_TEST})
+    file(GLOB_RECURSE ALL_SRC *.c)
+    list(REMOVE_ITEM ALL_SRC
+        ${CMAKE_CURRENT_SOURCE_DIR}/support/banchmark_support.c
+    )
 else()
     return()
 endif()
