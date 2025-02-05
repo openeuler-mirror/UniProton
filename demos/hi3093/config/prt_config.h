@@ -48,7 +48,7 @@ extern "C" {
 
 /* ***************************** 配置定时器模块 ***************************** */
 /* 基于TICK的软件定时器裁剪开关 */
-#define OS_INCLUDE_TICK_SWTMER                          NO
+#define OS_INCLUDE_TICK_SWTMER                          YES
 /* 基于TICK的软件定时器最大个数 */
 #define OS_TICK_SWITIMER_MAX_NUM                        32
 

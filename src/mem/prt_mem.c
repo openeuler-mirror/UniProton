@@ -13,9 +13,13 @@
  * Description: 内存基本功能的C文件。
  */
 #include "prt_mem_internal.h"
+#include "prt_perf.h"
 
 OS_SEC_TEXT void *PRT_MemAlloc(U32 mid, U8 ptNo, U32 size)
 {
+#if defined(OS_OPTION_PERF) && defined(OS_OPTION_PERF_SW_PMU)
+    PRT_PERF(MEM_ALLOC);
+#endif
     void *addr;
     uintptr_t intSave;
 

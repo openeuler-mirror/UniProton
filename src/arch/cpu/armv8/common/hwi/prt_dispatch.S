@@ -40,6 +40,44 @@
     stp xzr, x30, [sp,#-16]!
 .endm
 
+.macro PUSH_REGS
+    stp x1, x0, [sp,#-16]!
+    stp x3, x2, [sp,#-16]!
+    stp x5, x4, [sp,#-16]!
+    stp x7, x6, [sp,#-16]!
+    stp x9, x8, [sp,#-16]!
+    stp x11, x10, [sp,#-16]!
+    stp x13, x12, [sp,#-16]!
+    stp x15, x14, [sp,#-16]!
+    stp x17, x16, [sp,#-16]!
+    stp x19, x18, [sp,#-16]!
+    stp x21, x20, [sp,#-16]!
+    stp x23, x22, [sp,#-16]!
+    stp x25, x24, [sp,#-16]!
+    stp x27, x26, [sp,#-16]!
+    stp x29, x28, [sp,#-16]!
+    stp xzr, x30, [sp,#-16]!
+.endm
+
+.macro POP_REGS
+    ldp xzr, x30, [sp],#16
+    ldp x29, x28, [sp],#16
+    ldp x27, x26, [sp],#16
+    ldp x25, x24, [sp],#16
+    ldp x23, x22, [sp],#16
+    ldp x21, x20, [sp],#16
+    ldp x19, x18, [sp],#16
+    ldp x17, x16, [sp],#16
+    ldp x15, x14, [sp],#16
+    ldp x13, x12, [sp],#16
+    ldp x11, x10, [sp],#16
+    ldp x9, x8, [sp],#16
+    ldp x7, x6, [sp],#16
+    ldp x5, x4, [sp],#16
+    ldp x3, x2, [sp],#16
+    ldp x1, x0, [sp],#16
+.endm
+
     .section .os.text, "ax"
 
 #if !defined(OS_OPTION_TASK_AFFINITY_STATIC)
@@ -134,6 +172,13 @@ loop1:
     .type OsHwiDispatcher, @function
     .align 4
 OsHwiDispatcher:
+#ifdef OS_OPTION_PERF
+    PUSH_REGS
+    mrs     x0, ELR_EL1
+    MOV     x1, x29
+    BL      OsPerfSetIrqRegs
+    POP_REGS
+#endif
     GENERAL_REGS_SAVE
 
     mrs    x3, spsr_el1

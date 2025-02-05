@@ -85,6 +85,10 @@ void soem_test(const char *ifname);
 extern void test_ccl();
 #endif
 
+#if defined(OS_OPTION_PERF)
+extern void PerfDemoTask();
+#endif
+
 #if defined(OPCUA_TESTCASE) && defined(OS_SUPPORT_OPC_UA)
 extern void opcua_server_start();
 #endif
@@ -105,6 +109,10 @@ void TestTaskEntry()
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
     micaShellInit();
+#endif
+
+#if defined(OS_OPTION_PERF)
+    PerfDemoTask();
 #endif
 
 #if defined(OS_OPTION_OPENAMP)

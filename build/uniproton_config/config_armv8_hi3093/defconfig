@@ -194,3 +194,26 @@ CONFIG_OS_OPTION_LOG=y
 # OPC UA Configuration
 #
 # CONFIG_OS_SUPPORT_OPC_UA is not set
+
+#
+# enable perf
+#
+# CONFIG_OS_OPTION_PERF is not set
+
+#
+# enable hardware pmu events for sampling
+# depend on CONFIG_OS_OPTION_PERF
+#
+# CONFIG_OS_OPTION_PERF_HW_PMU is not set
+
+#
+# enable software events for sampling
+# depend on CONFIG_OS_OPTION_PERF
+#
+# CONFIG_OS_OPTION_PERF_SW_PMU is not set
+
+#
+# enable software timer period events for sampling
+# depend on CONFIG_OS_OPTION_PERF
+#
+# CONFIG_OS_OPTION_PERF_TIMED_PMU is not set

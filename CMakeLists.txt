@@ -72,6 +72,7 @@ include_directories(
 	./src/core/kernel/include
 	./src/core/extend/include
 	./src/include/uapi
+	./src/extended
 	./src/mem/include
 	./src/om/include
 	./src/utility/lib/include

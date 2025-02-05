@@ -16,6 +16,7 @@
 #include "prt_task_external.h"
 #include "prt_irq_external.h"
 #include "prt_hwi_internal.h"
+#include "prt_perf.h"
 
 extern U32 PRT_Printf(const char *format, ...);
 OS_SEC_DATA OsVoidFunc g_hwiSplLockHook = NULL;
@@ -128,6 +129,9 @@ void OsSysStackCheck(void)
  */
 OS_SEC_L0_TEXT void OsHwiDispatchHandle(U32 arg1)
 {
+#if defined(OS_OPTION_PERF) && defined(OS_OPTION_PERF_SW_PMU)
+    PRT_PERF(HWI_RESPONSE_IN);
+#endif
     U32 hwiNum;
     U64 irqStartTime = 0;
     (void)arg1;
