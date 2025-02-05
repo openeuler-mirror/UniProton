@@ -34,6 +34,10 @@
 #include "./board/milkvduol/platform.h"
 #endif
 
+#if (OS_CPU_TYPE == OS_RV64_VISIONFIVE2)
+#include "./board/visionfive2/platform.h"
+#endif
+
 #define CLINT_MSI              (CLINT)
 
 #if (OS_CPU_TYPE == OS_RV64_MILKVDUOL)

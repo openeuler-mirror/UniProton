@@ -31,7 +31,7 @@ set(CMAKE_C_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc C
 set(CMAKE_ASM_COMPILER "${TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}gcc" CACHE PATH "gcc ASM compiler" FORCE)
 
 #if use rv64virt open -g for debug information and -O0
-if( ${CPU_TYPE} STREQUAL "rv64virt" OR ${CPU_TYPE} STREQUAL "ds-d1s")
+if( ${CPU_TYPE} STREQUAL "rv64virt" OR ${CPU_TYPE} STREQUAL "ds-d1s" OR ${CPU_TYPE} STREQUAL "visionfive2")
     set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER>  -g -nostdlib -nostartfiles -nodefaultlibs -fno-builtin <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
     set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> -O0  -mcmodel=medany  -g ${COMPILE_WARING_FLAG} -Wno-error=dangling-pointer -Wno-error=array-parameter -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast -march=rv64gc -mabi=lp64d -static -nostdlib -nostartfiles -nodefaultlibs  -fno-builtin -fno-PIE   -fomit-frame-pointer -fzero-initialized-in-bss   -fno-common -fno-stack-protector  -funsigned-char -fno-PIC  <FLAGS> <INCLUDES> -c <SOURCE> -o <OBJECT>")
 elseif( ${CPU_TYPE} STREQUAL "milkvduol")
