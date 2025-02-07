@@ -23,6 +23,9 @@ elseif(${CONFIG_LOSCFG_SHELL_TEST})
     list(REMOVE_ITEM ALL_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/support/banchmark_support.c
     )
+elseif(${APP} STREQUAL "rcv-data")
+    set(BUILD_APP "rcv-data")
+    set(ALL_SRC  ${CMAKE_CURRENT_SOURCE_DIR}/rcv-data/rcv-data.c)
 else()
     return()
 endif()

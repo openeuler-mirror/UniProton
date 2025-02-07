@@ -79,13 +79,18 @@ if (${APP} MATCHES "kp920")
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart>)
     add_executable(${APP} ${OBJS})
 elseif (${APP} STREQUAL "task-switch" OR
+        ${APP} STREQUAL "rcv-data" OR
         ${APP} STREQUAL "task-preempt" OR
         ${APP} STREQUAL "semaphore-shuffle" OR
         ${APP} STREQUAL "interrupt-latency" OR
         ${APP} STREQUAL "deadlock-break" OR
         ${APP} STREQUAL "message-latency")
     add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
-    target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
+    if (${APP} STREQUAL "rcv-data")
+        target_compile_options(rpmsg PUBLIC -DRCV_TEST)
+    else()
+        target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
+    endif()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:uart> $<TARGET_OBJECTS:rhealstoneTest>)
     add_executable(${APP} ${OBJS})
 elseif (${APP} STREQUAL "linuxTest")

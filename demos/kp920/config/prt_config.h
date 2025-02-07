@@ -78,7 +78,7 @@ extern "C" {
 #define OS_MEM_FSC_PT_ADDR                              (uintptr_t)&g_memRegion00[0]
 /* 私有FSC内存分区大小 */
 #if defined(OS_OPTION_RSC_TABLE)
-#define OS_MEM_FSC_PT_SIZE                              0x80000
+#define OS_MEM_FSC_PT_SIZE                              0x200000 /* 程序运行堆空间大小，为满足数据传输buffer malloc可申请1M空间大小，将堆空间修改为2M */
 #else
 #define OS_MEM_FSC_PT_SIZE                              0x60000000
 #endif

@@ -24,6 +24,10 @@ extern U64 g_timerFrequency;
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
+#if defined(RCV_TEST)
+extern rcv_test();
+#endif
+
 #if defined(OS_OPTION_LINUX) && defined(LINUX_TESTCASE)
 void kthreadTest(void);
 void schedTest(void);
@@ -86,6 +90,10 @@ void TestTaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP) || defined(OS_OPTION_OPENAMP_PROXYBASH)
     TestOpenamp();
+#endif
+
+#if defined(RCV_TEST)
+    rcv_test();
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
