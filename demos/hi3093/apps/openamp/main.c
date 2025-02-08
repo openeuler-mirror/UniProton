@@ -54,6 +54,11 @@ static int osShellCmdTstReg(int argc, const char **argv)
     return 0;
 }
 
+#ifdef LOSCFG_SHELL_TEST
+extern int OsShellCmdCyclictest(int argc, const char **argv);
+extern int OsShellCmdRhealstone(int argc, const char **argv);
+#endif
+
 void micaShellInit()
 {
     int ret = OsShellInit(0);
@@ -70,6 +75,22 @@ void micaShellInit()
     } else {
         PRT_Printf("[INFO]: reg cmd 'tstreg' failed!\n");
     }
+
+#ifdef LOSCFG_SHELL_TEST
+    ret = osCmdReg(CMD_TYPE_EX, "cyclictest", XARGS, (CMD_CBK_FUNC)OsShellCmdCyclictest);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'cyclictest' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'cyclictest' failed!\n");
+    }
+
+    ret = osCmdReg(CMD_TYPE_EX, "rhealstone", XARGS, (CMD_CBK_FUNC)OsShellCmdRhealstone);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'rhealstone' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'rhealstone' failed!\n");
+    }
+#endif
 }
 #endif
 
@@ -98,7 +119,7 @@ extern void interrupt_jitter_test_entry();
 #endif
 
 #if defined(CYCLIC_TESTCASE)
-extern void cyclictest_entry();
+extern void cyclictest_entry(U64 interval, U64 loopNums);
 #endif
 
 void TestTaskEntry()
@@ -147,7 +168,7 @@ void TestTaskEntry()
 #endif
 
 #if defined(CYCLIC_TESTCASE)
-    cyclictest_entry();
+    cyclictest_entry(1000, 1000);
 #endif
 }
 

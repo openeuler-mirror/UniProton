@@ -12,14 +12,14 @@
 #define BENCHMARKS 50000
 #define WARMUP_TIMES 1000
 
-TskHandle taskIds[2];
-uintptr_t telapsed;
-uintptr_t tloop;
-uintptr_t tswitch;
-U32 count, count1;
-U32 status;
+static TskHandle taskIds[2];
+static uintptr_t telapsed;
+static uintptr_t tloop;
+static uintptr_t tswitch;
+static U32 count, count1;
+static U32 status;
 
-void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
 #if defined(OS_ARCH_ARMV7_M)
     for (count = 0; count < WARMUP_TIMES; count++) {
@@ -41,11 +41,9 @@ void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
     for (count = 0; count < BENCHMARKS; count++) {
         PRT_TaskResume(taskIds[1]);
     }
-
-    rtems_test_assert(false);
 }
 
-void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     for (count1 = 0; count1 < WARMUP_TIMES; count1++) {
         benchmark_timer_initialize();
@@ -64,11 +62,9 @@ void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
         tloop,
         tswitch
     );
-
-    PRT_SysReboot();
 }
 
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void TaskPreemptTest()
 {
     struct TskInitParam param = { 0 };
 
@@ -98,9 +94,11 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 
     status = PRT_TaskResume(taskIds[0]);
     directive_failed(status, "PRT_TaskResume of TA01");
-
-    TskHandle taskId;
-    PRT_TaskSelf(&taskId);
-    status = PRT_TaskDelete(taskId);
-    directive_failed(status, "PRT_TaskDelete of INIT");
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    TaskPreemptTest();
+}
+#endif

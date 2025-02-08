@@ -29,7 +29,6 @@ extern "C" {
 #if defined(OS_ARCH_ARMV8)
 #include "prt_typedef.h"
 extern U32 PRT_Printf(const char *format, ...);
-#define printf PRT_Printf
 #endif
 
 #if (OS_CPU_TYPE == OS_RV64_VIRT)

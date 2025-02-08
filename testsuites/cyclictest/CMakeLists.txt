@@ -1,8 +1,11 @@
-if (NOT ${APP} STREQUAL "UniProton_cyclictest")
+if (NOT ${APP} STREQUAL "UniProton_cyclictest" AND NOT "${CONFIG_LOSCFG_SHELL_TEST}")
     return()
 endif()
 
-set(BUILD_APP "UniProton_cyclictest")
+if (${APP} STREQUAL "UniProton_cyclictest")
+    set(BUILD_APP "UniProton_cyclictest")
+endif()
+
 set(ALL_SRC
     cyclictest.c
 )

@@ -12,16 +12,16 @@
 
 #define BENCHMARKS 20000
 #define WARM_UP_TIMES 2000
-TskHandle taskIds[3];
-SemHandle semId;
-U32 status;
-U32 count;
-U32 semExe;
-uintptr_t telapsed;
-uintptr_t switchOverhead;
-uintptr_t obtainOverhead;
+static TskHandle taskIds[3];
+static SemHandle semId;
+static U32 status;
+static U32 count;
+static U32 semExe;
+static uintptr_t telapsed;
+static uintptr_t switchOverhead;
+static uintptr_t obtainOverhead;
 
-void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     /* All tasks have bad time to start up once TA01 is running */
 
@@ -57,11 +57,10 @@ void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
             switchOverhead,   /* Overhead of loop and task switches */
             obtainOverhead
         );
-        PRT_SysReboot();
     }
 }
 
-void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     /* Start up TA01, get preempted */
     if (semExe == 1) {
@@ -82,7 +81,7 @@ void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
     }
 }
 
-void Task03(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task03(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     if (semExe == 1) {
         /* Low priority task holds mutex */
@@ -114,7 +113,7 @@ void Task03(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
     }
 }
 
-void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void DeadLockBreakTest()
 {
     struct TskInitParam taskParam = { 0 };
     TskHandle selfTaskPid;
@@ -199,7 +198,11 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
     semExe = 1;
     status = PRT_TaskResume(taskIds[2]);
     directive_failed(status, "PRT_TaskResume of TA03");
-
-    /* Should never reach here*/
-    rtems_test_assert(false);
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    DeadLockBreakTest();
+}
+#endif

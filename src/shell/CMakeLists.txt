@@ -45,6 +45,13 @@ if(NOT "${CONFIG_OS_OPTION_QUEUE}")
     )
 endif()
 
+if(NOT "${CONFIG_LOSCFG_SHELL_TEST}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_rhealstone.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_cyclictest.c
+    )
+endif()
+
 add_library(libshell OBJECT ${SHELL_SOURCE})
 
 target_include_directories(libshell PUBLIC 

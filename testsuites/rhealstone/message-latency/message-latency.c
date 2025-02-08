@@ -14,15 +14,15 @@
 #define MESSAGE_SIZE (sizeof(long) * 4)
 #define BENCHMARKS 50000
 #define WARM_UP_TIMES 1000
-uintptr_t telapsed;
-uintptr_t tloopOverhead;
-uintptr_t treceiveOverhead;
-U32 count;
-TskHandle taskIds[2];
-U32 queueId;
-long messageBuffer[4];
+static uintptr_t telapsed;
+static uintptr_t tloopOverhead;
+static uintptr_t treceiveOverhead;
+static U32 count;
+static TskHandle taskIds[2];
+static U32 queueId;
+static long messageBuffer[4];
 
-void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     U32 status;
     
@@ -36,12 +36,9 @@ void Task01(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
     for (; count < BENCHMARKS; count++) {
         (void)PRT_QueueWrite(queueId, messageBuffer, MESSAGE_SIZE, OS_WAIT_FOREVER, OS_QUEUE_NORMAL);
     }
-
-    /* should never reach here */
-    rtems_test_assert(false);
 }
 
-void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     size_t size = MESSAGE_SIZE;
 
@@ -82,11 +79,9 @@ void Task02(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t para
         tloopOverhead,
         treceiveOverhead
     );
-
-    PRT_SysReboot();
 }
 
-void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void MessageLatencyTest()
 {
     struct TskInitParam taskParam = {0};
     U32 status;
@@ -118,9 +113,11 @@ void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4
 
     status = PRT_TaskResume(taskIds[0]);
     directive_failed(status, "PRT_TaskResume of TA01");
-
-    TskHandle selfTaskId;
-    PRT_TaskSelf(&selfTaskId);
-    status = PRT_TaskDelete(selfTaskId);
-    directive_failed(status, "PRT_TaskDelete of SELF");
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t paraml, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    MessageLatencyTest();
+}
+#endif

@@ -12,13 +12,13 @@
 
 #define BENCHMARKS 50000
 
-TskHandle taskIds[2];
-uintptr_t loopCycle;
-uintptr_t dirOverhead;
-U32 count1, count2;
-U32 status;
+static TskHandle taskIds[2];
+static uintptr_t loopCycle;
+static uintptr_t dirOverhead;
+static U32 count1, count2;
+static U32 status;
 
-void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     uintptr_t telapsed;
 
@@ -38,11 +38,9 @@ void Task02(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
         "Rhealstone: Task switch", telapsed, (BENCHMARKS * 2) - 1,
         loopCycle,
         dirOverhead);
-
-    PRT_SysReboot();
 }
 
-void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+static void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
 {
     (void)param1;
     (void)param2;
@@ -56,19 +54,11 @@ void Task01(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t para
     for (count2 = 0; count2 < BENCHMARKS; count2++) {
         PRT_TaskDelay(0);
     }
-
-    rtems_test_assert(false);
 }
 
-void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+void TaskSwitchTest()
 {
     struct TskInitParam param = { 0 };
-
-    (void)param1;
-    (void)param2;
-    (void)param3;
-    (void)param4;
-
     param.taskEntry = (TskEntryFunc)Task01;
     param.stackSize = 0x800;
     param.name = "TA01";
@@ -113,9 +103,11 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 
     status = PRT_TaskResume(taskIds[0]);
     directive_failed(status, "PRT_TaskResume of TA01");
-
-    TskHandle taskId;
-    PRT_TaskSelf(&taskId);
-    status = PRT_TaskDelete(taskId);
-    directive_failed(status, "PRT_TaskDelete of INIT");
 }
+
+#if !defined(LOSCFG_SHELL_TEST)
+void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4)
+{
+    TaskSwitchTest();
+}
+#endif
