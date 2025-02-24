@@ -78,6 +78,7 @@ int sigpause_3_1()
 	}
 
 	sleep(1);
+	sem = INTHREAD;
 
 	if(pthread_kill(new_th, SIGTOTEST) != 0) 
 	{
@@ -85,7 +86,6 @@ int sigpause_3_1()
 		return PTS_UNRESOLVED;
 	}
 
-	sem = INTHREAD;
 	while (sem == INTHREAD)
 		sleep(1);
 

@@ -159,7 +159,7 @@ int TEST_sigpromask_3(void)
     g_TestValue = 10;
 
     /* 注册信号处理函数 */
-    struct sigaction act;
+    struct sigaction act = {0};
     act.sa_handler = TEST_sigpromask_Handler1;
     int signo1 = SIGINT;
     (void)sigaction(signo1, &act, NULL);

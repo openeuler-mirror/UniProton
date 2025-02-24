@@ -481,7 +481,7 @@ file(GLOB_RECURSE ALL_RWFLAG_SRC ${CMAKE_CURRENT_SOURCE_DIR}/definitions/rwflag/
 
 file(GLOB_RECURSE ALL_EXIT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/interfaces/exit/*.c)
 
-if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "rk3588" OR ${CPU_TYPE} STREQUAL "ascend310b" OR ${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "e2000q")
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR ${CPU_TYPE} STREQUAL "rk3588" OR ${CPU_TYPE} STREQUAL "ascend310b" OR ${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "e2000q" OR ${CPU_TYPE} STREQUAL "kp920" OR ${CPU_TYPE} STREQUAL "kp920_lite")
     include_directories(../include)
 elseif(${CPU_TYPE} STREQUAL "m4")
     list(APPEND OBJS 
@@ -550,6 +550,10 @@ else()
     elseif(${CPU_TYPE} STREQUAL "armv8")
         add_library(posixTest OBJECT ${ALL_SRC})
     elseif(${CPU_TYPE} STREQUAL "hi3093")
+        add_library(posixTest OBJECT ${ALL_SRC})
+    elseif(${CPU_TYPE} STREQUAL "kp920")
+        add_library(posixTest OBJECT ${ALL_SRC})
+    elseif(${CPU_TYPE} STREQUAL "kp920_lite")
         add_library(posixTest OBJECT ${ALL_SRC})
     endif()
 endif()

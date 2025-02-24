@@ -33,7 +33,10 @@ int setitimer(int which, const struct itimerval *restrict new, struct itimerval 
     uintptr_t intSave = OsIntLock();
     if (!taskCb->itimer) {
         ret = timer_create(CLOCK_REALTIME, &evp, &taskCb->itimer);
-        OsIntRestore(intSave);
+        if (ret != OS_OK) {
+            OsIntRestore(intSave);
+            return ret;
+        }
     }
 
     TIMEVAL_TO_TIMESPEC(&new->it_value, &setTime.it_value);
