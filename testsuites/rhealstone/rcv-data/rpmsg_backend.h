@@ -49,8 +49,8 @@ extern void receive_message(void);
 /* 下线时，设置rsc_table的reserved[1]为CPU_OFF_FUNCID，告诉mica侧更新状态 */
 extern void rsc_table_set_offline_flag(void);
 
-extern int rcv_data_from_rtos(void *rcv_data, int *data_len);
-extern int send_data_to_fos(void *send_data, int data_len);
+extern int rcv_data_from_nrtos(void *rcv_data, int *data_len);
+extern int send_data_to_nrtos(void *send_data, int data_len);
 
 #ifdef __cplusplus
 }

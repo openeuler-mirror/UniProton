@@ -52,9 +52,11 @@ static struct rpmsg_rcv_msg tty_msg;
 
 /* RPMsg umt */
 #define RPMSG_UMT_EPT_NAME "rpmsg-umt"
+#define OPENAMP_SHM_COPY_SIZE 0x100000 /* 1M */
 static SemHandle umt_sem;
 static struct rpmsg_endpoint umt_ept;
 static struct rpmsg_rcv_msg umt_msg;
+static U64 g_umt_send_data_addr;
 
 char *g_s1 = "Hello, UniProton! \r\n";
 extern char *g_printf_buffer;
@@ -238,10 +240,15 @@ static void *rpmsg_listen_task(void *arg)
 int rcv_data_from_nrtos(void *rcv_data, int *data_len)
 {
     umt_send_msg_t *msg;
+    static int init = 0;
 
     PRT_SemPend(umt_sem, OS_WAIT_FOREVER);
     if(umt_msg.len) {
         msg = (umt_send_msg_t *)umt_msg.data;
+	    if (!init) {
+	        g_umt_send_data_addr = msg->phy_addr + OPENAMP_SHM_COPY_SIZE;
+            init ++;
+	    }
 	    memcpy(rcv_data, (void *)msg->phy_addr, msg->data_len);
 	    *data_len = msg->data_len;
         rpmsg_release_rx_buffer(&umt_ept, umt_msg.data);
@@ -264,11 +271,14 @@ int rcv_data_from_nrtos(void *rcv_data, int *data_len)
 int send_data_to_nrtos(void *send_data, int data_len)
 {
     int ret;
+    int rpmsg_data_len;
 
-    if (data_len > MAX_STRING_LEN)
+    if (data_len > OPENAMP_SHM_COPY_SIZE)
 	    return OS_ERROR;
 
-    ret = rpmsg_send(&umt_ept, send_data, data_len);
+    memcpy(g_umt_send_data_addr, send_data, data_len);
+    rpmsg_data_len = data_len;
+    ret = rpmsg_send(&umt_ept, &rpmsg_data_len, sizeof(int));
     if (ret < 0) {
         PRT_Printf("send_data_to_nrtos failed ret %d data_len %d\n", ret, data_len);
         return OS_ERROR;

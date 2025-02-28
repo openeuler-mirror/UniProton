@@ -165,7 +165,7 @@ CONFIG_OS_OPTION_LINUX=y
 #
 # Rsc table option Configuration
 #
-# CONFIG_OS_OPTION_RSC_TABLE is not set
+CONFIG_OS_OPTION_RSC_TABLE=y
 
 #
 # dirvers Modules Configuration
