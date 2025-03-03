@@ -20,7 +20,7 @@
 /demos/*/component/gcc-10.3.0*
 /demos/*/component/forte/
 /demos/*/component/open62541-1.4.4*
-/demos/hi3093/component/libcxx
+/demos/*/component/libcxx
 /src/component/ccl
 /src/component/libxml2
 /testsuites/cxx-test/tools/.compiles_list

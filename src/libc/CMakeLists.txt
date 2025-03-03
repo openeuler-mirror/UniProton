@@ -134,7 +134,7 @@ list(APPEND  MULS_SOURCE
 )
 endif()
 
-if (${CPU_TYPE} STREQUAL "hi3093" AND "${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y")
+if ((${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095") AND "${CONFIG_OS_SUPPORT_CXX}" STREQUAL "y")
     list(APPEND  MULS_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/snprintf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/sprintf.c
@@ -346,7 +346,7 @@ if(${CONFIG_OS_OPTION_PROXY})
     endif()
 endif()
 
-if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp" OR ${CPU_TYPE} STREQUAL "hi3093")
+if (${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "uvp" OR ${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095")
 list(REMOVE_ITEM MUSL_STDIO_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/perror.c
     ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/printf.c
