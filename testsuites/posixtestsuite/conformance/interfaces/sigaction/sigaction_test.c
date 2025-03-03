@@ -72,7 +72,7 @@ int TEST_sigaction_1(void)
 /* 测试用例2：线程先处理信号再返回上下文继续处理 */
 void *TEST_sigaction_pthread_1()
 {
-    struct sigaction act;
+    struct sigaction act = {0};
     act.sa_handler = TEST_sigaction_Handler1;
 
     g_signo = SIGABRT;

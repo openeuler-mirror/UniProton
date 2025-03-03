@@ -194,7 +194,7 @@ if (${CPU_TYPE} STREQUAL "x86_64")
 endif()
 
 ## nuttx vfs 依赖
-if (${CPU_TYPE} STREQUAL "kp920")
+if (${CPU_TYPE} STREQUAL "kp920" OR ${CPU_TYPE} STREQUAL "kp920_lite")
     list(APPEND  MULS_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/stdio/asprintf.c
     )
