@@ -8,6 +8,6 @@ set(ALL_SRC
     opcua_client.c
 )
 
-if(${CPU_TYPE} STREQUAL "hi3093")
+if(${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095")
     add_library(opcuaServer OBJECT ${ALL_SRC})
 endif()

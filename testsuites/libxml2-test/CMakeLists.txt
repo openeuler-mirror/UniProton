@@ -5,6 +5,6 @@ endif()
 set(BUILD_APP "UniPorton_test_libxml2_interface")
 set(ALL_SRC xmltest.c)
 
-if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "hi3093")
+if(${CPU_TYPE} STREQUAL "x86_64" OR ${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095")
     add_library(libxml2Test OBJECT ${ALL_SRC})
 endif()

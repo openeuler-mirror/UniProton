@@ -42,6 +42,7 @@ endif()
 
 if (${CPU_TYPE} STREQUAL "ascend310b" OR
     ${CPU_TYPE} STREQUAL "hi3093" OR
+    ${CPU_TYPE} STREQUAL "hi3095" OR
     ${CPU_TYPE} STREQUAL "rk3568_jailhouse" OR
     ${CPU_TYPE} STREQUAL "rk3588" OR
     ${CPU_TYPE} STREQUAL "e2000q" OR

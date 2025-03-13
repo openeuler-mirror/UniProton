@@ -43,7 +43,8 @@
 #define OS_RV64_MILKVDUOL   0x0c
 #define OS_RV64_VISIONFIVE2 0x0d
 #define OS_KP920_LITE       0x0e
-#define OS_CPU_TYPE_INVALID 0x0f
+#define OS_HI3095           0x0f
+#define OS_CPU_TYPE_INVALID 0x10
 
 #ifndef INIT_SEC_L4_TEXT
 #define INIT_SEC_L4_TEXT 
