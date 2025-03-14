@@ -156,7 +156,6 @@ static void Armv8EnableEvent(Event *event)
 
     PRT_HwiRestore(intSave);
 
-    printf("enabled event: %u cnt: %u\n", event->eventId, cnt);
     return;
 }
 

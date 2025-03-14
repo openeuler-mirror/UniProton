@@ -143,6 +143,12 @@ OS_SEC_L2_TEXT U32 PRT_LogSetFilter(enum OsLogLevel level)
     return 0;
 }
 
+OS_SEC_L2_TEXT void PRT_LogGetStatus(U8 *switchStat, U8 *levelStat)
+{
+    *switchStat = g_logOn;
+    *levelStat = (U8)g_logFilter[0];
+}
+
 static OS_SEC_L2_TEXT void OsLogGetTailAndHead(U32 *head, U32 *tail)
 {
     /* 保证获取head值时, tail未发生变化 (U32翻转并且刚好回到原点概率过小）*/

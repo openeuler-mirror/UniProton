@@ -59,6 +59,14 @@ extern int OsShellCmdCyclictest(int argc, const char **argv);
 extern int OsShellCmdRhealstone(int argc, const char **argv);
 #endif
 
+#ifdef LOSCFG_SHELL_PERF
+extern int OsShellCmdPerf(int argc, const char **argv);
+#endif
+
+#ifdef LOSCFG_SHELL_LOG
+extern int OsShellCmdLog(int argc, const char **argv);
+#endif
+
 void micaShellInit()
 {
     int ret = OsShellInit(0);
@@ -89,6 +97,24 @@ void micaShellInit()
         PRT_Printf("[INFO]: reg cmd 'rhealstone' successed!\n");
     } else {
         PRT_Printf("[INFO]: reg cmd 'rhealstone' failed!\n");
+    }
+#endif
+
+#ifdef LOSCFG_SHELL_PERF
+    ret = osCmdReg(CMD_TYPE_EX, "perf", XARGS, (CMD_CBK_FUNC)OsShellCmdPerf);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'perf' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'perf' failed!\n");
+    }
+#endif
+
+#ifdef LOSCFG_SHELL_LOG
+    ret = osCmdReg(CMD_TYPE_EX, "log", XARGS, (CMD_CBK_FUNC)OsShellCmdLog);
+    if (ret == 0) {
+        PRT_Printf("[INFO]: reg cmd 'log' successed!\n");
+    } else {
+        PRT_Printf("[INFO]: reg cmd 'log' failed!\n");
     }
 #endif
 }
@@ -132,7 +158,7 @@ void TestTaskEntry()
     micaShellInit();
 #endif
 
-#if defined(OS_OPTION_PERF)
+#if defined(OS_OPTION_PERF) && !defined(LOSCFG_SHELL_PERF)
     PerfDemoTask();
 #endif
 

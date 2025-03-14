@@ -74,6 +74,8 @@ extern U32 PRT_LogSetFilterByFacility(enum OsLogFacility facility, enum OsLogLev
 
 extern bool PRT_IsLogInit(void);
 
+extern void PRT_LogGetStatus(U8 *switchStat, U8 *levelStat);
+
 #else
 
 #define PRT_Log(level, facility, str, strLen) 0

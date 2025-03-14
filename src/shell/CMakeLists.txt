@@ -52,6 +52,18 @@ if(NOT "${CONFIG_LOSCFG_SHELL_TEST}")
     )
 endif()
 
+if(NOT "${CONFIG_LOSCFG_SHELL_PERF}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_perf.c
+    )
+endif()
+
+if(NOT "${CONFIG_LOSCFG_SHELL_LOG}")
+    list(REMOVE_ITEM SHELL_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/full/src/cmds/shell_log.c
+    )
+endif()
+
 add_library(libshell OBJECT ${SHELL_SOURCE})
 
 target_include_directories(libshell PUBLIC 
@@ -60,6 +72,7 @@ target_include_directories(libshell PUBLIC
         ${HOME_PATH}/src/core/kernel/irq
         ${HOME_PATH}/src/core/kernel/include
         ${HOME_PATH}/src/om/cpup
+        ${HOME_PATH}/src/extended/perf
 )
 
 list(APPEND ALL_OBJECT_LIBRARYS libshell)
