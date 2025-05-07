@@ -50,5 +50,6 @@ git clone https://github.com/brendangregg/FlameGraph.git
 ./FlameGraph/stackcollapse-perf.pl output.perf > output.folded
 ./FlameGraph/flamegraph.pl output.folded > output.svg
 ```
+以上操作步骤都已集成到src/extended/perf/flamegraph.sh脚本中，可直接在本地linux中执行脚本完成火焰图生成，需注意脚本中的ip地址要与测试单板的实际地址匹配。
 当前生成的火焰图还不支持符号显示，需将显示的地址根据build目录下的反汇编文件手动反推符号信息。
 

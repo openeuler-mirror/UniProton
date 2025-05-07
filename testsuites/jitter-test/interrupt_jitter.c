@@ -7,9 +7,10 @@
 #include "cpu_config.h"
 
 extern U64 g_timerFrequency;
-#define TEST_CYCLE g_timerFrequency / OS_TICK_PER_SECOND
+#define TEST_TICK_PER_SEC 8000
+#define TEST_CYCLE g_timerFrequency / TEST_TICK_PER_SEC
 
-#define CYCLE_NUM 500
+#define CYCLE_NUM 1000
 U32 g_cycle_num = 0;
 uintptr_t g_cycle = 0;
 uintptr_t g_cycle_cnts[CYCLE_NUM];
