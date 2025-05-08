@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.12)
-project(exmaples LANGUAGES C ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
@@ -21,6 +20,8 @@ set(CMAKE_ASM_FLAGS "${AS_OPTION}")
 
 set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")
+
+project(exmaples LANGUAGES C ASM)
 
 include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_riscv64_visionfive2/defconfig)

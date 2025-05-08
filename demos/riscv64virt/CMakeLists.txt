@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.12)
-project(exmaples LANGUAGES C ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
@@ -19,6 +18,7 @@ set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
 set(CMAKE_C_FLAGS "${CC_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION}")
 
+project(exmaples LANGUAGES C ASM)
 
 if(${APP} STREQUAL "shell")
 	set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/shell.ld")

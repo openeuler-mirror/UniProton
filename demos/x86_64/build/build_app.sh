@@ -35,7 +35,7 @@ function build()
         sh ./build_modbus.sh $TOOLCHAIN_PATH
     fi
 
-    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="x86_64" -DCMAKE_C_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-gcc -DCMAKE_CXX_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-g++
+    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="x86_64" -DCMAKE_C_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-gcc -DCMAKE_CXX_COMPILER=$TOOLCHAIN_PATH/bin/x86_64-openeuler-linux-gnu-g++ -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
     pushd $TMP_DIR
     make $APP
     popd

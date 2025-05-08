@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.12)
-project(exmaples LANGUAGES C ASM CXX)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
@@ -10,6 +9,8 @@ set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builti
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
 set(UNIPROTON_PROJECT_DIR ${HOME_PATH})
+
+project(exmaples LANGUAGES C ASM CXX)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/${APP})
 

@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.12)
-project(exmaples LANGUAGES C ASM CXX)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
@@ -9,6 +8,8 @@ set(CMAKE_C_FLAGS "-g -O0 -mthumb -mcpu=cortex-m4 -std=gnu11 -fno-common -fomit-
 set(CMAKE_CXX_FLAGS "-mthumb -mcpu=cortex-m4 -fno-threadsafe-statics -fno-builtin -DEIGEN_NO_IO=1")
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_ASM_FLAGS ${CMAKE_C_FLAGS})
+
+project(exmaples LANGUAGES C ASM CXX)
 
 include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_m4/defconfig)

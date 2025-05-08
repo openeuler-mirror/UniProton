@@ -31,8 +31,10 @@ pushd ../../../src/net/
 rm -rf ./ethercat
 git clone --depth=1 --filter=blob:none --sparse https://gitee.com/openeuler/oee_archive.git
 cd oee_archive
-git sparse-checkout init --cone
-git sparse-checkout set "igh-ethercat"
+git lfs install
+git config core.sparseCheckout true
+echo "igh-ethercat/" >> .git/info/sparse-checkout
+git checkout master
 cp igh-ethercat/igh_master_20230720.tar.gz ../
 cd ../
 rm -rf oee_archive

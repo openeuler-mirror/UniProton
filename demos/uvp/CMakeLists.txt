@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.12)
-project(exmaples LANGUAGES C CXX ASM)
 
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 set(OUTPUT_PATH ${HOME_PATH}/output)
@@ -7,6 +6,8 @@ set(OUTPUT_PATH ${HOME_PATH}/output)
 set(CMAKE_C_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER})
 set(CMAKE_ASM_COMPILER ${CMAKE_ASM_COMPILER})
+
+project(exmaples LANGUAGES C CXX ASM)
 
 set(CC_OPTION "-g -O2 -mcmodel=large -static -nostdlib -nostdinc -fno-builtin -funwind-tables -nostartfiles -nodefaultlibs -mpreferred-stack-boundary=3 -mno-3dnow -mno-avx -mno-red-zone -Wl,--build-id=none -fno-builtin -fno-PIE -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -fno-stack-protector -funsigned-char -fno-PIC")
 set(AS_OPTION "-c")
