@@ -173,7 +173,7 @@ static void OsBufferParser(const char *buf, U32 len)
     return;
 }
 
-static void OsPrintBuff(const char *buf, U32 len)
+void OsPrintBuff(const char *buf, U32 len)
 {
     U32 i = 0;
 

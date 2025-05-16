@@ -104,7 +104,11 @@ static void OsPerfPrintCount(void)
         if (event->period == 0) {
             continue;
         }
+#ifdef LOSCFG_SHELL_PERF
+        printf("[%s] eventType: 0x%x [core %u]: %llu\n", g_pmu->getName(event), event->eventId, cpuid, event->count[cpuid]);
+#else
         PRT_Printf("[%s] eventType: 0x%x [core %u]: %llu\n", g_pmu->getName(event), event->eventId, cpuid, event->count[cpuid]);
+#endif
     }
     if (cpuid != g_primaryCoreId) {
         PERF_UNLOCK(intSave);
@@ -115,8 +119,12 @@ static void OsPerfPrintCount(void)
 
 static inline void OsPerfPrintTs(void)
 {
-    U64 time = OS_SYS_US_PER_SECOND * (g_perfCb.endTime - g_perfCb.startTime) / g_tickModInfo.tickPerSecond / g_systemClock;
+    U64 time = OS_SYS_US_PER_SECOND * (g_perfCb.endTime - g_perfCb.startTime) / g_systemClock;
+#ifdef LOSCFG_SHELL_PERF
+    printf("time used: %llu(us)\r\n", time);
+#else
     PRT_Printf("time used: %llu(us)\r\n", time);
+#endif
 }
 
 static void OsPerfStart(void)

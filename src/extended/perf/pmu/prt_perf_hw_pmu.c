@@ -80,7 +80,9 @@ static U32 OsPerfHwConfig()
             return OS_ERROR;
         }
 
+#ifndef LOSCFG_SHELL_PERF
         printf("Perf Config %u eventId = 0x%x, counter = 0x%x, period = 0x%x\n", i, event->eventId, event->counter, event->period);
+#endif
     }
 
     armPmu->cntDivided = events->cntDivided & armPmu->canDivided;
@@ -134,7 +136,9 @@ static U32 OsPerfHwStop()
             event->count[cpuid] = event->count[cpuid] << 6;
         }
 
+#ifndef LOSCFG_SHELL_PERF
         printf("perf stop [%s] : event[0x%x] = %llu\n", g_eventName[eventId], event->eventId, event->count[cpuid]);
+#endif
     }
 
     return OS_OK;

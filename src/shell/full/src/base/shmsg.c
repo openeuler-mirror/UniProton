@@ -57,11 +57,19 @@ extern "C" {
 #define SHELL_TASK_STACK_SIZE   0x1000
 #define SHELL_ENTRY_STACK_SIZE  0x600
 #else
+#ifdef LOSCFG_SHELL_PERF
+#define SHELL_TASK_STACK_SIZE   0x30000
+#else
 #define SHELL_TASK_STACK_SIZE   0x3000
+#endif
 #define SHELL_ENTRY_STACK_SIZE  0x1000
 #endif
 
+#ifdef LOSCFG_SHELL_PERF
+#define SHELL_TASK_PRIORITY     10
+#else
 #define SHELL_TASK_PRIORITY     9
+#endif
 #define SHELL_ENTRY_PRIORITY    9
 
 CHAR *ShellGetInputBuf(ShellCB *shellCB)
