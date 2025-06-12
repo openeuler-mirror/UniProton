@@ -96,6 +96,11 @@ OsEl2SwitchToEl1:
     ERET
     
 Start:
+#if defined(GUEST_OS)
+    MOV    x4, #3 << 20
+    MSR    CPACR_EL1, x4
+#endif
+
 #if defined(OS_OPTION_SMP)
     OsAsmGetCoreId  x0 // 读取核号
     LDR x4, =g_cfgPrimaryCore
