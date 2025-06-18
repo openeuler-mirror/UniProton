@@ -34,7 +34,11 @@ extern "C" {
 /* 最大可支持的核数，单位：个 */
 #define OS_SYS_CORE_MAX_NUM                             4
 /* 主核ID */
+#if defined(GUEST_OS)
+#define OS_SYS_CORE_PRIMARY                             0
+#else
 #define OS_SYS_CORE_PRIMARY                             3
+#endif
 
 /* ***************************** 中断模块配置 ************************** */
 /* 硬中断最大支持个数 */
@@ -88,7 +92,11 @@ extern "C" {
 /* 私有FSC内存分区起始地址 */
 #define OS_MEM_FSC_PT_ADDR                              (uintptr_t)&g_memRegion00[0]
 /* 私有FSC内存分区大小 */
+#if defined(GUEST_OS)
+#define OS_MEM_FSC_PT_SIZE                              0x80000
+#else
 #define OS_MEM_FSC_PT_SIZE                              0x1d000000
+#endif
 
 /* ***************************** 配置信号量管理模块 ************************* */
 /* 信号量模块裁剪开关 */

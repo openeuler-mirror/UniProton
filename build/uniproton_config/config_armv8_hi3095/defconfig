@@ -150,6 +150,11 @@ CONFIG_OS_OPTION_OPENAMP=y
 CONFIG_OS_OPTION_PROXY=y
 
 #
+# Guest Modules Configuration, mutually exclusive with Openamp
+#
+# CONFIG_GUEST_OS is not set
+
+#
 # enable CXX
 #
 # CONFIG_OS_SUPPORT_CXX is not set

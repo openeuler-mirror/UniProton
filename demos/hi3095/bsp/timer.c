@@ -18,6 +18,37 @@ U64 GetGenericTimerFreq(void)
     return freq;
 }
 
+#if defined(GUEST_OS)
+void TimerIsr(uintptr_t para)
+{
+    (void)para;
+    U32 cfgMask = 0x0;
+    U64 cycle = PMU_TIMER_FREQUENCY / OS_TICK_PER_SECOND;
+
+    OS_EMBED_ASM("MSR CNTV_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
+    PRT_ISB();
+    OS_EMBED_ASM("MSR CNTV_TVAL_EL0, %0" : : "r"(cycle) : "memory", "cc");
+
+    cfgMask = 0x1;
+    OS_EMBED_ASM("MSR CNTV_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
+
+    PRT_TickISR();
+    PRT_ISB();
+}
+
+void CoreTimerInit(void)
+{
+    U32 cfgMask = 0x0;
+    U64 cycle = PMU_TIMER_FREQUENCY / OS_TICK_PER_SECOND;
+
+    OS_EMBED_ASM("MSR CNTV_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
+    PRT_ISB();
+    OS_EMBED_ASM("MSR CNTV_TVAL_EL0, %0" : : "r"(cycle) : "memory", "cc");
+
+    cfgMask = 0x1;
+    OS_EMBED_ASM("MSR CNTV_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
+}
+#else
 void TimerIsr(uintptr_t para)
 {
     (void)para;
@@ -47,6 +78,7 @@ void CoreTimerInit(void)
     cfgMask = 0x1;
     OS_EMBED_ASM("MSR CNTP_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
 }
+#endif
 
 U32 CoreTimerStart(void)
 {

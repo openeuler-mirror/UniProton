@@ -14,7 +14,11 @@
 
 #define UART_BASE_ADDR             MMU_UART_ADDR
 
+#if defined(GUEST_OS)
+#define TEST_CLK_INT               27
+#else
 #define TEST_CLK_INT               30
+#endif
 
 #define OS_GIC_VER                 3
 #define SICR_ADDR_OFFSET_PER_CORE  0x20000U
