@@ -5,6 +5,6 @@ sections:
   - label: 概述
     href: ./overview.md
   - label: UniProton功能设计
-    href: ./uniproton-functions.md
+    href: ./uniproton_functions.md
   - label: UniProton接口说明
-    href: ./uniproton-apis.md
+    href: ./uniproton_apis.md
