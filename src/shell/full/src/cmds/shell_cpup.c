@@ -16,6 +16,8 @@
 #include "prt_cpup.h"
 #include "prt_cpup_internal.h"
 #include "prt_sys_external.h"
+#include "securec.h"
+#include "prt_task.h"
 
 static void ShowCpupConfigInfo()
 {
@@ -41,31 +43,55 @@ static void ShowCpupConfigInfo()
     return;
 }
 
+
+static void GetUsageParts(U32 usage, char*buffer, U16 bufferLength, U16 maxLength)
+{
+    U16 integer = usage / 100;
+    U16 fractional = usage % 100;
+    int ret = snprintf_s(buffer, bufferLength, maxLength, "%d.%02d", integer, fractional);
+    if (ret < 0) {
+        PRINTK("Error: Function failed - possible truncation or constraint violation\n");
+        buffer[0] = '\0';
+        return;
+    }
+}
+
 static void ShowCpuUsage()
 {
+    const char *name = NULL;
+    char percentBuf[8];
+    char *taskNameBuf = NULL;
+    const char *percent = "%%";     // 百分号无法打印，暂时写成字符串
+    U16 bufferLength = 0;
     if (g_cpupNow == NULL) {
         PRINTK("CPUP is not enable!\n");
         return;
     }
-
     U32 outNum = 0;
     struct CpupThread *cpup = malloc(sizeof(struct CpupThread) * OS_MAX_TCB_NUM);
     if (cpup == NULL) {
         return;
     }
-
     PRT_CpupThread(OS_MAX_TCB_NUM, cpup, &outNum);
-
-    PRINTK("taskId        CpuUsage\n");
-    PRINTK("----------------------\n");
+    PRINTK("taskId  \ttaskName\t\tCpuUsage\n");
+    PRINTK("--------------- ----------------------- ----------\n");
     for (int i = 0; i < outNum; i++) {
-        PRINTK("0x%-8x    %u\n", cpup[i].id, cpup[i].usage);
+        GetUsageParts((U32)(cpup[i].usage), percentBuf, sizeof (percentBuf), sizeof (percentBuf)-1);
+        PRT_TaskGetName(cpup[i].id, &taskNameBuf);
+        name = (cpup[i].id == OS_CPUP_INT_ID) ? "Interrupt" : (const char*)taskNameBuf;
+        bufferLength = strlen (percentBuf);
+        if (bufferLength == strlen ("0.00")) {
+            PRINTK("0x%-8x\t%-20s\t  %-4s%s\n", cpup[i].id, name, percentBuf, percent);
+        } else if (bufferLength == strlen ("00.00")) {
+            PRINTK("0x%-8x\t%-20s\t %-5s%s\n", cpup[i].id, name, percentBuf, percent);
+        } else {
+            PRINTK("0x%-8x\t%-20s\t%-6s%s\n", cpup[i].id, name, percentBuf, percent);
+        }
     }
-
-    PRINTK("----------------------\n");
-    PRINTK("Total CpuUsage: %u\n", PRT_CpupNow());
+    PRINTK("--------------- ----------------------- ----------\n");
+    GetUsageParts(PRT_CpupNow(), percentBuf, sizeof (percentBuf), sizeof (percentBuf)-1);
+    PRINTK("Total CpuUsage: %s%s\n", percentBuf, percent);
     free(cpup);
-
     return;
 }
 
