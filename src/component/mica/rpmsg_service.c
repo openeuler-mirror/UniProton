@@ -334,6 +334,7 @@ int rpmsg_service_init(void)
         PRT_TaskDelay(100);
     }
 
+    /* ascend310B old version mica, need to disable umt wait */
     while (!is_rpmsg_ept_ready(&umt_ept)) {
         PRT_TaskDelay(100);
     }

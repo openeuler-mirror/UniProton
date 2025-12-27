@@ -1,6 +1,4 @@
 pushd ../../../src/net/
-if [[ "${APP}" == "UniProton_soem_demo" && ! -d "./soem" ]]
-then
 echo "################# get soem #################"
 rm -rf ./soem
 git clone --depth=1 --filter=blob:none --sparse -b revert-2058de2 https://atomgit.com/openeuler/oee_archive.git
@@ -18,5 +16,4 @@ cd ./soem
 patch -p1 -d . < UniProton-patch-for-soem.patch
 rm -rf ../../../testsuites/soemTest/test
 cp -r test ../../../testsuites/soemTest/
-fi
 popd

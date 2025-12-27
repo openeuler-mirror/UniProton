@@ -46,6 +46,7 @@ include_directories(
     ${HOME_PATH}/src/om/include
     ${HOME_PATH}/src/mem/include
     ${OUTPUT_PATH}/drivers/include/
+    ${HOME_PATH}/output/soem/include/
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -100,6 +101,15 @@ elseif(${APP} STREQUAL "UniPorton_test_ir")
     add_subdirectory(${HOME_PATH}/testsuites/kern-test tmp)
     target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:kernTest>)
+elseif (${APP} STREQUAL "UniProton_soem_demo")
+    if ("${CONFIG_OS_SUPPORT_SOEM}" STREQUAL "y")
+        add_subdirectory(${HOME_PATH}/testsuites/soemTest tmp)
+        target_compile_options(rpmsg PUBLIC -DSOEM_DEMO)
+        list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:soemTest>)
+    else()
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_SOEM")
+        return()
+    endif()
 else()
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
 endif()

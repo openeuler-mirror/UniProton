@@ -12,7 +12,7 @@ UniProton侧实现IgH EtherCAT功能主要是通过移植IgH EtherCAT的`master`
 
 ### 开启并使用IgH EtherCAT基本功能：
 
-1. `defconfig`中开启选项 `CONFIG_OS_SUPPORT_IgH_EtherCAT=y`, `CONFIG_OS_OPTION_LINUX=y`；
+1. `defconfig`中开启选项 `CONFIG_OS_SUPPORT_IGH_ETHERCAT=y`, `CONFIG_OS_OPTION_LINUX=y`；
 2. 下载IgH归档源码至正确文件夹，并使用`UniProton-patch-for-IgH.patch`补丁，参考`demos/x86_64/build/build_fetch.sh`；
 3. 代码中，使用IgH EtherCAT功能前，需要先调用`ecrt_nic_reg`注册网卡钩子函数，然后调用`ethercat_init`初始化模块。注册网卡钩子可以参考`demos/x86_64/apps/ethercat/main.c`中所使用的`ecrt_i210_nic_reg`函数；
 4. 初始化IgH EtherCAT模块之后，就可以正常使用ecrt接口了，但此时背景任务可能还在自动扫描从站，需要等待从站扫描完毕。用户可以调用`wait_for_slave_respond`以及`wait_for_slave_scan_complete`工具函数等待扫描结束，或者参考这两个函数自行使用ecrt接口实现类似的功能；

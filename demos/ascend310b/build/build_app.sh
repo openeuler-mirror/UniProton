@@ -1,9 +1,17 @@
 # UniPorton_test_proxy_posix_interface ascend310b UniPorton_test_log_interface UniPorton_test_posix_time_interface
 # deadlock-break interrupt-latency message-latency semaphore-shuffle task-preempt task-switch
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
-export APP=ascend310b
+
+if [ "$1" != "" ]
+then
+    export APP=$1
+else
+    export APP=ascend310b
+fi
+
 export TMP_DIR=$APP
 
+sh ./build_fetch.sh
 sh ./build_static.sh ascend310b
 DEFCONFIG=../../../build/uniproton_config/config_armv8_ascend310b/defconfig
 if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then

@@ -9,6 +9,6 @@ set(ALL_SRC
     test/linux/slaveinfo/slaveinfo.c
 )
 
-if(${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095" OR ${CPU_TYPE} STREQUAL "kp920" OR ${CPU_TYPE} STREQUAL "kp920_lite")
+if(${CPU_TYPE} STREQUAL "hi3093" OR ${CPU_TYPE} STREQUAL "hi3095" OR ${CPU_TYPE} STREQUAL "kp920" OR ${CPU_TYPE} STREQUAL "kp920_lite" OR ${CPU_TYPE} STREQUAL "ascend310b" OR ${CPU_TYPE} STREQUAL "sd3403")
     add_library(soemTest OBJECT ${ALL_SRC})
 endif()
