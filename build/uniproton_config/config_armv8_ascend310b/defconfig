@@ -157,6 +157,11 @@ CONFIG_OS_POSIX_TYPE_NEWLIB=y
 CONFIG_OS_POSIX_SET_TZDST=y
 
 #
+# EtherCAT Modules Configuration
+#
+# CONFIG_OS_SUPPORT_SOEM is not set
+
+#
 # Shell Modules Configuration. Adapted from LiteOS
 #
 CONFIG_CONFIG_LOCAL_ECHO=y

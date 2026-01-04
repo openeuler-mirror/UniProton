@@ -1,9 +1,17 @@
 # UniPorton_test_proxy_posix_interface sd3403 UniPorton_test_log_interface UniPorton_test_posix_time_interface
 # deadlock-break interrupt-latency message-latency semaphore-shuffle task-preempt task-switch
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
-export APP=sd3403
+
+if [ "$1" != "" ]
+then
+    export APP=$1
+else
+    export APP=sd3403
+fi
+
 export TMP_DIR=$APP
 
+sh ./build_fetch.sh
 sh ./build_static.sh sd3403
 DEFCONFIG=../../../build/uniproton_config/config_armv8_sd3403/defconfig
 if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then

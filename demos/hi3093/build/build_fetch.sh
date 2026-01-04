@@ -94,7 +94,7 @@ if [[ "${APP}" == "UniProton_soem_demo" && ! -d "./soem" ]]
 then
 echo "################# get soem #################"
 rm -rf ./soem
-git clone --depth=1 --filter=blob:none --sparse https://gitee.com/openeuler/oee_archive.git
+git clone --depth=1 --filter=blob:none --sparse -b revert-2058de2 https://atomgit.com/openeuler/oee_archive.git
 cd oee_archive
 git sparse-checkout init --cone
 git sparse-checkout set "soem"

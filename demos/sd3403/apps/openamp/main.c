@@ -306,6 +306,10 @@ U32 SlaveTestInit(U32 slaveId)
 }
 #endif
 
+#if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
+void soem_test(const char *ifname);
+#endif
+
 void Test1TaskEntry()
 {
 #if defined(OS_OPTION_OPENAMP)
@@ -320,6 +324,10 @@ void Test1TaskEntry()
     while (!is_tty_ready()) {
         PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
     }
+#endif
+
+#if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
+    soem_test("eth1");
 #endif
 
 #if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
