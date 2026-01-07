@@ -425,13 +425,20 @@ int osVsnprintf(char *outBuf, unsigned int strLen, const char *fmt0, va_list arg
     char *outBufPtr = outBuf;
     char softSign;         /* temporary negative sign for floats */
     unsigned int writeLen = strLen;
+    int needLen = 0;
+    int sizeZero = 0;
+    if (strLen == 0) {
+        sizeZero = 1;
+    }
 
     strfmt = (unsigned char *)fmt0;
     digits = "0123456789abcdef";
 
     for (;; ++strfmt) {
         for (; ((charTmp = *strfmt) != 0) && charTmp != '%'; ++strfmt) {
-            if (!ucFlag || writeLen--) {
+            if (sizeZero) {
+                needLen++;
+            } else if (!ucFlag || writeLen--) {
                 *outBufPtr++ = (char)charTmp;
             } else {
                 goto END;
@@ -728,7 +735,9 @@ pforw:
                 /* right-adjusting blank padding */
                 if (0 == (flags & (LADJUST | ZEROPAD)) && width) {
                     for (count = realSize; count < width; count++) {
-                        if (!ucFlag || writeLen--) {
+                        if (sizeZero) {
+                            needLen++;
+                        } else if (!ucFlag || writeLen--) {
                             *outBufPtr++ = ' ';
                         } else {
                             goto END;
@@ -737,7 +746,9 @@ pforw:
                 }
                 /* prefix */
                 if (sign) {
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = sign;
                     } else {
                         goto END;
@@ -745,13 +756,17 @@ pforw:
                 }
 
                 if (flags & HEXPREFIX) {
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = '0';
                     } else {
                         goto END;
                     }
 
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = (char)*strfmt;
                     } else {
                         goto END;
@@ -760,7 +775,9 @@ pforw:
                 /* right-adjusting zero padding */
                 if ((flags & (LADJUST | ZEROPAD)) == ZEROPAD) {
                     for (count = realSize; count < width; count++) {
-                        if (!ucFlag || writeLen--) {
+                        if (sizeZero) {
+                            needLen++;
+                        } else if (!ucFlag || writeLen--) {
                             *outBufPtr++ = '0';
                         } else {
                             goto END;
@@ -769,7 +786,9 @@ pforw:
                 }
                 /* leading zeroes from decimal precision */
                 for (count = fieldSize; count < decPrec; count++) {
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = '0';
                     } else {
                         goto END;
@@ -779,7 +798,9 @@ pforw:
                 /* the string or number proper */
                 count = size;
                 while (--count >= 0) {
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = *buffPtr++;
                     } else {
                         goto END;
@@ -787,7 +808,9 @@ pforw:
                 }
                 /* trailing f.p. zeroes */
                 while (--fPPrec >= 0) {
-                    if (!ucFlag || writeLen--) {
+                    if (sizeZero) {
+                        needLen++;
+                    } else if (!ucFlag || writeLen--) {
                         *outBufPtr++ = '0';
                     } else {
                         goto END;
@@ -796,7 +819,9 @@ pforw:
                 /* left-adjusting padding (always blank) */
                 if (flags & LADJUST) {
                     for (count = realSize; count < width; count++) {
-                        if (!ucFlag || writeLen--) {
+                        if (sizeZero) {
+                            needLen++;
+                        } else if (!ucFlag || writeLen--) {
                             *outBufPtr++ = ' ';
                         } else {
                             goto END;
@@ -809,7 +834,9 @@ pforw:
             case '\0':    /* "%?" prints ?, unless ? is NULL */
                 goto lvspret;
             default:
-                if (!ucFlag || writeLen--) {
+                if (sizeZero) {
+                    needLen++;
+                } else if (!ucFlag || writeLen--) {
                     *outBufPtr++ = (char)*strfmt;
                 } else {
                     goto END;
@@ -818,7 +845,9 @@ pforw:
     }
 
 lvspret:
-    if (!ucFlag || writeLen--) {
+    if (sizeZero) {
+        ;
+    } else if (!ucFlag || writeLen--) {
         *outBufPtr = 0;
     } else {
         goto END;
@@ -826,10 +855,16 @@ lvspret:
 
     (void)argp;
     /* end of addition */
+    if (sizeZero) {
+        return needLen;
+    }
     return (int)(outBufPtr - outBuf);
     /* NOTREACHED */
 
 END:
+    if (sizeZero) {
+        return needLen;
+    }
     outBufPtr[-1] = 0;
     return (int)-1;
 }
@@ -838,7 +873,11 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
     int num;
 
-    if (!str || !format || !size) {
+    if (!format) {
+        return -1;
+    }
+
+    if (size != 0 && str == NULL) {
         return -1;
     }
 
