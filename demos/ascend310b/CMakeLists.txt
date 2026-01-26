@@ -56,6 +56,29 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         ${OUTPUT_PATH}/drivers/include/
         ${HOME_PATH}/output/soem/include
     )
+
+    # need copy from microros_ws/firmware/build/include
+    if ("${CONFIG_OS_SUPPORT_MICRO_ROS}" STREQUAL "y")
+    include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rcl
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rmw
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rcutils
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/type_description_interfaces
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rosidl_runtime_c
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/service_msgs
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/builtin_interfaces
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rosidl_typesupport_interface
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rosidl_dynamic_typesupport
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/rcl_action
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/std_msgs
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/turtlesim
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/geometry_msgs
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/action_msgs
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/unique_identifier_msgs
+        ${CMAKE_CURRENT_SOURCE_DIR}/include_ros/example_interfaces
+    )
+    endif()
 elseif(${CONFIG_GUEST_OS})
     include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -71,6 +94,19 @@ endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
 if (${CONFIG_OS_OPTION_OPENAMP})
+    if ("${CONFIG_OS_SUPPORT_MICRO_ROS}" STREQUAL "y")
+    # need copy from microros_ws/firmware/build/libmicroros.a
+    link_libraries(
+        -Wl,--start-group
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/libASCEND310B.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
+        "${TOOLCHAIN_PATH}/lib/gcc/aarch64-none-elf/10.3.1/libgcc.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmicroros.a"
+        -Wl,--end-group
+    )
+    else()
     link_libraries(
         -Wl,--start-group
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/libCortexMXsec_c.lib"
@@ -80,6 +116,7 @@ if (${CONFIG_OS_OPTION_OPENAMP})
         "${TOOLCHAIN_PATH}/lib/gcc/aarch64-none-elf/10.3.1/libgcc.a"
         -Wl,--end-group
     )
+    endif()
 elseif(${CONFIG_GUEST_OS})
     link_libraries(
         -Wl,--start-group
@@ -137,6 +174,15 @@ if (${CONFIG_OS_OPTION_OPENAMP})
             list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:soemTest>)
         else()
             message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_SOEM")
+            return()
+        endif()
+    elseif (${APP} STREQUAL "UniProton_uros_demo")
+        if ("${CONFIG_OS_SUPPORT_MICRO_ROS}" STREQUAL "y")
+            add_subdirectory(${HOME_PATH}/testsuites/urosTest tmp)
+            target_compile_options(rpmsg PUBLIC -DUROS_DEMO)
+            list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:urosTest>)
+        else()
+            message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_MICRO_ROS")
             return()
         endif()
     else()

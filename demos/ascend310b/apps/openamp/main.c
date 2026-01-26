@@ -310,6 +310,13 @@ U32 SlaveTestInit(U32 slaveId)
 void soem_test(const char *ifname);
 #endif
 
+#if defined(UROS_DEMO)
+U32 RosServerClientTest();
+U32 RosPubTest();
+U32 RosSubTest();
+U32 RosTurtleActionTest();
+U32 RosMazeDemo();
+#endif
 
 void Test1TaskEntry()
 {
@@ -325,6 +332,16 @@ void Test1TaskEntry()
     while (!is_tty_ready()) {
         PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
     }
+#endif
+
+#if defined(UROS_DEMO)
+    // only one testcase in one run
+    printf("ros test start\n");
+    RosServerClientTest();
+    // RosPubTest();
+    // RosSubTest();
+    // RosTurtleActionTest();
+    // RosMazeDemo();
 #endif
 
 #if defined(SOEM_DEMO) && defined(OS_SUPPORT_SOEM)
