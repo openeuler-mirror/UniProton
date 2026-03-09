@@ -18,13 +18,13 @@
 
 _start:
     B   arm_reset
-    B   _osUnHandleed
-    B   _osUnHandleed
-    B   _osUnHandleed
-    B   _osUnHandleed
-    B   _osUnHandleed
+    B   _osExceptUndefInstrHdl
+    B   _osExceptSwiHdl
+    B   _osExceptPrefetchAbortHdl
+    B   _osExceptDataAbortHdl
+    B   _osExceptAddrAbortHdl
     B   OsHwiDispatcher
-    B   _osUnHandleed
+    B   _osExceptFiqHdl
 
 FUNCTION(arm_reset)
 OsStackBssInit:

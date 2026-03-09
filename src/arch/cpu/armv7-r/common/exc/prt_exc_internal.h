@@ -66,6 +66,10 @@ extern char __heap_start;
 extern char __init_array_start__;
 extern char __init_array_end__;
 
+void OsExcType(U32 excType, struct ExcRegInfo *excRegs);
+void OsExcSysInfo(U32 excType, const struct ExcRegInfo *excRegs);
+void OsExcRegsInfo(struct ExcRegInfo *excBufAddr);
+void OsCallStackInfo(void);
 #else
 #include <prt_asm_arm_external.h>
 #endif
