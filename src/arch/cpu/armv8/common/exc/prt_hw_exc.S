@@ -13,11 +13,58 @@
  * Description: 异常处理的汇编部分。
  */
 
+#include "prt_buildef.h"
 #include "prt_asm_cpu_external.h"
 
     .global OsExcHandleEntry
     .type   OsExcHandleEntry, function
     .equ OS_TSKCONTEXT_SIZE, 0x120
+
+#if defined(OS_OPTION_HAVE_FPU)
+.macro FPU_PUSH_REGS
+    mrs    x2,  fpcr
+    mrs    x3,  fpsr
+    stp    x2,  x3, [sp, #-16]!
+    stp    q30, q31, [sp, #-32]!
+    stp    q28, q29, [sp, #-32]!
+    stp    q26, q27, [sp, #-32]!
+    stp    q24, q25, [sp, #-32]!
+    stp    q22, q23, [sp, #-32]!
+    stp    q20, q21, [sp, #-32]!
+    stp    q18, q19, [sp, #-32]!
+    stp    q16, q17, [sp, #-32]!
+    stp    q14, q15, [sp, #-32]!
+    stp    q12, q13, [sp, #-32]!
+    stp    q10, q11, [sp, #-32]!
+    stp    q8,  q9, [sp, #-32]!
+    stp    q6,  q7, [sp, #-32]!
+    stp    q4,  q5, [sp, #-32]!
+    stp    q2,  q3, [sp, #-32]!
+    stp    q0,  q1, [sp, #-32]!
+.endm
+
+.macro FPU_POP_REGS
+    ldp    q0,  q1, [sp], #32
+    ldp    q2,  q3, [sp], #32
+    ldp    q4,  q5, [sp], #32
+    ldp    q6,  q7, [sp], #32
+    ldp    q8,  q9, [sp], #32
+    ldp    q10, q11, [sp], #32
+    ldp    q12, q13, [sp], #32
+    ldp    q14, q15, [sp], #32
+    ldp    q16, q17, [sp], #32
+    ldp    q18, q19, [sp], #32
+    ldp    q20, q21, [sp], #32
+    ldp    q22, q23, [sp], #32
+    ldp    q24, q25, [sp], #32
+    ldp    q26, q27, [sp], #32
+    ldp    q28, q29, [sp], #32
+    ldp    q30, q31, [sp], #32
+    ldp    x2,  x3, [sp], #16
+    msr    fpsr, x3
+    msr    fpcr, x2
+.endm
+#endif
 
 // save x2~x30, xzr
 .macro GENERAL_REGS_SAVE
@@ -77,6 +124,10 @@ OsExcDispatch:
     stp    x4, x5, [sp,#-16]!
     stp    x2, x3, [sp,#-16]!
 
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_PUSH_REGS
+#endif
+
     mov    x0, sp
 
     /* (X19-X29) These registers are saved in the callee frame.  */
@@ -105,6 +156,11 @@ OsExcDispatch:
 
     sub    x21, x21, #OS_TSKCONTEXT_SIZE
     mov    sp, x21 // x21=original sp
+
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_POP_REGS
+#endif
+
     ldp    x2, x3, [sp],#16
     add    sp, sp, #16        // 跳过far, esr, HCR_EL2.TRVM==1的时候，EL1不能写far, esr
     msr    spsr_el1, x3

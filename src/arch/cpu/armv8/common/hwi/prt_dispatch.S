@@ -21,6 +21,52 @@
 
     .type   OsMainSchedule, function
 
+#if defined(OS_OPTION_HAVE_FPU)
+.macro FPU_PUSH_REGS
+    mrs    x2,  fpcr
+    mrs    x3,  fpsr
+    stp    x2,  x3, [sp, #-16]!
+    stp    q30, q31, [sp, #-32]!
+    stp    q28, q29, [sp, #-32]!
+    stp    q26, q27, [sp, #-32]!
+    stp    q24, q25, [sp, #-32]!
+    stp    q22, q23, [sp, #-32]!
+    stp    q20, q21, [sp, #-32]!
+    stp    q18, q19, [sp, #-32]!
+    stp    q16, q17, [sp, #-32]!
+    stp    q14, q15, [sp, #-32]!
+    stp    q12, q13, [sp, #-32]!
+    stp    q10, q11, [sp, #-32]!
+    stp    q8,  q9, [sp, #-32]!
+    stp    q6,  q7, [sp, #-32]!
+    stp    q4,  q5, [sp, #-32]!
+    stp    q2,  q3, [sp, #-32]!
+    stp    q0,  q1, [sp, #-32]!
+.endm
+
+.macro FPU_POP_REGS
+    ldp    q0,  q1, [sp], #32
+    ldp    q2,  q3, [sp], #32
+    ldp    q4,  q5, [sp], #32
+    ldp    q6,  q7, [sp], #32
+    ldp    q8,  q9, [sp], #32
+    ldp    q10, q11, [sp], #32
+    ldp    q12, q13, [sp], #32
+    ldp    q14, q15, [sp], #32
+    ldp    q16, q17, [sp], #32
+    ldp    q18, q19, [sp], #32
+    ldp    q20, q21, [sp], #32
+    ldp    q22, q23, [sp], #32
+    ldp    q24, q25, [sp], #32
+    ldp    q26, q27, [sp], #32
+    ldp    q28, q29, [sp], #32
+    ldp    q30, q31, [sp], #32
+    ldp    x2,  x3, [sp], #16
+    msr    fpsr, x3
+    msr    fpcr, x2
+.endm
+#endif
+
 // save x2~x30, xzr
 .macro GENERAL_REGS_SAVE
     stp x3, x2, [sp,#-16]!
@@ -57,6 +103,9 @@
     stp x27, x26, [sp,#-16]!
     stp x29, x28, [sp,#-16]!
     stp xzr, x30, [sp,#-16]!
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_PUSH_REGS
+#endif
 .endm
 
 .macro POP_REGS
@@ -76,6 +125,9 @@
     ldp x5, x4, [sp],#16
     ldp x3, x2, [sp],#16
     ldp x1, x0, [sp],#16
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_POP_REGS
+#endif
 .endm
 
     .section .os.text, "ax"
@@ -94,6 +146,10 @@ OsContextSave:
     mov x2, x30 // 用返回地址x30作为现场恢复点
     sub sp, sp, #16 // 跳过esr_el1, far_el1, 异常时才有用
     stp x2, x3, [sp,#-16]!
+
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_PUSH_REGS
+#endif
 
     // 存入SP指针到g_pRunningTask->sp
     mov x1, sp
@@ -147,6 +203,10 @@ OsTskTrapSmp:
     sub    sp, sp, #16  // 跳过esr_el1, far_el1, 异常时才有用
     stp    x2, x3, [sp,#-16]!
 
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_PUSH_REGS
+#endif
+
     // 存入SP指针到g_pRunningTask->sp
     mov    x1, sp
     str    x1, [x0]   // x0 is the &g_pRunningTask->sp
@@ -186,6 +246,10 @@ OsHwiDispatcher:
     sub    sp, sp, #16  // 跳过esr_el1, far_el1, 异常时才有用
     stp    x2, x3, [sp,#-16]!
 
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_PUSH_REGS
+#endif
+
     MOV    x0, SP
 
     BL     OsHwiDispatch   // 跳转C代码继续处理中断
@@ -206,6 +270,9 @@ OsTskContextLoad:
 OsContextLoad:
 #ifdef OS_GDB_STUB
     bl      OsGdbMarkStep
+#endif
+#if defined(OS_OPTION_HAVE_FPU)
+    FPU_POP_REGS
 #endif
     ldp    x2, x3, [sp],#16
     add    sp, sp, #16        // 跳过far, esr, HCR_EL2.TRVM==1的时候，EL1不能写far, esr

@@ -130,7 +130,7 @@ OS_SEC_ALW_INLINE INLINE void OsSpinLockInitInner(volatile uintptr_t *lockVar)
 struct TagHwContext {
 #if defined(OS_OPTION_HAVE_FPU)
     __uint128_t q[OS_FPU_CONTEXT_REG_NUM];
-    uintptr_t fcpr;
+    uintptr_t fpcr;
     uintptr_t fpsr;
 #endif
     uintptr_t pc;
