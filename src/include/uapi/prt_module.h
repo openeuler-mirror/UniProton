@@ -46,6 +46,7 @@ enum MoudleId {
     OS_MID_LOG = 0x15,
     OS_MID_STACKTRACE = 0x16,
     OS_MID_PERF = 0x17,
+    OS_MID_TRACE = 0x18,
     OS_MID_BUTT
 };
 

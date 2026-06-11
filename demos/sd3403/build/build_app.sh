@@ -11,6 +11,10 @@ fi
 
 export TMP_DIR=$APP
 
+# clean old build artifacts
+rm -f ../libs/*.a ../libs/*.lib
+rm -rf ../../../output ./libmetal ./open-amp
+
 sh ./build_fetch.sh
 sh ./build_static.sh sd3403
 DEFCONFIG=../../../build/uniproton_config/config_armv8_sd3403/defconfig

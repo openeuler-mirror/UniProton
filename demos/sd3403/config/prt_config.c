@@ -24,6 +24,11 @@ RESET_SEC_DATA U32 g_cfgPrimaryCore = OS_SYS_CORE_PRIMARY;
 extern U32 g_slaveTickEnable;
 #endif
 
+#if defined(OS_OPTION_TRACE)
+extern U32 OsTraceConfigReg(void);
+extern U32 OsTraceConfigInit(void);
+#endif
+
 #if defined(LOG_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
@@ -283,6 +288,9 @@ struct OsModuleConfigInfo g_moduleConfigTab[] = {
 #endif
 #if (OS_INCLUDE_QUEUE == YES)
     {OS_MID_QUEUE, {OsQueueConfigReg, OsQueueConfigInit}},
+#endif
+#if defined(OS_OPTION_TRACE)
+    {OS_MID_TRACE, {OsTraceConfigReg, OsTraceConfigInit}},
 #endif
     {OS_MID_APP, {NULL, PRT_AppInit}},
 

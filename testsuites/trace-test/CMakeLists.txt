@@ -1,0 +1,5 @@
+if (${APP} STREQUAL "UniPorton_test_trace")
+    set(BUILD_APP "UniPorton_test_trace")
+    set(ALL_SRC trace_test.c)
+    add_library(traceTest OBJECT ${ALL_SRC})
+endif()

@@ -4,6 +4,7 @@ source "om/cpup/Kconfig"
 source "om/err/Kconfig"
 source "om/hook/Kconfig"
 source "om/unwind/Kconfig"
+source "om/trace/Kconfig"
 
 endmenu
 #must ended with empty line
