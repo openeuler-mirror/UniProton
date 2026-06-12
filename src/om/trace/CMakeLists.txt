@@ -1,0 +1,6 @@
+if(${CONFIG_OS_OPTION_TRACE})
+    add_library_ex(prt_trace.c)
+    add_library_ex(prt_trace_offline.c)
+    add_library_ex(prt_trace_cnv.c)
+    add_library_ex(prt_trace_init.c)
+endif()

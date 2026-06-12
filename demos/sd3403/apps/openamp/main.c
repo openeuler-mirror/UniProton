@@ -25,7 +25,7 @@ extern U32 PRT_Printf(const char *format, ...);
 unsigned int is_tty_ready(void);
 #endif
 
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
 #endif
 
@@ -348,7 +348,7 @@ void Test1TaskEntry()
     soem_test("eth1");
 #endif
 
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE)
     PRT_Printf("init testcase\n");
     Init(0, 0, 0, 0);
 #endif

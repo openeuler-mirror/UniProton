@@ -1,0 +1,31 @@
+config OS_OPTION_TRACE
+    bool "Whether support trace or not"
+    default n
+
+menu "Trace features configuration"
+    depends on OS_OPTION_TRACE
+
+    config OS_OPTION_TRACE_FRAME_CORE_MSG
+        bool "Record cpuid, hwi status, task lock status"
+        default n
+
+    config OS_OPTION_TRACE_FRAME_EVENT_COUNT
+        bool "Record event count/sequence"
+        default n
+
+    config OS_TRACE_BUFFER_SIZE
+        int "Trace buffer size"
+        default 2048
+        depends on OS_OPTION_TRACE
+
+    config OS_TRACE_OBJ_MAX_NUM
+        int "Max number of traced objects"
+        default 0
+        depends on OS_OPTION_TRACE
+
+    config OS_TRACE_FRAME_MAX_PARAMS
+        int "Max params per trace frame"
+        default 3
+        depends on OS_OPTION_TRACE
+
+endmenu
