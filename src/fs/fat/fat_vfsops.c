@@ -913,8 +913,8 @@ static int fat_bind(FAR struct inode *blkdriver, FAR const void *data,
             kmm_free(fs);
             return -1;
         }
-        ret = f_mount(NULL, (const TCHAR *)data, 1);
-        ret += f_mount(fs->ff_fs, (const TCHAR *)data, 1);
+        (void)f_mount(NULL, (const TCHAR *)data, 1);
+        ret = f_mount(fs->ff_fs, (const TCHAR *)data, 1);
         if (ret != 0) {
             nxmutex_destroy(&fs->fs_lock);
             kmm_free(fs->ff_fs);

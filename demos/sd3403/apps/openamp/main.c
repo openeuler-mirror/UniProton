@@ -21,6 +21,8 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U32 g_swtmrId;
 extern U32 PRT_Printf(const char *format, ...);
 
+#define FATFS_TEST_STACK_SIZE 0x8000
+
 #if defined(OS_OPTION_OPENAMP)
 unsigned int is_tty_ready(void);
 #endif
@@ -318,10 +320,20 @@ U32 RosMazeDemo();
 void soem_test(const char *ifname);
 #endif
 
+#if defined(FILESYSTEM_TESTCASE)
+void fatfs_test(void);
+#endif
+
 void Test1TaskEntry()
 {
+    int ret;
+
 #if defined(OS_OPTION_OPENAMP)
-    TestOpenamp();
+    ret = TestOpenamp();
+    if (ret != OS_OK) {
+        PRT_Printf("[FATFS][ERROR] openamp init failed, ret %d\n", ret);
+        return;
+    }
 #endif
 
 #ifdef LOSCFG_SHELL_MICA_INPUT
@@ -332,6 +344,10 @@ void Test1TaskEntry()
     while (!is_tty_ready()) {
         PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
     }
+#endif
+
+#if defined(FILESYSTEM_TESTCASE)
+    fatfs_test();
 #endif
 
 #if defined(UROS_DEMO)
@@ -365,11 +381,11 @@ U32 OsTestInit(void)
     struct TskInitParam param = {0};
 
     // task 1
-    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, 0x2000, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, FATFS_TEST_STACK_SIZE, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test1TaskEntry;
     param.taskPrio = 25;
     param.name = "Test1Task";
-    param.stackSize = 0x2000;
+    param.stackSize = FATFS_TEST_STACK_SIZE;
     
     ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
     if (ret) {
