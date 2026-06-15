@@ -40,6 +40,7 @@
 /output
 /src/net/lwip
 /src/fs/fat/ff15
+/src/fs/littlefs/littlefs
 /src/net/soem
 /src/net/ethercat
 /testsuites/eigen-test/*.cpp

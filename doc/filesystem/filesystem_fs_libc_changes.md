@@ -1,8 +1,8 @@
-# FATFS 测试相关 fs 与 libc 修改说明
+# 本地文件系统测试相关 fs 与 libc 修改说明
 
 ## 1 背景
 
-在 sd3403 上接入本地 FATFS 测试套时，测试使用内存块设备模拟一块空白磁盘，并通过标准 C 文件接口执行 `fopen`、`fwrite`、`fread`、`remove`。该路径触发了本地 VFS + FATFS 的完整调用链，也暴露出几个原有代码在特定路径下的问题。
+在 sd3403 上接入本地文件系统测试套时，FATFS 测试使用内存块设备模拟一块空白磁盘，并通过标准 C 文件接口执行 `fopen`、`fwrite`、`fread`、`remove`。该路径触发了本地 VFS + FATFS 的完整调用链，也暴露出几个原有代码在特定路径下的问题。后续测试套已扩展为统一 `fs` app，用于覆盖 FATFS、RAMFS、SPIFFS、LITTLEFS 和 DEVFS。
 
 本文说明本次修改的 `fs` 和 `libc` 代码位置、问题现象、原因以及修改理由。
 
@@ -247,14 +247,14 @@ UniProton 的 stdio 结构中已经有 `owner` 和 `lockcount` 字段，`ftryloc
 
 ## 7 验证方式
 
-构建 FATFS 测试 app：
+构建统一文件系统测试 app：
 
 ```bash
 cd /home/uniproton/fs_UniProton/UniProton/demos/sd3403/build
-sh build_app.sh fatfs
+sh build_app.sh fs
 ```
 
-部署 `fatfs.elf` 后通过 mica 运行，成功日志如下：
+部署 `fs.elf` 后通过 mica 运行，成功日志如下：
 
 ```text
 [openamp] ept ready
@@ -263,6 +263,11 @@ sh build_app.sh fatfs
 [FATFS][INFO] mount success
 [FATFS][INFO] read from file: hello sd3403 fatfs!
 [FATFS][INFO] sd3403 memory fatfs test success
+[RAMFS][INFO] sd3403 ramfs test success
+[SPIFFS][INFO] sd3403 memory spiffs test success
+[LITTLEFS][INFO] sd3403 memory littlefs test success
+[DEVFS][INFO] sd3403 devfs test success
+[FS][INFO] sd3403 filesystem tests success
 ```
 
 该日志证明：
@@ -271,6 +276,7 @@ sh build_app.sh fatfs
 - 空白内存盘能够自动格式化并 remount 成功。
 - `fclose()` 能正常完成 `fflush()` 和底层 close。
 - 标准文件接口完整读写删除流程通过。
+- 统一 `fs` app 中 FATFS、RAMFS、SPIFFS、LITTLEFS、DEVFS 均已完成板级验证。
 
 ## 8 注意事项
 

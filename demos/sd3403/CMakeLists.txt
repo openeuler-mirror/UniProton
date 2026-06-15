@@ -38,6 +38,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/openamp
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
     ${HOME_PATH}/output/libc/include
     ${HOME_PATH}/src/shell/adapter/include
     ${HOME_PATH}/src/shell/full/include
@@ -129,7 +130,7 @@ elseif (${APP} STREQUAL "task-switch" OR
     add_subdirectory(${HOME_PATH}/testsuites/rhealstone tmp)
     target_compile_options(rpmsg PUBLIC -DRHEALSTONE_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:rhealstoneTest>)
-elseif (${APP} STREQUAL "fatfs")
+elseif (${APP} STREQUAL "fs")
     add_subdirectory(${HOME_PATH}/testsuites/filesystem-test tmp)
     target_compile_options(rpmsg PUBLIC -DFILESYSTEM_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:filesystemTest>)

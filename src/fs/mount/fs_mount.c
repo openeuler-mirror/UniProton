@@ -68,7 +68,7 @@
     defined(CONFIG_FS_PROCFS) || defined(CONFIG_NFS) || \
     defined(CONFIG_FS_TMPFS) || defined(CONFIG_FS_USERFS) || \
     defined(CONFIG_FS_CROMFS) || defined(CONFIG_FS_UNIONFS) || \
-    defined(CONFIG_FS_HOSTFS)
+    defined(CONFIG_FS_HOSTFS) || defined(CONFIG_FS_RAMFS)
 #  define NODFS_SUPPORT
 #endif
 
@@ -181,6 +181,9 @@ extern const struct mountpt_operations g_unionfs_operations;
 #ifdef CONFIG_FS_RPMSGFS
 extern const struct mountpt_operations g_rpmsgfs_operations;
 #endif
+#ifdef CONFIG_FS_RAMFS
+extern const struct mountpt_operations g_ramfs_operations;
+#endif
 
 static const struct fsmap_t g_nonbdfsmap[] =
 {
@@ -213,6 +216,9 @@ static const struct fsmap_t g_nonbdfsmap[] =
 #endif
 #ifdef CONFIG_FS_RPMSGFS
     { "rpmsgfs", &g_rpmsgfs_operations },
+#endif
+#ifdef CONFIG_FS_RAMFS
+    { "ramfs", &g_ramfs_operations },
 #endif
     { NULL, NULL },
 };
@@ -546,4 +552,3 @@ int mount(FAR const char *source, FAR const char *target,
 
   return ret;
 }
-

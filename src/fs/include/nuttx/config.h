@@ -109,15 +109,3 @@ typedef void* pthread_startroutine_t;
 #ifdef CONFIG_FS_SMARTFS
 #undef CONFIG_FS_SMARTFS
 #endif
-
-#ifdef CONFIG_FS_LITTLEFS
-#undef CONFIG_FS_LITTLEFS
-#endif
-
-#ifdef CONFIG_FS_SPIFFS
-#undef CONFIG_FS_SPIFFS
-#endif
-
-#ifdef CONFIG_FS_LITTLEFS
-#undef CONFIG_FS_LITTLEFS
-#endif

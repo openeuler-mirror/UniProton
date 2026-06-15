@@ -19,5 +19,6 @@ cp output/UniProton/lib/$1/* demos/sd3403/libs
 cp output/libboundscheck/lib/$1/* demos/sd3403/libs
 cp -r output/libc demos/sd3403/include
 cp -r src/include/uapi/* demos/sd3403/include
+cp -r src/fs/include/* demos/sd3403/include
 cp build/uniproton_config/config_armv8_sd3403/prt_buildef.h demos/$1/include/
 popd

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14.1) #cmake最低版本要求
 
-if(NOT ${CONFIG_OS_OPTION_DRIVER})
+if(NOT CONFIG_OS_OPTION_DRIVER)
     RETURN()
 endif()
 
