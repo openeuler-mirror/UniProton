@@ -21,7 +21,7 @@ U8 g_memRegion00[OS_MEM_FSC_PT_SIZE];
 U32 g_swtmrId;
 extern U32 PRT_Printf(const char *format, ...);
 
-#define FATFS_TEST_STACK_SIZE 0x8000
+#define FILESYSTEM_TEST_STACK_SIZE 0x8000
 
 #if defined(OS_OPTION_OPENAMP)
 unsigned int is_tty_ready(void);
@@ -321,7 +321,7 @@ void soem_test(const char *ifname);
 #endif
 
 #if defined(FILESYSTEM_TESTCASE)
-void fatfs_test(void);
+void filesystem_test(void);
 #endif
 
 void Test1TaskEntry()
@@ -347,7 +347,7 @@ void Test1TaskEntry()
 #endif
 
 #if defined(FILESYSTEM_TESTCASE)
-    fatfs_test();
+    filesystem_test();
 #endif
 
 #if defined(UROS_DEMO)
@@ -381,11 +381,11 @@ U32 OsTestInit(void)
     struct TskInitParam param = {0};
 
     // task 1
-    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, FATFS_TEST_STACK_SIZE, MEM_ADDR_ALIGN_016);
+    param.stackAddr = (uintptr_t)PRT_MemAllocAlign(0, ptNo, FILESYSTEM_TEST_STACK_SIZE, MEM_ADDR_ALIGN_016);
     param.taskEntry = (TskEntryFunc)Test1TaskEntry;
     param.taskPrio = 25;
     param.name = "Test1Task";
-    param.stackSize = FATFS_TEST_STACK_SIZE;
+    param.stackSize = FILESYSTEM_TEST_STACK_SIZE;
     
     ret = PRT_TaskCreate(&g_testTskHandle[0], &param);
     if (ret) {

@@ -27,7 +27,21 @@ add_subdirectory(inode)
 add_subdirectory(mount)
 add_subdirectory(vfs)
 add_subdirectory(sys)
-add_subdirectory(fat)
+if(CONFIG_CONFIG_FS_FAT)
+    add_subdirectory(fat)
+endif()
+
+if(CONFIG_CONFIG_FS_RAMFS)
+    add_subdirectory(ramfs)
+endif()
+
+if(CONFIG_CONFIG_FS_LITTLEFS)
+    add_subdirectory(littlefs)
+endif()
+
+if(CONFIG_CONFIG_FS_SPIFFS)
+    add_subdirectory(spiffs)
+endif()
 
 install(DIRECTORY
     ${FS_BASE_DIR}/include
