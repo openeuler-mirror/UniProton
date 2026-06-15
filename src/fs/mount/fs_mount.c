@@ -346,7 +346,7 @@ int nx_mount(FAR const char *source, FAR const char *target,
 
   SETUP_SEARCH(&desc, target, false);
 
-  ret = inode_find(&desc);
+  ret = inode_search(&desc);
   if (ret >= 0)
     {
       /* Successfully found.  The reference count on the inode has been
@@ -355,6 +355,7 @@ int nx_mount(FAR const char *source, FAR const char *target,
 
       mountpt_inode = desc.node;
       DEBUGASSERT(mountpt_inode != NULL);
+      mountpt_inode->i_crefs++;
 
       /* But is it a directory node (i.e., not a driver or other special
        * node)?
