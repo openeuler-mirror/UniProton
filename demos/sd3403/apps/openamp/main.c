@@ -324,6 +324,10 @@ void soem_test(const char *ifname);
 void filesystem_test(void);
 #endif
 
+#if defined(MBEDTLS_TESTCASE)
+#include "mbedtls_dtls_server_test.h"
+#endif
+
 void Test1TaskEntry()
 {
     int ret;
@@ -348,6 +352,10 @@ void Test1TaskEntry()
 
 #if defined(FILESYSTEM_TESTCASE)
     filesystem_test();
+#endif
+
+#if defined(MBEDTLS_TESTCASE)
+    mbedtls_dtls_server_test();
 #endif
 
 #if defined(UROS_DEMO)

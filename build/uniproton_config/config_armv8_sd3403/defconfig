@@ -160,6 +160,11 @@ CONFIG_OS_OPTION_PROXY=y
 # CONFIG_OS_OPTION_RND is not set
 
 #
+# Mbed TLS Modules Configuration
+#
+# CONFIG_OS_SUPPORT_MBEDTLS is not set
+
+#
 # Utility Modules Configuration
 #
 CONFIG_OS_OPTION_POSIX=y

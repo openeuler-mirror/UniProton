@@ -23,6 +23,7 @@
 /demos/*/component/libcxx
 /src/component/ccl
 /src/component/libxml2
+/src/component/mbedtls/mbedtls-2.16.8
 /testsuites/cxx-test/tools/.compiles_list
 /testsuites/cxx-test/tools/.run_test.cc
 /testsuites/build/*.bin
