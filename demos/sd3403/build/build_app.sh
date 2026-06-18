@@ -1,5 +1,5 @@
 # UniPorton_test_proxy_posix_interface sd3403 UniPorton_test_log_interface UniPorton_test_posix_time_interface UniProton_uros_demo
-# deadlock-break interrupt-latency message-latency semaphore-shuffle task-preempt task-switch fs mbedtls
+# deadlock-break interrupt-latency message-latency semaphore-shuffle task-preempt task-switch fs mbedtls cmsis
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
 
 if [ "$1" != "" ]

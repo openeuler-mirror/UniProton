@@ -39,4 +39,8 @@ if(${CONFIG_OS_SUPPORT_RPMSGLITE})
     add_subdirectory(component/rpmsg-lite)
 endif()
 
+if("${CONFIG_OS_SUPPORT_CMSIS}" STREQUAL "y")
+    add_subdirectory(component/cmsis)
+endif()
+
 add_subdirectory(extended)
