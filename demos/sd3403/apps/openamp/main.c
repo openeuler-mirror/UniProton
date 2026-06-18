@@ -328,6 +328,10 @@ void filesystem_test(void);
 #include "mbedtls_dtls_server_test.h"
 #endif
 
+#if defined(CMSIS_TESTCASE)
+void cmsis_test(void);
+#endif
+
 void Test1TaskEntry()
 {
     int ret;
@@ -356,6 +360,10 @@ void Test1TaskEntry()
 
 #if defined(MBEDTLS_TESTCASE)
     mbedtls_dtls_server_test();
+#endif
+
+#if defined(CMSIS_TESTCASE)
+    cmsis_test();
 #endif
 
 #if defined(UROS_DEMO)
