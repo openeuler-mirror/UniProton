@@ -146,6 +146,17 @@ elseif (${APP} STREQUAL "mbedtls")
         ${HOME_PATH}/testsuites/mbedtls-test
     )
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:mbedtls_component> $<TARGET_OBJECTS:mbedtlsTest>)
+elseif (${APP} STREQUAL "zlib")
+    if (NOT "${CONFIG_OS_SUPPORT_ZLIB}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_ZLIB")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/zlib-test tmp)
+    target_compile_options(rpmsg PUBLIC -DZLIB_TESTCASE)
+    target_include_directories(rpmsg PUBLIC
+        ${HOME_PATH}/testsuites/zlib-test
+    )
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:zlibTest>)
 elseif(${APP} STREQUAL "UniPorton_test_log_interface")
     add_subdirectory(${HOME_PATH}/testsuites/log-test tmp)
     target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE -DLOG_TESTCASE)

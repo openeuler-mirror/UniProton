@@ -35,6 +35,10 @@ if((${CONFIG_OS_SUPPORT_LIBXML2}) AND (EXISTS ${UNIPROTON_SRC_DIR}/component/lib
     add_subdirectory(component/libxml2)
 endif()
 
+if(${CONFIG_OS_SUPPORT_ZLIB})
+    add_subdirectory(component/zlib)
+endif()
+
 if(${CONFIG_OS_SUPPORT_RPMSGLITE})
     add_subdirectory(component/rpmsg-lite)
 endif()

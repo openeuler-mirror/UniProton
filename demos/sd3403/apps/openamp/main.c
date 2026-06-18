@@ -328,6 +328,10 @@ void filesystem_test(void);
 #include "mbedtls_dtls_server_test.h"
 #endif
 
+#if defined(ZLIB_TESTCASE)
+#include "zlib_test.h"
+#endif
+
 #if defined(CMSIS_TESTCASE)
 void cmsis_test(void);
 #endif
@@ -360,6 +364,10 @@ void Test1TaskEntry()
 
 #if defined(MBEDTLS_TESTCASE)
     mbedtls_dtls_server_test();
+#endif
+
+#if defined(ZLIB_TESTCASE)
+    zlib_test();
 #endif
 
 #if defined(CMSIS_TESTCASE)
