@@ -1,2 +1,7 @@
 menu "Utility Modules Configuration"
+
+config OS_SUPPORT_ZLIB
+	bool "Whether support zlib module or not"
+	default n
+
 endmenu
