@@ -39,6 +39,16 @@ if(${CONFIG_OS_SUPPORT_ZLIB})
     add_subdirectory(component/zlib)
 endif()
 
+if("${CONFIG_OS_SUPPORT_OTA}" STREQUAL "y")
+    add_subdirectory(component/ota)
+endif()
+
+if(("${CONFIG_OS_SUPPORT_LWM2M}" STREQUAL "y") OR
+    ("${CONFIG_OS_SUPPORT_MQTT}" STREQUAL "y") OR
+    ("${CONFIG_OS_SUPPORT_NB_IOT}" STREQUAL "y"))
+    add_subdirectory(component/connectivity)
+endif()
+
 if(${CONFIG_OS_SUPPORT_RPMSGLITE})
     add_subdirectory(component/rpmsg-lite)
 endif()
