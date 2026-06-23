@@ -157,6 +157,37 @@ elseif (${APP} STREQUAL "zlib")
         ${HOME_PATH}/testsuites/zlib-test
     )
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:zlibTest>)
+elseif (${APP} STREQUAL "iot-ota-test")
+    if (NOT "${CONFIG_OS_SUPPORT_OTA}" STREQUAL "y" AND
+        NOT "${CONFIG_OS_SUPPORT_LWM2M}" STREQUAL "y" AND
+        NOT "${CONFIG_OS_SUPPORT_MQTT}" STREQUAL "y" AND
+        NOT "${CONFIG_OS_SUPPORT_NB_IOT}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE AT LEAST ONE OF CONFIG_OS_SUPPORT_OTA/LWM2M/MQTT/NB_IOT")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/iot-ota-test tmp)
+    target_compile_options(rpmsg PUBLIC -DIOT_OTA_TESTCASE)
+    target_include_directories(rpmsg PUBLIC
+        ${HOME_PATH}/testsuites/iot-ota-test
+        ${HOME_PATH}/testsuites/iot-ota-test/common
+        ${HOME_PATH}/testsuites/iot-ota-test/lwm2m
+        ${HOME_PATH}/testsuites/iot-ota-test/mqtt
+        ${HOME_PATH}/testsuites/iot-ota-test/lwm2m_ota
+        ${HOME_PATH}/testsuites/iot-ota-test/mqtt_ota
+        ${HOME_PATH}/src/component/ota/include
+        ${HOME_PATH}/src/component/ota/sota
+        ${HOME_PATH}/src/component/ota/flag_operate
+        ${HOME_PATH}/src/component/ota/package
+        ${HOME_PATH}/src/component/ota/utility
+        ${HOME_PATH}/src/component/connectivity
+        ${HOME_PATH}/src/component/connectivity/include
+        ${HOME_PATH}/src/component/connectivity/mqtt/MQTTPacket/src
+        ${HOME_PATH}/src/component/connectivity/mqtt/MQTTClient-C/src
+        ${HOME_PATH}/src/component/connectivity/mqtt/MQTTClient-C/src/uniproton
+        ${HOME_PATH}/src/component/connectivity/lwm2m/core
+        ${HOME_PATH}/src/component/connectivity/lwm2m/core/er-coap-13
+    )
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:iotOtaTest>)
 elseif(${APP} STREQUAL "UniPorton_test_log_interface")
     add_subdirectory(${HOME_PATH}/testsuites/log-test tmp)
     target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE -DLOG_TESTCASE)

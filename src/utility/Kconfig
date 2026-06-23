@@ -4,4 +4,20 @@ config OS_SUPPORT_ZLIB
 	bool "Whether support zlib module or not"
 	default n
 
+config OS_SUPPORT_OTA
+	bool "Whether support OTA module or not"
+	default n
+
+config OS_SUPPORT_LWM2M
+	bool "Whether support LwM2M module or not"
+	default n
+
+config OS_SUPPORT_MQTT
+	bool "Whether support MQTT module or not"
+	default n
+
+config OS_SUPPORT_NB_IOT
+	bool "Whether support NB-IoT module or not"
+	default n
+
 endmenu

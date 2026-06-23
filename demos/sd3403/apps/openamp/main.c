@@ -332,6 +332,10 @@ void filesystem_test(void);
 #include "zlib_test.h"
 #endif
 
+#if defined(IOT_OTA_TESTCASE)
+#include "iot_ota_test.h"
+#endif
+
 #if defined(CMSIS_TESTCASE)
 void cmsis_test(void);
 #endif
@@ -368,6 +372,10 @@ void Test1TaskEntry()
 
 #if defined(ZLIB_TESTCASE)
     zlib_test();
+#endif
+
+#if defined(IOT_OTA_TESTCASE)
+    iot_ota_test();
 #endif
 
 #if defined(CMSIS_TESTCASE)
