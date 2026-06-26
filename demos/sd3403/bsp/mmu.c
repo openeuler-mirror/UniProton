@@ -44,6 +44,12 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .size      = SHM_MAP_SIZE,
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = WOW_IMG_ADDR,
+        .phys      = WOW_IMG_ADDR,
+        .size      = WOW_IMG_SIZE,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }
 };
 

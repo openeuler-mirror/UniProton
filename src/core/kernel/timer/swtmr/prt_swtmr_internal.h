@@ -173,6 +173,16 @@ extern struct TagSwTmrSortLinkAttr g_tmrSortLink;
 extern struct TagSwTmrCtrl *g_tmrFreeList;
 #endif
 
+/* Tickless swtmr path (OsSwtmrNearestTicksRefresh) is shared by SMP and non-SMP
+ * builds. SMP indexes the per-core sort link via swtmr->coreID; non-SMP has a
+ * single sort link (no coreID member, no array). This macro picks the right
+ * reference so the shared tickless code compiles in both. */
+#if defined(OS_OPTION_SMP)
+#define OS_SWTMR_SORT_LINK(swtmr)    (&g_tmrSortLink[(swtmr)->coreID])
+#else
+#define OS_SWTMR_SORT_LINK(swtmr)    (&g_tmrSortLink)
+#endif
+
 /*
  * 模块内函数声明
  */

@@ -183,9 +183,9 @@ OS_SEC_TEXT void OsSwTmrScan(void)
 }
 #else
 /*
- * 描述：软件定时器模块的Tick中断运行接口
+ * 描述：推进wheel游标一格并处理该格超时定时器（非 tickless 路径）
  */
-OS_SEC_TEXT void OsSwTmrScan(void)
+static void OsSwTmrScanOneSlot(void)
 {
     struct TagSwTmrCtrl *swtmr = NULL;
     struct TagSwTmrCtrl *outLink = NULL;
@@ -232,9 +232,62 @@ OS_SEC_TEXT void OsSwTmrScan(void)
     }
 
     OsSwTmrScanProcess(object, listObject, NULL, outLink);
-
-    return;
 }
+
+#if defined(OS_OPTION_TICKLESS)
+/*
+ * 描述：tickless 软件定时器扫描——按绝对 expectedTick 到期。
+ * tickless 睡到最近事件，wake 时 g_uniTicks 跳到该事件点；只触发
+ * expectedTick <= g_uniTicks 的定时器（通常 0~1 个），O(待到期)。
+ * 不走 cursor 追赶（避免 O(N) 空扫 + loop 定时器半追赶 cursor 重入早触发）；
+ * 与 budget 查询 OsSwtmrNearestTickGet（扫 CB 按 expectedTick）同款。
+ */
+OS_SEC_TEXT void OsSwTmrScan(void)
+{
+    U32 idx;
+    struct TagSwTmrCtrl *swtmr = NULL;
+    uintptr_t intSave;
+
+    intSave = OsIntLock();
+    if (g_swtmrCbArray == NULL) {
+        OsIntRestore(intSave);
+        return;
+    }
+    for (idx = 0; idx < g_swTmrMaxNum; idx++) {
+        swtmr = (struct TagSwTmrCtrl *)g_swtmrCbArray + idx;
+        U8 st = swtmr->state;
+        if ((st == (U8)OS_TIMER_FREE) || (st == (U8)OS_TIMER_CREATED)) {
+            continue;
+        }
+        if (swtmr->expectedTick > g_uniTicks) {
+            continue;
+        }
+        /* 到期：从所在 wheel 槽链表摘除（tickless 下 rollNum 不用于到期判定，免传递）*/
+        swtmr->state = (U8)OS_TIMER_EXPIRED;
+        if ((swtmr->next != NULL) && (swtmr->prev != NULL)) {
+            swtmr->next->prev = swtmr->prev;
+            swtmr->prev->next = swtmr->next;
+            swtmr->next = NULL;
+            swtmr->prev = NULL;
+        }
+        /* 回调可能重入 swtmr API（新建/重启定时器），解锁执行 */
+        OsIntRestore(intSave);
+        swtmr->handler(OS_SWTMR_INDEX_2_ID(swtmr->swtmrIndex), swtmr->arg1, swtmr->arg2, swtmr->arg3, swtmr->arg4);
+        intSave = OsIntLock();
+        /* 到期后处理：loop 重启 / 单次置 CREATED / 删除 */
+        OsSwtmrProc(swtmr);
+    }
+    OsIntRestore(intSave);
+}
+#else
+/*
+ * 描述：软件定时器模块的Tick中断运行接口（非 tickless：推进 wheel 游标一格）
+ */
+OS_SEC_TEXT void OsSwTmrScan(void)
+{
+    OsSwTmrScanOneSlot();
+}
+#endif
 #endif
 #if defined(OS_OPTION_SMP)
 OS_SEC_ALW_INLINE INLINE struct TagListObject *OsSwTmrStartInner(struct TagSwTmrCtrl *swtmr, U32 interval)

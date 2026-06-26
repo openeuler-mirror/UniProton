@@ -14,6 +14,7 @@
  */
 #include "prt_task_external.h"
 #include "prt_asm_cpu_external.h"
+#include "prt_tick_external.h"
 
 OS_SEC_BSS struct TagOsTskSortedDelayList g_tskSortedDelay;
 OS_SEC_BSS struct TagOsRunQue g_runQueue;  // 核的局部运行队列
@@ -122,6 +123,30 @@ OS_SEC_TEXT void OsTaskScan(void)
         OsTskScheduleFast();
     }
 }
+
+#if defined(OS_OPTION_TICKLESS)
+/*
+ * 描述：获取任务延时排序链的最近到期 tick（绝对值）。
+ * AMP 任务延时链 g_tskSortedDelay.tskList 按 expirationTick 升序，头节点即最近到期。
+ * 注册到 g_getTskDlyNearestTick，让 task delay 进入 tickless sleep budget；否则 idle
+ * 只看到 swtmr/cpup 事件，会按其 budget 补偿，导致 task delay 被推迟、g_uniTicks 虚高。
+ * 对位 SMP 的 OsTskDlyNearestTickGet（SMP 读维护好的 nearestTicks，AMP 读有序链头节点）。
+ */
+OS_SEC_TEXT U64 OsAmpTskDlyNearestTickGet(U32 coreID)
+{
+    (void)coreID;
+    struct TagListObject *list = &g_tskSortedDelay.tskList;
+    U64 ticks = OS_TICKLESS_FOREVER;
+    uintptr_t intSave = OsIntLock();
+
+    if (list->next != list) {
+        struct TagTskCb *head = LIST_FIRST_ENTITY(list, struct TagTskCb, timerList);
+        ticks = head->expirationTick;
+    }
+    OsIntRestore(intSave);
+    return ticks;
+}
+#endif
 
 OS_SEC_L0_TEXT void OsSpinLockTaskRq(struct TagTskCb* taskCB)
 {

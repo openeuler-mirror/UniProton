@@ -1,0 +1,27 @@
+menu "Extended Low-power Configuration"
+
+config OS_OPTION_LOWPOWER
+    bool "Whether support the low-power framework"
+    default n
+
+config OS_OPTION_POWERMGR
+    bool "Whether support the power manager (light/deep sleep, freq, voting)"
+    default n
+    depends on OS_OPTION_LOWPOWER
+
+config OS_OPTION_RUNSTOP
+    bool "Whether support runstop (suspend-to-storage wake-up)"
+    default n
+    depends on OS_OPTION_LOWPOWER
+
+config OS_OPTION_RUNSTOP_WOW_SHM
+    bool "Whether runstop persists the image via shared memory"
+    default n
+    depends on OS_OPTION_RUNSTOP
+
+config OS_OPTION_DEEPSLEEP
+    bool "Whether support deep sleep (register save/restore on reset)"
+    default n
+    depends on OS_OPTION_LOWPOWER
+
+endmenu

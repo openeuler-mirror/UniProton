@@ -2,3 +2,7 @@
 if(${CONFIG_OS_OPTION_PERF})
     add_subdirectory(perf)
 endif()
+
+if(${CONFIG_OS_OPTION_LOWPOWER})
+    add_subdirectory(lowpower)
+endif()

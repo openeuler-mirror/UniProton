@@ -16,6 +16,9 @@
 #if defined(OS_OPTION_LINUX)
 #include <linux/jiffies.h>
 #endif
+#if defined(OS_OPTION_TICKLESS)
+#include "prt_tickless.h"
+#endif
 
 /* 任务检测Tick中断调用钩子 */
 OS_SEC_BSS TskmonTickHook g_tskMonHook;
@@ -328,6 +331,11 @@ void PRT_TickISR(void)
     if (OsSysGetTickPerSecond() != 0) {
         TICK_NO_RESPOND_CNT++;
     }
+#endif
+#if defined(OS_OPTION_TICKLESS)
+    /* Mark that a tick IRQ fired so the next idle's OsTicklessOpen re-arms the
+     * one-shot wake timer. Mirrors LiteOs OsTickHandler's OsTickIrqFlagSet. */
+    OsTickIrqFlagSet(OsTicklessFlagGet());
 #endif
 }
 #endif
