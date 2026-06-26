@@ -210,7 +210,7 @@ OS_SEC_L2_TEXT U32 OsSwTmrStartTimer(TimerHandle tmrHandle)
 
     OsSwTmrStart(swtmr, swtmr->idxRollNum);
 #if defined(OS_OPTION_TICKLESS)
-    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+    OsSwtmrNearestTicksRefresh(OS_SWTMR_SORT_LINK(swtmr));
 #endif
 
     OsSwtmrIqrSplUnlock(swtmr, intSave);
@@ -253,7 +253,7 @@ OS_SEC_L2_TEXT U32 OsSwTmrStopTimer(TimerHandle tmrHandle)
     OsSwTmrStop(swtmr, FALSE);
 
 #if defined(OS_OPTION_TICKLESS)
-    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+    OsSwtmrNearestTicksRefresh(OS_SWTMR_SORT_LINK(swtmr));
 #endif
 
     OsSwtmrIqrSplUnlock(swtmr, intSave);
@@ -291,7 +291,7 @@ OS_SEC_L2_TEXT U32 OsSwTmrRestartTimer(TimerHandle tmrHandle)
     OsSwTmrStart(swtmr, swtmr->interval);
 
 #if defined(OS_OPTION_TICKLESS)
-    OsSwtmrNearestTicksRefresh(CPU_SWTMR_SORT_LINK(swtmr->coreID));
+    OsSwtmrNearestTicksRefresh(OS_SWTMR_SORT_LINK(swtmr));
 #endif
 
     OsSwtmrIqrSplUnlock(swtmr, intSave);

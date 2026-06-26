@@ -14,6 +14,8 @@
  */
 #include "prt_task_internal.h"
 
+extern U64 OsAmpTskDlyNearestTickGet(U32 coreID);
+
 /*
  * 描述：AMP任务初始化
  */
@@ -67,6 +69,13 @@ OS_SEC_L4_TEXT U32 OsTskAMPInit(void)
 
     INIT_LIST_OBJECT(&g_tskSortedDelay.tskList);
     INIT_LIST_OBJECT(&g_tskRecyleList);
+
+#if defined(OS_OPTION_TICKLESS)
+    /* Register task-delay nearest-tick so PRT_TickLessCountGet includes task
+     * delays in the tickless budget (otherwise task delays are postponed and
+     * g_uniTicks drifts high). Mirrors SMP's OsTskAMPInit registration. */
+    g_getTskDlyNearestTick = OsAmpTskDlyNearestTickGet;
+#endif
 
     /* 增加OS_TSK_INUSE状态，使得在Trace记录的第一条信息状态为OS_TSK_INUSE(创建状态) */
     RUNNING_TASK->taskStatus = (OS_TSK_INUSE | OS_TSK_RUNNING);

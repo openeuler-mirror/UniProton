@@ -14,6 +14,14 @@
 #define OPENAMP_SHM_SIZE            0x100000
 #define MMU_LOG_MEM_ADDR            0x44000000ULL
 
+/* Run-stop (WOW) image persistence region: placed right after the log memory
+ * (0x44000000 + SHM_MAP_SIZE 0x1100000 = 0x45100000), 2MB-aligned to 0x45200000.
+ * It lives in the second mcs_mem carveout (0x43000000-0x46ffffff), is Linux-reserved
+ * and survives mica stop/start. Kept clear of the 0x40000000 OpenAMP SHM used for
+ * rpmsg communication. */
+#define WOW_IMG_ADDR                0x45200000ULL
+#define WOW_IMG_SIZE                0x200000
+
 #define SICR_ADDR_OFFSET_PER_CORE   0x20000U
 #define OS_GICR_STRIDE              0x20000U            // GICR核间偏移量配置
 

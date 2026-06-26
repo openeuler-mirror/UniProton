@@ -340,6 +340,10 @@ void filesystem_test(void);
 void cmsis_test(void);
 #endif
 
+#if defined(LOWPOWER_TESTCASE)
+#include "lowpower_test.h"
+#endif
+
 void Test1TaskEntry()
 {
     int ret;
@@ -380,6 +384,10 @@ void Test1TaskEntry()
 
 #if defined(CMSIS_TESTCASE)
     cmsis_test();
+#endif
+
+#if defined(LOWPOWER_TESTCASE)
+    lowpower_test();
 #endif
 
 #if defined(UROS_DEMO)
@@ -508,10 +516,15 @@ U32 PRT_AppInit(void)
         return ret;
     }
 
+#if !defined(LOWPOWER_TESTCASE)
+    /* This 1000ms (100-tick) LOOP demo timer keeps the tickless budget
+     * <= minSleepTicks forever, forcing permanent work-mode. Skip it for the
+     * lowpower test (which has its own swtmrs). */
     ret = TimerTestStart();
     if (ret) {
         return ret;
     }
+#endif
 
     return OS_OK;
 }
