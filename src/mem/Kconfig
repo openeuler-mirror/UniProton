@@ -1,2 +1,20 @@
+# Memory allocator algorithm selection
+# 通过 Kconfig 宏在 FSC（UniProton 私有算法）与 TLSF（Two-Level Segregated Fit）之间切换。
+# 宏 CONFIG_OS_MEM_ARITH_TLSF 在 defconfig 中置 y 即选用 TLSF 算法，
+# 缺省（不置 y 或 is not set）沿用原有 FSC 算法，保持向后兼容。
+# 以算法名命名，便于后续新增 bestfit/bestfit_little/slab 等算法。
 menu "MM Modules Configuration"
+
+config OS_MEM_ARITH_TLSF
+    bool "Use TLSF memory allocator"
+    default n
+    help
+      Select y to use the TLSF (Two-Level Segregated Fit) memory allocator
+      instead of the default UniProton FSC allocator. The TLSF algorithm
+      source (los_memory.c) is kept unmodified; a thin adaptation shim +
+      glue layer is added under src/mem/tlsf/. When enabled, the FSC
+      implementation (src/mem/fsc/prt_fscmem.c) is excluded from the build
+      and litelibc's malloc_usable_size.c is replaced by the TLSF glue
+      implementation.
+
 endmenu

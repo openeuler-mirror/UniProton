@@ -14,6 +14,22 @@
  */
 #include "prt_mem_internal.h"
 #include "prt_perf.h"
+#include "prt_fscmem_external.h"
+#include "prt_tlsfmem_external.h"
+
+/*
+ * 内存算法公共初始化分派：由 OsMemConfigReg 调用，根据 defconfig 选定的
+ * 算法宏调用对应算法自己的初始化实现。FSC/TLSF 各自实现 OsFscMemInit/
+ * OsTlsfMemInit 并填充 g_memArithAPI 分发表，config 层只感知本公共接口。
+ */
+OS_SEC_TEXT U32 OsMemInit(uintptr_t addr, U32 size)
+{
+#if defined(OS_MEM_ARITH_TLSF)
+    return OsTlsfMemInit(addr, size);
+#else
+    return OsFscMemInit(addr, size);
+#endif
+}
 
 OS_SEC_TEXT void *PRT_MemAlloc(U32 mid, U8 ptNo, U32 size)
 {

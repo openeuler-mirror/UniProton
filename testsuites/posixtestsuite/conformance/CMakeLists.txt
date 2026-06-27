@@ -502,6 +502,12 @@ elseif(${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface")
 elseif (${APP} STREQUAL "UniPorton_test_posix_malloc_interface")
     set(BUILD_APP "UniPorton_test_posix_malloc_interface")
     set(ALL_SRC runMallocTest.c ${ALL_MALLOC_SRC})
+elseif(${APP} STREQUAL "UniPorton_test_prt_mem_interface")
+    # PRT_Mem* 标准接口测试 app（common：FSC 与 TLSF 两种算法均可构建/通过）。
+    # 用例只调用 PRT_MemAlloc/PRT_MemFree/PRT_MemAllocAlign，不依赖任何算法私有
+    # 布局；底层算法由 defconfig 的 CONFIG_OS_MEM_ARITH_TLSF 选定。
+    set(BUILD_APP "UniPorton_test_prt_mem_interface")
+    set(ALL_SRC runPrtMemTest.c)
 elseif(${APP} STREQUAL "UniPorton_test_posix_signal_interface")
     set(BUILD_APP "UniPorton_test_posix_signal_interface")
     set(ALL_SRC runSignalTest.c ${ALL_SIGNAL_SRC})

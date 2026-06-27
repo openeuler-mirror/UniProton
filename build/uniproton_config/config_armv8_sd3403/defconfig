@@ -324,3 +324,6 @@ CONFIG_CONFIG_SYSTEM_TIME64=y
 # CONFIG_CONFIG_LOCAL_ECHO is not set
 
 CONFIG_CONFIG_BOARD_LOOPSPERMSEC=25000
+
+# Memory allocator algorithm: y=LiteOS-M TLSF (ported), unset=UniProton FSC (default)
+# CONFIG_OS_MEM_ARITH_TLSF is not set

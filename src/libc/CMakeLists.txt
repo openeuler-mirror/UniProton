@@ -23,6 +23,15 @@ list(REMOVE_ITEM LITELIBC_SOURCE
 )
 endif()
 
+# 内存算法切换为 TLSF 时，malloc_usable_size 由 TLSF 胶水层
+# (src/mem/tlsf/prt_tlsfmem.c) 提供，此处排除 litelibc 中基于 FSC 内部
+# 结构的实现，避免符号重复定义并解耦对 FSC 控制头布局的依赖。
+if("${CONFIG_OS_MEM_ARITH_TLSF}" STREQUAL "y")
+list(REMOVE_ITEM LITELIBC_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/litelibc/src/malloc/malloc_usable_size.c
+)
+endif()
+
 # 依赖VFS的接口
 if(${CONFIG_OS_OPTION_PROXY})
     if(NOT "${CONFIG_OS_OPTION_NUTTX_VFS}")
