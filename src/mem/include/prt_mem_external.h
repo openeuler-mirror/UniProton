@@ -49,6 +49,13 @@ struct TagFscMemCtrl {
 extern void *OsMemAlloc(enum MoudleId mid, U8 ptNo, U32 size);
 extern void *OsMemAllocAlign(U32 mid, U8 ptNo, U32 size, enum MemAlign alignPow);
 
+/*
+ * 内存算法公共初始化分派接口：由各板级 OsMemConfigReg 调用，
+ * 内部按 CONFIG_OS_MEM_ARITH_TLSF 宏选用 FSC 或 TLSF 各自的初始化实现，
+ * 使 config 层无需感知具体算法。
+ */
+extern U32 OsMemInit(uintptr_t addr, U32 size);
+
 /* 对齐之后，返回地址不一定紧跟在内存头后面，需要设置返回地址与内存头之间的差值 */
 OS_SEC_ALW_INLINE INLINE void OsMemSetHeadAddr(uintptr_t usrAddr, uintptr_t ctrlAddr)
 {

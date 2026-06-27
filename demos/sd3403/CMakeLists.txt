@@ -111,6 +111,7 @@ if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_malloc_interface" OR
+    ${APP} STREQUAL "UniPorton_test_prt_mem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_signal_interface")
         add_subdirectory(${HOME_PATH}/testsuites/posixtestsuite/conformance tmp)
         target_compile_options(rpmsg PUBLIC -DPOSIX_TESTCASE)

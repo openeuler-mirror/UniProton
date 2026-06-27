@@ -40,7 +40,7 @@ U32 OsMemConfigReg(void)
 {
     U32 ret;
 
-    ret = OsFscMemInit(OS_MEM_FSC_PT_ADDR, OS_MEM_FSC_PT_SIZE);
+    ret = OsMemInit(OS_MEM_FSC_PT_ADDR, OS_MEM_FSC_PT_SIZE);
     if (ret != OS_OK) {
         return ret;
     }
