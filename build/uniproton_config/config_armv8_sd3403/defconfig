@@ -325,5 +325,9 @@ CONFIG_CONFIG_SYSTEM_TIME64=y
 
 CONFIG_CONFIG_BOARD_LOOPSPERMSEC=25000
 
-# Memory allocator algorithm: y=LiteOS-M TLSF (ported), unset=UniProton FSC (default)
+# Memory allocator algorithm selection
 # CONFIG_OS_MEM_ARITH_TLSF is not set
+# CONFIG_OS_MEM_ARITH_BESTFIT_LITTLE is not set
+# CONFIG_OS_MEM_ARITH_BESTFIT is not set
+# CONFIG_OS_MEM_SLAB_EXTENTION is not set
+# CONFIG_OS_MEM_SLAB_AUTO_EXPANSION_MODE is not set

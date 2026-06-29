@@ -1,8 +1,6 @@
 # Memory allocator algorithm selection
-# 通过 Kconfig 宏在 FSC（UniProton 私有算法）与 TLSF（Two-Level Segregated Fit）之间切换。
-# 宏 CONFIG_OS_MEM_ARITH_TLSF 在 defconfig 中置 y 即选用 TLSF 算法，
-# 缺省（不置 y 或 is not set）沿用原有 FSC 算法，保持向后兼容。
-# 以算法名命名，便于后续新增 bestfit/bestfit_little/slab 等算法。
+# 通过 Kconfig 宏在 FSC、TLSF、bestfit_little、bestfit 之间切换。
+# 以算法名命名，便于后续新增 allocator。
 menu "MM Modules Configuration"
 
 config OS_MEM_ARITH_TLSF
@@ -11,10 +9,45 @@ config OS_MEM_ARITH_TLSF
     help
       Select y to use the TLSF (Two-Level Segregated Fit) memory allocator
       instead of the default UniProton FSC allocator. The TLSF algorithm
-      source (los_memory.c) is kept unmodified; a thin adaptation shim +
+      source is kept in the allocator directory; a thin adaptation shim +
       glue layer is added under src/mem/tlsf/. When enabled, the FSC
       implementation (src/mem/fsc/prt_fscmem.c) is excluded from the build
       and litelibc's malloc_usable_size.c is replaced by the TLSF glue
       implementation.
+
+config OS_MEM_ARITH_BESTFIT_LITTLE
+    bool "Use bestfit_little memory allocator"
+    default n
+    depends on !OS_MEM_ARITH_TLSF && !OS_MEM_ARITH_BESTFIT
+    help
+      Select y to use the bestfit_little dynamic memory allocator. The
+      allocator is integrated as an algorithm peer of FSC/TLSF through the
+      existing UniProton memory dispatch table.
+
+config OS_MEM_ARITH_BESTFIT
+    bool "Use bestfit memory allocator"
+    default n
+    depends on !OS_MEM_ARITH_TLSF && !OS_MEM_ARITH_BESTFIT_LITTLE
+    help
+      Select y to use the full bestfit dynamic memory allocator. The
+      allocator is integrated as an algorithm peer of FSC/TLSF through the
+      existing UniProton memory dispatch table.
+
+config OS_MEM_SLAB_EXTENTION
+    bool "Enable slab extension for bestfit allocators"
+    default n
+    depends on OS_MEM_ARITH_BESTFIT_LITTLE || OS_MEM_ARITH_BESTFIT
+    help
+      Enable the slab small-block cache in front of bestfit_little or bestfit.
+      Slab is an extension of the selected bestfit heap path, not an independent
+      UniProton memory algorithm.
+
+config OS_MEM_SLAB_AUTO_EXPANSION_MODE
+    bool "Enable slab auto expansion mode"
+    default n
+    depends on OS_MEM_SLAB_EXTENTION
+    help
+      Allow the slab extension to allocate additional buckets from the backing
+      bestfit heap.
 
 endmenu

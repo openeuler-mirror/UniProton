@@ -292,9 +292,9 @@ STATIC VOID OsAllMemNodeDoHandle(VOID *pool, VOID (*handle)(struct OsMemNodeHead
 #if (TLSF_CFG_TASK_MEM_USED == 1)
 STATIC VOID GetTaskMemUsedHandle(struct OsMemNodeHead *curNode, VOID *arg)
 {
-    UINT32 *args = (UINT32 *)arg;
+    UINTPTR *args = (UINTPTR *)arg;
     UINT32 *tskMemInfoBuf = (UINT32 *)(UINTPTR)*args;
-    UINT32 tskMemInfoCnt = *(args + 1);
+    UINT32 tskMemInfoCnt = (UINT32)*(args + 1);
 #ifndef TLSF_CFG_MEM_MUL_REGIONS
     if (OS_MEM_NODE_GET_USED_FLAG(curNode->sizeAndFlag)) {
 #else
@@ -309,7 +309,7 @@ STATIC VOID GetTaskMemUsedHandle(struct OsMemNodeHead *curNode, VOID *arg)
 
 VOID OsTaskMemUsed(VOID *pool, UINT32 *tskMemInfoBuf, UINT32 tskMemInfoCnt)
 {
-    UINT32 args[2] = {(UINT32)(UINTPTR)tskMemInfoBuf, tskMemInfoCnt};
+    UINTPTR args[2] = {(UINTPTR)tskMemInfoBuf, (UINTPTR)tskMemInfoCnt};
     OsAllMemNodeDoHandle(pool, GetTaskMemUsedHandle, (VOID *)args);
     return;
 }
@@ -1531,8 +1531,8 @@ VOID *OsTlsfRealloc(VOID *pool, VOID *ptr, UINT32 size)
 #if (TLSF_CFG_MEM_FREE_BY_TASKID == 1)
 STATIC VOID MemNodeFreeByTaskIDHandle(struct OsMemNodeHead *curNode, VOID *arg)
 {
-    UINT32 *args = (UINT32 *)arg;
-    UINT32 taskID = *args;
+    UINTPTR *args = (UINTPTR *)arg;
+    UINT32 taskID = (UINT32)*args;
     struct OsMemPoolHead *poolHead = (struct OsMemPoolHead *)(UINTPTR)(*(args + 1));
     struct OsMemUsedNodeHead *node = NULL;
     if (!OS_MEM_NODE_GET_USED_FLAG(curNode->sizeAndFlag)) {
@@ -1548,7 +1548,7 @@ STATIC VOID MemNodeFreeByTaskIDHandle(struct OsMemNodeHead *curNode, VOID *arg)
 
 UINT32 OsTlsfFreeByTaskID(VOID *pool, UINT32 taskID)
 {
-    UINT32 args[2] = { taskID, (UINT32)(UINTPTR)pool };
+    UINTPTR args[2] = { (UINTPTR)taskID, (UINTPTR)pool };
     if (pool == NULL) {
         return OS_ERROR;
     }
@@ -1869,8 +1869,8 @@ STATIC VOID OsMemIntegrityCheckError(struct OsMemPoolHead *pool,
         PRINTK("The prev node is free\n");
     }
     MEM_UNLOCK(pool, intSave);
-    PRINT_ERR("cur node: 0x%x, pre node: 0x%x, pre node was allocated by task: %d, %s\n",
-              (unsigned int)tmpNode, (unsigned int)preNode, taskCB->taskID, taskCB->taskName);
+    PRINT_ERR("cur node: %p, pre node: %p, pre node was allocated by task: %u, %s\n",
+              (VOID *)tmpNode, (VOID *)preNode, taskCB->taskID, taskCB->taskName);
     OS_TLSF_Panic("Memory integrity check error!\n");
 #else
     MEM_UNLOCK(pool, intSave);

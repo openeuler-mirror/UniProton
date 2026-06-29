@@ -11,7 +11,7 @@
  * See the Mulan PSL v2 for more details.
  * Create: 2024-06-01
  * Description: TLSF 内存算法胶水层。
- *              不改动 TLSF 算法源码 los_memory.c 的任何流程，仅做适配：
+ *              不改动 TLSF 算法核心 prt_tlsf_core.c 的任何流程，仅做适配：
  *              1) 实现 TLSF 算法自己的初始化与释放接口 OsTlsfMemInit/OsTlsfMemFree，
  *                 以及算法无关的标准分配接口 OsMemAlloc/OsMemAllocAlign
  *                 （后两者被内核各模块直接调用，且填入 g_memArithAPI 分发表）。
@@ -45,11 +45,11 @@ uintptr_t g_memStartAddr = 0;
 /* TLSF 内存池句柄（即 OsTlsfInit 传入的分区起始地址）。 */
 static VOID *g_tlsfPool = NULL;
 
-/* 节点头大小：los_memory.c 中 OS_MEM_NODE_HEAD_SIZE = sizeof(struct OsMemUsedNodeHead)，
+/* 节点头大小：算法核心中 OS_MEM_NODE_HEAD_SIZE = sizeof(struct OsMemUsedNodeHead)，
    而 OsMemUsedNodeHead 仅包裹 struct OsMemNodeHead，故二者大小相等。 */
 #define OS_TLSF_NODE_HEAD_SIZE (sizeof(struct OsMemNodeHead))
 
-/* 以下标志位宏与 los_memory.c 内部定义保持一致（los_memory.c 中为私有宏，不在 prt_tlsf_core.h），
+/* 以下标志位宏与算法核心内部定义保持一致（核心文件中为私有宏，不在 prt_tlsf_core.h），
    胶水层复制一份用于统计/可用大小计算，不修改算法源码。 */
 #define OS_TLSF_NODE_USED_FLAG        (1U << 31)
 #define OS_TLSF_NODE_ALIGNED_FLAG     (1U << 30)
@@ -60,7 +60,7 @@ static VOID *g_tlsfPool = NULL;
 #define OS_TLSF_GET_GAPSIZE_ALIGNED_FLAG(g) ((g) & OS_TLSF_GAPSIZE_ALIGNED_FLAG)
 #define OS_TLSF_GAPSIZE_CHECK(g)            (OS_TLSF_GET_GAPSIZE_ALIGNED_FLAG(g) && ((g) & OS_TLSF_GAPSIZE_USED_FLAG))
 
-/* 根据用户指针还原节点头指针，逻辑等价于 los_memory.c 的 OsGetRealPtr。
+/* 根据用户指针还原节点头指针，逻辑等价于算法核心的 OsGetRealPtr。
    - 普通分配：用户指针紧邻节点头之后，ptr-4 落在 sizeAndFlag 字段，ALIGNED 标志为 0。
    - 对齐分配：用户指针前 4 字节为 gap 字，ALIGNED 标志为 1。 */
 static struct OsMemNodeHead *OsTlsfNodeFromUser(void *ptr)
