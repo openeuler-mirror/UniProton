@@ -2,8 +2,8 @@
 #define _CONFORMANCE_RUN_PRT_MEM_TEST_H
 
 /*
- * PRT_Mem* 直接接口测试（common：两算法都能通过）。
- * 底层算法由 defconfig 选定（FSC / TLSF），本组用例只经标准 PRT_MemAlloc/
+ * PRT_Mem* 直接接口测试（common：各内存算法都应通过）。
+ * 底层算法由 defconfig 选定，本组用例只经标准 PRT_MemAlloc/
  * PRT_MemFree/PRT_MemAllocAlign 接口验证分配/释放/对齐/复用等功能，不依赖
  * 任何算法私有布局。算法独有用例（如 FSC 的 tail magic）不在此处登记。
  */
@@ -17,6 +17,12 @@ extern int prt_mem_007(void);
 extern int prt_mem_008(void);
 extern int prt_mem_009(void);
 extern int prt_mem_010(void);
+extern int prt_mem_011(void);
+extern int prt_mem_012(void);
+extern int prt_mem_013(void);
+extern int prt_mem_014(void);
+extern int prt_mem_015(void);
+extern int prt_mem_016(void);
 
 typedef int test_run_main(void);
 
@@ -31,6 +37,12 @@ test_run_main *run_test_arry_prt[] = {
     prt_mem_008,
     prt_mem_009,
     prt_mem_010,
+    prt_mem_011,
+    prt_mem_012,
+    prt_mem_013,
+    prt_mem_014,
+    prt_mem_015,
+    prt_mem_016,
 };
 
 char run_test_name_prt[][50] = {
@@ -44,6 +56,12 @@ char run_test_name_prt[][50] = {
     "prt_mem_008",
     "prt_mem_009",
     "prt_mem_010",
+    "prt_mem_011",
+    "prt_mem_012",
+    "prt_mem_013",
+    "prt_mem_014",
+    "prt_mem_015",
+    "prt_mem_016",
 };
 
 #endif /* _CONFORMANCE_RUN_PRT_MEM_TEST_H */

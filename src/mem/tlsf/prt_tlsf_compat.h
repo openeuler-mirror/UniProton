@@ -18,6 +18,7 @@
 #define _PRT_TLSF_COMPAT_H
 
 #include "prt_typedef.h"
+#include "prt_task.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -113,80 +114,80 @@ typedef bool BOOL;
  * 各宏 #ifndef 守护，若 UniProton 已定义则沿用其定义。
  * ===================================================================== */
 
-#ifndef LITE_OS_SEC_ALW_INLINE
-#define LITE_OS_SEC_ALW_INLINE
+#ifndef PRT_TLSF_SEC_ALW_INLINE
+#define PRT_TLSF_SEC_ALW_INLINE
 #endif
 
-#ifndef LITE_OS_SEC_TEXT
-#define LITE_OS_SEC_TEXT
+#ifndef PRT_TLSF_SEC_TEXT
+#define PRT_TLSF_SEC_TEXT
 #endif
 
-#ifndef LITE_OS_SEC_TEXT_MINOR
-#define LITE_OS_SEC_TEXT_MINOR
+#ifndef PRT_TLSF_SEC_TEXT_MINOR
+#define PRT_TLSF_SEC_TEXT_MINOR
 #endif
 
-#ifndef LITE_OS_SEC_TEXT_INIT
-#define LITE_OS_SEC_TEXT_INIT
+#ifndef PRT_TLSF_SEC_TEXT_INIT
+#define PRT_TLSF_SEC_TEXT_INIT
 #endif
 
-#ifndef LITE_OS_SEC_DATA
-#define LITE_OS_SEC_DATA
+#ifndef PRT_TLSF_SEC_DATA
+#define PRT_TLSF_SEC_DATA
 #endif
 
-#ifndef LITE_OS_SEC_DATA_INIT
-#define LITE_OS_SEC_DATA_INIT
+#ifndef PRT_TLSF_SEC_DATA_INIT
+#define PRT_TLSF_SEC_DATA_INIT
 #endif
 
-#ifndef LITE_OS_SEC_BSS
-#define LITE_OS_SEC_BSS
+#ifndef PRT_TLSF_SEC_BSS
+#define PRT_TLSF_SEC_BSS
 #endif
 
-#ifndef LITE_OS_SEC_BSS_MINOR
-#define LITE_OS_SEC_BSS_MINOR
+#ifndef PRT_TLSF_SEC_BSS_MINOR
+#define PRT_TLSF_SEC_BSS_MINOR
 #endif
 
-#ifndef LITE_OS_SEC_BSS_INIT
-#define LITE_OS_SEC_BSS_INIT
+#ifndef PRT_TLSF_SEC_BSS_INIT
+#define PRT_TLSF_SEC_BSS_INIT
 #endif
 
-#ifndef LITE_OS_SEC_TEXT_DATA
-#define LITE_OS_SEC_TEXT_DATA
+#ifndef PRT_TLSF_SEC_TEXT_DATA
+#define PRT_TLSF_SEC_TEXT_DATA
 #endif
 
-#ifndef LITE_OS_SEC_TEXT_BSS
-#define LITE_OS_SEC_TEXT_BSS
+#ifndef PRT_TLSF_SEC_TEXT_BSS
+#define PRT_TLSF_SEC_TEXT_BSS
 #endif
 
-#ifndef LITE_OS_SEC_TEXT_RODATA
-#define LITE_OS_SEC_TEXT_RODATA
+#ifndef PRT_TLSF_SEC_TEXT_RODATA
+#define PRT_TLSF_SEC_TEXT_RODATA
 #endif
 
-#ifndef LITE_OS_SEC_SYMDATA
-#define LITE_OS_SEC_SYMDATA
+#ifndef PRT_TLSF_SEC_SYMDATA
+#define PRT_TLSF_SEC_SYMDATA
 #endif
 
-#ifndef LITE_OS_SEC_SYMBSS
-#define LITE_OS_SEC_SYMBSS
+#ifndef PRT_TLSF_SEC_SYMBSS
+#define PRT_TLSF_SEC_SYMBSS
 #endif
 
-#ifndef LITE_OS_SEC_VEC
-#define LITE_OS_SEC_VEC
+#ifndef PRT_TLSF_SEC_VEC
+#define PRT_TLSF_SEC_VEC
 #endif
 
-#ifndef LITE_OS_SEC_KEEP_DATA_DDR
-#define LITE_OS_SEC_KEEP_DATA_DDR
+#ifndef PRT_TLSF_SEC_KEEP_DATA_DDR
+#define PRT_TLSF_SEC_KEEP_DATA_DDR
 #endif
 
-#ifndef LITE_OS_SEC_KEEP_TEXT_DDR
-#define LITE_OS_SEC_KEEP_TEXT_DDR
+#ifndef PRT_TLSF_SEC_KEEP_TEXT_DDR
+#define PRT_TLSF_SEC_KEEP_TEXT_DDR
 #endif
 
-#ifndef LITE_OS_SEC_KEEP_DATA_SRAM
-#define LITE_OS_SEC_KEEP_DATA_SRAM
+#ifndef PRT_TLSF_SEC_KEEP_DATA_SRAM
+#define PRT_TLSF_SEC_KEEP_DATA_SRAM
 #endif
 
-#ifndef LITE_OS_SEC_KEEP_TEXT_SRAM
-#define LITE_OS_SEC_KEEP_TEXT_SRAM
+#ifndef PRT_TLSF_SEC_KEEP_TEXT_SRAM
+#define PRT_TLSF_SEC_KEEP_TEXT_SRAM
 #endif
 
 /* =====================================================================
@@ -293,8 +294,7 @@ static inline UINT32 OsTlsfAlign(UINT32 addr, UINT32 boundary)
     return_type new_alias args_list ALIAS_OF(real_func)
 
 /* =====================================================================
- * 以下三组（打印 / hook / 任务桩）原分属 los_debug.h / los_hook.h / los_task.h
- * 三个独立 shim，现合并入本兼容层，避免散落小文件。算法源码不引用任何 LOS_ 符号。
+ * 以下三组（打印 / hook / 任务适配）合并入本兼容层，避免散落小文件。
  * ===================================================================== */
 
 /* 调试打印：PRT_Printf 由各板级 BSP 提供，直驱 UART，启动早期即可用。 */
@@ -325,10 +325,9 @@ typedef enum {
 
 #define OsHookCall(hook, ...) (void)0
 
-/* 任务接口桩：仅在 TLSF_CFG_TASK_MEM_USED 开启时，OsTlsfCurTaskIDGet 给节点打 taskID；
-   本移植提供最小桩结构使算法源码编译通过，正常 alloc/free 路径不会用到。 */
+/* 任务接口适配：TLSF_CFG_TASK_MEM_USED 开启时，节点头记录申请任务的 handle。 */
 #define OS_TASK_ERRORID 0xFFFFFFFFU
-#define OS_TASK_STATUS_UNUSED 0x0001U
+#define OS_TASK_STATUS_UNUSED OS_TSK_UNUSED
 
 struct OsTlsfTaskCb {
     UINT32 taskStatus;
@@ -338,12 +337,52 @@ struct OsTlsfTaskCb {
 };
 typedef struct OsTlsfTaskCb OsTlsfTaskCb;
 
-#define OS_TLSF_TCB_FROM_TID(tid) ((OsTlsfTaskCb *)0)
-
 static inline UINT32 OsTlsfCurTaskIDGet(VOID)
 {
-    return 0U;
+    TskHandle taskPid;
+    UINT32 taskId;
+
+    if (PRT_TaskSelf(&taskPid) != OS_OK) {
+        return OS_TASK_ERRORID;
+    }
+
+    taskId = GET_HANDLE(taskPid);
+    return (taskId < TLSF_CFG_BASE_CORE_TSK_LIMIT) ? taskId : OS_TASK_ERRORID;
 }
+
+static inline OsTlsfTaskCb *OsTlsfTcbFromTid(UINT32 tid)
+{
+    static OsTlsfTaskCb taskCb;
+    static CHAR taskName[OS_TSK_NAME_LEN];
+    struct TskInfo taskInfo = {0};
+    TskHandle taskPid = COMPOSE_PID(OS_THIS_CORE, tid);
+    UINT32 i;
+
+    taskCb.taskStatus = OS_TASK_STATUS_UNUSED;
+    taskCb.taskEntry = NULL;
+    taskCb.taskID = tid;
+    taskCb.taskName = NULL;
+
+    if ((tid >= TLSF_CFG_BASE_CORE_TSK_LIMIT) || (PRT_TaskGetInfo(taskPid, &taskInfo) != OS_OK)) {
+        return &taskCb;
+    }
+
+    for (i = 0; i < (OS_TSK_NAME_LEN - 1); i++) {
+        taskName[i] = taskInfo.name[i];
+        if (taskInfo.name[i] == '\0') {
+            break;
+        }
+    }
+    taskName[OS_TSK_NAME_LEN - 1] = '\0';
+
+    taskCb.taskStatus = taskInfo.taskStatus;
+    taskCb.taskEntry = taskInfo.entry;
+    taskCb.taskID = tid;
+    taskCb.taskName = taskName;
+    return &taskCb;
+}
+
+#define OS_TLSF_TCB_FROM_TID(tid) OsTlsfTcbFromTid(tid)
 
 #ifdef __cplusplus
 #if __cplusplus

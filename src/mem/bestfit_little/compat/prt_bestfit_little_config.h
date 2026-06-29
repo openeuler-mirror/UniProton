@@ -1,0 +1,18 @@
+#ifndef PRT_BESTFIT_LITTLE_CONFIG_H
+#define PRT_BESTFIT_LITTLE_CONFIG_H
+
+#include "prt_bestfit_little_compat.h"
+
+#define LOSCFG_KERNEL_MEM_BESTFIT_LITTLE
+#define LOSCFG_MEM_TASK_STAT
+#define LOSCFG_PLATFORM_EXC NO
+#include "prt_config.h"
+
+#ifdef OS_TSK_MAX_SUPPORT_NUM
+#define LOSCFG_BASE_CORE_TSK_LIMIT OS_TSK_MAX_SUPPORT_NUM
+#else
+#define LOSCFG_BASE_CORE_TSK_LIMIT 31
+#endif
+#define OS_SYS_MEM_SIZE 0
+
+#endif /* PRT_BESTFIT_LITTLE_CONFIG_H */

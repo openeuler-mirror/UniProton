@@ -18,6 +18,7 @@
 #define _PRT_TLSF_CONFIG_H
 
 #include "prt_buildef.h"
+#include "prt_config.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -64,7 +65,7 @@ extern "C" {
 #define TLSF_CFG_MEM_MUL_REGIONS 0
 #endif
 
-/* 节点完整性检查（魔字 / 链表一致性）。可编译；panic 路径 task 查询为桩实现 */
+/* 节点完整性检查（魔字 / 链表一致性）。task 查询已对接 UniProton PRT_TaskGetInfo */
 #ifndef TLSF_CFG_BASE_MEM_NODE_INTEGRITY_CHECK
 #define TLSF_CFG_BASE_MEM_NODE_INTEGRITY_CHECK 0
 #endif
@@ -101,7 +102,11 @@ extern "C" {
 
 /* 任务数上限，用于 taskID 相关校验 */
 #ifndef TLSF_CFG_BASE_CORE_TSK_LIMIT
+#ifdef OS_TSK_MAX_SUPPORT_NUM
+#define TLSF_CFG_BASE_CORE_TSK_LIMIT OS_TSK_MAX_SUPPORT_NUM
+#else
 #define TLSF_CFG_BASE_CORE_TSK_LIMIT 31
+#endif
 #endif
 
 /* TLSF 内部打印开关 */
@@ -109,7 +114,7 @@ extern "C" {
 #define TLSF_CFG_KERNEL_PRINTF 1
 #endif
 
-/* 与异常子系统联动。依赖 LiteOS 异常模块，未移植，勿开启 */
+/* 与异常子系统联动。依赖额外异常 dump 模块，未适配，勿开启 */
 #ifndef TLSF_CFG_PLATFORM_EXC
 #define TLSF_CFG_PLATFORM_EXC 0
 #endif
@@ -121,7 +126,7 @@ extern "C" {
 /* LMK：内存耗尽时按策略 kill 任务回收内存。依赖 OsTlsfLmkTasksKill，未移植 */
 #define TLSF_CFG_KERNEL_LMK 0
 
-/* LMS：内存越界 / use-after-free 检测。依赖 LMS 模块（los_lms_pri.h），未移植。
+/* LMS：内存越界 / use-after-free 检测。依赖 LMS 模块，未适配。
    prt_tlsf_core.c 中以 #ifdef 判断，故此处刻意不定义以保持关闭。 */
 /* TLSF_CFG_KERNEL_LMS （不定义） */
 

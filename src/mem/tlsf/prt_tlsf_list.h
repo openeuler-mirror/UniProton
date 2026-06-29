@@ -72,7 +72,7 @@ typedef struct OS_TLSF_DL_LIST {
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListInit(OS_TLSF_DL_LIST *list)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListInit(OS_TLSF_DL_LIST *list)
 {
     list->pstNext = list;
     list->pstPrev = list;
@@ -119,7 +119,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListInit(OS_TLSF_DL_LIST *list)
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see OsTlsfListDelete
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListAdd(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListAdd(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
 {
     node->pstNext = list->pstNext;
     node->pstPrev = list;
@@ -146,7 +146,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListAdd(OS_TLSF_DL_LIST *list, O
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see OsTlsfListAdd | OsTlsfListHeadInsert
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListTailInsert(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListTailInsert(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
 {
     OsTlsfListAdd(list->pstPrev, node);
 }
@@ -170,7 +170,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListTailInsert(OS_TLSF_DL_LIST *
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see OsTlsfListAdd | OsTlsfListTailInsert
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListHeadInsert(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListHeadInsert(OS_TLSF_DL_LIST *list, OS_TLSF_DL_LIST *node)
 {
     OsTlsfListAdd(list, node);
 }
@@ -195,7 +195,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListHeadInsert(OS_TLSF_DL_LIST *
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see OsTlsfListAdd
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListDelete(OS_TLSF_DL_LIST *node)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListDelete(OS_TLSF_DL_LIST *node)
 {
     node->pstNext->pstPrev = node->pstPrev;
     node->pstPrev->pstNext = node->pstNext;
@@ -224,7 +224,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListDelete(OS_TLSF_DL_LIST *node
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE BOOL OsTlsfListEmpty(OS_TLSF_DL_LIST *node)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE BOOL OsTlsfListEmpty(OS_TLSF_DL_LIST *node)
 {
     return (BOOL)(node->pstNext == node);
 }
@@ -348,7 +348,7 @@ LITE_OS_SEC_ALW_INLINE STATIC_INLINE BOOL OsTlsfListEmpty(OS_TLSF_DL_LIST *node)
  * <ul><li>prt_tlsf_list.h: the header file that contains the API declaration.</li></ul>
  * @see
  */
-LITE_OS_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListDelInit(OS_TLSF_DL_LIST *list)
+PRT_TLSF_SEC_ALW_INLINE STATIC_INLINE VOID OsTlsfListDelInit(OS_TLSF_DL_LIST *list)
 {
     list->pstNext->pstPrev = list->pstPrev;
     list->pstPrev->pstNext = list->pstNext;
