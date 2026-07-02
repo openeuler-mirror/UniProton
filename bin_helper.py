@@ -3,7 +3,9 @@
 # 通过readelf获取elf的程序头信息并填充到指定的g_phdrs数组中
 
 import os
+import shutil
 import struct
+import subprocess
 import sys,getopt
 
 PI_TYPE = 0       # Type
@@ -73,7 +75,8 @@ class BinHelper:
 
     def get_addr(self, symbol):
         # format: 192: 0000000f02a01800   336 OBJECT  LOCAL  DEFAULT    3 g_phdrs
-        strs = os.popen("{0} -s {1} | grep {2}".format(self.readelf_path, self.path, symbol)).readlines()
+        result = subprocess.run([self.readelf_path, '-s', self.path], capture_output=True, text=True)
+        strs = [l + '\n' for l in result.stdout.splitlines() if symbol in l]
         if len(strs) == 0:
             print("phdrs array not found")
             sys.exit(-1)
@@ -82,7 +85,8 @@ class BinHelper:
         return strs[0].strip().split(" ")[1]
 
     def parse_phdrs(self):
-        lines = os.popen("{0} -Wl {1}".format(self.readelf_path, self.path)).readlines()
+        result = subprocess.run([self.readelf_path, '-Wl', self.path], capture_output=True, text=True)
+        lines = result.stdout.splitlines(True)
         state = 0
         phdrs = []
         for l in lines:
@@ -111,10 +115,11 @@ class BinHelper:
             filename = basename.split(".")[0]
             suffix = basename.split(".")[1]
             dstpath = "{0}/{1}_cpp.{2}".format(dirname, filename, suffix)
-            ret = os.system('cp {0} {1}'.format(self.path, dstpath))
-            if ret != 0:
+            try:
+                shutil.copy2(self.path, dstpath)
+            except OSError:
                 print("copy failed")
-                sys.exit(ret)
+                sys.exit(1)
         dstfile = open(dstpath,'rb+')
         dstfile.seek(offset, 0)
         for phdr in phdrs:
