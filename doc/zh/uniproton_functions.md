@@ -177,11 +177,11 @@ OpenAMP是一个开源软件框架，旨在通过非对称多处理器的开源�
 
 ## 支持POSIX标准接口
 
-[UniProton支持posix标准接口](./uniproton-apis.md)
+[UniProton支持posix标准接口](./uniproton_apis.md)
 
 ## 支持设备驱动
 
-UniProton的驱动结构、风格与linux类似，将驱动设备文件化，即VFS系统，通过驱动注册接口，将驱动注册到文件系统中，应用层只需要通过标准系统调用，即可调用底层驱动。整个驱动框架代码适配自开源RTOS系统Nuttx的驱动模块，因此接口调用也与Nuttx基本一致。struct file_operations结构体保存设备文件操作的方法，定义在fs.h头文件中，通过register_driver接口将驱动设备挂到对应的struct inode节点中，struct inode描述了每个设备节点的位置和数据。当系统调用操作设备文件时，根据对应文件的inode就能索引到对应的函数。接口详细信息可以查看[UniProton接口说明](./uniproton-apis.md)。
+UniProton的驱动结构、风格与linux类似，将驱动设备文件化，即VFS系统，通过驱动注册接口，将驱动注册到文件系统中，应用层只需要通过标准系统调用，即可调用底层驱动。整个驱动框架代码适配自开源RTOS系统Nuttx的驱动模块，因此接口调用也与Nuttx基本一致。struct file_operations结构体保存设备文件操作的方法，定义在fs.h头文件中，通过register_driver接口将驱动设备挂到对应的struct inode节点中，struct inode描述了每个设备节点的位置和数据。当系统调用操作设备文件时，根据对应文件的inode就能索引到对应的函数。接口详细信息可以查看[UniProton接口说明](./uniproton_apis.md)。
 
 ## 支持Shell命令行
 
@@ -192,4 +192,4 @@ UniProton提供shell命令行，它能够以命令行交互的方式访问操作
 | SHELLCMD_ENTRY  | 静态注册命令 |
 | osCmdReg        | 动态注册命令 |
 
-通常静态注册命令方式一般用于注册系统常用命令，动态注册命令方式一般用于注册用户命令。静态注册命令有5个入参，动态注册命令有4个入参。下面除去第一个入参是静态注册独有的，剩余的四个入参两个注册命令是一致的。接口详细信息可以查看[UniProton接口说明](./uniproton-apis.md)
+通常静态注册命令方式一般用于注册系统常用命令，动态注册命令方式一般用于注册用户命令。静态注册命令有5个入参，动态注册命令有4个入参。下面除去第一个入参是静态注册独有的，剩余的四个入参两个注册命令是一致的。接口详细信息可以查看[UniProton接口说明](./uniproton_apis.md)
