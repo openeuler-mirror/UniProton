@@ -41,7 +41,7 @@ git clone https://gitee.com/openeuler/UniProton.git
 
 [混合部署mcs仓库](https://gitee.com/openeuler/mcs)
 
-[git commit提交规范](https://openeuler.gitee.io/yocto-meta-openeuler/master/develop_help/commit.html)
+[git commit提交规范](./doc/contribute_guide/Uniproton_contribute.md)
 
 [多OS混合关键性部署框架](https://pages.openeuler.openatom.cn/embedded/docs/build/html/master/features/mica/index.html)
 
