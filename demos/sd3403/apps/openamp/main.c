@@ -27,8 +27,39 @@ extern U32 PRT_Printf(const char *format, ...);
 unsigned int is_tty_ready(void);
 #endif
 
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE) || defined(ALGO_CPP_TESTCASE)
 void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4);
+#endif
+
+#if defined(OS_SUPPORT_EIGEN)
+/*
+ * Run the C++ static constructors that build/sd3403.ld collects in
+ * .init_array (libstdc++ emergency EH pool, iostream/locale objects, library
+ * globals). PRT_CppSystemInit() does the same but is only built with
+ * CONFIG_OS_SUPPORT_CXX, which sd3403 does not enable. Call this from a task
+ * rather than PRT_AppInit(): the constructors take a pthread mutex
+ * (pthread_once in the locale setup) and set errno, and both are bound to the
+ * running task, which before the scheduler starts is a placeholder TCB.
+ */
+extern void (*__init_array_start[])(void);
+extern void (*__init_array_end[])(void);
+
+static void AlgoCppRunInitArray(void)
+{
+    U32 count = (U32)(__init_array_end - __init_array_start);
+    U32 i;
+
+    PRT_Printf("run %u C++ constructors\n", count);
+    for (i = 0; i < count; i++) {
+        __init_array_start[i]();
+    }
+}
+
+#if !defined(ALGO_CPP_TESTCASE)
+/* Bare-metal stand-in for the crtbegin-provided DSO handle, for C++ code in
+ * the demo image; each algorithm test app defines its own. */
+void *__dso_handle = (void *)&__dso_handle;
+#endif
 #endif
 
 #if defined(OS_OPTION_OPENAMP)
@@ -380,6 +411,12 @@ void Test1TaskEntry()
     }
 #endif
 
+#if defined(OS_SUPPORT_EIGEN) && !defined(ALGO_CPP_TESTCASE)
+    /* before the application code; the algorithm test apps do this right
+     * before Init() */
+    AlgoCppRunInitArray();
+#endif
+
 #if defined(FILESYSTEM_TESTCASE)
     filesystem_test();
 #endif
@@ -418,8 +455,11 @@ void Test1TaskEntry()
     soem_test("eth1");
 #endif
 
-#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE)
+#if defined(POSIX_TESTCASE) || defined(RHEALSTONE_TESTCASE) || defined(TRACE_TESTCASE) || defined(ALGO_CPP_TESTCASE)
     PRT_Printf("init testcase\n");
+#if defined(ALGO_CPP_TESTCASE)
+    AlgoCppRunInitArray();
+#endif
     Init(0, 0, 0, 0);
 #endif
 
