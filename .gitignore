@@ -47,3 +47,4 @@
 /testsuites/eigen-test/*.cpp
 /testsuites/eigen-test/*.cpp.*
 /testsuites/soemTest/test
+/demos/*/component/eiquadprog-*

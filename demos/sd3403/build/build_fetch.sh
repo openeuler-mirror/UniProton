@@ -53,3 +53,31 @@ then
     echo "################# get eigen #################"
     fetch_src https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz eigen-3.4.0.tar.gz eigen-3.4.0
 fi
+
+if algo_lib EIQUADPROG && [ ! -d "../component/eiquadprog-1.3.2" ]
+then
+    echo "################# get eiquadprog #################"
+    fetch_src https://github.com/stack-of-tasks/eiquadprog/archive/refs/tags/v1.3.2.tar.gz eiquadprog.tar.gz eiquadprog-1.3.2
+fi
+if algo_lib EIQUADPROG
+then
+    # generated headers: normally from upstream CMake; idempotent
+    pushd ../component
+    cat > eiquadprog-1.3.2/include/eiquadprog/config.hpp <<'CFG'
+#ifndef EIQ_CONFIG_HPP
+#define EIQ_CONFIG_HPP
+#define EIQUADPROG_DLLAPI
+#endif
+CFG
+    cat > eiquadprog-1.3.2/include/eiquadprog/deprecated.hpp <<'CFGD'
+#ifndef EIQ_DEPRECATED_HPP
+#define EIQ_DEPRECATED_HPP
+#if defined(__GNUC__) || defined(__clang__)
+#define EIQUADPROG_DEPRECATED __attribute__((deprecated))
+#else
+#define EIQUADPROG_DEPRECATED
+#endif
+#endif
+CFGD
+    popd
+fi

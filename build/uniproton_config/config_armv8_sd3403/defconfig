@@ -206,6 +206,11 @@ CONFIG_OS_POSIX_SET_TZDST=y
 # CONFIG_OS_SUPPORT_EIGEN is not set
 
 #
+# enable eiquadprog
+# depend on CONFIG_OS_SUPPORT_EIGEN
+# CONFIG_OS_SUPPORT_EIQUADPROG is not set
+
+#
 # Shell Modules Configuration. Adapted from LiteOS
 #
 CONFIG_CONFIG_LOCAL_ECHO=y

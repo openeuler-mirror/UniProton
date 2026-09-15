@@ -8,6 +8,19 @@ include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 # 函数import_kconfig把.config文件中的定义转换为cmake变量，用于后续子文件夹中决定是否编译某库
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_sd3403/defconfig)
 
+# algo_lib_depends(<lib> <dep>...): CONFIG_OS_SUPPORT_<lib> needs every
+# CONFIG_OS_SUPPORT_<dep>
+function(algo_lib_depends lib)
+    if ("${CONFIG_OS_SUPPORT_${lib}}" STREQUAL "y")
+        foreach (dep ${ARGN})
+            if (NOT "${CONFIG_OS_SUPPORT_${dep}}" STREQUAL "y")
+                message(FATAL_ERROR "CONFIG_OS_SUPPORT_${lib} DEPENDS ON CONFIG_OS_SUPPORT_${dep}")
+            endif()
+        endforeach()
+    endif()
+endfunction()
+algo_lib_depends(EIQUADPROG EIGEN)
+
 # CONFIG_OS_SUPPORT_EIGEN, which the other algorithm libraries depend on,
 # builds the demo as C++17 with the SDK C++ toolchain and libstdc++.
 if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
@@ -15,7 +28,13 @@ if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
     set(CMAKE_CXX_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-g++)
     set(CMAKE_ASM_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
     set(CMAKE_LINKER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-ld)
+    # Bare metal has no stdout or assert handler: FILE output such as
+    # std::cout is dropped and a failed assert() aborts the core. Keep release
+    # semantics for the C++ build only, so the default sd3403 image stays
+    # identical.
+    set(ALGO_EXTRA_FLAGS "-DNDEBUG")
 else()
+    set(ALGO_EXTRA_FLAGS "")
     set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
     set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
     set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
@@ -35,7 +54,7 @@ if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
 endif()
 set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
 set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-set(CMAKE_CXX_FLAGS "${CC_OPTION} ${POSIX_OPTION} -nostdinc++ -fno-exceptions -fno-rtti -DEIGEN_NO_DEBUG")
+set(CMAKE_CXX_FLAGS "${CC_OPTION} ${POSIX_OPTION} -nostdinc++ -DEIGEN_NO_DEBUG ${ALGO_EXTRA_FLAGS}")
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/sd3403.ld")
@@ -50,6 +69,9 @@ if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
         ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
         ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
     )
+endif()
+if ("${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/eiquadprog-1.3.2/include)
 endif()
 
 include_directories(
@@ -143,6 +165,19 @@ list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
 
 add_subdirectory(${HOME_PATH}/src/component/mica mica)
 list(APPEND OBJS $<TARGET_OBJECTS:mica>)
+
+# Algorithm libraries built from source (the others are header-only), at -O2
+# like the algorithm test apps: the demo image includes the enabled ones,
+# while each algorithm test app builds the sources it tests itself.
+set(ALGO_LIB_OBJS)
+if ("${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+    set(EQ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/component/eiquadprog-1.3.2)
+    set(EQ_SRCS ${EQ_DIR}/src/eiquadprog-fast.cpp ${EQ_DIR}/src/eiquadprog.cpp)
+    set_source_files_properties(${EQ_SRCS} PROPERTIES COMPILE_OPTIONS "-O2")
+    add_library(eiquadprog OBJECT ${EQ_SRCS})
+    list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:eiquadprog>)
+endif()
+
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
@@ -283,8 +318,16 @@ elseif (${APP} STREQUAL "eigenTest")
     add_subdirectory(${HOME_PATH}/testsuites/eigen-openarm-test tmp)
     target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eigentest>)
+elseif (${APP} STREQUAL "eiquadprogTest")
+    if (NOT "${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIQUADPROG")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/eiquadprog-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eqtest>)
 else()
-    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> ${ALGO_LIB_OBJS})
 endif()
 add_executable(${APP} ${OBJS})
 

@@ -11,6 +11,10 @@
 #include "prt_timer.h"
 #include "prt_queue.h"
 #include "rpmsg_backend.h"
+#if defined(OS_SUPPORT_EIGEN) && !defined(ALGO_CPP_TESTCASE)
+#include <locale.h>
+#include <time.h>
+#endif
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shell.h"
 #include "show.h"
@@ -44,11 +48,36 @@ void Init(uintptr_t param1, uintptr_t param2, uintptr_t param3, uintptr_t param4
 extern void (*__init_array_start[])(void);
 extern void (*__init_array_end[])(void);
 
+/*
+ * sd3403 does not enable CONFIG_OS_OPTION_LOCALE, so the musl locale
+ * functions find the current locale through the thread pointer (TPIDR_EL0),
+ * which UniProton never sets. The first std::ios_base::Init constructor
+ * builds the libstdc++ classic locale, whose ctype<wchar_t> calls btowc()
+ * for every byte value; for bytes >= 0x80 that dereferences the thread
+ * pointer. Point TPIDR_EL0 past an array whose every slot holds an empty
+ * locale (all categories NULL, like musl's C locale), so such lookups see
+ * the C locale. UniProton neither uses TPIDR_EL0 nor switches it per task.
+ */
+#define ALGO_TP_SLOTS 64
+static const void *const g_algoCLocale[6] = { NULL };
+static const void *g_algoTpSlots[ALGO_TP_SLOTS];
+
+static void AlgoCppSetThreadPointer(void)
+{
+    U32 i;
+
+    for (i = 0; i < ALGO_TP_SLOTS; i++) {
+        g_algoTpSlots[i] = g_algoCLocale;
+    }
+    OS_EMBED_ASM("msr tpidr_el0, %0" : : "r" (&g_algoTpSlots[ALGO_TP_SLOTS]) : "memory");
+}
+
 static void AlgoCppRunInitArray(void)
 {
     U32 count = (U32)(__init_array_end - __init_array_start);
     U32 i;
 
+    AlgoCppSetThreadPointer();
     PRT_Printf("run %u C++ constructors\n", count);
     for (i = 0; i < count; i++) {
         __init_array_start[i]();
@@ -56,9 +85,21 @@ static void AlgoCppRunInitArray(void)
 }
 
 #if !defined(ALGO_CPP_TESTCASE)
-/* Bare-metal stand-in for the crtbegin-provided DSO handle, for C++ code in
- * the demo image; each algorithm test app defines its own. */
+/*
+ * Bare-metal stand-ins for C++ code in the demo image; each algorithm test
+ * app defines its own. __dso_handle is normally provided by crtbegin.o.
+ * musl's wcsftime.o, pulled in by the libstdc++ time facets, calls
+ * __strftime_fmt_1() from musl's strftime.c, but sd3403 builds the litelibc
+ * strftime instead; NULL is the helper's own result for an unsupported
+ * conversion, so wcsftime() fails cleanly.
+ */
 void *__dso_handle = (void *)&__dso_handle;
+
+const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc, int pad)
+{
+    (void)s; (void)l; (void)f; (void)tm; (void)loc; (void)pad;
+    return NULL;
+}
 #endif
 #endif
 
