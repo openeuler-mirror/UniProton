@@ -20,6 +20,7 @@ function(algo_lib_depends lib)
     endif()
 endfunction()
 algo_lib_depends(EIQUADPROG EIGEN)
+algo_lib_depends(PINOCCHIO EIGEN)
 
 # CONFIG_OS_SUPPORT_EIGEN, which the other algorithm libraries depend on,
 # builds the demo as C++17 with the SDK C++ toolchain and libstdc++.
@@ -72,6 +73,12 @@ if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
 endif()
 if ("${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
     list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/eiquadprog-1.3.2/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/pinocchio-2.6.21/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_76_0
+    )
 endif()
 
 include_directories(
@@ -318,6 +325,14 @@ elseif (${APP} STREQUAL "eigenTest")
     add_subdirectory(${HOME_PATH}/testsuites/eigen-openarm-test tmp)
     target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eigentest>)
+elseif (${APP} STREQUAL "pinocchioTest")
+    if (NOT "${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_PINOCCHIO")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/pinocchio-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:pintest>)
 elseif (${APP} STREQUAL "eiquadprogTest")
     if (NOT "${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
         message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIQUADPROG")

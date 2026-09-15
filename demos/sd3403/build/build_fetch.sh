@@ -81,3 +81,51 @@ CFG
 CFGD
     popd
 fi
+
+if algo_lib PINOCCHIO && [ ! -d "../component/boost_1_76_0" ]
+then
+    echo "################# get boost (headers only) #################"
+    fetch_src https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.gz boost_1_76_0.tar.gz boost_1_76_0
+fi
+
+if algo_lib PINOCCHIO; then
+    if [ ! -d "../component/pinocchio-2.6.21" ]; then
+        echo "################# get pinocchio #################"
+        pinocchio_patch()
+        {
+            patch -d pinocchio-2.6.21 -p1 < ../UniProton-patch-for-pinocchio.patch
+        }
+        fetch_src https://github.com/stack-of-tasks/pinocchio/archive/refs/tags/v2.6.21.tar.gz pinocchio.tar.gz pinocchio-2.6.21 pinocchio_patch
+    fi
+    # generated headers, normally from upstream CMake: idempotent
+    pushd ../component
+    cat > pinocchio-2.6.21/include/pinocchio/config.hpp <<'CFG'
+#ifndef PINOCCHIO_BAREMETAL_CONFIG_HPP
+#define PINOCCHIO_BAREMETAL_CONFIG_HPP
+#define PINOCCHIO_VERSION "2.6.21"
+#define PINOCCHIO_VERSION_MAJOR 2
+#define PINOCCHIO_VERSION_MINOR 6
+#define PINOCCHIO_VERSION_PATCH 21
+#define PINOCCHIO_BAREMETAL 1
+#endif
+CFG
+    cat > pinocchio-2.6.21/include/pinocchio/deprecated.hpp <<'CFG2'
+#ifndef PINOCCHIO_DEPRECATED_HPP
+#define PINOCCHIO_DEPRECATED_HPP
+#if defined(__GNUC__) || defined(__clang__)
+#define PINOCCHIO_DEPRECATED __attribute__((deprecated))
+#else
+#define PINOCCHIO_DEPRECATED
+#endif
+#define PINOCCHIO_UNUSED __attribute__((unused))
+#endif
+CFG2
+    cat > pinocchio-2.6.21/include/pinocchio/warning.hpp <<'CFG3'
+#ifndef PINOCCHIO_WARNING_HPP
+#define PINOCCHIO_WARNING_HPP
+#define PINOCCHIO_PRAGMA(x) _Pragma(#x)
+#define PINOCCHIO_STRINGIZE(x) #x
+#endif
+CFG3
+    popd
+fi

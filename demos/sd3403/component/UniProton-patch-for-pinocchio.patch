@@ -1,0 +1,56 @@
+--- a/include/pinocchio/multibody/joint/joint-composite.hpp
++++ b/include/pinocchio/multibody/joint/joint-composite.hpp
+@@ -11,7 +11,9 @@
+ #include "pinocchio/container/aligned-vector.hpp"
+ #include "pinocchio/spatial/act-on-set.hpp"
+ 
++#ifndef PINOCCHIO_BAREMETAL
+ #include "pinocchio/serialization/fwd.hpp"
++#endif
+ 
+ namespace pinocchio
+ {
+@@ -439,7 +441,9 @@
+     
+   protected:
+     
++#ifndef PINOCCHIO_BAREMETAL
+     friend struct Serialize<JointModelCompositeTpl>;
++#endif
+     
+     template<typename, int, template<typename,int> class>
+     friend struct JointModelCompositeTpl;
+--- a/include/pinocchio/serialization/serializable.hpp
++++ b/include/pinocchio/serialization/serializable.hpp
+@@ -5,6 +5,23 @@
+ #ifndef __pinocchio_serialization_serializable_hpp__
+ #define __pinocchio_serialization_serializable_hpp__
+ 
++#include "pinocchio/fwd.hpp"
++
++#ifdef PINOCCHIO_BAREMETAL
++/* Bare-metal build: serialization (boost::serialization + boost::asio buffers)
++ * is not available; keep the CRTP base so Model/Data still compile. */
++namespace pinocchio
++{
++  namespace serialization
++  {
++    template<class Derived>
++    struct Serializable
++    {
++    };
++  }
++}
++#else
++
+ #include "pinocchio/serialization/archive.hpp"
+ 
+ namespace pinocchio
+@@ -113,5 +130,7 @@
+   }
+ } // namespace pinocchio
+ 
++#endif // PINOCCHIO_BAREMETAL
++
+ #endif // ifndef __pinocchio_serialization_serializable_hpp__
+ 
