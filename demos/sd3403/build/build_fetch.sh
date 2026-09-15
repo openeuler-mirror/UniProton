@@ -145,3 +145,31 @@ CFG
     }
     fetch_src https://github.com/Simple-Robotics/proxsuite/archive/refs/tags/v0.6.7.tar.gz proxsuite.tar.gz proxsuite-0.6.7 proxsuite_config
 fi
+
+if algo_lib TSID && [ ! -d "../component/tsid-1.7.1" ]
+then
+    echo "################# get tsid #################"
+    tsid_prepare()
+    {
+        cat > tsid-1.7.1/include/tsid/config.hh <<'CFG' || return 1
+#ifndef TSID_CONFIG_HH_BAREMETAL
+#define TSID_CONFIG_HH_BAREMETAL
+#define TSID_VERSION "1.7.1"
+#define TSID_DLLAPI
+#define TSID_QP_SOLVER "eiquadprog"
+#endif
+CFG
+        cat > tsid-1.7.1/include/tsid/deprecated.hh <<'CFG2' || return 1
+#ifndef TSID_DEPRECATED_HH_BAREMETAL
+#define TSID_DEPRECATED_HH_BAREMETAL
+#if defined(__GNUC__) || defined(__clang__)
+#define TSID_DEPRECATED __attribute__((deprecated))
+#else
+#define TSID_DEPRECATED
+#endif
+#endif
+CFG2
+        patch -d tsid-1.7.1 -p1 < ../UniProton-patch-for-tsid.patch
+    }
+    fetch_src https://github.com/stack-of-tasks/tsid/archive/refs/tags/v1.7.1.tar.gz tsid.tar.gz tsid-1.7.1 tsid_prepare
+fi
