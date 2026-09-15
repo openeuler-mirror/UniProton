@@ -129,3 +129,19 @@ CFG2
 CFG3
     popd
 fi
+
+if algo_lib PROXSUITE && [ ! -d "../component/proxsuite-0.6.7" ]
+then
+    echo "################# get proxsuite #################"
+    proxsuite_config()
+    {
+        cat > proxsuite-0.6.7/include/proxsuite/config.hpp <<'CFG'
+#ifndef PROXSUITE_BAREMETAL_CONFIG_HPP
+#define PROXSUITE_BAREMETAL_CONFIG_HPP
+#define PROXSUITE_VERSION "0.6.7"
+/* vectorization disabled: sd3403 builds with -march=armv8.2-a+nosimd */
+#endif
+CFG
+    }
+    fetch_src https://github.com/Simple-Robotics/proxsuite/archive/refs/tags/v0.6.7.tar.gz proxsuite.tar.gz proxsuite-0.6.7 proxsuite_config
+fi
