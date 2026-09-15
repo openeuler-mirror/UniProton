@@ -23,6 +23,7 @@ algo_lib_depends(EIQUADPROG EIGEN)
 algo_lib_depends(PINOCCHIO EIGEN)
 algo_lib_depends(PROXSUITE EIGEN)
 algo_lib_depends(TSID EIQUADPROG PINOCCHIO PROXSUITE)
+algo_lib_depends(COAL EIGEN)
 
 # CONFIG_OS_SUPPORT_EIGEN, which the other algorithm libraries depend on,
 # builds the demo as C++17 with the SDK C++ toolchain and libstdc++.
@@ -82,11 +83,14 @@ endif()
 if ("${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
     list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/tsid-1.7.1/include)
 endif()
+if ("${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/coal-2.4.5/include)
+endif()
 if ("${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
-    list(APPEND ALGO_INCLUDES
-        ${CMAKE_CURRENT_SOURCE_DIR}/component/pinocchio-2.6.21/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_76_0
-    )
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/pinocchio-2.6.21/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y" OR "${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_76_0)
 endif()
 
 include_directories(
@@ -200,6 +204,15 @@ if ("${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
     set_source_files_properties(${TSID_SRCS} PROPERTIES COMPILE_OPTIONS "-O2")
     add_library(tsid OBJECT ${TSID_SRCS})
     list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:tsid>)
+endif()
+if ("${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    set(COAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/component/coal-2.4.5)
+    file(GLOB COAL_SRCS ${COAL_DIR}/src/*.cpp ${COAL_DIR}/src/*/*.cpp)
+    list(FILTER COAL_SRCS EXCLUDE REGEX "serialization|octomap|octree|broadphase|mesh_loader")
+    # -nostdinc environments hit boost/cstdint.hpp without a prior <stdint.h>
+    set_source_files_properties(${COAL_SRCS} PROPERTIES COMPILE_OPTIONS "-O2;-include;stdint.h")
+    add_library(coal OBJECT ${COAL_SRCS})
+    list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:coal>)
 endif()
 
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
@@ -342,6 +355,14 @@ elseif (${APP} STREQUAL "eigenTest")
     add_subdirectory(${HOME_PATH}/testsuites/eigen-openarm-test tmp)
     target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eigentest>)
+elseif (${APP} STREQUAL "coalTest")
+    if (NOT "${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_COAL")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/coal-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:coaltest>)
 elseif (${APP} STREQUAL "tsidTest")
     if (NOT "${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
         message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_TSID")

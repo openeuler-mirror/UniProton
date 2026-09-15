@@ -82,7 +82,7 @@ CFGD
     popd
 fi
 
-if algo_lib PINOCCHIO && [ ! -d "../component/boost_1_76_0" ]
+if { algo_lib PINOCCHIO || algo_lib COAL; } && [ ! -d "../component/boost_1_76_0" ]
 then
     echo "################# get boost (headers only) #################"
     fetch_src https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.gz boost_1_76_0.tar.gz boost_1_76_0
@@ -172,4 +172,49 @@ CFG2
         patch -d tsid-1.7.1 -p1 < ../UniProton-patch-for-tsid.patch
     }
     fetch_src https://github.com/stack-of-tasks/tsid/archive/refs/tags/v1.7.1.tar.gz tsid.tar.gz tsid-1.7.1 tsid_prepare
+fi
+
+if algo_lib COAL && [ ! -d "../component/coal-2.4.5" ]
+then
+    echo "################# get coal (hpp-fcl) #################"
+    fetch_src https://github.com/humanoid-path-planner/hpp-fcl/archive/refs/tags/v2.4.5.tar.gz coal.tar.gz coal-2.4.5
+fi
+if algo_lib COAL
+then
+    pushd ../component
+    mkdir -p coal-2.4.5/include/hpp/fcl
+    cat > coal-2.4.5/include/hpp/fcl/config.hh <<'CFG'
+#ifndef COAL_BAREMETAL_CONFIG_HH
+#define COAL_BAREMETAL_CONFIG_HH
+#define HPP_FCL_VERSION "2.4.5"
+#define HPP_FCL_VERSION_MAJOR 2
+#define HPP_FCL_VERSION_MINOR 4
+#define HPP_FCL_VERSION_PATCH 5
+#define HPP_FCL_DLLAPI
+#define COAL_BAREMETAL 1
+#endif
+CFG
+    cat > coal-2.4.5/include/hpp/fcl/deprecated.hh <<'CFG2'
+#ifndef HPP_FCL_DEPRECATED_BAREMETAL_HH
+#define HPP_FCL_DEPRECATED_BAREMETAL_HH
+#if defined(__GNUC__) || defined(__clang__)
+#define HPP_FCL_DEPRECATED __attribute__((deprecated))
+#define HPP_FCL_DEPRECATED_MESSAGE(msg) __attribute__((deprecated(msg)))
+#else
+#define HPP_FCL_DEPRECATED
+#define HPP_FCL_DEPRECATED_MESSAGE(msg)
+#endif
+#define HPP_FCL_UNUSED __attribute__((unused))
+#define HPP_FCL_LOCAL __attribute__((visibility("hidden")))
+#define HPP_FCL_EXTERNAL
+#endif
+CFG2
+    cat > coal-2.4.5/include/hpp/fcl/warning.hh <<'CFG3'
+#ifndef HPP_FCL_WARNING_BAREMETAL_HH
+#define HPP_FCL_WARNING_BAREMETAL_HH
+#define HPP_FCL_DO_PRAGMA(x) _Pragma(#x)
+#define HPP_FCL_PRAGMA(x) HPP_FCL_DO_PRAGMA(GCC diagnostic x)
+#endif
+CFG3
+    popd
 fi
