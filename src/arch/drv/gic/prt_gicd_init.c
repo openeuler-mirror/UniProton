@@ -15,6 +15,36 @@
 #include "prt_gic_external.h"
 #include "prt_gic_internal.h"
 #include "prt_attr_external.h"
+#include "prt_cpu_external.h"
+
+#if (OS_GIC_VER == 2)
+OS_SEC_L4_TEXT void OsGicV2DisableInterface(void)
+{
+    U32 control = GIC_REG_READ(GICC_CTLR);
+
+    GIC_REG_WRITE(GICC_CTLR, control & ~GICV2_GICC_ENABLE_MASK);
+    PRT_DSB();
+    PRT_ISB();
+}
+
+OS_SEC_L4_TEXT void OsGicV2DisableInt(U32 intId)
+{
+    U32 bit = 1U << (intId % GIC_IENABLE_INT_NUM);
+    uintptr_t regOffset = (intId / GIC_IENABLE_INT_NUM) * sizeof(U32);
+
+    if (intId <= MAX_SGI_ID) {
+        U32 pendingOffset = (intId / GICV2_SGI_PENDING_INT_NUM) * sizeof(U32);
+        U32 pendingMask = GICV2_SGI_SOURCE_MASK <<
+            ((intId % GICV2_SGI_PENDING_INT_NUM) * OS_BITS_PER_BYTE);
+        GIC_REG_WRITE(GICD_CPENDSGIR0 + pendingOffset, pendingMask);
+    } else {
+        GIC_REG_WRITE(GICD_ICENABLER0 + regOffset, bit);
+        GIC_REG_WRITE(GICD_ICPENDR0 + regOffset, bit);
+    }
+    GIC_REG_WRITE(GICD_ICACTIVER0 + regOffset, bit);
+    PRT_DSB();
+}
+#endif
 
 /* GICD_ROUTER */
 union GicdRouter {

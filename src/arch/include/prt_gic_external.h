@@ -32,6 +32,14 @@
 #define GICC_IAR		(GIC_CPU_BASE + 0xc)
 #define GICC_EOIR		(GIC_CPU_BASE + 0x10)
 #define	GICD_SGIR		(GIC_DIST_BASE + 0xf00)
+#define GICC_CTLR               (GIC_CPU_BASE + 0x0000U)
+#define GICD_ICENABLER0         (GIC_DIST_BASE + 0x0180U)
+#define GICD_ICPENDR0           (GIC_DIST_BASE + 0x0280U)
+#define GICD_ICACTIVER0         (GIC_DIST_BASE + 0x0380U)
+#define GICD_CPENDSGIR0         (GIC_DIST_BASE + 0x0F10U)
+#define GICV2_GICC_ENABLE_MASK  0x3U
+#define GICV2_SGI_SOURCE_MASK   0xFFU
+#define GICV2_SGI_PENDING_INT_NUM 4U
 #elif (OS_GIC_VER == 3)
 #define ICC_IAR1_EL1              S3_0_C12_C12_0
 #define ICC_EOIR1_EL1             S3_0_C12_C12_1
@@ -164,6 +172,11 @@ extern void OsGicTrigIntToCores(U32 intId, U32 targetList);
 extern void OsGicSetTargetId(U32 intId, U32 targetId);
 extern U32 OsGicGetPriority(U32 intId);
 extern U32 OsGicSetPriority(U32 intId, U32 priority);
+
+#if (OS_GIC_VER == 2)
+extern void OsGicV2DisableInterface(void);
+extern void OsGicV2DisableInt(U32 intId);
+#endif
 
 extern enum GicIntState OsGicdGetIntState(U32 intId);
 extern void OsGicdEnableInt(U32 intId);

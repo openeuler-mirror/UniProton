@@ -436,9 +436,26 @@ OS_SEC_L4_TEXT U32 PRT_HwiDelete(HwiHandle hwiNum)
     return OS_OK;
 }
 
+#if defined(OS_ARCH_ARMV8) && (OS_GIC_VER == 2)
 OS_SEC_L4_TEXT void OsHwiDisableAll(void)
 {
     U32 hwiNum;
+
+    OsGicV2DisableInterface();
+    for (hwiNum = 0; hwiNum < OS_HWI_MAX_NUM; hwiNum++) {
+        if (OS_HWI_NUM_CHECK(hwiNum)) {
+            continue;
+        }
+        if (!OS_HWI_MODE_INV(hwiNum)) {
+            OsGicV2DisableInt(hwiNum);
+        }
+    }
+}
+#else
+OS_SEC_L4_TEXT void OsHwiDisableAll(void)
+{
+    U32 hwiNum;
+
     for (hwiNum = 0; hwiNum < OS_HWI_MAX_NUM; hwiNum++) {
         if (OS_HWI_NUM_CHECK(hwiNum)) {
             continue;
@@ -455,3 +472,4 @@ OS_SEC_L4_TEXT void OsHwiDisableAll(void)
         }
     }
 }
+#endif
