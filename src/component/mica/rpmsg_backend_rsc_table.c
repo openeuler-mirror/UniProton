@@ -36,6 +36,7 @@
 static SemHandle msg_sem;
 static struct virtio_device *vdev;
 static struct rpmsg_virtio_device rvdev;
+static volatile bool poweroff_requested;
 
 static metal_phys_addr_t shm_physmap[] = { VDEV_START_ADDR };
 static struct metal_device shm_device = {
@@ -167,7 +168,8 @@ static void rpmsg_ipi_handler(void)
         rsc_table->rbufs.state = RBUF_STATE_RESTART;
         os_asm_invalidate_dcache_all();
 #endif
-        PRT_SysPowerOff();
+        poweroff_requested = true;
+        PRT_SemPost(msg_sem);
 #endif
     }
 }
@@ -191,8 +193,15 @@ void receive_message(void)
 {
     U32 ret = PRT_SemPend(msg_sem, OS_WAIT_FOREVER);
 
-    if (ret == OS_OK)
-        rproc_virtio_notified(vdev, VRING1_ID);
+    if (ret != OS_OK) {
+        return;
+    }
+
+    if (poweroff_requested) {
+        PRT_SysPowerOff();
+    }
+
+    rproc_virtio_notified(vdev, VRING1_ID);
 }
 
 static void rpmsg_ipi_init(void)
