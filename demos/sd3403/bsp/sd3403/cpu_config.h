@@ -7,19 +7,19 @@
 #define TEST_CLK_INT                30
 #define OS_GIC_BASE_ADDR            0x12400000ULL        // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
-#define MMU_IMAGE_ADDR              0x43000000ULL
+#define MMU_IMAGE_ADDR              0x4b000000ULL
 #define MMU_GIC_ADDR                OS_GIC_BASE_ADDR
 #define MMU_UART_ADDR               UART_BASE_ADDR
-#define MMU_OPENAMP_ADDR            0x40000000ULL
+#define MMU_OPENAMP_ADDR            0x48000000ULL
 #define OPENAMP_SHM_SIZE            0x100000
-#define MMU_LOG_MEM_ADDR            0x44000000ULL
+#define MMU_LOG_MEM_ADDR            0x48200000ULL
 
 /* Run-stop (WOW) image persistence region: placed right after the log memory
- * (0x44000000 + SHM_MAP_SIZE 0x1100000 = 0x45100000), 2MB-aligned to 0x45200000.
- * It lives in the second mcs_mem carveout (0x43000000-0x46ffffff), is Linux-reserved
- * and survives mica stop/start. Kept clear of the 0x40000000 OpenAMP SHM used for
+ * (0x48200000 + SHM_MAP_SIZE 0x1100000 = 0x49300000), 2MB-aligned to 0x49400000.
+ * It lives in the mcs_baremetal_mem carveout (0x48000000-0x4affffff), is Linux-reserved
+ * and survives mica stop/start. Kept clear of the 0x48000000 OpenAMP SHM used for
  * rpmsg communication. */
-#define WOW_IMG_ADDR                0x45200000ULL
+#define WOW_IMG_ADDR                0x49400000ULL
 #define WOW_IMG_SIZE                0x200000
 
 #define SICR_ADDR_OFFSET_PER_CORE   0x20000U
