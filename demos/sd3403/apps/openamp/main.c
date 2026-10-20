@@ -361,8 +361,22 @@ void Test1TaskEntry()
 #endif
 
 #if defined(OS_OPTION_OPENAMP)
-    while (!is_tty_ready()) {
-        PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+    /* Bounded wait for the tty endpoint: the stock mcs host only assigns
+     * the endpoint's destination address once userspace actually writes
+     * to the rpmsg-tty device, so an unbounded wait would hang an
+     * unattended boot. After the timeout the application runs without a
+     * console, and the tty keeps working whenever the first console byte
+     * arrives. */
+    {
+        U32 ttyWaitTicks = 0;
+        while (!is_tty_ready()) {
+            PRT_TaskDelay(OS_TICK_PER_SECOND / 10);
+            ttyWaitTicks += OS_TICK_PER_SECOND / 10;
+            if (ttyWaitTicks >= OS_TICK_PER_SECOND * 5U) {
+                PRT_Printf("tty not ready in 5s, continue without console\n");
+                break;
+            }
+        }
     }
 #endif
 

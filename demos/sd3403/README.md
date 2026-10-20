@@ -9,6 +9,9 @@ starts and stops it through MICA.
   in the board vendor's firmware; OpenAMP shared memory at 0x48000000,
   followed by the log memory and the WOW region, inside the board's
   `mcs_baremetal_mem` reservation (0x48000000-0x4affffff).
+- `apps/openamp/main.c`: the wait for the tty endpoint at startup is
+  bounded to 5 s, so the application also starts when nobody opens the
+  console.
 
 ## Build
 
