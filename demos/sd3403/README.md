@@ -12,6 +12,12 @@ starts and stops it through MICA.
 - `apps/openamp/main.c`: the wait for the tty endpoint at startup is
   bounded to 5 s, so the application also starts when nobody opens the
   console.
+- `bsp/timer.c`, `config/prt_config.h`: 1 kHz OS tick on an absolute
+  deadline grid; the counter runs at 24 MHz (`SYS_COUNTER_FREQ`), not the
+  25 MHz the firmware leaves in CNTFRQ_EL0. Tickless idle
+  (`src/extended/lowpower/tickless/prt_tickless.c`) still takes its reload
+  from CNTFRQ_EL0, so the tick runs about 4% slow whenever it sleeps; the
+  sd3403 defconfig leaves tickless off.
 
 ## Build
 

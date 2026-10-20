@@ -38,6 +38,7 @@
 #include "prt_module.h"
 #include "lowpower_test.h"
 #include "cpu_config.h"
+#include "prt_config.h"
 
 extern U32 PRT_Printf(const char *format, ...);
 
@@ -50,16 +51,22 @@ extern uintptr_t __bss_end__;
 #define TEST_MARKER_VAL      0xA5A55A5AU
 #define TEST_DATA_VAL        0x123456789ABCDEF0ULL
 #define SR_CONTEXT_BYTES     (34U * 8U)   /* g_lowpowerSaveSRContext[34] of U64 */
-#define RUN_DELAY_TICKS      300U         /* let the system run before imaging */
-#define SUSPEND_TICKS        30U          /* simulated deep-sleep length (~300ms) */
+/* Lengths are in ms and converted with the board's tick rate. */
+#define MS_TO_TICKS(ms)      ((U32)((ms) * OS_TICK_PER_SECOND / 1000U))
+#define RUN_DELAY_TICKS      MS_TO_TICKS(3000U)   /* let the system run before imaging */
+#define SUSPEND_TICKS        MS_TO_TICKS(300U)    /* simulated deep-sleep length */
 #define SWTMR_INTERVAL_MS    200U         /* one-shot sw timer length */
-#define SWTMR_EXPECTED_TICKS 20U          /* 200ms @100Hz = 20 ticks */
-#define SWTMR_WAIT_TICKS     120U         /* wait well past the sw timer */
+#define SWTMR_EXPECTED_TICKS MS_TO_TICKS(SWTMR_INTERVAL_MS)
+#define SWTMR_WAIT_TICKS     MS_TO_TICKS(1200U)   /* wait well past the sw timer */
 #define SWTMR_LOOP_PERIOD_MS 100U         /* loop sw timer period */
-#define SWTMR_LOOP_EXPECTED  10U          /* 100ms @100Hz = 10 ticks */
+#define SWTMR_LOOP_EXPECTED  MS_TO_TICKS(SWTMR_LOOP_PERIOD_MS)
 #define SWTMR_LOOP_PERIODS   5U           /* expect >=5 fires */
-#define SWTMR_LOOP_WAIT_TICKS 60U         /* wait well past 5 periods */
+#define SWTMR_LOOP_WAIT_TICKS MS_TO_TICKS(600U)   /* wait well past 5 periods */
 #define SWTMR_LOOP_RECORD    8U           /* record first 8 fire ticks */
+#define SWTMR_TOLERANCE      MS_TO_TICKS(50U)     /* one-shot fire tick, +/- */
+#define SWTMR_LOOP_TOLERANCE MS_TO_TICKS(20U)     /* loop period, +/- */
+#define SUSPEND_EARLY_TOL    MS_TO_TICKS(50U)
+#define SUSPEND_LATE_TOL     MS_TO_TICKS(100U)
 
 static volatile U32 g_testMarker;                 /* lives in .bss */
 static U64 g_testDataVar = TEST_DATA_VAL;         /* lives in .data */
@@ -219,7 +226,7 @@ static U32 LowpowerTestSwtmr(void)
         U64 fired = g_swtmrFireTick - tickBefore;
         PRT_Printf("[LOWPOWER] swtmr: fired at +%llu ticks (expected ~%u)\n",
                    (unsigned long long)fired, SWTMR_EXPECTED_TICKS);
-        if (fired < (SWTMR_EXPECTED_TICKS - 5) || fired > (SWTMR_EXPECTED_TICKS + 5)) {
+        if (fired < (SWTMR_EXPECTED_TICKS - SWTMR_TOLERANCE) || fired > (SWTMR_EXPECTED_TICKS + SWTMR_TOLERANCE)) {
             PRT_Printf("[LOWPOWER] swtmr: fire timing off FAILED\n");
             failures++;
         }
@@ -291,7 +298,7 @@ static U32 LowpowerTestSwtmrLoop(void)
     for (i = 1; i < SWTMR_LOOP_RECORD && i < g_swtmrLoopCount; i++) {
         U64 interval = g_swtmrLoopFireTicks[i] - g_swtmrLoopFireTicks[i - 1];
         PRT_Printf(" %llu", (unsigned long long)interval);
-        if (interval < (SWTMR_LOOP_EXPECTED - 2) || interval > (SWTMR_LOOP_EXPECTED + 2)) {
+        if (interval < (SWTMR_LOOP_EXPECTED - SWTMR_LOOP_TOLERANCE) || interval > (SWTMR_LOOP_EXPECTED + SWTMR_LOOP_TOLERANCE)) {
             failures++;
         }
     }
@@ -300,7 +307,7 @@ static U32 LowpowerTestSwtmrLoop(void)
     U64 first = g_swtmrLoopFireTicks[0] - tickBefore;
     PRT_Printf("[LOWPOWER] swtmr-loop: first fire at +%llu (expected ~%u)\n",
                (unsigned long long)first, SWTMR_LOOP_EXPECTED);
-    if (first < (SWTMR_LOOP_EXPECTED - 2) || first > (SWTMR_LOOP_EXPECTED + 2)) {
+    if (first < (SWTMR_LOOP_EXPECTED - SWTMR_LOOP_TOLERANCE) || first > (SWTMR_LOOP_EXPECTED + SWTMR_LOOP_TOLERANCE)) {
         failures++;
     }
     return failures;
@@ -345,7 +352,7 @@ static U32 LowpowerTestRunstop(void)
     } else {
         PRT_Printf("[LOWPOWER] runstop: OsRunstopMakeImage OK, suspended ~%llu ticks (inline resume)\n",
                    (unsigned long long)(tickAfter - tickBefore));
-        if ((tickAfter - tickBefore) < (SUSPEND_TICKS - 5) || (tickAfter - tickBefore) > (SUSPEND_TICKS + 10)) {
+        if ((tickAfter - tickBefore) < (SUSPEND_TICKS - SUSPEND_EARLY_TOL) || (tickAfter - tickBefore) > (SUSPEND_TICKS + SUSPEND_LATE_TOL)) {
             PRT_Printf("[LOWPOWER] runstop: suspend duration off FAILED\n");
             failures++;
         }

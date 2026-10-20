@@ -531,7 +531,7 @@ U32 PRT_AppInit(void)
     }
 
 #if !defined(LOWPOWER_TESTCASE)
-    /* This 1000ms (100-tick) LOOP demo timer keeps the tickless budget
+    /* This 1000 ms LOOP demo timer keeps the tickless budget
      * <= minSleepTicks forever, forcing permanent work-mode. Skip it for the
      * lowpower test (which has its own swtmrs). */
     ret = TimerTestStart();

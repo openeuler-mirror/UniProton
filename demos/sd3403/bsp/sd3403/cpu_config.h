@@ -5,6 +5,12 @@
 
 #define UART_BASE_ADDR              0x11040000ULL
 #define TEST_CLK_INT                30
+
+/* The SS928 system counter runs at 24 MHz (DT arm-timer clock-frequency
+ * 0x16e3600, Linux "arch_timer: running at 24.00MHz"), but the firmware leaves
+ * CNTFRQ_EL0 at 25 MHz and EL1 cannot write it. */
+#define SYS_COUNTER_FREQ            24000000ULL
+
 #define OS_GIC_BASE_ADDR            0x12400000ULL        // GICD_BASE_ADDR
 #define OS_GICR_OFFSET              0x40000U            // GICR相对于GIC基地址偏移量配置
 #define MMU_IMAGE_ADDR              0x4b000000ULL
