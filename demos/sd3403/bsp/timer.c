@@ -11,10 +11,8 @@ U64 g_timerFrequency;
 
 U64 GetGenericTimerFreq(void)
 {
-    U64 freq;
-
-    OS_EMBED_ASM("MRS %0, CNTFRQ_EL0" : "=r"(freq) : : "memory", "cc");
-    return freq;
+    /* Not CNTFRQ_EL0: the firmware sets it wrong on this board, see SYS_COUNTER_FREQ */
+    return SYS_COUNTER_FREQ;
 }
 #if defined(GUEST_OS)
 void TimerIsr(uintptr_t para)
@@ -50,15 +48,23 @@ void CoreTimerInit(void)
 void TimerIsr(uintptr_t para)
 {
     (void)para;
-    U32 cfgMask = 0x0;
     U64 cycle = PMU_TIMER_FREQUENCY / OS_TICK_PER_SECOND;
+    U64 cval;
+    U64 now;
 
-    OS_EMBED_ASM("MSR CNTP_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
+    /* Absolute grid: next deadline = previous deadline + one period. Rearming
+     * TVAL from ISR entry added the interrupt latency to every tick (999.63 Hz
+     * on board). If more than a period behind, realign to now instead of
+     * replaying missed ticks. Writing a future CVAL deasserts the timer, so
+     * CTL needs no toggling. */
+    OS_EMBED_ASM("MRS %0, CNTP_CVAL_EL0" : "=r"(cval) : : "memory");
+    OS_EMBED_ASM("MRS %0, CNTPCT_EL0" : "=r"(now) : : "memory");
+    cval += cycle;
+    if (cval <= now) {
+        cval = now + cycle;
+    }
+    OS_EMBED_ASM("MSR CNTP_CVAL_EL0, %0" : : "r"(cval) : "memory", "cc");
     PRT_ISB();
-    OS_EMBED_ASM("MSR CNTP_TVAL_EL0, %0" : : "r"(cycle) : "memory", "cc");
-
-    cfgMask = 0x1;
-    OS_EMBED_ASM("MSR CNTP_CTL_EL0, %0" : : "r"(cfgMask) : "memory");
 
     PRT_TickISR();
     PRT_ISB();
