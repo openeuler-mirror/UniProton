@@ -202,6 +202,35 @@ CONFIG_OS_POSIX_SET_TZDST=y
 # CONFIG_OS_SUPPORT_CMSIS is not set
 
 #
+# enable Eigen, built as C++17 with the SDK C++ toolchain
+# CONFIG_OS_SUPPORT_EIGEN is not set
+
+#
+# enable eiquadprog
+# depend on CONFIG_OS_SUPPORT_EIGEN
+# CONFIG_OS_SUPPORT_EIQUADPROG is not set
+
+#
+# enable pinocchio (with the boost headers)
+# depend on CONFIG_OS_SUPPORT_EIGEN
+# CONFIG_OS_SUPPORT_PINOCCHIO is not set
+
+#
+# enable proxsuite
+# depend on CONFIG_OS_SUPPORT_EIGEN
+# CONFIG_OS_SUPPORT_PROXSUITE is not set
+
+#
+# enable TSID
+# depend on CONFIG_OS_SUPPORT_EIQUADPROG, CONFIG_OS_SUPPORT_PINOCCHIO and CONFIG_OS_SUPPORT_PROXSUITE
+# CONFIG_OS_SUPPORT_TSID is not set
+
+#
+# enable coal (hpp-fcl, with the boost headers)
+# depend on CONFIG_OS_SUPPORT_EIGEN
+# CONFIG_OS_SUPPORT_COAL is not set
+
+#
 # Shell Modules Configuration. Adapted from LiteOS
 #
 CONFIG_CONFIG_LOCAL_ECHO=y

@@ -1,6 +1,6 @@
 # UniPorton_test_proxy_posix_interface sd3403 UniPorton_test_log_interface UniPorton_test_posix_time_interface UniProton_uros_demo
 # deadlock-break interrupt-latency message-latency semaphore-shuffle task-preempt task-switch fs mbedtls cmsis zlib
-# iot-ota-test
+# iot-ota-test eigenTest eiquadprogTest pinocchioTest proxsuiteTest tsidTest coalTest
 export TOOLCHAIN_PATH=/opt/buildtools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf
 
 if [ "$1" != "" ]
@@ -8,6 +8,17 @@ then
     export APP=$1
 else
     export APP=sd3403
+fi
+
+DEFCONFIG=../../../build/uniproton_config/config_armv8_sd3403/defconfig
+# CONFIG_OS_SUPPORT_EIGEN, which the other algorithm libraries depend on,
+# builds the demo as C++ with the SDK C++ toolchain
+if grep -q "^CONFIG_OS_SUPPORT_EIGEN=y" "$DEFCONFIG"
+then
+    ALGO_CPP=1
+    export CXX_TOOLCHAIN_PATH=/opt/openeuler/oecore-x86_64/sysroots/x86_64-openeulersdk-linux/usr
+else
+    ALGO_CPP=0
 fi
 
 export TMP_DIR=$APP
@@ -18,19 +29,34 @@ rm -rf ../../../output ./libmetal ./open-amp
 
 sh ./build_fetch.sh
 sh ./build_static.sh sd3403
-DEFCONFIG=../../../build/uniproton_config/config_armv8_sd3403/defconfig
 if grep -q "CONFIG_OS_OPTION_OPENAMP=y" "$DEFCONFIG"; then
     sh ./build_openamp.sh $TOOLCHAIN_PATH
 fi
 
+if [ "${ALGO_CPP}" = "1" ] && { [ ! -f "./../component/libcxx/lib/libstdc++.a" ] || [ ! -f "./../component/libcxx/include/bits/c++config.h" ]; }
+then
+    sh ./libcxx_build.sh || exit 1
+fi
+
 echo "cmake start"
-cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="sd3403" -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+if [ "${ALGO_CPP}" = "1" ]
+then
+    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCXX_TOOLCHAIN_PATH:STRING=$CXX_TOOLCHAIN_PATH -DCPU_TYPE:SRTING="sd3403" -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+else
+    cmake -S .. -B $TMP_DIR -DAPP:STRING=$APP -DTOOLCHAIN_PATH:STRING=$TOOLCHAIN_PATH -DCPU_TYPE:SRTING="sd3403" -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+fi
 echo "cmake end"
 
 pushd $TMP_DIR
 make $APP
 popd
 cp ./$TMP_DIR/$APP $APP.elf
-$TOOLCHAIN_PATH/bin/aarch64-none-elf-objcopy -O binary ./$APP.elf $APP.bin
-$TOOLCHAIN_PATH/bin/aarch64-none-elf-objdump -D ./$APP.elf > $APP.asm
+if [ "${ALGO_CPP}" = "1" ]
+then
+    $CXX_TOOLCHAIN_PATH/bin/aarch64-openeuler-linux-objcopy -O binary ./$APP.elf $APP.bin
+    $CXX_TOOLCHAIN_PATH/bin/aarch64-openeuler-linux-objdump -D ./$APP.elf > $APP.asm
+else
+    $TOOLCHAIN_PATH/bin/aarch64-none-elf-objcopy -O binary ./$APP.elf $APP.bin
+    $TOOLCHAIN_PATH/bin/aarch64-none-elf-objdump -D ./$APP.elf > $APP.asm
+fi
 rm -rf $TMP_DIR

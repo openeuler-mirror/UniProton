@@ -3,29 +3,95 @@ cmake_minimum_required(VERSION 3.12)
 set(HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 set(OUTPUT_PATH ${HOME_PATH}/output)
 
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
-set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
-set(CMAKE_LINKER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-ld)
-
-project(exmaples LANGUAGES C ASM)
-
-set(POSIX_OPTION "-D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS")
-set(CC_OPTION "-g -march=armv8.2-a+nosimd -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -specs=nosys.specs -nostartfiles -funwind-tables -nostdlib -nostdinc")
-set(AS_OPTION "-g -march=armv8.2-a+nosimd -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -mgeneral-regs-only -DENV_EL1")
-set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
-set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
-set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
-
 # 公共函数定义导入
 include(${HOME_PATH}/cmake/functions/uniproton_functions.cmake)
 # 函数import_kconfig把.config文件中的定义转换为cmake变量，用于后续子文件夹中决定是否编译某库
 import_kconfig(${HOME_PATH}/build/uniproton_config/config_armv8_sd3403/defconfig)
 
+# algo_lib_depends(<lib> <dep>...): CONFIG_OS_SUPPORT_<lib> needs every
+# CONFIG_OS_SUPPORT_<dep>
+function(algo_lib_depends lib)
+    if ("${CONFIG_OS_SUPPORT_${lib}}" STREQUAL "y")
+        foreach (dep ${ARGN})
+            if (NOT "${CONFIG_OS_SUPPORT_${dep}}" STREQUAL "y")
+                message(FATAL_ERROR "CONFIG_OS_SUPPORT_${lib} DEPENDS ON CONFIG_OS_SUPPORT_${dep}")
+            endif()
+        endforeach()
+    endif()
+endfunction()
+algo_lib_depends(EIQUADPROG EIGEN)
+algo_lib_depends(PINOCCHIO EIGEN)
+algo_lib_depends(PROXSUITE EIGEN)
+algo_lib_depends(TSID EIQUADPROG PINOCCHIO PROXSUITE)
+algo_lib_depends(COAL EIGEN)
+
+# CONFIG_OS_SUPPORT_EIGEN, which the other algorithm libraries depend on,
+# builds the demo as C++17 with the SDK C++ toolchain and libstdc++.
+if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
+    set(CMAKE_C_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
+    set(CMAKE_CXX_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-g++)
+    set(CMAKE_ASM_COMPILER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-gcc)
+    set(CMAKE_LINKER ${CXX_TOOLCHAIN_PATH}/bin/aarch64-openeuler-linux-ld)
+    # Bare metal has no stdout or assert handler: FILE output such as
+    # std::cout is dropped and a failed assert() aborts the core. Keep release
+    # semantics for the C++ build only, so the default sd3403 image stays
+    # identical.
+    set(ALGO_EXTRA_FLAGS "-DNDEBUG")
+else()
+    set(ALGO_EXTRA_FLAGS "")
+    set(CMAKE_C_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
+    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-g++)
+    set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc)
+    set(CMAKE_LINKER ${TOOLCHAIN_PATH}/bin/aarch64-none-elf-ld)
+endif()
+
+project(exmaples LANGUAGES C CXX ASM)
+
+set(POSIX_OPTION "-D_POSIX_THREADS -D_POSIX_THREAD_PRIORITY_SCHEDULING -D_POSIX_PRIORITY_SCHEDULING -D_POSIX_TIMERS -D_POSIX_CPUTIME -D_POSIX_THREAD_CPUTIME -D_POSIX_MONOTONIC_CLOCK -D_POSIX_TIMEOUTS -D_POSIX_CLOCK_SELECTION -D_POSIX_THREAD_PRIO_PROTECT -D_UNIX98_THREAD_MUTEX_ATTRIBUTES -D_POSIX_READER_WRITER_LOCKS")
+set(CC_OPTION "-g -march=armv8.2-a+nosimd -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -specs=nosys.specs -nostartfiles -funwind-tables -nostdlib -nostdinc")
+set(AS_OPTION "-g -march=armv8.2-a+nosimd -Wl,--build-id=none -fno-builtin -fno-PIE -Wall -fno-dwarf2-cfi-asm -mcmodel=large -fomit-frame-pointer -fzero-initialized-in-bss -fdollars-in-identifiers -ffunction-sections -fdata-sections -fno-common -fno-aggressive-loop-optimizations -fno-optimize-strlen -fno-schedule-insns -fno-inline-small-functions -fno-inline-functions-called-once -fno-strict-aliasing -fno-builtin -finline-limit=20 -mstrict-align -mlittle-endian -nostartfiles -mgeneral-regs-only -DENV_EL1")
+set(LD_OPTION "-static -no-pie -Wl,--wrap=memset -Wl,--wrap=memcpy")
+if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
+    # aarch64-openeuler-linux-gcc has no nosys.specs (only the none-elf toolchain ships it)
+    string(REPLACE "-specs=nosys.specs " "" CC_OPTION "${CC_OPTION}")
+    string(REPLACE "-specs=nosys.specs " "" AS_OPTION "${AS_OPTION}")
+endif()
+set(CMAKE_C_FLAGS "${CC_OPTION} ${POSIX_OPTION}")
+set(CMAKE_ASM_FLAGS "${AS_OPTION} ${POSIX_OPTION}")
+set(CMAKE_CXX_FLAGS "${CC_OPTION} ${POSIX_OPTION} -nostdinc++ -DEIGEN_NO_DEBUG ${ALGO_EXTRA_FLAGS}")
+set(CMAKE_CXX_STANDARD 17)
+
 set(CMAKE_LINK_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/sd3403.ld")
 set(CMAKE_EXE_LINKER_FLAGS "${LD_OPTION} -T ${CMAKE_CURRENT_SOURCE_DIR}/build/sd3403.ld")
 set(CC_OPTION  "-O0")
 set(AS_OPTION  "-O0")
+
+# include directories of the enabled algorithm libraries, libstdc++ first
+set(ALGO_INCLUDES)
+if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/component/eigen-3.4.0
+    )
+endif()
+if ("${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/eiquadprog-1.3.2/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_PROXSUITE}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/proxsuite-0.6.7/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/tsid-1.7.1/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/coal-2.4.5/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/pinocchio-2.6.21/include)
+endif()
+if ("${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y" OR "${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    list(APPEND ALGO_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/component/boost_1_76_0)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -39,6 +105,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/build/open-amp/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/build/libmetal/output/usr/local/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libc/include
+    ${ALGO_INCLUDES}
     ${HOME_PATH}/output/libc/include
     ${HOME_PATH}/src/shell/adapter/include
     ${HOME_PATH}/src/shell/full/include
@@ -95,6 +162,16 @@ link_libraries(
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libmetal.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/libs/libopen_amp.a"
     "${TOOLCHAIN_PATH}/lib/gcc/aarch64-none-elf/10.3.1/libgcc.a"
+)
+if ("${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
+    # inside the group so libstdc++ can resolve against the uniproton libc/kernel libs
+    link_libraries(
+        "${CMAKE_CURRENT_SOURCE_DIR}/component/libcxx/lib/libstdc++.a"
+        "${CXX_TOOLCHAIN_PATH}/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/libgcc.a"
+        "${CXX_TOOLCHAIN_PATH}/lib64/gcc/aarch64-openeuler-linux-gnu/10.3.1/libgcc_eh.a"
+    )
+endif()
+link_libraries(
     -Wl,--end-group
 )
 endif()
@@ -107,6 +184,37 @@ list(APPEND OBJS $<TARGET_OBJECTS:proxy>)
 
 add_subdirectory(${HOME_PATH}/src/component/mica mica)
 list(APPEND OBJS $<TARGET_OBJECTS:mica>)
+
+# Algorithm libraries built from source (the others are header-only), at -O2
+# like the algorithm test apps: the demo image includes the enabled ones,
+# while each algorithm test app builds the sources it tests itself.
+set(ALGO_LIB_OBJS)
+if ("${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+    set(EQ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/component/eiquadprog-1.3.2)
+    set(EQ_SRCS ${EQ_DIR}/src/eiquadprog-fast.cpp ${EQ_DIR}/src/eiquadprog.cpp)
+    set_source_files_properties(${EQ_SRCS} PROPERTIES COMPILE_OPTIONS "-O2")
+    add_library(eiquadprog OBJECT ${EQ_SRCS})
+    list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:eiquadprog>)
+endif()
+if ("${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
+    set(TSID_DIR ${CMAKE_CURRENT_SOURCE_DIR}/component/tsid-1.7.1)
+    file(GLOB TSID_SRCS ${TSID_DIR}/src/*/*.cpp)
+    # optional solver backends whose dependencies are not installed on bare metal
+    list(FILTER TSID_SRCS EXCLUDE REGEX "qpmad|osqp")
+    set_source_files_properties(${TSID_SRCS} PROPERTIES COMPILE_OPTIONS "-O2")
+    add_library(tsid OBJECT ${TSID_SRCS})
+    list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:tsid>)
+endif()
+if ("${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+    set(COAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/component/coal-2.4.5)
+    file(GLOB COAL_SRCS ${COAL_DIR}/src/*.cpp ${COAL_DIR}/src/*/*.cpp)
+    list(FILTER COAL_SRCS EXCLUDE REGEX "serialization|octomap|octree|broadphase|mesh_loader")
+    # -nostdinc environments hit boost/cstdint.hpp without a prior <stdint.h>
+    set_source_files_properties(${COAL_SRCS} PROPERTIES COMPILE_OPTIONS "-O2;-include;stdint.h")
+    add_library(coal OBJECT ${COAL_SRCS})
+    list(APPEND ALGO_LIB_OBJS $<TARGET_OBJECTS:coal>)
+endif()
+
 if (${APP} STREQUAL "UniPorton_test_posix_time_interface" OR 
     ${APP} STREQUAL "UniPorton_test_posix_thread_sem_interface" OR
     ${APP} STREQUAL "UniPorton_test_posix_thread_pthread_interface" OR
@@ -239,8 +347,56 @@ elseif (${APP} STREQUAL "lowpower")
         ${HOME_PATH}/testsuites/lowpower-test
     )
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:lowpowerTest>)
+elseif (${APP} STREQUAL "eigenTest")
+    if (NOT "${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIGEN")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/eigen-openarm-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eigentest>)
+elseif (${APP} STREQUAL "coalTest")
+    if (NOT "${CONFIG_OS_SUPPORT_COAL}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_COAL")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/coal-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:coaltest>)
+elseif (${APP} STREQUAL "tsidTest")
+    if (NOT "${CONFIG_OS_SUPPORT_TSID}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_TSID")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/tsid-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:tsidtest>)
+elseif (${APP} STREQUAL "proxsuiteTest")
+    if (NOT "${CONFIG_OS_SUPPORT_PROXSUITE}" STREQUAL "y" OR NOT "${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_PROXSUITE AND CONFIG_OS_SUPPORT_EIQUADPROG")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/proxsuite-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:proxtest>)
+elseif (${APP} STREQUAL "pinocchioTest")
+    if (NOT "${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_PINOCCHIO")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/pinocchio-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:pintest>)
+elseif (${APP} STREQUAL "eiquadprogTest")
+    if (NOT "${CONFIG_OS_SUPPORT_EIQUADPROG}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIQUADPROG")
+        return()
+    endif()
+    add_subdirectory(${HOME_PATH}/testsuites/eiquadprog-test tmp)
+    target_compile_options(rpmsg PUBLIC -DALGO_CPP_TESTCASE)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:eqtest>)
 else()
-    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> ${ALGO_LIB_OBJS})
 endif()
 add_executable(${APP} ${OBJS})
 

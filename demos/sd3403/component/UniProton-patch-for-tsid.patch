@@ -1,0 +1,29 @@
+--- a/src/robots/robot-wrapper.cpp
++++ b/src/robots/robot-wrapper.cpp
+@@ -18,7 +18,9 @@
+ #include "tsid/robots/robot-wrapper.hpp"
+ 
+ #include <pinocchio/multibody/model.hpp>
++#ifndef PINOCCHIO_BAREMETAL
+ #include <pinocchio/parsers/urdf.hpp>
++#endif
+ #include <pinocchio/algorithm/center-of-mass.hpp>
+ #include <pinocchio/algorithm/compute-all-terms.hpp>
+ #include <pinocchio/algorithm/jacobian.hpp>
+@@ -31,6 +33,7 @@
+ namespace tsid {
+ namespace robots {
+ 
++#ifndef PINOCCHIO_BAREMETAL
+ RobotWrapper::RobotWrapper(const std::string& filename,
+                            const std::vector<std::string>&, bool verbose)
+     : m_verbose(verbose) {
+@@ -55,6 +58,8 @@
+   init();
+ }
+ 
++#endif // !PINOCCHIO_BAREMETAL
++
+ RobotWrapper::RobotWrapper(const pinocchio::Model& m, bool verbose)
+     : m_verbose(verbose) {
+   m_model = m;

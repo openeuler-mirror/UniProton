@@ -47,3 +47,9 @@
 /testsuites/eigen-test/*.cpp
 /testsuites/eigen-test/*.cpp.*
 /testsuites/soemTest/test
+/demos/*/component/eiquadprog-*
+/demos/*/component/pinocchio-*
+/demos/*/component/boost_1_7*
+/demos/*/component/proxsuite-*
+/demos/*/component/tsid-*
+/demos/*/component/coal-*
