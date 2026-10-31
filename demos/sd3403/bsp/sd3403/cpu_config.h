@@ -18,6 +18,10 @@
 #define MMU_UART_ADDR               UART_BASE_ADDR
 #define MMU_OPENAMP_ADDR            0x48000000ULL
 #define OPENAMP_SHM_SIZE            0x100000
+#define MMU_DIRECT_ADDR             0x40100000ULL        // Linux-reserved, read by Linux tools via /dev/mem
+#define DIRECT_SHM_SIZE             0x100000
+#define MMU_PERIPH_ADDR             0x11000000ULL        // CRG and SPI0/SPI2 (openarm CAN-FD gateway); the UART's 2 MiB block
+#define PERIPH_MAP_SIZE             0x200000
 #define MMU_LOG_MEM_ADDR            0x48200000ULL
 
 /* Run-stop (WOW) image persistence region: placed right after the log memory

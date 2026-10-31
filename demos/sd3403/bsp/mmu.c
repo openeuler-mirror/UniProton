@@ -21,6 +21,18 @@ static mmu_mmap_region_s g_mem_map_info[] = {
         .max_level = 0x2,
         .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
     }, {
+        .virt      = MMU_DIRECT_ADDR,
+        .phys      = MMU_DIRECT_ADDR,
+        .size      = DIRECT_SHM_SIZE,
+        .max_level = 0x3,                    /* 4 KiB pages: exactly the 1 MiB window */
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
+        .virt      = MMU_PERIPH_ADDR,
+        .phys      = MMU_PERIPH_ADDR,
+        .size      = PERIPH_MAP_SIZE,
+        .max_level = 0x2,
+        .attrs     = MMU_ATTR_DEVICE_NGNRNE | MMU_ACCESS_RWX,
+    }, {
         .virt      = MMU_IMAGE_ADDR,
         .phys      = MMU_IMAGE_ADDR,
         .size      = 0x1000000,
