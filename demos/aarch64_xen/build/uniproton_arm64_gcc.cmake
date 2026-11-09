@@ -1,0 +1,12 @@
+# UniProton's cross/compiler and OS include policy, shared by its dependencies.
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+set(CMAKE_C_COMPILER "$ENV{TOOLCHAIN_PATH}/bin/aarch64-none-elf-gcc")
+set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}")
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(PROJECT_SYSTEM uniproton CACHE STRING "OS adapter")
+set(PROJECT_SYSTEM_UPPER UNIPROTON)
+set(PROJECT_PROCESSOR aarch64 CACHE STRING "Processor")
+set(MICA_PED xen CACHE STRING "MICA pedestal")
+set(MICA_XEN_PROVIDER builtin CACHE STRING "Xen implementation")
+set(CMAKE_C_FLAGS_INIT "-std=gnu11 -ffreestanding -fno-builtin -mcmodel=large -mstrict-align $ENV{UNIPROTON_INCLUDE_FLAGS}")

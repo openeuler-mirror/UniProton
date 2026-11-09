@@ -10,6 +10,12 @@ function(import_kconfig config_file)##.config文件转换为cmake命名空间的
     #### 读取Config文件
     file(STRINGS ${config_file} config_list REGEX "^CONFIG_" ENCODING "UTF-8")#### 读取Config文件
 
+    list(FIND config_list "CONFIG_OS_OPTION_OPENAMP=y" openamp_enabled)
+    list(FIND config_list "CONFIG_OS_OPTION_LIBMICA=y" libmica_enabled)
+    if(NOT openamp_enabled EQUAL -1 AND NOT libmica_enabled EQUAL -1)
+        message(FATAL_ERROR "CONFIG_OS_OPTION_OPENAMP and CONFIG_OS_OPTION_LIBMICA are mutually exclusive")
+    endif()
+
     ##处理各个匹配行
     foreach (config ${config_list})##处理各个匹配行
       ##获取变量值
@@ -196,4 +202,3 @@ function(add_library_ex file_name)
     set(ALL_OBJECT_LIBRARYS ${ALL_OBJECT_LIBRARYS} CACHE STRING INTERNAL FORCE)
     
 endfunction()
-
