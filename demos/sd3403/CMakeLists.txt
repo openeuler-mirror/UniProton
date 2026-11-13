@@ -347,6 +347,17 @@ elseif (${APP} STREQUAL "lowpower")
         ${HOME_PATH}/testsuites/lowpower-test
     )
     list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config> $<TARGET_OBJECTS:lowpowerTest>)
+elseif (${APP} STREQUAL "openarm")
+    if (NOT "${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y" OR NOT "${CONFIG_OS_SUPPORT_PINOCCHIO}" STREQUAL "y")
+        message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIGEN AND CONFIG_OS_SUPPORT_PINOCCHIO")
+        return()
+    endif()
+    # dual-arm OpenArm control: the CAN-FD gateway task drives both
+    # MCP2518FDs at 1 kHz and wakes the control task after each beat
+    target_compile_options(rpmsg PUBLIC -DOPENARM_APP)
+    list(APPEND OBJS $<TARGET_OBJECTS:rpmsg> $<TARGET_OBJECTS:bsp> $<TARGET_OBJECTS:config>
+        $<TARGET_OBJECTS:openarm_ipc> $<TARGET_OBJECTS:openarm_control_dual>
+        $<TARGET_OBJECTS:openarm_gateway>)
 elseif (${APP} STREQUAL "eigenTest")
     if (NOT "${CONFIG_OS_SUPPORT_EIGEN}" STREQUAL "y")
         message(FATAL_ERROR "PLEASE ENABLE CONFIG_OS_SUPPORT_EIGEN")

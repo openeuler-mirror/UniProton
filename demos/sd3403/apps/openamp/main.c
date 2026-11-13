@@ -15,6 +15,10 @@
 #include <locale.h>
 #include <time.h>
 #endif
+#if defined(OPENARM_APP)
+#include "direct_ipc.h"
+#include "canfd_gw_gateway.h"
+#endif
 #ifdef LOSCFG_SHELL_MICA_INPUT
 #include "shell.h"
 #include "show.h"
@@ -456,6 +460,20 @@ void Test1TaskEntry()
     /* before the application code; the algorithm test apps do this right
      * before Init() */
     AlgoCppRunInitArray();
+#endif
+
+#if defined(OS_OPTION_OPENAMP) && defined(OPENARM_APP)
+    /* The MICA lifecycle hook chains onto the rpmsg IPI handler, so set
+     * up the channels only after TestOpenamp() has registered it (see
+     * direct_ipc.c); the gateway then serves those channels. */
+    ret = DirectIpcInit();
+    if (ret) {
+        return;
+    }
+    ret = GwGatewayInit();
+    if (ret) {
+        return;
+    }
 #endif
 
 #if defined(FILESYSTEM_TESTCASE)
