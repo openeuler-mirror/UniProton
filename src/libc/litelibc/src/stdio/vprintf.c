@@ -1,6 +1,16 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "securec.h"
+#include "prt_buildef.h"
+
+#if defined(OS_OPTION_LIBMICA)
+/* Route formatted output through the libmica TTY service. */
+extern int mica_tty_vprintf(const char *format, va_list ap);
+int vprintf(const char *restrict fmt, va_list ap)
+{
+    return mica_tty_vprintf(fmt, ap);
+}
+#else
 
 extern int send_message(unsigned char *message, int len);
 
@@ -19,3 +29,4 @@ int vprintf(const char *restrict fmt, va_list ap)
 
     return send_message(buff, len + 1);
 }
+#endif

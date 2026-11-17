@@ -9,6 +9,10 @@
 /demos/*/libs/*.lib
 /demos/*/build/libmetal/
 /demos/*/build/open-amp/
+/demos/*/component/mcs/
+/demos/*/build/mica/
+/demos/*/build/mica-install/
+/demos/*/build/*.map
 /demos/*/build/lwip/
 /demos/*/component/libmetal*
 /demos/*/component/open-amp*

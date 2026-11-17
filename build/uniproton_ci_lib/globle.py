@@ -30,7 +30,8 @@ cpus_ = {'all': ['clean', 'm4', 'raspi4', 'hi3093', 'hi3095', 'atlasa1', 'kp920'
 	     'milkvduol' : ['milkvduol'],
          'visionfive2' : ['visionfive2'],
 	     'd9_secure': ['d9_secure'],
-         'sd3403': ['sd3403']
+         'sd3403': ['sd3403'],
+         'aarch64_xen': ['aarch64_xen']
          }
 
 cpu_plat = {'m4': ['cortex'],
@@ -51,5 +52,6 @@ cpu_plat = {'m4': ['cortex'],
 	        'milkvduol' : ['riscv64'],
             'visionfive2': ['riscv64'],
             'd9_secure': ['cortex_r5'],
-            'sd3403': ['armv8']
+            'sd3403': ['armv8'],
+            'aarch64_xen': ['armv8']
            }
